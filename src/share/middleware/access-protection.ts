@@ -22,18 +22,6 @@
 
 import { defineMiddleware } from "astro:middleware";
 
-// cloudflare:workers is only available in the Cloudflare Workers runtime.
-// In Astro build (Node.js) the static import fails — resolve lazily so the
-// middleware still loads; ACCESS_PIN is undefined in build (no runtime binding).
-async function resolveAccessPin(): Promise<string | undefined> {
-  try {
-    const { env } = await import("cloudflare:workers");
-    return (env.ACCESS_PIN as string | undefined) ?? undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 const NOINDEX_HEADER = "noindex, nofollow, noai, noimageai";
 
 /**
@@ -48,6 +36,89 @@ function constantTimeEqual(a: string, b: string): boolean {
     diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return diff === 0;
+}
+
+/**
+ * Check if a host is a dev or alt subdomain.
+ */
+function isDevOrAltHost(host: string): boolean {
+  return host.startsWith("dev.") || host.startsWith("alt.");
+}
+
+/**
+ * RFC-0899: Check access protection for a request. Called from the Worker entry point
+ * (worker.ts) before passing to the Astro handler. This is necessary because Astro
+ * middleware does not run for prerendered static pages (output: "static") — the
+ * Cloudflare adapter serves them from the ASSETS binding directly.
+ *
+ * Returns a 401 Response if access is denied, or null if the request should pass through.
+ * For dev/alt hosts with no PIN set, returns null (pass through) — caller should add
+ * X-Robots-Tag header to the response.
+ *
+ * @param request - The incoming Request
+ * @param env - The Worker env object (contains ACCESS_PIN)
+ * @returns 401 Response if denied, null if pass through
+ */
+export function checkAccessProtection(
+  request: Request,
+  env: Record<string, unknown>,
+): Response | null {
+  const host = request.headers.get("host") ?? "";
+  if (!isDevOrAltHost(host)) return null;
+
+  const pin = (env.ACCESS_PIN as string | undefined) ?? undefined;
+
+  // No PIN set — allow access (caller should add X-Robots-Tag)
+  if (!pin) return null;
+
+  // Check Basic Auth
+  const auth = request.headers.get("authorization") ?? "";
+  const expected = `Basic ${btoa(`access:${pin}`)}`;
+
+  if (auth && constantTimeEqual(auth, expected)) {
+    return null; // Authenticated — pass through
+  }
+
+  // Not authenticated — challenge
+  return new Response("Authentication required", {
+    status: 401,
+    headers: {
+      "WWW-Authenticate": 'Basic realm="Staging Access"',
+      "X-Robots-Tag": NOINDEX_HEADER,
+    },
+  });
+}
+
+/**
+ * RFC-0899: Add X-Robots-Tag header to a response for dev/alt subdomains.
+ * Called after the Astro handler returns a response, if the host is dev/alt.
+ *
+ * @param response - The response to modify
+ * @returns A new response with X-Robots-Tag added (if dev/alt host)
+ */
+export function addNoIndexHeaderIfNeeded(request: Request, response: Response): Response {
+  const host = request.headers.get("host") ?? "";
+  if (!isDevOrAltHost(host)) return response;
+
+  const headers = new Headers(response.headers);
+  headers.set("X-Robots-Tag", NOINDEX_HEADER);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+// cloudflare:workers is only available in the Cloudflare Workers runtime.
+// In Astro build (Node.js) the static import fails — resolve lazily so the
+// middleware still loads; ACCESS_PIN is undefined in build (no runtime binding).
+async function resolveAccessPin(): Promise<string | undefined> {
+  try {
+    const { env } = await import("cloudflare:workers");
+    return (env.ACCESS_PIN as string | undefined) ?? undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
