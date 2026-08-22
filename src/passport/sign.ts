@@ -1,5 +1,5 @@
 /* <MODULE_CONTRACT>
-<purpose>Facilitates Ed25519 key generation, signing, and verification for verifiable credentials.</purpose>
+<purpose>Facilitates Ed25519 key generation, signing, and verification for verifiable credentials via shared signing core (RFC-0921).</purpose>
 <non-goals>
   <item>Do not handle raw key storage or management.</item>
   <item>Do not perform network operations or external API calls.</item>
@@ -8,6 +8,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>Tidied by compass.changesummary.tidy; see git history for prior entries.</item>
+  <item>RFC-0921: delegate Ed25519 sign/verify/keygen to shared signing core (@warpgogol/werkstatt/signing). Remove @noble/ed25519 import.</item>
 </CHANGE_SUMMARY> */
 
 /**
@@ -24,8 +25,14 @@
  * - This module never logs, writes, or returns private key material.
  */
 
-import * as ed from "@noble/ed25519";
 import bs58 from "bs58";
+import {
+  generateKeyPair as signingGenerateKeyPair,
+  signBytes as signingSignBytes,
+  verifyBytes as signingVerifyBytes,
+  fromHex,
+  toHex,
+} from "@warpgogol/werkstatt/signing";
 import type { VCProof, VerifiableCredential } from "./schema.ts";
 
 // ---------------------------------------------------------------------------
@@ -90,12 +97,11 @@ export async function generateKeypair(): Promise<{
   publicKeyBytes: Uint8Array;
   publicKeyMultibase: string;
 }> {
-  const privateKeyBytes = ed.utils.randomSecretKey();
-  const publicKeyBytes = await ed.getPublicKeyAsync(privateKeyBytes);
+  const keyPair = await signingGenerateKeyPair();
   return {
-    privateKeyHex: Buffer.from(privateKeyBytes).toString("hex"),
-    publicKeyBytes,
-    publicKeyMultibase: toMultibase(publicKeyBytes),
+    privateKeyHex: toHex(keyPair.privateKey),
+    publicKeyBytes: keyPair.publicKey,
+    publicKeyMultibase: toMultibase(keyPair.publicKey),
   };
 }
 
@@ -110,7 +116,7 @@ export async function generateKeypair(): Promise<{
  * @param privateKeyHex — 32-byte Ed25519 private key as hex (from env secret)
  * @param verificationMethod — DID key reference (e.g. "did:web:example.org#key-v1")
  */
-// @ai-invariant: signCredential uses @noble/ed25519. Private keys arrive
+// @ai-invariant: signCredential uses the shared signing core (RFC-0921). Private keys arrive
 // exclusively as hex env vars — never logged, written to disk, or returned.
 // The signed output is a W3C VC with Ed25519Signature2020 proof.
 
@@ -119,9 +125,9 @@ export async function signCredential(
   privateKeyHex: string,
   verificationMethod: string,
 ): Promise<VCProof> {
-  const privateKeyBytes = new Uint8Array(Buffer.from(privateKeyHex, "hex"));
+  const privateKeyBytes = fromHex(privateKeyHex);
   const message = credentialBytes(subject);
-  const signatureBytes = await ed.signAsync(message, privateKeyBytes);
+  const signatureBytes = await signingSignBytes(privateKeyBytes, message);
 
   return {
     type: "Ed25519Signature2020",
@@ -153,7 +159,7 @@ export async function verifyCredential(
     const publicKeyBytes = fromMultibase(publicKeyMultibase);
     const signatureBytes = fromMultibase(proof.proofValue);
     const message = credentialBytes(subject);
-    return await ed.verifyAsync(signatureBytes, message, publicKeyBytes);
+    return await signingVerifyBytes(publicKeyBytes, message, signatureBytes);
   } catch {
     return false;
   }
@@ -173,8 +179,8 @@ export async function verifyCredential(
  * @param message       — canonical bytes to sign
  */
 export async function signBytes(privateKeyHex: string, message: Uint8Array): Promise<string> {
-  const privateKeyBytes = new Uint8Array(Buffer.from(privateKeyHex, "hex"));
-  const signatureBytes = await ed.signAsync(message, privateKeyBytes);
+  const privateKeyBytes = fromHex(privateKeyHex);
+  const signatureBytes = await signingSignBytes(privateKeyBytes, message);
   return toMultibase(signatureBytes);
 }
 
@@ -190,7 +196,7 @@ export async function verifyBytes(
   try {
     const publicKeyBytes = fromMultibase(publicKeyMultibase);
     const signatureBytes = fromMultibase(signatureMultibase);
-    return await ed.verifyAsync(signatureBytes, message, publicKeyBytes);
+    return await signingVerifyBytes(publicKeyBytes, message, signatureBytes);
   } catch {
     return false;
   }
