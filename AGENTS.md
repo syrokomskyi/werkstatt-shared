@@ -97,3 +97,16 @@ To add a new canonical utility:
 2. Add a subpath export to `packages/werkstatt-shared/package.json`
 3. Add an entry to `utility-registry.yaml` with `id`, `canonicalPath`, `forbiddenImports`, `functionNames`, `patterns`, and `allowlist`
 4. Document the utility in this AGENTS.md section
+
+### Placeholder route filtering (RFC-0917)
+
+Location: `packages/werkstatt-shared/src/share/routes/template-filter.ts` — exported via `@warpgogol/werkstatt-shared/share/routes/template-filter`.
+
+| Export | Purpose |
+| --- | --- |
+| `hasPlaceholderRoutes(routes)` | Detect Astro dynamic route templates (e.g. `[slug]`, `[version]`) that are expanded by generators, not actual pages |
+
+Rules:
+
+- All `system.md` consumers MUST import placeholder detection from `@warpgogol/werkstatt-shared/share/routes/template-filter`.
+- Enforcement: `utility.provenance.validate` (RFC-0916) scans for reimplementations outside the canonical path.
