@@ -24,7 +24,7 @@ utility instead of reimplementing the bracket-detection check inline.
  * Returns `false` for `undefined`, `null`, or empty routes — safe default
  * that avoids false positives when routes are missing or not yet resolved.
  *
- * Canonical utility (RFC-0917, DNA-88 extension). All `system.md` consumers
+ * Canonical utility (RFC-0917). All `system.md` consumers
  * MUST import from `@warpgogol/werkstatt-shared/share/routes/template-filter`.
  * Enforcement: `utility.provenance.validate` (RFC-0916).
  */
