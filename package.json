@@ -326,6 +326,10 @@
       "types": "./src/share/slug/index.ts",
       "default": "./src/share/slug/index.ts"
     },
+    "./share/routes/template-filter": {
+      "types": "./src/share/routes/template-filter.ts",
+      "default": "./src/share/routes/template-filter.ts"
+    },
     "./share/string-utils": {
       "types": "./src/share/string-utils.ts",
       "default": "./src/share/string-utils.ts"

@@ -25,3 +25,12 @@ utilities:
         reason: Test file intentionally contains forbidden patterns to validate the provenance validator (RFC-0916)
       - path: packages/werkstatt-site/src/checks/utility-provenance.ts
         reason: Validator implementation references forbidden imports/function names in string literals for detection logic (RFC-0916)
+  - id: template-filter
+    canonicalPath: packages/werkstatt-shared/src/share/routes/
+    forbiddenImports: []
+    functionNames:
+      - hasPlaceholderRoutes
+    patterns: []
+    allowlist:
+      - path: packages/werkstatt-shared/src/share/routes/
+        reason: Canonical placeholder route filter — owns all template detection logic (RFC-0917)
