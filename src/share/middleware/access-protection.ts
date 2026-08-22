@@ -4,7 +4,7 @@
 <keywords>middleware, access-protection, basic-auth, pin, dev, alt, RFC-0899</keywords>
 <responsibilities>
   <item>Check Host header against dev.* and alt.* patterns — pass through for main domain.</item>
-  <item>Require Basic Auth (username: access, password: ACCESS_PIN env var) for dev/alt hosts.</item>
+  <item>Require Basic Auth (username: warp, password: ACCESS_PIN env var) for dev/alt hosts.</item>
   <item>Set X-Robots-Tag: noindex, nofollow, noai, noimageai on ALL dev/alt responses (including 401).</item>
   <item>Use constant-time string comparison for auth check to prevent timing attacks.</item>
   <item>Pass through when ACCESS_PIN is unset (allows new sites before protection is configured).</item>
@@ -73,7 +73,7 @@ export function checkAccessProtection(
 
   // Check Basic Auth
   const auth = request.headers.get("authorization") ?? "";
-  const expected = `Basic ${btoa(`access:${pin}`)}`;
+  const expected = `Basic ${btoa(`warp:${pin}`)}`;
 
   if (auth && constantTimeEqual(auth, expected)) {
     return null; // Authenticated — pass through
@@ -155,7 +155,7 @@ export const accessProtectionMiddleware = defineMiddleware(async (context: any, 
 
   // Check Basic Auth BEFORE calling next()
   const auth = context.request.headers.get("authorization") ?? "";
-  const expected = `Basic ${btoa(`access:${pin}`)}`;
+  const expected = `Basic ${btoa(`warp:${pin}`)}`;
 
   if (auth && constantTimeEqual(auth, expected)) {
     const response = await next();

@@ -80,7 +80,7 @@ describe("RFC-0899: access protection middleware", () => {
 
   it("passes through dev.* with correct Basic Auth", async () => {
     mockEnv.ACCESS_PIN = "1234";
-    const expected = `Basic ${btoa("access:1234")}`;
+    const expected = `Basic ${btoa("warp:1234")}`;
     const handler = await loadMiddleware();
     const res = await runMiddleware(handler, "dev.example.com", expected);
     expect(res._nextCalled).toBe(true);
@@ -90,7 +90,7 @@ describe("RFC-0899: access protection middleware", () => {
 
   it("returns 401 for dev.* with wrong PIN", async () => {
     mockEnv.ACCESS_PIN = "1234";
-    const wrong = `Basic ${btoa("access:9999")}`;
+    const wrong = `Basic ${btoa("warp:9999")}`;
     const handler = await loadMiddleware();
     const res = await runMiddleware(handler, "dev.example.com", wrong);
     expect(res._nextCalled).toBe(false);
