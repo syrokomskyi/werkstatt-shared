@@ -17,7 +17,32 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
 import { parse as parseYaml } from "yaml";
-import type { Finding } from "@syrokomskyi/axiom-study";
+
+/**
+ * Minimal Finding shape matching @syrokomskyi/axiom-study's Finding interface.
+ * Defined locally so the package typechecks without axiom-study installed.
+ * See share/types/axiom-study.d.ts for the full canonical declaration.
+ */
+interface Finding {
+  findingId: string;
+  semanticFingerprint: { algorithm: "sha256"; digest: string; size: number; mediaType: string };
+  methodologyId: string;
+  ruleId: string;
+  affectedSubjectId: string;
+  title: string;
+  severity: "info" | "low" | "medium" | "high" | "critical";
+  evidence: Array<{
+    evidenceRef: {
+      artifactId: string;
+      rootDigest: { algorithm: "sha256"; digest: string; size: number; mediaType: string };
+      schema: string;
+    };
+    selector: string;
+    evidenceClass: string;
+  }>;
+  uncertainty: unknown[];
+  extension: Record<string, unknown>;
+}
 
 export const suppressionRuleSchema = z.object({
   ruleId: z.string().min(1),
