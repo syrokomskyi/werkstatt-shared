@@ -90,7 +90,7 @@ export function buildWebPageNode(context: JsonLdContext): JsonLdNode {
       ? {
           speakable: {
             "@type": "SpeakableSpecification",
-            cssSelector: page.lead ? ["h1", ".section-header__lead"] : ["h1"],
+            cssSelector: page.lead ? ["h1", ".section-header__subheading"] : ["h1"],
           },
         }
       : {}),

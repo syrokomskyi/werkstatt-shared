@@ -97,5 +97,25 @@ export function buildOrganizationNode(context: JsonLdContext): JsonLdNode {
       ? { logo: { "@type": "ImageObject", url: page.organization.logo } }
       : {}),
     ...(page.organization.image ? { image: page.organization.image } : {}),
+    ...(page.organization.offer?.prices?.length
+      ? { priceRange: buildPriceRange(page.organization.offer.prices) }
+      : {}),
   };
+}
+
+function buildPriceRange(prices: Array<{ amount: string; currency?: string }>): string {
+  const numericAmounts = prices
+    .map((p) => Number.parseFloat(p.amount))
+    .filter((n) => !Number.isNaN(n));
+  if (numericAmounts.length === 0) return "";
+  const min = Math.min(...numericAmounts);
+  const max = Math.max(...numericAmounts);
+  const currency = prices.find((p) => p.currency)?.currency;
+  const formatAmount = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(2));
+  if (min === max) {
+    return currency ? `${formatAmount(min)} ${currency}` : formatAmount(min);
+  }
+  return currency
+    ? `${formatAmount(min)}–${formatAmount(max)} ${currency}`
+    : `${formatAmount(min)}–${formatAmount(max)}`;
 }

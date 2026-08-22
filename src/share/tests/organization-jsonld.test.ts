@@ -72,3 +72,55 @@ describe("RFC-0745: buildOrganizationNode makesOffer priceCurrency", () => {
     expect(makesOffer[1].priceCurrency).toBe("EUR");
   });
 });
+
+describe("buildOrganizationNode priceRange", () => {
+  it("emits priceRange as min–max with currency when multiple prices exist", () => {
+    const org = makeOrgWithPrices([
+      { id: "monthly", label: "Monthly", amount: "70.00", currency: "EUR" },
+      { id: "yearly", label: "Yearly", amount: "700.00", currency: "EUR" },
+      { id: "setup", label: "Setup", amount: "200.00", currency: "EUR" },
+    ]);
+    const context = createJsonLdContext(makeModel(org));
+    const node = buildOrganizationNode(context);
+    expect(node.priceRange).toBe("70–700 EUR");
+  });
+
+  it("emits single-amount priceRange when all prices are equal", () => {
+    const org = makeOrgWithPrices([
+      { id: "monthly", label: "Monthly", amount: "70.00", currency: "EUR" },
+    ]);
+    const context = createJsonLdContext(makeModel(org));
+    const node = buildOrganizationNode(context);
+    expect(node.priceRange).toBe("70 EUR");
+  });
+
+  it("omits priceRange when no prices exist", () => {
+    const org: SemanticOrganization = {
+      name: "Test Org",
+      description: "Test organization",
+      url: "https://example.com",
+    };
+    const context = createJsonLdContext(makeModel(org));
+    const node = buildOrganizationNode(context);
+    expect(node.priceRange).toBeUndefined();
+  });
+
+  it("omits priceRange when price amounts are non-numeric", () => {
+    const org = makeOrgWithPrices([
+      { id: "custom", label: "Custom", amount: "auf Anfrage", currency: "EUR" },
+    ]);
+    const context = createJsonLdContext(makeModel(org));
+    const node = buildOrganizationNode(context);
+    expect(node.priceRange).toBe("");
+  });
+
+  it("emits priceRange without currency when prices lack currency", () => {
+    const org = makeOrgWithPrices([
+      { id: "monthly", label: "Monthly", amount: "70.00" },
+      { id: "setup", label: "Setup", amount: "200.00" },
+    ]);
+    const context = createJsonLdContext(makeModel(org));
+    const node = buildOrganizationNode(context);
+    expect(node.priceRange).toBe("70–200");
+  });
+});
