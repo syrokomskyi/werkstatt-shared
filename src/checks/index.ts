@@ -16,6 +16,7 @@ export {
   passResult,
   failResult,
   resultFromViolations,
+  formatCounts,
 } from "./result-helpers.ts";
 
 export * from "./suppressions-config.ts";

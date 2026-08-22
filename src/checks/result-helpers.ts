@@ -33,6 +33,26 @@ function defaultFailNextSteps(command: string): KernelNextStep[] {
 }
 
 /**
+ * Format error/warning counts with proper pluralization and zero-omission.
+ *
+ * - `0, 0` → `""` (empty string — caller should omit)
+ * - `1, 0` → `"1 error"`
+ * - `0, 1` → `"1 warning"`
+ * - `2, 0` → `"2 errors"`
+ * - `2, 1` → `"2 errors, 1 warning"`
+ */
+export function formatCounts(errors: number, warnings: number): string {
+  const parts: string[] = [];
+  if (errors > 0) {
+    parts.push(`${errors} error${errors === 1 ? "" : "s"}`);
+  }
+  if (warnings > 0) {
+    parts.push(`${warnings} warning${warnings === 1 ? "" : "s"}`);
+  }
+  return parts.join(", ");
+}
+
+/**
  * RFC-0203: canonical result builder. Migrated checks emit `Diagnostic[]` with
  * registered rule ids instead of bare strings. Exit code is 1 when any
  * diagnostic is an error; warnings and info do not fail the pipeline.
@@ -55,10 +75,11 @@ export function diagnosticsResult(
     summary.error > 0 ? "fail" : summary.warning > 0 ? "warn" : "pass";
   const resolvedNextSteps =
     nextSteps ?? (summary.error > 0 ? defaultFailNextSteps(command) : undefined);
+  const counts = formatCounts(summary.error, summary.warning);
   return {
     data: { command, status, diagnostics, summary },
     exitCode: summary.error > 0 ? 1 : 0,
-    summary: `[${command}] ${summary.error} error(s), ${summary.warning} warning(s)`,
+    summary: counts ? `[${command}] ${counts}` : `[${command}]`,
     nextSteps: resolvedNextSteps,
   };
 }
@@ -115,7 +136,7 @@ export function failResult(
       summary: { error: diagnostics.length, warning: 0, info: 0 },
     },
     exitCode: 1,
-    summary: `[${command}] ${violations.length} violation(s)`,
+    summary: `[${command}] ${violations.length} violation${violations.length === 1 ? "" : "s"}`,
     nextSteps: nextSteps ?? defaultFailNextSteps(command),
   };
 }
