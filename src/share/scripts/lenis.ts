@@ -79,6 +79,7 @@ export async function initLenis(
             offset: -headerOffset,
             immediate: prefersReducedMotion,
           });
+          history.replaceState(null, "", href);
         }
       }
     }
