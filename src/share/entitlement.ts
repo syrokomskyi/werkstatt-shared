@@ -13,6 +13,7 @@ agnostic contract consumed by the build-time resolver, the feature gates, and ru
   <item>RFC-0169: initial implementation.</item>
   <item>RFC-0706: add nachweis feature for Nachweisregister commercial module.</item>
   <item>RFC-0741: add multi-currency feature for multi-currency build pipeline.</item>
+  <item>RFC-0932: add external-link-qr feature for QR code modal entitlement module.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -37,6 +38,8 @@ export const ENTITLED_FEATURES = [
   "nachweis",
   // RFC-0741: multi-currency entitled feature
   "multi-currency",
+  // RFC-0932: external-link QR code modal module
+  "external-link-qr",
 ] as const;
 
 export type EntitledFeature = (typeof ENTITLED_FEATURES)[number];
@@ -62,6 +65,8 @@ export const STRIPE_FEATURE_LOOKUP_MAP: Record<string, EntitledFeature> = {
   feature_nachweis: "nachweis",
   // RFC-0741
   feature_multi_currency: "multi-currency",
+  // RFC-0932
+  feature_external_link_qr: "external-link-qr",
 };
 
 /**
