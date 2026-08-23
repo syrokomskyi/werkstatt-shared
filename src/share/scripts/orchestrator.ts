@@ -34,6 +34,8 @@ export interface OrchestrationOptions {
   videoPlayers?: boolean;
   /** RFC-0205: opt in to Lenis smooth scroll. Default false — avoids loading the 17 KB bundle when not needed. */
   smoothScroll?: boolean;
+  /** RFC-0932: entitlement state for external-link-qr module. Passed from layout. */
+  externalLinkQrEntitled?: boolean;
 }
 
 const has = (selector: string) => document.querySelector(selector) instanceof Element;
@@ -49,11 +51,15 @@ export async function runStandardLayoutOrchestration(
   // 1. External links security (mandatory)
   if (has("a[href]")) {
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => applyExternalLinkBehavior(), {
-        once: true,
-      });
+      document.addEventListener(
+        "DOMContentLoaded",
+        () => applyExternalLinkBehavior({ externalLinkQrEntitled: options.externalLinkQrEntitled }),
+        {
+          once: true,
+        },
+      );
     } else {
-      applyExternalLinkBehavior();
+      applyExternalLinkBehavior({ externalLinkQrEntitled: options.externalLinkQrEntitled });
     }
   }
 
@@ -138,5 +144,12 @@ export async function runStandardLayoutOrchestration(
       const { initVideoPlayers } = await import("./video-player.ts");
       await initVideoPlayers({ prefersReducedMotion });
     });
+  }
+
+  // 11. RFC-0932: external-link QR code modal (opt-in via externalLinkQrEntitled: true).
+  // The modal element is rendered by layout-component.astro only on entitled sites.
+  if (options.externalLinkQrEntitled && has("[data-external-link-qr-modal]")) {
+    const { initExternalLinkQr } = await import("./external-link-qr.ts");
+    initExternalLinkQr();
   }
 }
