@@ -46,6 +46,16 @@ function isDevOrAltHost(host: string): boolean {
 }
 
 /**
+ * Paths exempt from access protection on dev/alt subdomains.
+ * Browsers fetch these without sending Basic Auth credentials, causing 401 console errors.
+ */
+const PUBLIC_STATIC_EXEMPTIONS = ["/manifest.webmanifest"];
+
+function isExemptPath(pathname: string): boolean {
+  return PUBLIC_STATIC_EXEMPTIONS.includes(pathname);
+}
+
+/**
  * RFC-0899: Check access protection for a request. Called from the Worker entry point
  * (worker.ts) before passing to the Astro handler. This is necessary because Astro
  * middleware does not run for prerendered static pages (output: "static") — the
@@ -65,6 +75,9 @@ export function checkAccessProtection(
 ): Response | null {
   const host = request.headers.get("host") ?? "";
   if (!isDevOrAltHost(host)) return null;
+
+  const url = new URL(request.url);
+  if (isExemptPath(url.pathname)) return null;
 
   const pin = (env.ACCESS_PIN as string | undefined) ?? undefined;
 
@@ -142,6 +155,13 @@ export const accessProtectionMiddleware = defineMiddleware(async (context: any, 
 
   if (!isDevOrAlt) {
     return next();
+  }
+
+  const url = new URL(context.request.url);
+  if (isExemptPath(url.pathname)) {
+    const response = await next();
+    response.headers.set("X-Robots-Tag", NOINDEX_HEADER);
+    return response;
   }
 
   const pin = await resolveAccessPin();

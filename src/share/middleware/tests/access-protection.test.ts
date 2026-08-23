@@ -25,7 +25,7 @@ describe("RFC-0899: access protection middleware", () => {
     ) => Promise<Response>;
   }
 
-  function makeContext(host: string, authHeader?: string) {
+  function makeContext(host: string, authHeader?: string, pathname = "/") {
     const headers = new Map<string, string>();
     headers.set("host", host);
     if (authHeader) headers.set("authorization", authHeader);
@@ -34,6 +34,7 @@ describe("RFC-0899: access protection middleware", () => {
         headers: {
           get: (name: string) => headers.get(name.toLowerCase()) ?? null,
         },
+        url: `https://${host}${pathname}`,
       },
     };
   }
@@ -42,10 +43,11 @@ describe("RFC-0899: access protection middleware", () => {
     handler: (context: unknown, next: () => Promise<Response>) => Promise<Response>,
     host: string,
     authHeader?: string,
+    pathname = "/",
   ): Promise<Response & { _nextCalled: boolean }> {
     let nextCalled = false;
     const nextResponse = new Response("page content", { status: 200 });
-    const result = await handler(makeContext(host, authHeader), async () => {
+    const result = await handler(makeContext(host, authHeader, pathname), async () => {
       nextCalled = true;
       return nextResponse;
     });
@@ -119,5 +121,22 @@ describe("RFC-0899: access protection middleware", () => {
     const handler = await loadMiddleware();
     const res = await runMiddleware(handler, "example.com");
     expect(res.headers.get("X-Robots-Tag")).toBe(null);
+  });
+
+  it("exempts /manifest.webmanifest from auth on dev.* when PIN is set", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    const handler = await loadMiddleware();
+    const res = await runMiddleware(handler, "dev.example.com", undefined, "/manifest.webmanifest");
+    expect(res._nextCalled).toBe(true);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-Robots-Tag")).toBe("noindex, nofollow, noai, noimageai");
+  });
+
+  it("exempts /manifest.webmanifest from auth on alt.* when PIN is set", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    const handler = await loadMiddleware();
+    const res = await runMiddleware(handler, "alt.example.com", undefined, "/manifest.webmanifest");
+    expect(res._nextCalled).toBe(true);
+    expect(res.status).toBe(200);
   });
 });
