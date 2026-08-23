@@ -5,6 +5,7 @@
 projectDir: packages/werkstatt-shared
 destName: werkstatt-shared
 standalone: true
+versionBump: patch
 
 workspacePrefixes:
   - "@warpgogol/"
@@ -20,6 +21,7 @@ ci:
   provider: github-actions
   publish: true
   nodeVersion: 24
+  provenance: true
 
 ignoreDirs:
   - .turbo
