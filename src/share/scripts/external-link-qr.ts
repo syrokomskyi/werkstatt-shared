@@ -55,9 +55,7 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
     if (titleEl) {
       try {
         const url = new URL(href);
-        let display = url.hostname + url.pathname;
-        display = display.replace(/\/+$/, "");
-        titleEl.textContent = display || url.hostname;
+        titleEl.textContent = url.hostname.replace(/^www\./, "");
       } catch {
         titleEl.textContent = href;
       }
