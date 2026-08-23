@@ -219,6 +219,8 @@ export interface ImageVariantEntry {
    * stale derived variants (same contract as video.variants.generate RFC-0210).
    */
   sourceHash?: string;
+  /** RFC-0928: WebP quality used by image.variants.generate (minimum 90). */
+  quality?: number;
 }
 
 /** Top-level manifest written by `image.variants.generate` and read by createBuildPortableProvider. */
