@@ -48,10 +48,8 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
   const closeBtn: HTMLButtonElement = closeBtnEl;
 
   let lastFocused: HTMLElement | null = null;
-  let currentHref = "";
 
   function openModal(href: string, trigger: HTMLElement): void {
-    currentHref = href;
     lastFocused = trigger;
 
     if (titleEl) {
