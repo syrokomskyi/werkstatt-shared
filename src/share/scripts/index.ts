@@ -17,6 +17,7 @@
 // scheduler.ts is loaded dynamically by orchestrator.ts and lordicon.ts
 export * from "./lordicon.ts";
 export * from "./external-links.ts";
+export * from "./external-link-qr.ts";
 export * from "./lenis.ts";
 export * from "./orchestrator.ts";
 // gsap-counter.ts (RFC-0040) is loaded dynamically by orchestrator.ts

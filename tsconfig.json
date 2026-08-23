@@ -13,7 +13,7 @@
     "allowImportingTsExtensions": true,
     "declaration": true,
     "rewriteRelativeImportExtensions": true,
-    "types": ["node"],
+    "types": ["node", "qrcode"],
     "rootDir": ".",
     "outDir": "dist"
   },
