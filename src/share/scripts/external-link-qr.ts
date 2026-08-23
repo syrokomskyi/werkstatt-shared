@@ -55,7 +55,9 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
     if (titleEl) {
       try {
         const url = new URL(href);
-        titleEl.textContent = url.hostname + url.pathname;
+        let display = url.hostname + url.pathname;
+        display = display.replace(/\/+$/, "");
+        titleEl.textContent = display || url.hostname;
       } catch {
         titleEl.textContent = href;
       }
@@ -183,6 +185,14 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
   overlay.addEventListener("click", closeModal);
   closeBtn.addEventListener("click", closeModal);
   document.addEventListener("keydown", handleKeydown);
+
+  if (canvas) {
+    canvas.style.cursor = "pointer";
+    canvas.addEventListener("click", () => {
+      const link = openLinkBtn?.getAttribute("href");
+      if (link) window.open(link, "_blank", "noopener,noreferrer");
+    });
+  }
 
   attachTriggers();
 }
