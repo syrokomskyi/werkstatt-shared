@@ -9,7 +9,7 @@ This is a **package** workspace. Expose stable typed APIs. Do not import from `w
 ## Boundary rules
 
 - This package MUST NOT import from `@warpgogol/werkstatt-site` — enforced by `werkstatt.shared.validate`.
-- This package MAY import from `@warpgogol/werkstatt` (engine) and external packages.
+- This package MAY import from `@warpgogol/werkstatt-engine` (engine) and external packages.
 - Axiom dependencies (`@syrokomskyi/axiom-*`) are `optionalDependencies` — consumers without axiom installed must use type-only imports or guard runtime access.
 
 ## Scripts
