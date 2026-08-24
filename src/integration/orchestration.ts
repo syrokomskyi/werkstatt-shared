@@ -31,8 +31,8 @@ import type {
   IntegrationSecrets,
   Lead,
   LeadMessage,
-} from "./port.ts";
-import { DESTINATION_KINDS, EXECUTION_MODES, eventToLeadMessage } from "./port.ts";
+ EXECUTION_MODES} from "./port.ts";
+import { DESTINATION_KINDS, eventToLeadMessage } from "./port.ts";
 import { LifecycleEventPayloadSchema } from "./lifecycle.ts";
 import { z } from "zod";
 

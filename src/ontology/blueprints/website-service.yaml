@@ -22,7 +22,7 @@ axes:
 
 levels:
   - depth: 0
-    slug: { de: "leistungen/website-service", uk: "posluhy/sait-service" }
+    slug: { de: leistungen/website-service, uk: posluhy/sait-service }
     constellation: website-service-root
     geo: twin-only
     semanticType: collection
@@ -51,25 +51,25 @@ levels:
         minFaq: 5
         minPageStructure: 1
       claimRestrictions:
-        - "mehr Anfragen"
-        - "mehr Termin-Anfragen"
-        - "mehr Buchungen"
-        - "echte Aufträge"
-        - "steigt die Wahrscheinlichkeit"
-        - "weniger Streuverluste"
-        - "höhere Conversion"
-        - "besser gefunden"
-        - "stärkstes Conversion-Signal"
-        - "garantierte Ergebnisse"
-        - "guaranteed results"
-        - "no. 1"
-        - "number one"
-        - "leading provider"
-        - "top rated"
-        - "beste Preis"
-        - "best price"
-        - "cheapest"
-        - "günstigste"
+        - mehr Anfragen
+        - mehr Termin-Anfragen
+        - mehr Buchungen
+        - echte Aufträge
+        - steigt die Wahrscheinlichkeit
+        - weniger Streuverluste
+        - höhere Conversion
+        - besser gefunden
+        - stärkstes Conversion-Signal
+        - garantierte Ergebnisse
+        - guaranteed results
+        - no. 1
+        - number one
+        - leading provider
+        - top rated
+        - beste Preis
+        - best price
+        - cheapest
+        - günstigste
       mode: warn
 
 policy:

@@ -3,8 +3,8 @@ utilities:
     canonicalPath: packages/werkstatt-shared/src/share/slug/
     forbiddenImports:
       - "@sindresorhus/slugify"
-      - "cyrillic-to-translit-js"
-      - "github-slugger"
+      - cyrillic-to-translit-js
+      - github-slugger
     functionNames:
       - slugify
       - toSlug

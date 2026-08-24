@@ -15,7 +15,7 @@ sites:
     siteId: "1"
     matomoCloudHost: warpgogol.matomo.cloud
     status: active
-    provisionedAt: "2026-08-08"
+    provisionedAt: 2026-08-08
     dimensions:
       visit:
         client_id: 1

@@ -15,7 +15,7 @@
 */
 
 import type { MetricsPusher } from "./pusher.ts";
-import { WARPGOGOL_METRIC_REGISTRY } from "./metric-registry.ts";
+import type { WARPGOGOL_METRIC_REGISTRY } from "./metric-registry.ts";
 
 type LabelKeys<L extends readonly string[]> = L[number];
 type LabelMap<L extends readonly string[]> = Partial<Record<LabelKeys<L>, string>>;

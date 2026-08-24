@@ -2,8 +2,8 @@ id: lead.submit
 version: 1
 kind: action
 title:
-  de: "Anfrage senden"
-  en: "Submit a lead"
+  de: Anfrage senden
+  en: Submit a lead
 description:
   de: "Reicht eine Kontaktanfrage (Name, E-Mail, Nachricht) beim Gewerbe ein. Die Anfrage wird asynchron zugestellt — die Bestätigung signalisiert Annahme, nicht Zustellung."
   en: "Submit a contact request (name, email, message) to the business. The request is delivered asynchronously — the confirmation signals acceptance, not delivery."

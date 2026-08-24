@@ -77,7 +77,7 @@ routePatterns:
         type: string
     generated: true
   # RFC-0512: Team JSON endpoints (machine-readable profiles)
-  - pattern: "/team/profiles.json"
+  - pattern: /team/profiles.json
     params: {}
     generated: true
   - pattern: "/team/:slug/profile.json"

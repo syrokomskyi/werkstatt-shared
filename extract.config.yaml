@@ -15,7 +15,7 @@ stripScopes:
 preservePackages:
   - "@warpgogol/werkstatt-shared"
   - "@warpgogol/werkstatt-engine"
-packageManager: "pnpm"
+packageManager: pnpm
 
 ci:
   provider: github-actions

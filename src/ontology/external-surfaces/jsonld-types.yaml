@@ -105,31 +105,31 @@ surfacePolicy:
 # Enforced by surface.media-leakage.validate and surface.contract.validate.
 mediaLeakagePolicy:
   prohibitedStrings:
-    - pattern: "Gemini"
+    - pattern: Gemini
       matchingStrategy: context-aware
       contextSelector: "[data-credit-context], figcaption, details, dl"
       reason: "AI model name is internal metadata, not visitor-facing"
-    - pattern: "AIPlatform"
+    - pattern: AIPlatform
       matchingStrategy: whole-word
-      reason: "Internal enum value (CreditPartyKind)"
-    - pattern: "Organization"
+      reason: Internal enum value (CreditPartyKind)
+    - pattern: Organization
       matchingStrategy: context-aware
       contextSelector: "[data-credit-context], figcaption, details, dl"
-      reason: "Internal enum value (CreditPartyKind) — only as media author label"
-    - pattern: "commissioned-warpgogol-material"
+      reason: Internal enum value (CreditPartyKind) — only as media author label
+    - pattern: commissioned-warpgogol-material
       matchingStrategy: whole-word
-      reason: "Internal enum value (MaterialSourceType)"
-    - pattern: "linked-public-source"
+      reason: Internal enum value (MaterialSourceType)
+    - pattern: linked-public-source
       matchingStrategy: whole-word
-      reason: "Internal enum value"
-    - pattern: "Copyright © 2026 Warpgogol"
+      reason: Internal enum value
+    - pattern: Copyright © 2026 Warpgogol
       matchingStrategy: exact
       contextSelector: ":not(footer):not([data-footer])"
-      reason: "Repetitive copyright boilerplate — per-material usage status is on /bildnachweise/"
+      reason: Repetitive copyright boilerplate — per-material usage status is on /bildnachweise/
   requiredLabels:
-    - label: "Konzeptillustration"
+    - label: Konzeptillustration
       lang: de
-    - label: "Концептуальна ілюстрація"
+    - label: Концептуальна ілюстрація
       lang: uk
   requiredLinkPattern: "/bildnachweise/#"
-  aiImageAttribute: "data-ai-generated"
+  aiImageAttribute: data-ai-generated
