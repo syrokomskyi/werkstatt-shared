@@ -210,6 +210,10 @@
       "types": "./src/share/image-provider.ts",
       "default": "./src/share/image-provider.ts"
     },
+    "./share/import-scan": {
+      "types": "./src/share/import-scan.ts",
+      "default": "./src/share/import-scan.ts"
+    },
     "./share/knowledge": {
       "types": "./src/share/knowledge/index.ts",
       "default": "./src/share/knowledge/index.ts"
