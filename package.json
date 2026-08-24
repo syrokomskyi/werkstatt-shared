@@ -1,6 +1,6 @@
 {
   "name": "@warpgogol/werkstatt-shared",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": false,
   "type": "module",
   "engines": {
@@ -17,6 +17,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./plugin": {
+      "types": "./src/plugin/plugin-contract.ts",
+      "default": "./src/plugin/plugin-contract.ts"
     },
     "./checks": {
       "types": "./src/checks/index.ts",
@@ -1359,10 +1363,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "src",
-    "tsconfig.json"
-  ],
+  "files": ["src", "tsconfig.json"],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@warpgogol/werkstatt-engine": "*",
