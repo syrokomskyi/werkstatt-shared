@@ -1,5 +1,5 @@
 schemaVersion: 1.0.0
-totalCount: 58
+totalCount: 59
 entries:
   - id: approach
     displayName: Approach
@@ -100,14 +100,14 @@ entries:
       - Rosalind
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/currency-aware-price-display.yaml
     layer: component
-  - id: currency-selector
-    displayName: Currency Selector
-    semanticRole: component-currency-selector
+  - id: cycle-toggle
+    displayName: Cycle Toggle
+    semanticRole: component-cycle-toggle
     version: 1.0.0
     layoutHint: split
     acceptedCosmicNames:
-      - Portia
-    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/currency-selector.yaml
+      - Cupid
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/cycle-toggle.yaml
     layer: component
   - id: donation-card
     displayName: Donation Card
@@ -163,6 +163,15 @@ entries:
       - Nereid
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/footer-promo.yaml
     layer: component
+  - id: gratitude
+    displayName: Gratitude
+    semanticRole: client-gratitude
+    version: 1.0.0
+    layoutHint: card-grid
+    acceptedCosmicNames:
+      - Gonggong
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/gratitude.yaml
+    layer: section
   - id: hero
     displayName: Hero
     semanticRole: hero
@@ -528,6 +537,7 @@ sectionRoles:
   - article-index
   - audience-self-identification
   - breadcrumbs
+  - client-gratitude
   - client-ownership-disclosure
   - consent-gated-chat-launcher
   - credits-gallery
@@ -560,7 +570,7 @@ componentRoles:
   - component-brand-label
   - component-copyright
   - component-currency-aware-price-display
-  - component-currency-selector
+  - component-cycle-toggle
   - component-footer-promo
   - component-lang-switcher
   - component-layout
@@ -599,6 +609,7 @@ planetImportPaths:
   Elara: "@warpgogol/werkstatt-site/ui/sections/dynamic-status-block"
   Atlas: "@warpgogol/werkstatt-site/ui/sections/faq-list"
   Dione: "@warpgogol/werkstatt-site/ui/sections/final-cta"
+  Gonggong: "@warpgogol/werkstatt-site/ui/sections/gratitude"
   Europa: "@warpgogol/werkstatt-site/ui/sections/hero"
   Phobos: "@warpgogol/werkstatt-site/ui/sections/hero-decision-card"
   Ganymede: "@warpgogol/werkstatt-site/ui/sections/impact"
@@ -622,9 +633,10 @@ planetImportPaths:
   Proteus: "@warpgogol/werkstatt-site/ui/components/brand-label"
   Charon: "@warpgogol/werkstatt-site/ui/components/copyright"
   Rosalind: "@warpgogol/werkstatt-site/ui/components/currency-aware-price-display"
-  Portia: "@warpgogol/werkstatt-site/ui/components/currency-selector"
+  Cupid: "@warpgogol/werkstatt-site/ui/components/cycle-toggle"
   Galatea: "@warpgogol/werkstatt-site/ui/components/donation-card"
   Puck: "@warpgogol/werkstatt-site/ui/components/effects"
+  Prospero: "@warpgogol/werkstatt-site/ui/components/external-link-qr-modal"
   Nereid: "@warpgogol/werkstatt-site/ui/components/footer-promo"
   Ophelia: "@warpgogol/werkstatt-site/ui/components/lang-switcher"
   Umbriel: "@warpgogol/werkstatt-site/ui/components/layout"
@@ -675,6 +687,7 @@ blockTypeToCosmicName:
   dynamic-status-block: Elara
   faq-list: Atlas
   final-cta: Dione
+  gratitude: Gonggong
   hero: Europa
   hero-decision-card: Phobos
   impact: Ganymede
@@ -698,8 +711,9 @@ blockTypeToCosmicName:
   brand-label: Proteus
   copyright: Charon
   currency-aware-price-display: Rosalind
-  currency-selector: Portia
+  cycle-toggle: Cupid
   section-shell: Puck
+  external-link-qr-modal: Prospero
   footer-promo: Nereid
   lang-switcher: Ophelia
   layout: Umbriel
@@ -754,6 +768,7 @@ roleByCosmicName:
   Elara: data-driven-status-indicator
   Atlas: approach
   Dione: final-cta
+  Gonggong: client-gratitude
   Europa: hero
   Phobos: hero
   Ganymede: impact
@@ -778,9 +793,10 @@ roleByCosmicName:
   Ariel: breadcrumbs
   Charon: copyright
   Rosalind: price-display
-  Portia: currency-selector
+  Cupid: cycle-toggle
   Galatea: person-profile
   Puck: section-shell
+  Prospero: layout-shell
   Titania: footer
   Nereid: footer-promo
   Oberon: header
