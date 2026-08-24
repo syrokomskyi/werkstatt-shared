@@ -1,6 +1,6 @@
 {
   "name": "@warpgogol/werkstatt-shared",
-  "version": "0.8.13",
+  "version": "0.9.0",
   "private": false,
   "type": "module",
   "engines": {

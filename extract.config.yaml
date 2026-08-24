@@ -5,7 +5,7 @@
 projectDir: packages/werkstatt-shared
 destName: werkstatt-shared
 standalone: true
-versionBump: patch
+versionBump: minor
 
 workspacePrefixes:
   - "@warpgogol/"
