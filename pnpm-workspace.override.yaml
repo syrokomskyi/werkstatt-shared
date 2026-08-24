@@ -1,4 +1,1 @@
-overrides:
-  "@warpgogol/werkstatt-engine": "1.4.4"
-minimumReleaseAgeExclude:
-  - "@warpgogol/werkstatt-engine@1.4.4"
+overrides: {}
