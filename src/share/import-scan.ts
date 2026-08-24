@@ -11,7 +11,7 @@ and forge.autonomy.validate to avoid code duplication (Fowler: Duplicated Code).
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0868: extract shared directory-scanning utility from autonomy-validate and shared-validate.</item>
-  <item>RFC-0940: move to @warpgogol/werkstatt-shared so forge can import without depending on @warpgogol/werkstatt.</item>
+  <item>RFC-0940: move to @warpgogol/werkstatt-shared so forge can import without depending on @warpgogol/werkstatt-engine.</item>
 </CHANGE_SUMMARY>
 */
 

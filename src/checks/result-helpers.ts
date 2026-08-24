@@ -21,7 +21,7 @@ import type {
   Diagnostic,
   KernelCommandResult,
   KernelNextStep,
-} from "@warpgogol/werkstatt/kernel";
+} from "@warpgogol/werkstatt-engine/kernel";
 
 function defaultFailNextSteps(command: string): KernelNextStep[] {
   return [

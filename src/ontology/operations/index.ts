@@ -1,1 +1,1 @@
-export * from "@warpgogol/werkstatt/schemas";
+export * from "@warpgogol/werkstatt-engine/schemas";

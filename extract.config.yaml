@@ -14,7 +14,7 @@ stripScopes:
   - "@syrokomskyi/"
 preservePackages:
   - "@warpgogol/werkstatt-shared"
-  - "@warpgogol/werkstatt"
+  - "@warpgogol/werkstatt-engine"
 packageManager: "pnpm"
 
 ci:

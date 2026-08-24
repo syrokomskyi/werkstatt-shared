@@ -8,7 +8,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>Tidied by compass.changesummary.tidy; see git history for prior entries.</item>
-  <item>RFC-0921: delegate Ed25519 sign/verify/keygen to shared signing core (@warpgogol/werkstatt/signing). Remove @noble/ed25519 import.</item>
+  <item>RFC-0921: delegate Ed25519 sign/verify/keygen to shared signing core (@warpgogol/werkstatt-engine/signing). Remove @noble/ed25519 import.</item>
 </CHANGE_SUMMARY> */
 
 /**
@@ -32,7 +32,7 @@ import {
   verifyBytes as signingVerifyBytes,
   fromHex,
   toHex,
-} from "@warpgogol/werkstatt/signing";
+} from "@warpgogol/werkstatt-engine/signing";
 import type { VCProof, VerifiableCredential } from "./schema.ts";
 
 // ---------------------------------------------------------------------------
