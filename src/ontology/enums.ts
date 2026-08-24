@@ -88,6 +88,7 @@ export type SemanticRole = string;
  * section-image   | [RFC-0104] Authored image primitive with fade masks
  * site-background | [RFC-0105] Full-viewport background shell-layer component
  * currency-selector | [RFC-0743] Currency selector dropdown for multi-currency sites
+ * cycle-toggle     | [RFC-0946] Generic cycle toggle button with localStorage persistence
  * price-display    | [RFC-0743] Currency-aware price display with pre-rendered variants
  * scroll-to-top   | [RFC-0768] Floating scroll-to-top button with Lenis smooth scrolling
  */
@@ -108,6 +109,7 @@ export const ComponentRoleValues = [
   "section-image",
   "site-background",
   "currency-selector",
+  "cycle-toggle",
   "price-display",
   "scroll-to-top",
 ] as const;
