@@ -63,8 +63,13 @@ export type {
   SectionArchetypeLayoutHint,
 } from "./section-archetype.ts";
 
-export { systemManifestSchema } from "./system.ts";
-export type { SystemManifest, SystemPagePin, SystemPlanetPin } from "./system.ts";
+export { systemManifestSchema, systemCollectionSchema } from "./system.ts";
+export type {
+  SystemManifest,
+  SystemPagePin,
+  SystemPlanetPin,
+  SystemCollectionData,
+} from "./system.ts";
 
 // Architecture review 2026-07-10: Re-export growthVendorSchema for @warpgogol/werkstatt-site/growth/config.ts.
 export { growthVendorSchema } from "./system.ts";

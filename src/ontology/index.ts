@@ -81,6 +81,7 @@ export {
   SiteFamilyContract,
   sectionArchetypeSchema,
   systemManifestSchema,
+  systemCollectionSchema,
 } from "./schemas/index.ts";
 export type {
   Constellation,
@@ -106,6 +107,7 @@ export type {
   SystemManifest,
   SystemPagePin,
   SystemPlanetPin,
+  SystemCollectionData,
 } from "./schemas/index.ts";
 
 // ---------------------------------------------------------------------------

@@ -49,5 +49,10 @@ export {
   pageOutputSchema,
 } from "./system/page-output.ts";
 
-export { systemManifestSchema } from "./system/manifest.ts";
-export type { SystemManifest, SystemPagePin, SystemPlanetPin } from "./system/manifest.ts";
+export { systemManifestSchema, systemCollectionSchema } from "./system/manifest.ts";
+export type {
+  SystemManifest,
+  SystemPagePin,
+  SystemPlanetPin,
+  SystemCollectionData,
+} from "./system/manifest.ts";

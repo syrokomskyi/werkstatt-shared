@@ -8,6 +8,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0303 Phase 3: extracted from schemas/system.ts as part of the domain split.</item>
   <item>RFC-0377: added optional `audience` field to the per-page pin schema.</item>
+  <item>ADR-0062: added `ctaTarget` to identity, `sectionNav` + `ctaTarget` to page pins, created `systemCollectionSchema` for content collection typing.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -79,6 +80,13 @@ export const systemManifestSchema = z.object({
      * brief.validate can cross-check the brief against the running app identity.
      */
     domain: z.string().min(1).optional(),
+
+    /**
+     * ADR-0062: App-level default CTA target — the pageId of the contact/CTA page.
+     * Per-page `ctaTarget` in pages[] overrides this app-level default.
+     * Used by resolve-route.ts to populate `ctaTarget` in PageRouteData.
+     */
+    ctaTarget: z.string().min(1).optional(),
   }),
 
   /**
@@ -247,6 +255,19 @@ export const systemManifestSchema = z.object({
           )
           .optional()
           .default([]),
+
+        /**
+         * RFC-0922 / ADR-0062: per-page section nav toggle. When false, the
+         * page template skips extractSectionNavItems and the Header secondary
+         * nav strip is omitted. Defaults to true when absent.
+         */
+        sectionNav: z.boolean().optional(),
+
+        /**
+         * ADR-0062: per-page CTA target override. When present, overrides the
+         * app-level `identity.ctaTarget` for this page.
+         */
+        ctaTarget: z.string().min(1).optional(),
       }),
     )
     .optional()
@@ -498,3 +519,19 @@ export type SystemManifest = z.infer<typeof systemManifestSchema>;
 export type SystemPagePin = NonNullable<SystemManifest["pages"]>[number];
 /** A single planet pin within a page-route entry. */
 export type SystemPlanetPin = NonNullable<SystemManifest["pages"][number]["planets"]>[number];
+
+/**
+ * ADR-0062: Lenient schema for the `system` Astro content collection.
+ *
+ * `systemManifestSchema` is the strict validation schema used by `system.manifest.validate`.
+ * The content collection schema needs to be more lenient:
+ *   - `.partial()` — all top-level fields are optional (system.md content varies per site)
+ *   - `.loose()` — unknown top-level keys pass through (e.g. `policy`, `seo`)
+ *
+ * This schema is used in `src/content/config.ts` via `defineCollection({ schema: systemCollectionSchema })`.
+ * It provides compile-time typing for `getCollection("system")` consumers, eliminating `as any` casts.
+ */
+export const systemCollectionSchema = systemManifestSchema.partial().loose();
+
+/** Inferred type for the `system` content collection data. */
+export type SystemCollectionData = z.infer<typeof systemCollectionSchema>;
