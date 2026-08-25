@@ -94,4 +94,61 @@ describe("splitSentences", () => {
     expect(result[0]).toBe("Das Studio kann nicht wesentliche Prozesse (z. B. Werkzeuge) ändern.");
     expect(result[1]).toBe("Der wesentliche Leistungsumfang kann nicht einseitig geändert werden.");
   });
+
+  it("does not split on German business abbreviation zzgl.", () => {
+    const result = splitSentences(
+      "€ 49 / Monat (zzgl. USt.) — entspricht 10 Monaten. Zwei Monate gratis.",
+      "de",
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0]).toBe("€ 49 / Monat (zzgl. USt.) — entspricht 10 Monaten.");
+    expect(result[1]).toBe("Zwei Monate gratis.");
+  });
+
+  it("does not split on German abbreviation inkl.", () => {
+    const result = splitSentences(
+      "Das Paket enthält Hosting (inkl. SSL-Zertifikat). Das ist ein guter Deal.",
+      "de",
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0]).toBe("Das Paket enthält Hosting (inkl. SSL-Zertifikat).");
+    expect(result[1]).toBe("Das ist ein guter Deal.");
+  });
+
+  it("does not split on German abbreviation bzw.", () => {
+    const result = splitSentences(
+      "Rechnungen werden monatlich bzw. jährlich erstellt. Das ist fair.",
+      "de",
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0]).toBe("Rechnungen werden monatlich bzw. jährlich erstellt.");
+    expect(result[1]).toBe("Das ist fair.");
+  });
+
+  it("does not split on German abbreviation ggf.", () => {
+    const result = splitSentences(
+      "Der Kunde kann ggf. weitere Module buchen. Das ist optional.",
+      "de",
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0]).toBe("Der Kunde kann ggf. weitere Module buchen.");
+    expect(result[1]).toBe("Das ist optional.");
+  });
+
+  it("does not split on Ukrainian abbreviation тис.", () => {
+    const result = splitSentences(
+      "Вартість складає 5 тис. гривень на місяць. Це вигідна пропозиція.",
+      "uk",
+    );
+    expect(result).toHaveLength(2);
+    expect(result[0]).toBe("Вартість складає 5 тис. гривень на місяць.");
+    expect(result[1]).toBe("Це вигідна пропозиція.");
+  });
+
+  it("does not split on Ukrainian abbreviation грн.", () => {
+    const result = splitSentences("Ціна: 1000 грн. за місяць. Друге речення.", "uk");
+    expect(result).toHaveLength(2);
+    expect(result[0]).toBe("Ціна: 1000 грн. за місяць.");
+    expect(result[1]).toBe("Друге речення.");
+  });
 });
