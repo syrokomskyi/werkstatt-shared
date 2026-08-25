@@ -230,7 +230,7 @@ export const systemManifestSchema = z.object({
                 enabled: z.boolean(),
                 cosmicMoon: z.string().min(1),
                 pin: z.string().min(1),
-                props: z.record(z.string(), z.any()).optional(),
+                props: z.record(z.string(), z.unknown()).optional(),
               })
               .optional(),
           })
