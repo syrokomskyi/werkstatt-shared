@@ -88,7 +88,7 @@ export const SECTION_VISUAL_FRAGMENT: JsonSchemaFragment = {
         },
       },
     },
-    density: { enum: ["compact", "normal", "spacious"] },
+    density: { enum: ["compact", "normal", "spacious", "flush"] },
     tone: { enum: ["default", "warning", "success", "muted"] },
     containerVariant: { enum: ["default", "narrow", "full"] },
     motion: {

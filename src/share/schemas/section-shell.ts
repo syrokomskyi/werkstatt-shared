@@ -13,6 +13,7 @@ module owns visual + structural wrapper props only.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
+  <item>Added "flush" density for sections that need zero padding (e.g. fullscreen video flush to header).
 </CHANGE_SUMMARY>
 */
 
@@ -21,7 +22,7 @@ import { sectionBackgroundSchema } from "./section-background.ts";
 import { effectsSchema } from "./effects.ts";
 import { sectionMotionConfigSchema } from "./section-motion.ts";
 
-export const sectionDensitySchema = z.enum(["compact", "normal", "spacious"]);
+export const sectionDensitySchema = z.enum(["compact", "normal", "spacious", "flush"]);
 export type SectionDensity = z.infer<typeof sectionDensitySchema>;
 
 export const sectionToneSchema = z.enum(["default", "warning", "success", "muted"]);
