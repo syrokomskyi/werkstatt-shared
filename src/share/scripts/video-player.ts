@@ -15,6 +15,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0210: introduced the lazy feature-video player runtime.</item>
+  <item>RFC-0950: added viewport play/pause observer, conditional Plyr controls, and HLS+autoplay timing.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -33,9 +34,11 @@ async function upgrade(video: HTMLVideoElement): Promise<void> {
   video.dataset.videoPlayerReady = "true";
 
   const hlsUrl = video.dataset.hls;
+  const autoplay = video.dataset.autoplay === "true";
+  const controlsDisabled = video.dataset.controls === "false";
   let mode: "file" | "stream" = "file";
   let impl: "native" | "hlsjs" | "progressive" = "progressive";
-  let hlsInstance: { destroy: () => void } | null = null;
+  let hlsInstance: unknown = null;
 
   if (hlsUrl) {
     if (nativeHlsSupported(video)) {
@@ -70,24 +73,81 @@ async function upgrade(video: HTMLVideoElement): Promise<void> {
   // Brand the UI with Plyr (the native controls remain the fallback if this fails).
   try {
     const { default: Plyr } = await import("plyr");
-    const player = new Plyr(video, {
-      controls: [
-        "play-large",
-        "play",
-        "progress",
-        "current-time",
-        "mute",
-        "volume",
-        "captions",
-        "fullscreen",
-      ],
-    });
+    const plyrControls = controlsDisabled
+      ? ["mute"]
+      : [
+          "play-large",
+          "play",
+          "progress",
+          "current-time",
+          "mute",
+          "volume",
+          "captions",
+          "fullscreen",
+        ];
+    const player = new Plyr(video, { controls: plyrControls });
     // Keep hls.js bound across Plyr's internal media swaps.
     void player;
     void hlsInstance;
   } catch {
     /* Plyr unavailable — native controls already present */
   }
+
+  // RFC-0950: viewport play/pause for autoplay-enabled videos.
+  if (autoplay) {
+    await playWhenReady(
+      video,
+      hlsInstance as { on: (event: string, listener: () => void) => void } | null,
+    );
+    setupViewportObserver(video);
+  }
+}
+
+async function playWhenReady(
+  video: HTMLVideoElement,
+  hls: { on: (event: string, listener: () => void) => void } | null,
+): Promise<void> {
+  if (hls) {
+    // Wait for hls.js to attach media before calling play().
+    await new Promise<void>((resolve) => {
+      let resolved = false;
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          resolve();
+        }
+      }, 200);
+      hls.on("hls.MEDIA_ATTACHED", () => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve();
+        }
+      });
+    });
+  }
+  try {
+    await video.play();
+  } catch {
+    /* Autoplay may be blocked by browser policy — user can interact via controls. */
+  }
+}
+
+function setupViewportObserver(video: HTMLVideoElement): void {
+  if (!("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          void video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      }
+    },
+    { threshold: 0.5 },
+  );
+  observer.observe(video);
 }
 
 export async function initVideoPlayers(_options: VideoPlayersOptions = {}): Promise<void> {
