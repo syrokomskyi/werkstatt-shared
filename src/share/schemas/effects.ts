@@ -29,6 +29,7 @@ const NAMED_EFFECT_TARGETS = [
   "cta",
   "heading", // RFC-0151 — typographic effects on the section heading
   "subheading", // typographic effects on the section subheading/tagline
+  "background", // lighten overlay on the section background image
 ] as const;
 
 export const namedEffectTargetSchema = z.enum(NAMED_EFFECT_TARGETS);
@@ -106,12 +107,25 @@ export const tiltEffectSchema = z
   .strict();
 export type TiltEffect = z.infer<typeof tiltEffectSchema>;
 
+export const lightenEffectSchema = z
+  .object({
+    kind: z.literal("lighten"),
+    enabled: z.boolean(),
+    /** 0..1; opacity of the lightening overlay above the background image. */
+    opacity: z.number().min(0).max(1).optional(),
+    /** Color alias or raw value for the overlay. Defaults to --ds-color-bg. */
+    color: effectColorSchema.optional(),
+  })
+  .strict();
+export type LightenEffect = z.infer<typeof lightenEffectSchema>;
+
 export const effectSchema = z.discriminatedUnion("kind", [
   glassEffectSchema,
   shadowEffectSchema,
   glowEffectSchema,
   bulgeEffectSchema,
   tiltEffectSchema,
+  lightenEffectSchema,
 ]);
 export type Effect = z.infer<typeof effectSchema>;
 
@@ -128,6 +142,7 @@ export const EFFECT_KIND_META = {
   glow: { strategy: "text", maxPerStack: 1 },
   bulge: { strategy: "text", maxPerStack: 1 },
   tilt: { strategy: "text", maxPerStack: 1 },
+  lighten: { strategy: "surface", maxPerStack: 1 },
 } as const satisfies Record<EffectKind, { strategy: EffectRenderStrategy; maxPerStack: number }>;
 
 /**
@@ -138,6 +153,7 @@ export const EFFECT_KIND_META = {
 export const TARGET_ALLOWED_KINDS: Record<string, readonly EffectKind[]> = {
   heading: ["shadow", "glow", "bulge", "tilt"],
   subheading: ["shadow", "glow", "bulge", "tilt"],
+  background: ["lighten"],
 };
 
 const DEFAULT_ALLOWED_KINDS: readonly EffectKind[] = ["glass"];
