@@ -155,6 +155,17 @@ export const EFFECT_STACK_ITEM_SCHEMA = {
         skewX: { type: "number", minimum: -15, maximum: 15 },
       },
     },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["kind", "enabled"],
+      properties: {
+        kind: { const: "lighten" },
+        enabled: { type: "boolean" },
+        opacity: { type: "number", minimum: 0, maximum: 1 },
+        color: EFFECT_COLOR_SCHEMA,
+      },
+    },
   ],
 };
 
