@@ -19,6 +19,7 @@
   <item>RFC-0525: added av1 field to VideoManifestSources for AV1 progressive delivery.</item>
   <item>RFC-0525: added opt-in av1 boolean to mediaSchema (default false) to skip slow AV1 encoding.</item>
   <item>RFC-0591: added maxSizeMb field to mediaSchema for two-pass bitrate-capped MP4 encoding.</item>
+  <item>RFC-0950: added fullscreen field to mediaSchema for content-controlled edge-to-edge layout.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -93,6 +94,9 @@ export const mediaSchema = z
     loop: z.boolean().optional(),
     muted: z.boolean().optional(),
     controls: z.boolean().optional(),
+
+    /** [RFC-0950] CSS edge-to-edge layout (hero-style), NOT the browser Fullscreen API. */
+    fullscreen: z.boolean().optional(),
     preload: z.enum(["none", "metadata", "auto"]).optional(),
 
     /** ambient/background only (RFC-0202): when the loop starts and what a tap does. */
