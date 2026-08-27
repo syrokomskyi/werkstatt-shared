@@ -131,3 +131,14 @@ Rules:
 
 - All `system.md` consumers MUST import placeholder detection from `@warpgogol/werkstatt-shared/share/routes/template-filter`.
 - Enforcement: `utility.provenance.validate` (RFC-0916) scans for reimplementations outside the canonical path.
+
+### Client-side dependency import guidance (RFC-0955)
+
+When adding a third-party dependency to `packages/werkstatt-shared/package.json` `dependencies` that is imported by client-side scripts (`src/share/scripts/**/*.ts`) or client-side components (`packages/werkstatt-site/src/domain/ui/components/**/*.client.ts`):
+
+1. Check if the package has a `browser` field in its `package.json` — if yes, no action needed.
+2. If no `browser` field, use a deep import to the browser-compatible entry (e.g. `qrcode/lib/browser.js`).
+3. If neither is possible, add the package to `optimizeDeps.include` in `astro.config.template.mjs`.
+4. Run `vite.client-deps.validate` to verify.
+
+Agents MUST NOT automatically replace imports based on validator output — the validator only reports potential issues. Remediation requires human analysis of the package's export structure.
