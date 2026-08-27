@@ -14,6 +14,7 @@ no timestamps in the hash payload.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0954: initial search manifest contract, query/response types, and pure builder.</item>
+  <item>m000101: add NON_KNOWLEDGE_FILES and isNonKnowledgeFile for shared non-knowledge-file exclusion.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -44,6 +45,19 @@ export const SEARCH_MANIFEST_SCHEMA_VERSION = "1";
 
 /** Static asset path for the generated search manifest. */
 export const SEARCH_MANIFEST_PATH = "public/api/agent/v1/search-manifest.json";
+
+/**
+ * Files that live in the knowledge directory (`public/api/agent/v1/`) but are NOT
+ * knowledge envelopes. Used by `agent.knowledge.validate`, `agent.manifest.generate`,
+ * `agent.surface.validate`, and `agent.search.manifest.generate` to skip non-knowledge
+ * artifacts when iterating knowledge domain files.
+ */
+export const NON_KNOWLEDGE_FILES = ["search-manifest.json"] as const;
+
+/** Returns true if `filename` is a non-knowledge file that lives in the knowledge directory. */
+export function isNonKnowledgeFile(filename: string): boolean {
+  return (NON_KNOWLEDGE_FILES as readonly string[]).includes(filename);
+}
 
 // ---------------------------------------------------------------------------
 // Search manifest (build-time output)

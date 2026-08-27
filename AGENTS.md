@@ -116,6 +116,8 @@ Location: `packages/werkstatt-shared/src/share/agent/search.ts` — exported via
 | `SEARCH_CHUNK_TEXT_MAX_LENGTH` | Maximum chunk text length before truncation (2000) |
 | `SEARCH_MANIFEST_SCHEMA_VERSION` | Search manifest schema version ("1") |
 | `SEARCH_MANIFEST_PATH` | Static asset path for the generated search manifest |
+| `NON_KNOWLEDGE_FILES` | Files in the knowledge directory that are not knowledge envelopes (exclusion list) |
+| `isNonKnowledgeFile(filename)` | Returns true if the filename is a non-knowledge file (e.g. `search-manifest.json`) |
 
 ### Placeholder route filtering (RFC-0917)
 

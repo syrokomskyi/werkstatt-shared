@@ -6,6 +6,8 @@ import {
   SEARCH_EMBEDDING_DIMENSIONS,
   SEARCH_MANIFEST_SCHEMA_VERSION,
   SEARCH_CHUNK_TEXT_MAX_LENGTH,
+  isNonKnowledgeFile,
+  NON_KNOWLEDGE_FILES,
   type SearchChunk,
 } from "./search.ts";
 
@@ -140,5 +142,26 @@ describe("computeSearchManifestContentHash", () => {
 describe("constants", () => {
   it("SEARCH_CHUNK_TEXT_MAX_LENGTH is 2000", () => {
     expect(SEARCH_CHUNK_TEXT_MAX_LENGTH).toBe(2000);
+  });
+});
+
+describe("isNonKnowledgeFile", () => {
+  it("returns true for search-manifest.json", () => {
+    expect(isNonKnowledgeFile("search-manifest.json")).toBe(true);
+  });
+
+  it("returns false for knowledge domain files", () => {
+    expect(isNonKnowledgeFile("company.json")).toBe(false);
+    expect(isNonKnowledgeFile("offer.json")).toBe(false);
+    expect(isNonKnowledgeFile("faq.json")).toBe(false);
+  });
+
+  it("returns false for arbitrary filenames", () => {
+    expect(isNonKnowledgeFile("foo.json")).toBe(false);
+    expect(isNonKnowledgeFile("readme.md")).toBe(false);
+  });
+
+  it("NON_KNOWLEDGE_FILES contains search-manifest.json", () => {
+    expect(NON_KNOWLEDGE_FILES).toContain("search-manifest.json");
   });
 });
