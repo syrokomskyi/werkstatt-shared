@@ -12,6 +12,7 @@ No I/O — the kernel command loads the manifest and passes it here.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0783: initial MCP Server Card projection.</item>
+  <item>RFC-0954: include search tool in serverInfo description when interfaces.search is non-null.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -48,6 +49,9 @@ export function buildMcpServerCard(manifest: AgentSurfaceManifest): McpServerCar
     serverInfo: {
       name: `${manifest.site}-agent-gate`,
       version: manifest.surfaceVersion,
+      ...(manifest.interfaces.search
+        ? { description: "Agent gate with MCP tools and semantic search" }
+        : {}),
     },
     transport: {
       type: "streamable-http",

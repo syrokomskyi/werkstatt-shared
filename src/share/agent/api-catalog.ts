@@ -12,6 +12,7 @@ No I/O — the kernel command loads the manifest and passes it here.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0783: initial API Catalog linkset+json projection.</item>
+  <item>RFC-0954: add search endpoint link when interfaces.search is non-null.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -69,6 +70,10 @@ export function buildApiCatalog(manifest: AgentSurfaceManifest): ApiCatalog {
 
   if (manifest.interfaces.mcp) {
     entry["service"] = [{ href: manifest.interfaces.mcp.url, type: "application/json" }];
+  }
+
+  if (manifest.interfaces.search) {
+    entry["search"] = [{ href: manifest.interfaces.search.url, type: "application/json" }];
   }
 
   entry["service-doc"] = [{ href: manifest.interfaces.llms, type: "text/plain" }];

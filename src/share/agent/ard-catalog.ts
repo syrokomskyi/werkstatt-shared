@@ -105,6 +105,20 @@ export function buildArdCatalog(
     ],
   });
 
+  // Semantic search endpoint entry
+  if (manifest.interfaces.search) {
+    entries.push({
+      identifier: `urn:air:${domain}:api:search`,
+      displayName: "Semantic Search",
+      type: "application/json",
+      url: manifest.interfaces.search.url,
+      representativeQueries: [
+        "Search this site for relevant content",
+        "Find pages matching a natural language query",
+      ],
+    });
+  }
+
   // Knowledge domain entries
   for (const ref of manifest.knowledge) {
     entries.push({
