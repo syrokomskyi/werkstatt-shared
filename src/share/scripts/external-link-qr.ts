@@ -85,7 +85,7 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
 
   async function generateQr(href: string): Promise<void> {
     if (!canvas) return;
-    const { toCanvas } = await import("qrcode");
+    const { toCanvas } = await import("qrcode/lib/browser.js");
     await toCanvas(canvas, href, {
       width: 256,
       margin: 2,
