@@ -34,6 +34,13 @@ export interface OpenApiOperation {
   operationId: string;
   summary?: string;
   tags: string[];
+  parameters?: Array<{
+    name: string;
+    in: string;
+    required?: boolean;
+    schema: Record<string, unknown>;
+    description?: string;
+  }>;
   requestBody?: {
     required: true;
     content: { "application/json": { schema: OpenApiSchemaObject } };
