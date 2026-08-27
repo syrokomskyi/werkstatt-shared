@@ -98,6 +98,25 @@ To add a new canonical utility:
 3. Add an entry to `utility-registry.yaml` with `id`, `canonicalPath`, `forbiddenImports`, `functionNames`, `patterns`, and `allowlist`
 4. Document the utility in this AGENTS.md section
 
+### Agent Surface search (RFC-0954)
+
+Location: `packages/werkstatt-shared/src/share/agent/search.ts` — exported via `@warpgogol/werkstatt-shared/share/agent/search`.
+
+| Export | Purpose |
+| --- | --- |
+| `SearchManifest` | Schema for the build-time search manifest (chunks, pages, schema version) |
+| `SearchChunk` | Schema for a single search chunk (id, text, url, lang, type, heading) |
+| `SearchQuery` | Schema for inbound search queries (query, topK, lang) |
+| `SearchResponse` | Schema for search responses (results, query, took) |
+| `SearchResult` | Schema for a single search result (chunk, score) |
+| `SEARCH_EMBEDDING_MODEL` | Pinned Workers AI embedding model (`@cf/baai/bge-m3`) |
+| `SEARCH_EMBEDDING_DIMENSIONS` | Vector dimensions for the pinned model (1024) |
+| `SEARCH_MAX_TOP_K` | Maximum results per query (20) |
+| `SEARCH_DEFAULT_TOP_K` | Default results per query (5) |
+| `SEARCH_CHUNK_TEXT_MAX_LENGTH` | Maximum chunk text length before truncation (2000) |
+| `SEARCH_MANIFEST_SCHEMA_VERSION` | Search manifest schema version ("1") |
+| `SEARCH_MANIFEST_PATH` | Static asset path for the generated search manifest |
+
 ### Placeholder route filtering (RFC-0917)
 
 Location: `packages/werkstatt-shared/src/share/routes/template-filter.ts` — exported via `@warpgogol/werkstatt-shared/share/routes/template-filter`.
