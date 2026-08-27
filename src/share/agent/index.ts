@@ -14,6 +14,7 @@ here (knowledge, capability, openapi, proof) and re-export them from this barrel
   <item>RFC-0292: re-export fleet-catalog module.</item>
   <item>RFC-0783: re-export api-catalog and mcp-card modules.</item>
   <item>RFC-0786: re-export dns-aid module.</item>
+  <item>RFC-0954: re-export search module.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -28,3 +29,4 @@ export * from "./api-catalog.ts";
 export * from "./mcp-card.ts";
 export * from "./dns-aid.ts";
 export * from "./ard-catalog.ts";
+export * from "./search.ts";

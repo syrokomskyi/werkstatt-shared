@@ -670,6 +670,10 @@
       "types": "./src/share/agent/proof.ts",
       "default": "./src/share/agent/proof.ts"
     },
+    "./share/agent/search": {
+      "types": "./src/share/agent/search.ts",
+      "default": "./src/share/agent/search.ts"
+    },
     "./share/content/entity-id": {
       "types": "./src/share/content/entity-id.ts",
       "default": "./src/share/content/entity-id.ts"
@@ -1362,10 +1366,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "src",
-    "tsconfig.json"
-  ],
+  "files": ["src", "tsconfig.json"],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@sindresorhus/slugify": "^3.0.0",
