@@ -8,6 +8,7 @@
 </MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0286: initial builder tests.</item>
+  <item>RFC-0954: add search interface tests.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -38,6 +39,7 @@ test("buildAgentSurfaceManifest: safe default — empty knowledge/actions, null 
   expect(m.interfaces.openapi).toBe(null);
   expect(m.interfaces.mcp).toBe(null);
   expect(m.interfaces.twins).toBe(null);
+  expect(m.interfaces.search).toBe(null);
   expect(m.proof).toBe(null);
   expect(m.surfaceVersion).toBe(AGENT_SURFACE_VERSION);
 });
@@ -79,6 +81,32 @@ test("buildAgentSurfaceManifest: sorts knowledge refs by domain and actions by i
   });
   expect(m.knowledge.map((k) => k.domain)).toEqual(["company", "offer"]);
   expect(m.actions.map((a) => a.id)).toEqual(["appointment.request", "lead.submit"]);
+});
+
+test("buildAgentSurfaceManifest: populates search interface when search input is provided", () => {
+  const m = buildAgentSurfaceManifest({
+    ...baseInput,
+    search: { url: "/api/agent/search", model: "@cf/baai/bge-m3", dimensions: 1024 },
+  });
+  expect(m.interfaces.search).toEqual({
+    url: "/api/agent/search",
+    model: "@cf/baai/bge-m3",
+    dimensions: 1024,
+  });
+});
+
+test("buildAgentSurfaceManifest: search interface is null by default", () => {
+  const m = buildAgentSurfaceManifest(baseInput);
+  expect(m.interfaces.search).toBe(null);
+});
+
+test("buildAgentSurfaceManifest: search interface presence changes contentHash", () => {
+  const without = buildAgentSurfaceManifest(baseInput);
+  const withSearch = buildAgentSurfaceManifest({
+    ...baseInput,
+    search: { url: "/api/agent/search", model: "@cf/baai/bge-m3", dimensions: 1024 },
+  });
+  expect(without.contentHash).not.toBe(withSearch.contentHash);
 });
 
 test("computeAgentManifestContentHash: excludes contentHash and proof fields from the hash input", () => {

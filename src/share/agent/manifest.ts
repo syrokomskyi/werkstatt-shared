@@ -14,6 +14,7 @@ two runs on unchanged input are byte-identical (AS-7).
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0286: initial manifest contract and pure builder.</item>
+  <item>RFC-0954: add search interface to AgentSurfaceManifest.interfaces.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -54,6 +55,7 @@ export interface AgentSurfaceManifest {
     twins: { pattern: string } | null;
     openapi: string | null;
     mcp: { url: string; protocolVersion: string } | null;
+    search: { url: string; model: string; dimensions: number } | null;
   };
   /** Null until agent.surface.sign signs it (RFC-0308) or when no key material exists. */
   proof: AgentSurfaceProof | null;
@@ -68,6 +70,7 @@ export interface AgentSurfaceManifestInput {
   hasTwins?: boolean;
   openapiUrl?: string | null;
   mcp?: { url: string; protocolVersion: string } | null;
+  search?: { url: string; model: string; dimensions: number } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -118,6 +121,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       twins: input.hasTwins ? { pattern: "/**.md" } : null,
       openapi: input.openapiUrl ?? null,
       mcp: input.mcp ?? null,
+      search: input.search ?? null,
     },
     proof: null,
   };
