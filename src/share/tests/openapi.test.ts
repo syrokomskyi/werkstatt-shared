@@ -8,6 +8,7 @@
 </MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0289: initial OpenAPI formatter tests.</item>
+  <item>RFC-0954: add search path projection tests.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -113,4 +114,33 @@ test("formatAgentOpenApi: mcp interface present → x-gogol-mcp is set", () => {
   });
   const doc = formatAgentOpenApi(manifest, []);
   expect(doc["x-gogol-mcp"]).toEqual({ url: "/api/agent/mcp", protocolVersion: "2025-06-18" });
+});
+
+test("formatAgentOpenApi: search interface present → /api/agent/search GET path with dynamic lang enum", () => {
+  const manifest = buildAgentSurfaceManifest({
+    site: "s",
+    baseUrl: "https://s.example",
+    languages: { default: "de", supported: ["de", "uk"] },
+    search: { url: "/api/agent/search", model: "@cf/baai/bge-m3", dimensions: 1024 },
+  });
+  const doc = formatAgentOpenApi(manifest, []);
+  const op = doc.paths["/api/agent/search"]?.get;
+  expect(op).toBeTruthy();
+  expect(op!.operationId).toBe("search.query");
+  expect(op!.tags).toEqual(["search"]);
+  expect(doc.components.schemas["search-response"]).toBeTruthy();
+  const langParam = op!.parameters!.find((p: { name: string }) => p.name === "lang");
+  expect(langParam).toBeTruthy();
+  expect(langParam!.schema.enum).toEqual(["de", "uk"]);
+});
+
+test("formatAgentOpenApi: search interface absent → no search path", () => {
+  const manifest = buildAgentSurfaceManifest({
+    site: "s",
+    baseUrl: "https://s.example",
+    languages: { default: "de", supported: ["de"] },
+  });
+  const doc = formatAgentOpenApi(manifest, []);
+  expect(doc.paths["/api/agent/search"]).toBe(undefined);
+  expect(doc.components.schemas["search-response"]).toBe(undefined);
 });

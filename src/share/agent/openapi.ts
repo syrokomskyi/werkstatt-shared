@@ -15,6 +15,7 @@ copied verbatim (AGO-04 enforces this).
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0289: initial OpenAPI projection.</item>
+  <item>RFC-0954: add /api/agent/search path with dynamic lang enum from manifest.languages.supported.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -132,6 +133,76 @@ export function formatAgentOpenApi(
           "400": { description: "Schema violation" },
           "429": { description: "Rate limit exceeded" },
         },
+      },
+    };
+  }
+
+  if (manifest.interfaces.search) {
+    const searchSchema: OpenApiSchemaObject = {
+      type: "object",
+      required: ["query", "results", "tookMs"],
+      properties: {
+        query: { type: "string" },
+        results: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              chunk: { type: "object" },
+              score: { type: "number" },
+            },
+          },
+        },
+        tookMs: { type: "number" },
+      },
+    };
+    componentSchemas["search-response"] = searchSchema;
+    const langEnum = manifest.languages.supported;
+    paths[manifest.interfaces.search.url] = {
+      get: {
+        operationId: "search.query",
+        summary: "Semantic search over site content",
+        tags: ["search"],
+        responses: {
+          "200": {
+            description: "Search results",
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/search-response" } },
+            },
+          },
+          "400": { description: "Invalid query" },
+          "503": { description: "Search index not available" },
+        },
+        parameters: [
+          {
+            name: "q",
+            in: "query",
+            required: true,
+            schema: { type: "string", maxLength: 1000 },
+            description: "Natural language search query",
+          },
+          {
+            name: "lang",
+            in: "query",
+            required: false,
+            schema: { type: "string", enum: langEnum },
+            description: "Filter by language",
+          },
+          {
+            name: "type",
+            in: "query",
+            required: false,
+            schema: { type: "string", enum: ["page", "knowledge", "faq", "prose"] },
+            description: "Filter by content type",
+          },
+          {
+            name: "topK",
+            in: "query",
+            required: false,
+            schema: { type: "integer", default: 5, maximum: 20 },
+            description: "Number of results to return",
+          },
+        ],
       },
     };
   }
