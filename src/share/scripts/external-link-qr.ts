@@ -189,6 +189,13 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
     canvas.addEventListener("click", () => {
       const link = openLinkBtn?.getAttribute("href");
       if (link) window.open(link, "_blank", "noopener,noreferrer");
+      closeModal();
+    });
+  }
+
+  if (openLinkBtn) {
+    openLinkBtn.addEventListener("click", () => {
+      closeModal();
     });
   }
 
