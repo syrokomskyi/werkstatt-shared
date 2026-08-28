@@ -117,4 +117,6 @@ export async function initInlineNumberAnimation(
       },
     });
   });
+
+  document.documentElement.setAttribute("data-inline-number-initialized", "true");
 }

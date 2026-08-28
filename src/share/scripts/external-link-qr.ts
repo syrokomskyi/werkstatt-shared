@@ -200,4 +200,5 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
   }
 
   attachTriggers();
+  modal.setAttribute("data-qr-initialized", "true");
 }

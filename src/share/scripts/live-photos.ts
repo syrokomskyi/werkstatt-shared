@@ -247,4 +247,6 @@ export async function initLivePhotos(options: LivePhotosOptions = {}): Promise<v
       }
     });
   }
+
+  document.documentElement.setAttribute("data-live-photos-initialized", "true");
 }

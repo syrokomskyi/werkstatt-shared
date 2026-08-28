@@ -165,4 +165,6 @@ export async function initGsapCounter(options: GsapCounterOptions = {}): Promise
       }
     });
   });
+
+  document.documentElement.setAttribute("data-gsap-counter-initialized", "true");
 }
