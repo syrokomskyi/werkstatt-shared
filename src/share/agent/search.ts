@@ -157,10 +157,15 @@ export function buildSearchManifest(input: {
   return { ...base, contentHash };
 }
 
-/** sha256 hex over the canonical JSON of the manifest minus contentHash + generatedAt. */
+/** sha256 hex over the canonical JSON of the manifest minus contentHash + generatedAt + proof. */
 export function computeSearchManifestContentHash(
   doc: Omit<SearchManifest, "contentHash"> | Record<string, unknown>,
 ): string {
-  const { contentHash: _ch, generatedAt: _ga, ...rest } = doc as Record<string, unknown>;
+  const {
+    contentHash: _ch,
+    generatedAt: _ga,
+    proof: _proof,
+    ...rest
+  } = doc as Record<string, unknown>;
   return createHash("sha256").update(canonicalJson(rest), "utf8").digest("hex");
 }

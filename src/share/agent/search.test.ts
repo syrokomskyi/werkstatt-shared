@@ -137,6 +137,27 @@ describe("computeSearchManifestContentHash", () => {
     const recomputed = computeSearchManifestContentHash(manifest);
     expect(recomputed).toBe(manifest.contentHash);
   });
+
+  it("excludes proof from contentHash", () => {
+    const manifest = buildSearchManifest({
+      site: "test-site",
+      model: SEARCH_EMBEDDING_MODEL,
+      dimensions: SEARCH_EMBEDDING_DIMENSIONS,
+      generatedAt: "2026-08-27T00:00:00Z",
+      chunks: [baseChunk],
+    });
+    const withProof = {
+      ...manifest,
+      proof: {
+        type: "Ed25519Signature2020",
+        created: "2026-08-27T00:00:00Z",
+        verificationMethod: "did:web:example.com#key-v1",
+        proofPurpose: "assertionMethod",
+        proofValue: "zFakeProofValue",
+      },
+    };
+    expect(computeSearchManifestContentHash(withProof)).toBe(manifest.contentHash);
+  });
 });
 
 describe("constants", () => {
