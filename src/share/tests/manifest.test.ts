@@ -17,6 +17,7 @@ import {
   AGENT_SURFACE_VERSION,
   buildAgentSurfaceManifest,
   computeAgentManifestContentHash,
+  computeSignedContentHash,
   canonicalJson,
 } from "../agent/manifest.ts";
 
@@ -125,4 +126,26 @@ test("computeAgentManifestContentHash: is a 64-char lowercase hex sha256 digest"
 test("canonicalJson: sorts object keys deeply, preserves array order", () => {
   expect(canonicalJson({ b: 1, a: { d: 2, c: 3 } })).toBe('{"a":{"c":3,"d":2},"b":1}');
   expect(canonicalJson([3, 1, 2])).toBe("[3,1,2]");
+});
+
+test("computeSignedContentHash: always excludes contentHash and proof", () => {
+  const base = { a: 1, b: 2 };
+  const withHash = { ...base, contentHash: "abc", proof: { type: "test" } };
+  const withDifferentHash = { ...base, contentHash: "xyz", proof: { type: "other" } };
+  expect(computeSignedContentHash(withHash)).toBe(computeSignedContentHash(base));
+  expect(computeSignedContentHash(withDifferentHash)).toBe(computeSignedContentHash(base));
+});
+
+test("computeSignedContentHash: supports additional excludeFields", () => {
+  const base = { a: 1, b: 2 };
+  const withTimestamp = { ...base, generatedAt: "2026-01-01T00:00:00Z" };
+  const withDifferentTimestamp = { ...base, generatedAt: "2026-12-31T23:59:59Z" };
+  expect(computeSignedContentHash(withTimestamp, ["generatedAt"])).toBe(
+    computeSignedContentHash(withDifferentTimestamp, ["generatedAt"]),
+  );
+});
+
+test("computeSignedContentHash: matches computeAgentManifestContentHash for same inputs", () => {
+  const doc = { a: 1, b: 2, contentHash: "x", proof: null };
+  expect(computeSignedContentHash(doc)).toBe(computeAgentManifestContentHash(doc));
 });

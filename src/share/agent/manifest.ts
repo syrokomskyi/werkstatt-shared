@@ -94,10 +94,29 @@ export function canonicalJson(value: unknown): string {
   return JSON.stringify(sortKeysDeep(value));
 }
 
+/**
+ * sha256 hex over the canonical JSON of `doc` with `contentHash`, `proof`, and any
+ * additional `excludeFields` removed. All signed manifest hash functions MUST use
+ * this helper to ensure the `proof` field is always excluded — a missing exclusion
+ * causes contentHash drift after signing (AGS-SEARCH-07 pattern).
+ */
+export function computeSignedContentHash(
+  doc: Record<string, unknown>,
+  excludeFields: string[] = [],
+): string {
+  const exclusions = new Set(["contentHash", "proof", ...excludeFields]);
+  const rest: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(doc)) {
+    if (!exclusions.has(key)) {
+      rest[key] = value;
+    }
+  }
+  return createHash("sha256").update(canonicalJson(rest), "utf8").digest("hex");
+}
+
 /** sha256 hex over the canonical JSON of `doc` with `contentHash` and `proof` removed. */
 export function computeAgentManifestContentHash(doc: Record<string, unknown>): string {
-  const { contentHash: _contentHash, proof: _proof, ...rest } = doc;
-  return createHash("sha256").update(canonicalJson(rest), "utf8").digest("hex");
+  return computeSignedContentHash(doc);
 }
 
 // ---------------------------------------------------------------------------

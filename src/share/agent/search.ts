@@ -18,8 +18,7 @@ no timestamps in the hash payload.
 </CHANGE_SUMMARY>
 */
 
-import { createHash } from "node:crypto";
-import { canonicalJson } from "./manifest.ts";
+import { computeSignedContentHash } from "./manifest.ts";
 
 // ---------------------------------------------------------------------------
 // Pinned embedding model constants (RFC-0954 §Embedding model)
@@ -161,11 +160,5 @@ export function buildSearchManifest(input: {
 export function computeSearchManifestContentHash(
   doc: Omit<SearchManifest, "contentHash"> | Record<string, unknown>,
 ): string {
-  const {
-    contentHash: _ch,
-    generatedAt: _ga,
-    proof: _proof,
-    ...rest
-  } = doc as Record<string, unknown>;
-  return createHash("sha256").update(canonicalJson(rest), "utf8").digest("hex");
+  return computeSignedContentHash(doc as Record<string, unknown>, ["generatedAt"]);
 }
