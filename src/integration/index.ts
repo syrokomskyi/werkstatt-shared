@@ -1,10 +1,10 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-  RFC-0168: Integration Port barrel. Re-exports types from port.ts, crm-buffer.ts,
+  RFC-0168: Integration Port barrel. Re-exports types from port.ts,
   funnel.ts, lifecycle.ts, sharding.ts, dispatch.ts, qstash.ts, and runtime
   orchestration (registries + fan-out) from orchestration.ts. Type-only consumers
-  (agent-gate, supabase-crm tests) import from `./port-barrel.ts` (`@warpgogol/werkstatt-shared/share/integration/port`)
+  import from `./port-barrel.ts` (`@warpgogol/werkstatt-shared/share/integration/port`)
   to avoid transitively pulling in adapter implementations; consumers needing
   runtime logic import from here — the orchestration module is re-exported transparently.
 </purpose>

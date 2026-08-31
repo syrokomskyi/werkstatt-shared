@@ -8,12 +8,13 @@ types + constants + pure helpers — no I/O, no astro:env, no vendor SDK.</purpo
 <non-goals>
   <item>Do not let a chat vendor own the graph — UChat requests transitions; this module is the authority.</item>
   <item>Do not reference Make.com or carry any legacy UChat goto/stage string as architecture.</item>
-  <item>Do not import astro:env, a Supabase SDK, or a vendor SDK — callers inject persistence.</item>
+  <item>Do not import astro:env or a vendor SDK — callers inject persistence.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0188 Phase 2 (contract): initial funnel stage/event/transition contracts.</item>
   <item>RFC-0219: add FUNNEL_SYSTEM_TRIGGERS, FunnelTransitionTrigger, FUNNEL_TRANSITION_TRIGGERS — trigger overlay for the state-chart generator.</item>
+  <item>Cleanup: move BUFFER_DEAL_STAGES, FUNNEL_STAGE_TO_BUFFER_STAGE, bridgeFunnelStage, SYNC_OUTBOX_STATUSES, SYNC_OUTBOX_OPS from deleted crm-buffer.ts into this module.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -377,3 +378,79 @@ export function scanForMakeComReferences(text: string): Array<{ line: number; ma
   });
   return hits;
 }
+
+// ---------------------------------------------------------------------------
+// Generic deal stage bridge (formerly in crm-buffer.ts — RFC-0188 Phase 3)
+// ---------------------------------------------------------------------------
+
+/**
+ * Closed catalog of deal funnel stages. Order matters — later stages come after
+ * earlier ones. Mirrors the standard Pipedrive pipeline stages.
+ */
+export const BUFFER_DEAL_STAGES = [
+  "new",
+  "contacted",
+  "qualified",
+  "proposal",
+  "negotiation",
+  "won",
+  "lost",
+] as const;
+
+export type BufferDealStage = (typeof BUFFER_DEAL_STAGES)[number];
+
+/**
+ * RFC-0188 keeps the precise, platform-owned VisitorFunnelStage on the deal
+ * (`funnel_stage`) while bridging it down to the generic BufferDealStage the
+ * Pipedrive sync worker already understands. Exhaustive by construction.
+ */
+export const FUNNEL_STAGE_TO_BUFFER_STAGE: Record<VisitorFunnelStage, BufferDealStage> = {
+  new_session: "new",
+  privacy_acknowledged: "new",
+  intent_selected: "contacted",
+  organization_selected: "contacted",
+  qualification_priority: "qualified",
+  qualification_company: "qualified",
+  qualification_service: "qualified",
+  qualification_region: "qualified",
+  offer_presented: "proposal",
+  payment_pending: "proposal",
+  payment_confirmed: "negotiation",
+  start_choice_pending: "negotiation",
+  start_deferred: "negotiation",
+  buyer_type_pending: "negotiation",
+  b2b_start_consent_pending: "negotiation",
+  b2c_withdrawal_consent_pending: "negotiation",
+  start_approved: "negotiation",
+  legal_data_requested: "negotiation",
+  materials_requested: "negotiation",
+  production_ready: "negotiation",
+  change_balance_checked: "contacted",
+  change_payment_pending: "proposal",
+  change_description_requested: "negotiation",
+  operator_review: "negotiation",
+  won: "won",
+  lost: "lost",
+};
+
+/** Bridge a canonical funnel stage down to the generic stage the sync worker maps. */
+export function bridgeFunnelStage(stage: VisitorFunnelStage): BufferDealStage {
+  return FUNNEL_STAGE_TO_BUFFER_STAGE[stage];
+}
+
+// ---------------------------------------------------------------------------
+// Sync outbox statuses (formerly in crm-buffer.ts)
+// ---------------------------------------------------------------------------
+
+export const SYNC_OUTBOX_STATUSES = ["pending", "processing", "done", "failed", "dead"] as const;
+export type SyncOutboxStatus = (typeof SYNC_OUTBOX_STATUSES)[number];
+
+export const SYNC_OUTBOX_OPS = [
+  "upsert_contact",
+  "upsert_deal",
+  "update_deal_stage",
+  "upsert_organization",
+  "upsert_subscription",
+  "upsert_invoice",
+] as const;
+export type SyncOutboxOp = (typeof SYNC_OUTBOX_OPS)[number];

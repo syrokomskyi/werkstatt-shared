@@ -31,7 +31,8 @@ import type {
   IntegrationSecrets,
   Lead,
   LeadMessage,
- EXECUTION_MODES} from "./port.ts";
+  EXECUTION_MODES,
+} from "./port.ts";
 import { DESTINATION_KINDS, eventToLeadMessage } from "./port.ts";
 import { LifecycleEventPayloadSchema } from "./lifecycle.ts";
 import { z } from "zod";
@@ -312,8 +313,7 @@ export function authenticateInbound(headers: Headers, secret: string | undefined
  * supplied. `seen` is the optional dedup set (RFC-0176).
  *
  * `extraAdapters` lets a specific site's delivery callback inject additional
- * DestinationAdapters (e.g. supabaseBufferDestinationAdapter) without modifying
- * the closed shared registry. They are self-enabling (skip if secrets absent).
+ * DestinationAdapters without modifying the closed shared registry. They are self-enabling (skip if secrets absent).
  */
 export function routeEventToReady(
   event: IntegrationEvent,
@@ -344,8 +344,8 @@ export interface DeliverEventResult {
  * destinations (CRM), with the client's own tokens. Email is NOT here — it is sent via
  * Cloudflare Email Routing (send_email binding) in the callback route. `seen` dedups the
  * destination side on redelivery. Best-effort per sink; the caller decides ack vs retry.
- * `extraAdapters` lets a specific site inject additional DestinationAdapters (e.g.
- * supabaseBufferDestinationAdapter) without modifying the closed shared registry.
+ * `extraAdapters` lets a specific site inject additional DestinationAdapters
+ * without modifying the closed shared registry.
  */
 export async function deliverEvent(
   event: IntegrationEvent,

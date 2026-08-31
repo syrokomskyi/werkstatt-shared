@@ -2,7 +2,7 @@
 <MODULE_CONTRACT>
 <purpose>
   RFC-0168: Integration Port barrel — types and pure contracts only. Re-exports from
-  port.ts, crm-buffer.ts, funnel.ts, lifecycle.ts, sharding.ts, dispatch.ts, and qstash.ts.
+  port.ts, funnel.ts, lifecycle.ts, sharding.ts, dispatch.ts, and qstash.ts.
   Type-only consumers import from here to avoid transitively pulling in adapter
   implementations (orchestration.ts → adapters.ts).
 </purpose>
@@ -23,33 +23,6 @@ export { DESTINATION_KINDS, EXECUTION_MODES, eventToLeadMessage, eventToLead } f
 export type { DestinationKind, ExecutionMode } from "./port.ts";
 
 export type {
-  BufferContact,
-  BufferOrganization,
-  BufferDeal,
-  BufferStageTransition,
-  BufferFunnelEvent,
-  BufferConsentEvent,
-  BufferSubscription,
-  BufferInvoice,
-  BufferUpsertResult,
-  OutboxWriteResult,
-  CrmBufferWriter,
-  CrmBufferReader,
-  CrmBufferClient,
-  DealPipedriveIdPatch,
-  SyncOutboxRow,
-} from "./crm-buffer.ts";
-export {
-  BUFFER_DEAL_STAGES,
-  FUNNEL_STAGE_TO_BUFFER_STAGE,
-  bridgeFunnelStage,
-  isFunnelStage,
-  SYNC_OUTBOX_STATUSES,
-  SYNC_OUTBOX_OPS,
-} from "./crm-buffer.ts";
-export type { BufferDealStage, SyncOutboxStatus, SyncOutboxOp } from "./crm-buffer.ts";
-
-export type {
   VisitorFunnelEventPayload,
   FunnelSystemTrigger,
   FunnelTransitionTrigger,
@@ -65,6 +38,11 @@ export {
   VISITOR_BUYER_TYPES,
   FUNNEL_TRANSITIONS,
   isValidFunnelStage,
+  BUFFER_DEAL_STAGES,
+  FUNNEL_STAGE_TO_BUFFER_STAGE,
+  bridgeFunnelStage,
+  SYNC_OUTBOX_STATUSES,
+  SYNC_OUTBOX_OPS,
   canTransition,
   nextStages,
   reachableStages,
@@ -79,6 +57,9 @@ export type {
   VisitorFunnelIntent,
   VisitorFunnelSource,
   VisitorBuyerType,
+  BufferDealStage,
+  SyncOutboxStatus,
+  SyncOutboxOp,
 } from "./funnel.ts";
 
 export type { LifecycleEventPayload } from "./lifecycle.ts";

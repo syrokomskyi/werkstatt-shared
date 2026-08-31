@@ -66,10 +66,6 @@
       "types": "./src/integration/index.ts",
       "default": "./src/integration/index.ts"
     },
-    "./integration/crm-buffer": {
-      "types": "./src/integration/crm-buffer.ts",
-      "default": "./src/integration/crm-buffer.ts"
-    },
     "./integration/port": {
       "types": "./src/integration/port.ts",
       "default": "./src/integration/port.ts"
@@ -1318,10 +1314,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "src",
-    "tsconfig.json"
-  ],
+  "files": ["src", "tsconfig.json"],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@sindresorhus/slugify": "^3.0.0",

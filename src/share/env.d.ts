@@ -48,10 +48,6 @@ declare module "astro:env/server" {
   export const UPSTASH_QSTASH_NEXT_SIGNING_KEY: string | undefined;
   export const UPSTASH_REDIS_REST_URL: string | undefined;
   export const UPSTASH_REDIS_REST_TOKEN: string | undefined;
-  // Lagebild MVP: Supabase CRM buffer (self-enabling — adapter skips when absent).
-  export const SUPABASE_BUFFER_URL: string | undefined;
-  export const SUPABASE_BUFFER_SERVICE_KEY: string | undefined;
-  export const SUPABASE_BUFFER_TENANT_ID: string | undefined;
   // RFC-0191: Stripe billing — the webhook signing secret (stripe-webhook route) and the
   // server API key (billing client). Per-tenant; self-enabling — handlers fail-closed when absent.
   export const STRIPE_WEBHOOK_SECRET: string | undefined;

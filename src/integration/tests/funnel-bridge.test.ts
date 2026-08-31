@@ -17,9 +17,9 @@ import {
   BUFFER_DEAL_STAGES,
   FUNNEL_STAGE_TO_BUFFER_STAGE,
   bridgeFunnelStage,
-  isFunnelStage,
-} from "../crm-buffer.ts";
-import { VISITOR_FUNNEL_STAGES } from "../funnel.ts";
+  VISITOR_FUNNEL_STAGES,
+  isValidFunnelStage,
+} from "../funnel.ts";
 
 test("the bridge maps every canonical funnel stage onto a valid generic stage", () => {
   const generic = new Set<string>(BUFFER_DEAL_STAGES);
@@ -39,8 +39,8 @@ test("terminal funnel stages bridge to their generic equivalents", () => {
   expect(bridgeFunnelStage("new_session")).toBe("new");
 });
 
-test("isFunnelStage guards the canonical catalog", () => {
-  expect(isFunnelStage("offer_presented")).toBe(true);
-  expect(isFunnelStage("q_website_tier")).toBe(false); // legacy UChat string
-  expect(isFunnelStage("new")).toBe(false); // generic buffer stage, not a funnel stage
+test("isValidFunnelStage guards the canonical catalog", () => {
+  expect(isValidFunnelStage("offer_presented")).toBe(true);
+  expect(isValidFunnelStage("q_website_tier")).toBe(false); // legacy UChat string
+  expect(isValidFunnelStage("new")).toBe(false); // generic buffer stage, not a funnel stage
 });
