@@ -66,18 +66,6 @@
       "types": "./src/integration/index.ts",
       "default": "./src/integration/index.ts"
     },
-    "./integration-adapter-supabase-crm": {
-      "types": "./src/integration-adapter-supabase-crm/index.ts",
-      "default": "./src/integration-adapter-supabase-crm/index.ts"
-    },
-    "./integration-adapter-supabase-crm/tenant-registry": {
-      "types": "./src/integration-adapter-supabase-crm/tenant-registry.ts",
-      "default": "./src/integration-adapter-supabase-crm/tenant-registry.ts"
-    },
-    "./integration-adapter-supabase-crm/worker": {
-      "types": "./src/integration-adapter-supabase-crm/worker.ts",
-      "default": "./src/integration-adapter-supabase-crm/worker.ts"
-    },
     "./integration/crm-buffer": {
       "types": "./src/integration/crm-buffer.ts",
       "default": "./src/integration/crm-buffer.ts"
@@ -413,30 +401,6 @@
     "./integration/vitest.config": {
       "types": "./src/integration/vitest.config.ts",
       "default": "./src/integration/vitest.config.ts"
-    },
-    "./integration-adapter-supabase-crm/adapter": {
-      "types": "./src/integration-adapter-supabase-crm/adapter.ts",
-      "default": "./src/integration-adapter-supabase-crm/adapter.ts"
-    },
-    "./integration-adapter-supabase-crm/client": {
-      "types": "./src/integration-adapter-supabase-crm/client.ts",
-      "default": "./src/integration-adapter-supabase-crm/client.ts"
-    },
-    "./integration-adapter-supabase-crm/index": {
-      "types": "./src/integration-adapter-supabase-crm/index.ts",
-      "default": "./src/integration-adapter-supabase-crm/index.ts"
-    },
-    "./integration-adapter-supabase-crm/pipedrive-sync-target": {
-      "types": "./src/integration-adapter-supabase-crm/pipedrive-sync-target.ts",
-      "default": "./src/integration-adapter-supabase-crm/pipedrive-sync-target.ts"
-    },
-    "./integration-adapter-supabase-crm/supabase-rest": {
-      "types": "./src/integration-adapter-supabase-crm/supabase-rest.ts",
-      "default": "./src/integration-adapter-supabase-crm/supabase-rest.ts"
-    },
-    "./integration-adapter-supabase-crm/vitest.config": {
-      "types": "./src/integration-adapter-supabase-crm/vitest.config.ts",
-      "default": "./src/integration-adapter-supabase-crm/vitest.config.ts"
     },
     "./observability/conventions": {
       "types": "./src/observability/conventions.ts",
@@ -1130,22 +1094,6 @@
       "types": "./src/integration/tests/sharding.test.ts",
       "default": "./src/integration/tests/sharding.test.ts"
     },
-    "./integration-adapter-supabase-crm/tests/change-balance.pbt.test": {
-      "types": "./src/integration-adapter-supabase-crm/tests/change-balance.pbt.test.ts",
-      "default": "./src/integration-adapter-supabase-crm/tests/change-balance.pbt.test.ts"
-    },
-    "./integration-adapter-supabase-crm/tests/funnel-persistence.test": {
-      "types": "./src/integration-adapter-supabase-crm/tests/funnel-persistence.test.ts",
-      "default": "./src/integration-adapter-supabase-crm/tests/funnel-persistence.test.ts"
-    },
-    "./integration-adapter-supabase-crm/tests/lifecycle-sync.test": {
-      "types": "./src/integration-adapter-supabase-crm/tests/lifecycle-sync.test.ts",
-      "default": "./src/integration-adapter-supabase-crm/tests/lifecycle-sync.test.ts"
-    },
-    "./integration-adapter-supabase-crm/tests/stage-map.test": {
-      "types": "./src/integration-adapter-supabase-crm/tests/stage-map.test.ts",
-      "default": "./src/integration-adapter-supabase-crm/tests/stage-map.test.ts"
-    },
     "./observability/tests/conventions.test": {
       "types": "./src/observability/tests/conventions.test.ts",
       "default": "./src/observability/tests/conventions.test.ts"
@@ -1366,7 +1314,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": ["src", "tsconfig.json"],
+  "files": [
+    "src",
+    "tsconfig.json"
+  ],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@sindresorhus/slugify": "^3.0.0",

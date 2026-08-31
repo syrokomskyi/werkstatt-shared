@@ -105,7 +105,7 @@ export function isFunnelStage(value: string): value is VisitorFunnelStage {
 }
 
 // ---------------------------------------------------------------------------
-// Row shapes (mirror the Supabase DDL — see services/lagebild-sync/supabase/)
+// Row shapes (mirror the Supabase DDL — see services/*/supabase/)
 // ---------------------------------------------------------------------------
 
 /** Normalized contact stored in the buffer. One row per unique contact. */

@@ -128,7 +128,7 @@ export const systemIntegrationsSchema = z.object({
    * (e.g. uchat, stripe, operator), and whether the pilot is `enabled`. UChat is the
    * conversation runtime — it renders the funnel and requests transitions; it never
    * owns the graph, pricing, or canonical state. Make.com is never a source. Validated
-   * by `funnel.contract.validate` / `funnel.stage.validate` / `funnel.lagebild.validate`.
+   * by `funnel.contract.validate` / `funnel.stage.validate` / `funnel.crm.validate`.
    * Absent ⇒ the funnel validators are a no-op pass (funnel not yet enabled for the app).
    */
   funnel: z
