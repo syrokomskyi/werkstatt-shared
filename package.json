@@ -1301,6 +1301,10 @@
     "./share/scripts": {
       "types": "./src/share/scripts/index.ts",
       "default": "./src/share/scripts/index.ts"
+    },
+    "./integration/lagebild-ingress": {
+      "types": "./src/integration/lagebild-ingress.ts",
+      "default": "./src/integration/lagebild-ingress.ts"
     }
   },
   "scripts": {

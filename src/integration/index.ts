@@ -54,3 +54,20 @@ export {
   consumeIntegrationBatch,
   upsertLead,
 } from "./orchestration.ts";
+
+// Lagebild ingress client (POST /v1/ingress — WebsiteIngress contract v1)
+export {
+  submitIngress,
+  buildIdempotencyKey,
+  LAGEBILD_INGRESS_CONTRACT_VERSION,
+  type LagebildIngressConfig,
+  type IngressSubmitInput,
+  type WebsiteIngressPayload,
+  type IngressResult,
+  type IngressInteractionKind,
+  type IdentityClaimType,
+  type IdentityClaim,
+  type IngressOrigin,
+  type ExplicitPolicyAssertion,
+  type PolicyAssertionKind,
+} from "./lagebild-ingress.ts";
