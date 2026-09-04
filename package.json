@@ -1,6 +1,6 @@
 {
   "name": "@warpgogol/werkstatt-shared",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "private": false,
   "type": "module",
   "engines": {
@@ -1314,7 +1314,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": ["src", "tsconfig.json"],
+  "files": [
+    "src",
+    "tsconfig.json"
+  ],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@sindresorhus/slugify": "^3.0.0",
