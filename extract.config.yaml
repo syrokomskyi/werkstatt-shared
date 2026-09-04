@@ -1,3 +1,4 @@
+forgePlugin: false
 # extract.config.yaml — repo-extract standalone package export for @warpgogol/werkstatt-shared
 # Extracts packages/werkstatt-shared from the werkstatt monorepo into a standalone public repo.
 # RFC-0868: Shared infrastructure publication config.
