@@ -13,6 +13,7 @@ ruleId = command; diagnosticsResult takes rich Diagnostic[] with registered ids.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0029 review: Initial creation to fix systemic exit-code bug across check files.</item>
+  <item>RFC-1027: Auto-populate Diagnostic.remediation from REMEDIATION_CATALOG in diagnosticsResult().</item>
 </CHANGE_SUMMARY>
 */
 
@@ -22,6 +23,7 @@ import type {
   KernelCommandResult,
   KernelNextStep,
 } from "@warpgogol/werkstatt-engine/kernel";
+import { lookupRemediation } from "../share/remediation/remediation-catalog.ts";
 
 function defaultFailNextSteps(command: string): KernelNextStep[] {
   return [
@@ -66,10 +68,25 @@ export function diagnosticsResult(
   diagnostics: Diagnostic[],
   nextSteps?: KernelNextStep[],
 ): KernelCommandResult<CheckResult> {
+  const enrichedDiagnostics = diagnostics.map((d) => {
+    if (d.remediation) return d;
+    const pattern = lookupRemediation(d.ruleId);
+    if (!pattern) return d;
+    return {
+      ...d,
+      remediation: {
+        ruleId: pattern.ruleId,
+        action: pattern.action,
+        ...(pattern.template !== undefined && { template: pattern.template }),
+        ...(pattern.docRef !== undefined && { docRef: pattern.docRef }),
+        ...(pattern.targetFiles !== undefined && { targetFiles: pattern.targetFiles }),
+      },
+    };
+  });
   const summary = {
-    error: diagnostics.filter((d) => d.severity === "error").length,
-    warning: diagnostics.filter((d) => d.severity === "warning").length,
-    info: diagnostics.filter((d) => d.severity === "info").length,
+    error: enrichedDiagnostics.filter((d) => d.severity === "error").length,
+    warning: enrichedDiagnostics.filter((d) => d.severity === "warning").length,
+    info: enrichedDiagnostics.filter((d) => d.severity === "info").length,
   };
   const status: CheckResult["status"] =
     summary.error > 0 ? "fail" : summary.warning > 0 ? "warn" : "pass";
@@ -77,7 +94,7 @@ export function diagnosticsResult(
     nextSteps ?? (summary.error > 0 ? defaultFailNextSteps(command) : undefined);
   const counts = formatCounts(summary.error, summary.warning);
   return {
-    data: { command, status, diagnostics, summary },
+    data: { command, status, diagnostics: enrichedDiagnostics, summary },
     exitCode: summary.error > 0 ? 1 : 0,
     summary: counts ? `[${command}] ${counts}` : `[${command}]`,
     nextSteps: resolvedNextSteps,
