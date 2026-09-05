@@ -262,6 +262,10 @@
       "types": "./src/share/redirects.ts",
       "default": "./src/share/redirects.ts"
     },
+    "./share/remediation": {
+      "types": "./src/share/remediation/remediation-catalog.ts",
+      "default": "./src/share/remediation/remediation-catalog.ts"
+    },
     "./share/rfc0042-utils": {
       "types": "./src/share/rfc0042-utils.ts",
       "default": "./src/share/rfc0042-utils.ts"
@@ -1314,10 +1318,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "src",
-    "tsconfig.json"
-  ],
+  "files": ["src", "tsconfig.json"],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@sindresorhus/slugify": "^3.0.0",

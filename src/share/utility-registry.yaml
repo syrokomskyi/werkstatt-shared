@@ -34,3 +34,17 @@ utilities:
     allowlist:
       - path: packages/werkstatt-shared/src/share/routes/
         reason: Canonical placeholder route filter — owns all template detection logic (RFC-0917)
+  - id: remediation-catalog
+    canonicalPath: packages/werkstatt-shared/src/share/remediation/
+    forbiddenImports: []
+    functionNames:
+      - lookupRemediation
+      - REMEDIATION_CATALOG
+    patterns: []
+    allowlist:
+      - path: packages/werkstatt-shared/src/share/remediation/
+        reason: Canonical remediation catalog — owns all ruleId-to-remediation-pattern mappings (RFC-1027)
+      - path: packages/werkstatt-shared/src/checks/result-helpers.ts
+        reason: Consumes lookupRemediation to auto-populate Diagnostic.remediation (RFC-1027)
+      - path: packages/werkstatt-engine/src/remediation/
+        reason: Engine remediation module reads REMEDIATION_CATALOG for catalog.generate and hint.validate (RFC-1027)
