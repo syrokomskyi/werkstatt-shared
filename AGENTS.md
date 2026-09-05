@@ -98,6 +98,23 @@ To add a new canonical utility:
 3. Add an entry to `utility-registry.yaml` with `id`, `canonicalPath`, `forbiddenImports`, `functionNames`, `patterns`, and `allowlist`
 4. Document the utility in this AGENTS.md section
 
+### Remediation catalog (RFC-1027)
+
+Location: `packages/werkstatt-shared/src/share/remediation/remediation-catalog.ts` — exported via `@warpgogol/werkstatt-shared/share/remediation`.
+
+| Export | Purpose |
+| --- | --- |
+| `REMEDIATION_CATALOG` | Map of ruleId to remediation pattern (action, template, docRef, targetFiles) |
+| `lookupRemediation(ruleId)` | Lookup helper returning the pattern or undefined |
+| `RemediationPattern` | Type for catalog entries |
+
+Rules:
+
+- `diagnosticsResult()` auto-populates `Diagnostic.remediation` from this catalog when the diagnostic has no explicit remediation field.
+- `remediation.hint.validate` (engine command) cross-references catalog entries with validator `rules[]` declarations — REMEDIATION-01 for missing entries, REMEDIATION-02 for stale ones.
+- `remediation.catalog.generate` (engine command) emits `docs/remediation-catalog.generated.yaml` from the catalog.
+- To add a new remediation pattern, add an entry to `REMEDIATION_ENTRIES` in `remediation-catalog.ts` and run `remediation.catalog.generate`.
+
 ### Agent Surface search (RFC-0954)
 
 Location: `packages/werkstatt-shared/src/share/agent/search.ts` — exported via `@warpgogol/werkstatt-shared/share/agent/search`.
