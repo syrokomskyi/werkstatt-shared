@@ -305,6 +305,25 @@ export const componentManifestSchema = manifestBaseSchema.extend({
    * Do not use these five names for any other component manifest.
    */
   cosmicName: moonNameSchema,
+  /**
+   * RFC-1023: JSON Schema (draft-07 compatible) describing the shape of
+   * resolved content returned by getResolvedComponentContent. This is the
+   * flat, merged content (after pageOverride merge), NOT the prose .md
+   * frontmatter schema. Used by props.types.generate to emit
+   * XxxComponentContent interfaces. Required for content-driven components
+   * (those that call getResolvedComponentContent). Optional for structural
+   * components that consume no content.
+   */
+  contentSchema: z.record(z.string(), z.unknown()).optional(),
+  /**
+   * RFC-1023: JSON Schema (draft-07 compatible) describing the shape of
+   * Astro.props accepted by the component — caller-supplied props such as
+   * lang, defaultLang, pageOverride, etc. Used by props.types.generate to
+   * emit XxxComponentProps interfaces. Distinct from contentSchema: propsSchema
+   * describes what the caller passes, contentSchema describes what the
+   * component resolves from content files.
+   */
+  propsSchema: z.record(z.string(), z.unknown()).optional(),
 });
 
 /**
