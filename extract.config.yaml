@@ -6,7 +6,6 @@ forgePlugin: false
 projectDir: packages/werkstatt-shared
 destName: werkstatt-shared
 standalone: true
-versionBump: minor
 
 workspacePrefixes:
   - "@warpgogol/"
