@@ -9,7 +9,10 @@ import {
   resolveEffectsForTarget,
   hasEnabledGlassEffect,
 } from "../effects.ts";
-import type { EffectAssignment, Effect } from "../effects.ts";
+import type { EffectAssignment } from "../effects.ts";
+import { z } from "zod";
+
+type ParsedEffect = z.infer<typeof effectSchema>;
 
 describe("namedEffectTargetSchema", () => {
   it("accepts valid targets", () => {
@@ -89,7 +92,7 @@ describe("resolveEffectsForTarget", () => {
   });
 
   it("returns effects for matching target", () => {
-    const glassEffect = effectSchema.parse({ kind: "glass", enabled: true }) as Effect;
+    const glassEffect: ParsedEffect = effectSchema.parse({ kind: "glass", enabled: true });
     const assignments: EffectAssignment[] = [{ target: "section", stack: [glassEffect] }];
     const effects = resolveEffectsForTarget(assignments, "section");
     expect(effects).toHaveLength(1);
@@ -98,12 +101,12 @@ describe("resolveEffectsForTarget", () => {
 
 describe("hasEnabledGlassEffect", () => {
   it("returns true when glass effect is enabled", () => {
-    const e = effectSchema.parse({ kind: "glass", enabled: true }) as Effect;
+    const e: ParsedEffect = effectSchema.parse({ kind: "glass", enabled: true });
     expect(hasEnabledGlassEffect([e])).toBe(true);
   });
 
   it("returns false when glass effect is disabled", () => {
-    const e = effectSchema.parse({ kind: "glass", enabled: false }) as Effect;
+    const e: ParsedEffect = effectSchema.parse({ kind: "glass", enabled: false });
     expect(hasEnabledGlassEffect([e])).toBe(false);
   });
 
