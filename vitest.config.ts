@@ -7,9 +7,14 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["json", "text-summary", "html"],
-      reportsDirectory: "../../.coverage/integration",
-      include: ["src/integration/**/*.ts"],
-      exclude: ["src/integration/**/*.test.ts", "src/integration/**/*.d.ts"],
+      reportsDirectory: "./.coverage",
+      include: ["src/**/*.ts"],
+      exclude: [
+        "src/**/*.test.ts",
+        "src/**/*.d.ts",
+        "src/**/index.ts",
+        "src/**/vitest.config.ts",
+      ],
     },
   },
 });
