@@ -4,6 +4,8 @@
 
 Stack-agnostic shared infrastructure extracted from `werkstatt-site` (RFC-0868). Owns checks, integration, ontology, passport, share, and surface domains consumed by both the Werkstatt engine and the site plugin.
 
+> Engineered at [Warpgogol](https://warpgogol.com) · Released as open source.
+
 ---
 
 ## What this package does
@@ -62,36 +64,36 @@ const url = slugUrl("Über uns", "de"); // "ueber-uns"
 
 ### Semantic extraction (RFC-0901)
 
-| Export | Purpose |
-| --- | --- |
+| Export                          | Purpose                                                     |
+| ------------------------------- | ----------------------------------------------------------- |
 | `splitSentences(text, locale?)` | Locale-aware sentence boundary detection (`de`, `uk`, `en`) |
 
 ### Canonical entity URL (RFC-0910)
 
-| Export | Purpose |
-| --- | --- |
+| Export                      | Purpose                                         |
+| --------------------------- | ----------------------------------------------- |
 | `canonicalRootUrl(baseUrl)` | Unprefixed root URL for JSON-LD entity identity |
 
 ### Placeholder route filtering (RFC-0917)
 
-| Export | Purpose |
-| --- | --- |
+| Export                         | Purpose                                                      |
+| ------------------------------ | ------------------------------------------------------------ |
 | `hasPlaceholderRoutes(routes)` | Detect Astro dynamic route templates (`[slug]`, `[version]`) |
 
 ---
 
 ## Architecture
 
-| Directory | Purpose |
-| --- | --- |
-| `src/index.ts` | Main barrel export |
-| `src/checks/` | Content validators, SEO validators, surface expand/bake |
-| `src/integration/` | CRM, funnel, hub, sharding, QStash adapters |
-| `src/ontology/` | Catalogs, enums, Sternsystem owner types |
-| `src/passport/` | DHT signing, identity signing, schema validation |
-| `src/share/` | Slug, semantic, URL canonicalization, routes, middleware, access protection |
-| `src/surface/` | Surface expand/bake helpers and labels |
-| `src/content/` | SystemManifest types and content schema |
+| Directory          | Purpose                                                                     |
+| ------------------ | --------------------------------------------------------------------------- |
+| `src/index.ts`     | Main barrel export                                                          |
+| `src/checks/`      | Content validators, SEO validators, surface expand/bake                     |
+| `src/integration/` | CRM, funnel, hub, sharding, QStash adapters                                 |
+| `src/ontology/`    | Catalogs, enums, Sternsystem owner types                                    |
+| `src/passport/`    | DHT signing, identity signing, schema validation                            |
+| `src/share/`       | Slug, semantic, URL canonicalization, routes, middleware, access protection |
+| `src/surface/`     | Surface expand/bake helpers and labels                                      |
+| `src/content/`     | SystemManifest types and content schema                                     |
 
 ---
 
@@ -133,3 +135,11 @@ After CI completes, verify the new version on [npmjs.com/package/@warpgogol/werk
 ## License
 
 Apache-2.0
+
+## Open Engineering
+
+This package originated from production engineering work at [Warpgogol](https://warpgogol.com), an engineering studio in Germany.
+
+We publish reusable parts of our infrastructure when they can be useful beyond our own projects. It is published independently of any Warpgogol commercial service. Using this package does not create any dependency on Warpgogol.
+
+Built for real systems. Shared openly.
