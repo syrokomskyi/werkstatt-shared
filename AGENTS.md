@@ -163,3 +163,9 @@ Agents MUST NOT automatically replace imports based on validator output — the 
 ## Test coverage
 
 RFC-1044 (Phase 2) ratcheted the package adjacency ratio from 29% to 62% by adding 70 adjacent test files across Groups A (share/schemas + ontology/schemas) and B (share/scripts + share/agent + share/knowledge). Groups C-E remain for follow-up sessions. The adjacency baseline is tracked via `.test-adjacency-baseline.json` and enforced by `test.adjacency.validate` (RFC-1040).
+
+## Testing conventions
+
+- **Zod schema tests**: Always inspect the schema definition before writing test data. Test data must match exact field names, required fields, enum values, and optional/nullable constraints. Mismatched test data is the most common cause of test failures in this package.
+- **Type inference in tests**: Prefer `z.infer<typeof schema>` over `as Type` casts for typed test data. This ensures type safety and catches schema drift when schemas evolve.
+- **Client-side script tests**: Tests for functions that access `document` or `window` require DOM mocking via `vi.stubGlobal` in vitest. Stub `document` and `window` in `beforeEach` and restore with `vi.unstubAllGlobals()` in `afterEach`.
