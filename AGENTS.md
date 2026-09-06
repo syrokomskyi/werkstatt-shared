@@ -159,3 +159,7 @@ When adding a third-party dependency to `packages/werkstatt-shared/package.json`
 4. Run `vite.client-deps.validate` to verify.
 
 Agents MUST NOT automatically replace imports based on validator output — the validator only reports potential issues. Remediation requires human analysis of the package's export structure.
+
+## Test coverage
+
+RFC-1044 (Phase 2) ratcheted the package adjacency ratio from 29% to 62% by adding 70 adjacent test files across Groups A (share/schemas + ontology/schemas) and B (share/scripts + share/agent + share/knowledge). Groups C-E remain for follow-up sessions. The adjacency baseline is tracked via `.test-adjacency-baseline.json` and enforced by `test.adjacency.validate` (RFC-1040).
