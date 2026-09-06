@@ -1,3 +1,4 @@
+// test-adjacency: exempt — pure type definitions
 /*
 <MODULE_CONTRACT>
 <purpose>Maintains packages/share/src/semantic/jsonld/types.ts as an authored share authored module so agents can evolve it without rediscovering local boundaries.</purpose>

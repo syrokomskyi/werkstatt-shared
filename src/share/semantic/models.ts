@@ -1,3 +1,4 @@
+// test-adjacency: exempt — pure type definitions
 /*
 <MODULE_CONTRACT>
 <purpose>Defines types for semantic data structures used throughout the Warpgogol ecosystem.</purpose>
