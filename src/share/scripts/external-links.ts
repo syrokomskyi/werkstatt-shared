@@ -52,6 +52,12 @@ export function applyExternalLinkBehavior(options?: ExternalLinkBehaviorOptions)
     anchor.setAttribute("rel", "noopener noreferrer");
 
     if (qrEntitled && anchor.getAttribute("data-external-link-qr") !== "off") {
+      // Skip QR trigger for anchors wrapping media elements — a text arrow
+      // appended after an image/SVG/canvas looks visually wrong.
+      const hasMediaChild = anchor.querySelector("img, svg, canvas, picture");
+      if (hasMediaChild) {
+        continue;
+      }
       if (!anchor.querySelector("[data-qr-trigger]")) {
         const trigger = document.createElement("span");
         trigger.className = "external-link-qr-trigger";
