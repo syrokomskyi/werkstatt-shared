@@ -9,6 +9,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0588: extracted parseRedirectRules and RedirectRule from site-kernel-checks/managed-public.ts into @warpgogol/werkstatt-shared/share/redirects subpath.</item>
   <item>RFC-0595: add extractRedirectTarget helper for parsing url= from meta-refresh tags.</item>
+  <item>Add PAGE_ROUTE_EXCLUDED_EXTENSIONS constant — single source of truth for isPageRoute exclusion list, injected into worker.ts and markdown-negotiation.ts templates.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -18,6 +19,59 @@ export type RedirectRule = {
   status: number;
   line: string;
 };
+
+/**
+ * File extensions excluded from trailing-slash normalization in the Cloudflare Worker
+ * `isPageRoute` function. If a request URL ends with one of these extensions, the Worker
+ * must NOT 308-redirect it to a trailing-slash URL (which would cause a 404).
+ *
+ * This is the single source of truth — injected into worker.ts.template and
+ * markdown-negotiation.ts.template via the `{{EXCLUDED_EXTENSIONS}}` placeholder.
+ * The `trailing.slash.config.validate` SLASH-04 rule scans `public/` for file extensions
+ * not in this list and fails the build.
+ *
+ * When adding a new media/asset type to `public/`, add its extension here.
+ */
+export const PAGE_ROUTE_EXCLUDED_EXTENSIONS: readonly string[] = [
+  "ico",
+  "png",
+  "jpg",
+  "jpeg",
+  "webp",
+  "avif",
+  "gif",
+  "bmp",
+  "svg",
+  "css",
+  "js",
+  "mjs",
+  "json",
+  "txt",
+  "xml",
+  "woff",
+  "woff2",
+  "ttf",
+  "otf",
+  "webmanifest",
+  "md",
+  "pdf",
+  "webm",
+  "mp4",
+  "wasm",
+  "map",
+  "m3u8",
+  "ts",
+];
+
+/**
+ * Build a regex string (without delimiters) that matches any of the excluded extensions.
+ * Used by the codegen to inject the alternation into the `isPageRoute` regex.
+ */
+export function buildPageRouteExclusionAlternation(
+  extensions: readonly string[] = PAGE_ROUTE_EXCLUDED_EXTENSIONS,
+): string {
+  return extensions.join("|");
+}
 
 export function parseRedirectRules(body: string): RedirectRule[] {
   return body
