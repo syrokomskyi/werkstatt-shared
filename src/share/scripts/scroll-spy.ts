@@ -1,6 +1,9 @@
 /*
 <MODULE_CONTRACT>
 <purpose>Watches section elements via IntersectionObserver and updates the URL hash via history.replaceState as the user scrolls. RFC-1061.</purpose>
+<singleton-state>
+  <item>Module-level `activeObserver` and `activeCleanup` enforce single-instance idempotency (AC-9). Calling `initScrollSpy` twice disconnects the previous observer before creating a new one.</item>
+</singleton-state>
 <non-goals>
   <item>Do not add navigation highlight UI — that is a separate concern.</item>
   <item>Do not use pushState — replaceState only to avoid history pollution.</item>
@@ -44,9 +47,9 @@ export function initScrollSpy(options?: ScrollSpyOptions): () => void {
     return () => {};
   }
 
-  const sections = Array.from(
-    document.querySelectorAll<HTMLElement>(selector),
-  ).filter((el) => !el.closest(".wl-modal"));
+  const sections = Array.from(document.querySelectorAll<HTMLElement>(selector)).filter(
+    (el) => !el.closest(".wl-modal"),
+  );
 
   if (sections.length === 0) {
     return () => {};
