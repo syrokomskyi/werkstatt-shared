@@ -61,6 +61,10 @@ export const PAGE_ROUTE_EXCLUDED_EXTENSIONS: readonly string[] = [
   "map",
   "m3u8",
   "ts",
+  "html",
+  "ndjson",
+  "vtt",
+  "yaml",
 ];
 
 /**
