@@ -1,49 +1,87 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { initScrollSpy } from "../scroll-spy.ts";
 
-describe("initScrollSpy", () => {
-  let observerCallbacks: Array<(entries: any[]) => void>;
-  let observerInstances: any[];
-  let mockHistory: { replaceState: ReturnType<typeof vi.fn> };
+let observerCallbacks: Array<(entries: any[]) => void>;
+let observerInstances: any[];
+let mockHistory: { replaceState: ReturnType<typeof vi.fn> };
+let mockDocument: any;
+let sectionCache: Map<string, any>;
 
+function parseSections(html: string, selector: string): any[] {
+  if (selector !== "section[id]") return [];
+  const sections: any[] = [];
+  const sectionRegex = /<section\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/section>/gi;
+  let match;
+  while ((match = sectionRegex.exec(html)) !== null) {
+    const modalBefore = html.substring(0, match.index);
+    const lastModalOpen = modalBefore.lastIndexOf('class="wl-modal"');
+    const lastModalClose = modalBefore.lastIndexOf("</div>");
+    const inModal = lastModalOpen > lastModalClose;
+    const el = {
+      id: match[1],
+      closest: (sel: string) => (sel === ".wl-modal" && inModal ? {} : null),
+      getBoundingClientRect: () => ({ top: 0 }),
+    };
+    sectionCache.set(match[1], el);
+    sections.push(el);
+  }
+  return sections;
+}
+
+describe("initScrollSpy", () => {
   beforeEach(() => {
     observerCallbacks = [];
     observerInstances = [];
+    sectionCache = new Map();
 
-    const MockObserver = vi.fn().mockImplementation((cb: any) => {
-      observerCallbacks.push(cb);
-      const instance = {
-        observe: vi.fn(),
-        unobserve: vi.fn(),
-        disconnect: vi.fn(),
-        takeRecords: vi.fn(() => []),
-      };
-      observerInstances.push(instance);
-      return instance;
-    });
-
-    vi.stubGlobal("IntersectionObserver", MockObserver);
+    class MockIntersectionObserver {
+      constructor(cb: (entries: any[]) => void) {
+        observerCallbacks.push(cb);
+        const instance = {
+          observe: vi.fn(),
+          unobserve: vi.fn(),
+          disconnect: vi.fn(),
+          takeRecords: vi.fn(() => []),
+        };
+        observerInstances.push(instance);
+        return instance;
+      }
+    }
 
     mockHistory = { replaceState: vi.fn() };
+    mockDocument = {
+      body: { innerHTML: "" },
+      readyState: "complete",
+      querySelector: vi.fn(() => null),
+      querySelectorAll: vi.fn((selector: string) => {
+        return parseSections(mockDocument.body.innerHTML, selector);
+      }),
+      getElementById: vi.fn((id: string) => sectionCache.get(id) ?? null),
+      addEventListener: vi.fn(),
+    };
+
+    vi.stubGlobal("window", {
+      IntersectionObserver: MockIntersectionObserver,
+      addEventListener: vi.fn(),
+    });
+    vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
     vi.stubGlobal("history", mockHistory);
     vi.stubGlobal("location", {
       pathname: "/page",
       search: "",
       hash: "",
     });
-
-    document.body.innerHTML = "";
+    vi.stubGlobal("document", mockDocument);
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
-    document.body.innerHTML = "";
   });
 
   it("AC-1: updates URL hash via history.replaceState when a section is in view", () => {
-    document.body.innerHTML = '<section id="approach">Content</section>';
+    mockDocument.body.innerHTML = '<section id="approach">Content</section>';
     const cleanup = initScrollSpy();
-    const section = document.getElementById("approach")!;
+    const section = sectionCache.get("approach")!;
 
     observerCallbacks[0]([
       {
@@ -58,9 +96,9 @@ describe("initScrollSpy", () => {
   });
 
   it("AC-2: clears URL hash when scrolled above the first section", () => {
-    document.body.innerHTML = '<section id="hero">Hero</section>';
+    mockDocument.body.innerHTML = '<section id="hero">Hero</section>';
     const cleanup = initScrollSpy();
-    const section = document.getElementById("hero")!;
+    const section = sectionCache.get("hero")!;
 
     observerCallbacks[0]([
       {
@@ -84,7 +122,7 @@ describe("initScrollSpy", () => {
   });
 
   it("AC-3: returns a cleanup callback that disconnects the observer", () => {
-    document.body.innerHTML = '<section id="test">Test</section>';
+    mockDocument.body.innerHTML = '<section id="test">Test</section>';
     const cleanup = initScrollSpy();
 
     expect(typeof cleanup).toBe("function");
@@ -94,7 +132,7 @@ describe("initScrollSpy", () => {
   });
 
   it("AC-4: returns immediately without creating an observer when no section[id] elements exist", () => {
-    document.body.innerHTML = '<div>No sections here</div>';
+    mockDocument.body.innerHTML = '<div>No sections here</div>';
     const cleanup = initScrollSpy();
 
     expect(observerInstances.length).toBe(0);
@@ -104,16 +142,18 @@ describe("initScrollSpy", () => {
 
   it("AC-5: returns silently without throwing when IntersectionObserver is not supported", () => {
     vi.unstubAllGlobals();
+    vi.stubGlobal("window", { addEventListener: vi.fn() });
     vi.stubGlobal("history", mockHistory);
     vi.stubGlobal("location", { pathname: "/page", search: "", hash: "" });
-
-    document.body.innerHTML = '<section id="test">Test</section>';
+    vi.stubGlobal("document", mockDocument);
+    mockDocument.body.innerHTML = '<section id="test">Test</section>';
+    sectionCache.clear();
 
     expect(() => initScrollSpy()).not.toThrow();
   });
 
   it("AC-9: is idempotent — calling twice disconnects the first observer before creating a new one", () => {
-    document.body.innerHTML = '<section id="a">A</section><section id="b">B</section>';
+    mockDocument.body.innerHTML = '<section id="a">A</section><section id="b">B</section>';
     initScrollSpy();
     expect(observerInstances.length).toBe(1);
 
@@ -123,7 +163,7 @@ describe("initScrollSpy", () => {
   });
 
   it("excludes sections inside .wl-modal elements", () => {
-    document.body.innerHTML =
+    mockDocument.body.innerHTML =
       '<div class="wl-modal"><section id="modal-section">Modal</section></div>' +
       '<section id="page-section">Page</section>';
 
@@ -132,7 +172,7 @@ describe("initScrollSpy", () => {
     expect(observerInstances.length).toBe(1);
     expect(observerInstances[0].observe).toHaveBeenCalledTimes(1);
     expect(observerInstances[0].observe).toHaveBeenCalledWith(
-      document.getElementById("page-section"),
+      sectionCache.get("page-section"),
     );
   });
 });

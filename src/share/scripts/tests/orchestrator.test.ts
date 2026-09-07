@@ -9,6 +9,8 @@ import { initScrollSpy } from "../scroll-spy.ts";
 
 describe("runStandardLayoutOrchestration", () => {
   beforeEach(() => {
+    class MockElement {}
+    vi.stubGlobal("Element", MockElement);
     vi.stubGlobal("window", {
       matchMedia: vi.fn(() => ({ matches: false })),
       addEventListener: vi.fn(),
