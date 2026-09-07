@@ -15,6 +15,7 @@
 import { applyExternalLinkBehavior } from "./external-links.ts";
 import { initLordIconOnDemand } from "./lordicon.ts";
 import { initLenis } from "./lenis.ts";
+import { initScrollSpy } from "./scroll-spy.ts";
 
 export interface OrchestrationOptions {
   headerOffset?: number;
@@ -152,4 +153,7 @@ export async function runStandardLayoutOrchestration(
     const { initExternalLinkQr } = await import("./external-link-qr.ts");
     initExternalLinkQr();
   }
+
+  // 12. RFC-1061: scroll-spy URL hash updates (always-on, zero-dependency).
+  initScrollSpy();
 }

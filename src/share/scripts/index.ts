@@ -19,6 +19,7 @@ export * from "./lordicon.ts";
 export * from "./external-links.ts";
 export * from "./external-link-qr.ts";
 export * from "./lenis.ts";
+export * from "./scroll-spy.ts";
 export * from "./orchestrator.ts";
 // gsap-counter.ts (RFC-0040) is loaded dynamically by orchestrator.ts
 // inline-number-animation.ts (RFC-0041) is loaded dynamically by orchestrator.ts

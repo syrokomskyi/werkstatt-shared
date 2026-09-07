@@ -160,6 +160,23 @@ When adding a third-party dependency to `packages/werkstatt-shared/package.json`
 
 Agents MUST NOT automatically replace imports based on validator output — the validator only reports potential issues. Remediation requires human analysis of the package's export structure.
 
+### Scroll-spy URL hash updates (RFC-1061)
+
+Location: `packages/werkstatt-shared/src/share/scripts/scroll-spy.ts` — exported via `@warpgogol/werkstatt-shared/share/scripts`.
+
+| Export | Purpose |
+| --- | --- |
+| `initScrollSpy(options?)` | Initialize IntersectionObserver-based scroll-spy; returns cleanup callback |
+| `ScrollSpyOptions` | Optional configuration (selector, rootMargin, threshold, clearAtTop) |
+
+Rules:
+
+- Always-on — no opt-in flag in `OrchestrationOptions`. The orchestrator calls `initScrollSpy()` unconditionally as step 12.
+- Uses `history.replaceState` (not `pushState`) to avoid polluting browser history.
+- Excludes sections inside `.wl-modal` elements.
+- Graceful degradation: returns no-op cleanup if `IntersectionObserver` is unsupported or no `section[id]` elements exist.
+- Idempotent: calling twice disconnects the previous observer before creating a new one.
+
 ## Test coverage
 
 RFC-1044 (Phase 2) ratcheted the package adjacency ratio from 29% to 62% by adding 70 adjacent test files across Groups A (share/schemas + ontology/schemas) and B (share/scripts + share/agent + share/knowledge). Groups C-E remain for follow-up sessions. The adjacency baseline is tracked via `.test-adjacency-baseline.json` and enforced by `test.adjacency.validate` (RFC-1040).
