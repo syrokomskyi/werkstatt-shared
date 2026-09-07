@@ -172,14 +172,21 @@ export const DESTINATION_ADAPTERS: readonly DestinationAdapter[] = [pipedriveDes
  * `extraAdapters`; the validator checks vendor + secrets against these catalogs.
  */
 export const EXTERNAL_DESTINATION_VENDORS: Readonly<Record<DestinationKind, readonly string[]>> = {
-  crm: [],
+  crm: ["lagebild"],
   calendar: [],
   email: [],
   scheduler: [],
 };
 
 /** Per `(kind, vendor)` → required secret names for externally-implemented adapters. */
-export const EXTERNAL_DESTINATION_SECRETS: Readonly<Record<string, readonly string[]>> = {};
+export const EXTERNAL_DESTINATION_SECRETS: Readonly<Record<string, readonly string[]>> = {
+  "crm:lagebild": [
+    "LAGEBILD_API_URL",
+    "LAGEBILD_API_KEY",
+    "LAGEBILD_TENANT_ID",
+    "LAGEBILD_SOURCE_SYSTEM_ID",
+  ],
+};
 
 /** Closed per-kind vendor catalog, derived from the registry + external vendors (RFC-0176/0186). */
 export const DESTINATION_VENDORS_BY_KIND: Readonly<Record<DestinationKind, readonly string[]>> =
