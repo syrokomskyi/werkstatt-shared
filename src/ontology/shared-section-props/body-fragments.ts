@@ -33,6 +33,8 @@ export const BODY_LIST_FRAGMENT: JsonSchemaFragment = {
         note: { type: "string" },
         iconColor: ICON_COLOR_ENUM,
         align: ALIGN_ENUM,
+        itemAlign: ALIGN_ENUM,
+        hideMarkers: { type: "boolean" },
         effects: EFFECTS_ARRAY_SCHEMA,
       },
     },
