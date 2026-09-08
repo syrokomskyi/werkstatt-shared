@@ -514,6 +514,7 @@ const SITE_NOOP_TYPES = [
   "mountain-journey",
   "dynamic-status-block",
   "service-metadata-block",
+  "toc",
 ] as const;
 
 for (const blockType of SITE_NOOP_TYPES) {
