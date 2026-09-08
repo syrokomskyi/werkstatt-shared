@@ -1,5 +1,5 @@
 schemaVersion: 1.0.0
-totalCount: 59
+totalCount: 61
 entries:
   - id: approach
     displayName: Approach
@@ -135,6 +135,24 @@ entries:
     acceptedCosmicNames:
       - Elara
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/dynamic-status-block.yaml
+    layer: section
+  - id: entity-grid
+    displayName: Engineering entity grid
+    semanticRole: entity-composition-grid
+    version: 1.0.0
+    layoutHint: card-grid
+    acceptedCosmicNames:
+      - Ixion
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/entity-grid.yaml
+    layer: section
+  - id: exit-diagram
+    displayName: Exit-process diagram
+    semanticRole: exit-flow-visualization
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Haumea
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/exit-diagram.yaml
     layer: section
   - id: faq-list
     displayName: Faq List
@@ -544,7 +562,9 @@ sectionRoles:
   - data-driven-status-indicator
   - donation-card
   - donation-use
+  - entity-composition-grid
   - exit-clause-disclosure
+  - exit-flow-visualization
   - faq-list
   - final-cta
   - hero
@@ -607,6 +627,8 @@ planetImportPaths:
   Pandora: "@warpgogol/werkstatt-site/ui/sections/donation-card"
   Rhea: "@warpgogol/werkstatt-site/ui/sections/donation-use"
   Elara: "@warpgogol/werkstatt-site/ui/sections/dynamic-status-block"
+  Ixion: "@warpgogol/werkstatt-site/ui/sections/entity-grid"
+  Haumea: "@warpgogol/werkstatt-site/ui/sections/exit-diagram"
   Atlas: "@warpgogol/werkstatt-site/ui/sections/faq-list"
   Dione: "@warpgogol/werkstatt-site/ui/sections/final-cta"
   Gonggong: "@warpgogol/werkstatt-site/ui/sections/gratitude"
@@ -685,6 +707,8 @@ blockTypeToCosmicName:
   donation-card: Pandora
   donation-use: Rhea
   dynamic-status-block: Elara
+  entity-grid: Ixion
+  exit-diagram: Haumea
   faq-list: Atlas
   final-cta: Dione
   gratitude: Gonggong
@@ -766,6 +790,8 @@ roleByCosmicName:
   Pandora: donation-use
   Rhea: donation-use
   Elara: data-driven-status-indicator
+  Ixion: entity-composition-grid
+  Haumea: exit-flow-visualization
   Atlas: approach
   Dione: final-cta
   Gonggong: client-gratitude

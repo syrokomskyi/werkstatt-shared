@@ -1,0 +1,46 @@
+id: entity-grid
+displayName: Engineering entity grid
+version: 1.0.0
+semanticRole: entity-composition-grid
+description: |
+  Engineering-style entity composition grid with numbered markers and
+  boundaries. No glass effects. RFC-1062.
+expectedIntents:
+  - trust
+  - legal-clarity
+  - de-risk
+expectedIndustryFit:
+  - trades-and-construction
+  - consulting-and-coaching
+  - legal-services
+layoutHint: card-grid
+bodyKind: composite
+recommendedItemCount:
+  min: 2
+  max: 8
+propsSchema:
+  $shape: zod
+  compose:
+    - section-header
+  shape: |
+    z.object({
+      background: z.object({
+        kind: z.enum(["transparent", "solid"]),
+      }).optional(),
+      density: z.enum(["compact", "normal"]).optional(),
+      body: z.object({
+        kind: z.literal("grid"),
+        columns: z.union([z.literal(2), z.literal(3), z.literal(4)]),
+        items: z.array(z.object({
+          number: z.string().min(1),
+          title: z.string().min(1),
+          description: z.string().min(1),
+        })).min(2).max(8),
+      }),
+    }).strict()
+acceptedCosmicNames:
+  - Ixion
+constraints:
+  forbidPhrases:
+    - alle Branchen
+    - jeder Kunde

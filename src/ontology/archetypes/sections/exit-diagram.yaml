@@ -1,0 +1,43 @@
+id: exit-diagram
+displayName: Exit-process diagram
+version: 1.0.0
+semanticRole: exit-flow-visualization
+description: |
+  Static SVG exit-process flow diagram. Renders stages as a visual flow
+  (linear or loop) with numbered markers. RFC-1062.
+expectedIntents:
+  - trust
+  - legal-clarity
+  - de-risk
+expectedIndustryFit:
+  - trades-and-construction
+  - consulting-and-coaching
+  - legal-services
+layoutHint: single-column
+bodyKind: composite
+recommendedItemCount:
+  min: 2
+  max: 6
+propsSchema:
+  $shape: zod
+  compose:
+    - section-visual
+    - section-header
+  shape: |
+    z.object({
+      ariaLabel: z.string().min(1).optional(),
+      stages: z.array(z.object({
+        number: z.string().min(1),
+        title: z.string().min(1),
+        description: z.string().min(1),
+      })).min(2).max(6),
+      variant: z.enum(["linear", "loop"]),
+    }).strict()
+acceptedCosmicNames:
+  - Haumea
+constraints:
+  forbidPhrases:
+    - Evakuierung
+    - Notfall
+  mandatoryConcepts:
+    - Notausgang
