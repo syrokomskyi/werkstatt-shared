@@ -502,9 +502,26 @@ for (const blockType of PASSPORT_NOOP_TYPES) {
 }
 
 // ---------------------------------------------------------------------------
+// entity-grid (RFC-1062) — extracts heading and body items with descriptions.
+// ---------------------------------------------------------------------------
 // Site-specific block types that have no semantic text to extract but must be
 // registered so page.blocks.extract.validate does not fail.
-// ---------------------------------------------------------------------------
+BLOCK_EXTRACTORS.register<Record<string, unknown>>({
+  blockType: "entity-grid",
+  extract(props) {
+    const heading = safeString(safeGet(props, "header.heading"));
+    const lead = safeString(safeGet(props, "header.subheading"));
+    const items = safeArray(safeGet(props, "body.items"), (item) => {
+      const number = safeString(safeGet(item, "number"));
+      const title = safeString(safeGet(item, "title"));
+      const description = safeString(safeGet(item, "description"));
+      if (!title) return undefined;
+      return { title: number ? `${number}. ${title}` : title, description };
+    });
+    return { heading, lead, items };
+  },
+});
+
 const SITE_NOOP_TYPES = [
   "nachweis-list",
   "nachweis-detail",
@@ -515,6 +532,7 @@ const SITE_NOOP_TYPES = [
   "dynamic-status-block",
   "service-metadata-block",
   "toc",
+  "exit-diagram",
 ] as const;
 
 for (const blockType of SITE_NOOP_TYPES) {
