@@ -35,7 +35,7 @@ const EVENT: IntegrationEvent = {
 test("executeDispatch skips destinations when the tenant holds no secrets", async () => {
   const result = await executeDispatch({ siteId: "warpgogol-com", event: EVENT }, {});
   expect(result.routed.length).toBe(0);
-  expect(result.skipped.includes("crm:pipedrive")).toBeTruthy();
+  expect(result.skipped.includes("crm:lagebild")).toBeTruthy();
 });
 
 function stubDispatcher(
@@ -59,7 +59,7 @@ function stubDispatcher(
 test("dispatchToTenant acks on a routed reply and forwards only the inbound secret", async () => {
   let seen: Request | undefined;
   const dispatcher = stubDispatcher(
-    { routed: ["crm:pipedrive"], failed: [], skipped: [] },
+    { routed: ["crm:lagebild"], failed: [], skipped: [] },
     200,
     (r) => (seen = r),
   );
@@ -71,11 +71,11 @@ test("dispatchToTenant acks on a routed reply and forwards only the inbound secr
   expect(outcome.ok).toBe(true);
   expect(seen?.headers.get("x-integration-secret")).toBe("inbound-secret");
   const body = await seen!.text();
-  expect(!body.includes("PIPEDRIVE")).toBeTruthy();
+  expect(!body.includes("LAGEBILD")).toBeTruthy();
 });
 
 test("dispatchToTenant retries when nothing routed but something failed", async () => {
-  const dispatcher = stubDispatcher({ routed: [], failed: ["crm:pipedrive"], skipped: [] });
+  const dispatcher = stubDispatcher({ routed: [], failed: ["crm:lagebild"], skipped: [] });
   const outcome = await dispatchToTenant(dispatcher, { siteId: "x", event: EVENT }, "s");
   expect(outcome.ok).toBe(false);
 });

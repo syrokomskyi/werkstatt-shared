@@ -16,12 +16,8 @@
 </CHANGE_SUMMARY>
 */
 
-import {
-  pipedriveCrmAdapter,
-  pipedriveDestinationAdapter,
-  telegramChannelAdapter,
-  whatsappChannelAdapter,
-} from "./adapters.ts";
+import { telegramChannelAdapter, whatsappChannelAdapter } from "./adapters.ts";
+import { lagebildDestinationAdapter } from "./lagebild-destination-adapter.ts";
 import type {
   CrmAdapter,
   DestinationAdapter,
@@ -50,8 +46,8 @@ export const CHANNEL_ADAPTERS: readonly IntegrationChannelAdapter[] = [
   whatsappChannelAdapter,
 ];
 
-/** Closed CRM adapter registry (RFC-0168). */
-export const CRM_ADAPTERS: readonly CrmAdapter[] = [pipedriveCrmAdapter];
+/** Closed CRM adapter registry (RFC-0168). Empty — Lagebild is the sole CRM via DESTINATION_ADAPTERS. */
+export const CRM_ADAPTERS: readonly CrmAdapter[] = [];
 
 /**
  * Closed catalog of configurable channel adapter ids (RFC-0168). `"null"` is the
@@ -161,8 +157,8 @@ export function auditIntegrationReadiness(
 // direct adapter are active for the same (kind, vendor),
 // integration.config.validate reports "multiple-active-executors".
 
-/** Closed registry of gogol-adapter destination implementations (RFC-0176). */
-export const DESTINATION_ADAPTERS: readonly DestinationAdapter[] = [pipedriveDestinationAdapter];
+/** Closed registry of gogol-adapter destination implementations (RFC-0176). Lagebild is the sole CRM destination. */
+export const DESTINATION_ADAPTERS: readonly DestinationAdapter[] = [lagebildDestinationAdapter];
 
 /**
  * Externally-implemented destination vendors whose adapters live in separate packages
@@ -172,21 +168,14 @@ export const DESTINATION_ADAPTERS: readonly DestinationAdapter[] = [pipedriveDes
  * `extraAdapters`; the validator checks vendor + secrets against these catalogs.
  */
 export const EXTERNAL_DESTINATION_VENDORS: Readonly<Record<DestinationKind, readonly string[]>> = {
-  crm: ["lagebild"],
+  crm: [],
   calendar: [],
   email: [],
   scheduler: [],
 };
 
 /** Per `(kind, vendor)` → required secret names for externally-implemented adapters. */
-export const EXTERNAL_DESTINATION_SECRETS: Readonly<Record<string, readonly string[]>> = {
-  "crm:lagebild": [
-    "LAGEBILD_API_URL",
-    "LAGEBILD_API_KEY",
-    "LAGEBILD_TENANT_ID",
-    "LAGEBILD_SOURCE_SYSTEM_ID",
-  ],
-};
+export const EXTERNAL_DESTINATION_SECRETS: Readonly<Record<string, readonly string[]>> = {};
 
 /** Closed per-kind vendor catalog, derived from the registry + external vendors (RFC-0176/0186). */
 export const DESTINATION_VENDORS_BY_KIND: Readonly<Record<DestinationKind, readonly string[]>> =

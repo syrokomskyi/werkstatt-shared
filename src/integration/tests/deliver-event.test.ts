@@ -43,7 +43,7 @@ test("deliverEvent with no secrets skips every sink (no failures, no retry)", as
   expect(result.channels.skipped.includes("whatsapp")).toBeTruthy();
   expect(result.destinations.routed.length).toBe(0);
   expect(result.destinations.failed.length).toBe(0);
-  expect(result.destinations.skipped.includes("crm:pipedrive")).toBeTruthy();
+  expect(result.destinations.skipped.includes("crm:lagebild")).toBeTruthy();
 });
 
 test("email is no longer a fetch channel adapter (Cloudflare Email Routing handles it)", async () => {

@@ -37,8 +37,6 @@ declare module "astro:env/server" {
   export const INTEGRATION_WHATSAPP_TOKEN: string | undefined;
   export const INTEGRATION_WHATSAPP_PHONE_ID: string | undefined;
   export const INTEGRATION_WHATSAPP_TO: string | undefined;
-  export const INTEGRATION_PIPEDRIVE_API_TOKEN: string | undefined;
-  export const INTEGRATION_PIPEDRIVE_DOMAIN: string | undefined;
   // RFC-0176 inbound hub (chat-widget inbound handler).
   export const INTEGRATION_INBOUND_SECRET: string | undefined;
   // RFC-0181 EU-resident delivery — Upstash QStash + Redis (eu-central-1).

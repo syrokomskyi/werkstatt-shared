@@ -1,10 +1,10 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0176: verify the inbound/queue runtime — authenticateInbound, IntegrationEventSchema,
-routeEventToReady (self-enabling Pipedrive route), and consumeIntegrationBatch dedup via a KV-backed
+routeEventToReady (self-enabling Lagebild route), and consumeIntegrationBatch dedup via a KV-backed
 seen-set. fetch + KV are stubbed so the full producer→consumer flow is exercised without Cloudflare.</purpose>
 <responsibilities>
-  <item>Assert a valid event routes once to the pipedrive gogol-adapter destination.</item>
+  <item>Assert a valid event routes once to the lagebild gogol-adapter destination.</item>
   <item>Assert a queue redelivery is deduped (no double-write) via the KV seen-set.</item>
   <item>Assert inbound auth + event-shape validation are fail-closed.</item>
 </responsibilities>
@@ -14,6 +14,7 @@ seen-set. fetch + KV are stubbed so the full producer→consumer flow is exercis
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0176: initial queue/inbound runtime test.</item>
+  <item>Lagebild replaced Pipedrive as sole CRM destination — test updated accordingly.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -30,8 +31,10 @@ import {
 } from "../index.ts";
 
 const SECRETS: IntegrationSecrets = {
-  INTEGRATION_PIPEDRIVE_API_TOKEN: "tok",
-  INTEGRATION_PIPEDRIVE_DOMAIN: "acme",
+  LAGEBILD_API_URL: "https://lagebild-api.example.workers.dev",
+  LAGEBILD_API_KEY: "lbk_test_key_0001",
+  LAGEBILD_TENANT_ID: "ten_warpgogol000001",
+  LAGEBILD_SOURCE_SYSTEM_ID: "site_warpgogol_com",
 };
 
 const EVENT: IntegrationEvent = {
@@ -63,13 +66,18 @@ const realFetch = globalThis.fetch;
 
 beforeEach(() => {
   fetchCalls = [];
-  // Stub Pipedrive persons + leads endpoints — both return a usable id.
+  // Stub Lagebild ingress endpoint — returns accepted with a submission id.
   globalThis.fetch = (async (url: string | URL | Request) => {
     fetchCalls.push(String(url));
     return {
       ok: true,
       status: 200,
-      json: async () => ({ data: { id: 1 } }),
+      json: async () => ({
+        submission_id: "sub_test123",
+        accepted: true,
+        is_replay: false,
+        correlation_id: null,
+      }),
     } as unknown as Response;
   }) as typeof fetch;
 });
@@ -78,17 +86,17 @@ afterEach(() => {
   globalThis.fetch = realFetch;
 });
 
-test("routeEventToReady routes a lead to the pipedrive gogol-adapter destination", async () => {
+test("routeEventToReady routes a lead to the lagebild gogol-adapter destination", async () => {
   const result = await routeEventToReady(EVENT, SECRETS);
-  expect(result.routed).toEqual(["crm:pipedrive"]);
+  expect(result.routed).toEqual(["crm:lagebild"]);
   expect(result.failed.length).toBe(0);
-  // pipedrive adapter performs persons + leads calls.
-  expect(fetchCalls.length).toBe(2);
+  // lagebild adapter performs a single POST to /v1/ingress.
+  expect(fetchCalls.length).toBe(1);
 });
 
 test("routeEventToReady skips when destination secrets are absent", async () => {
   const result = await routeEventToReady(EVENT, {});
-  expect(result.skipped).toEqual(["crm:pipedrive"]);
+  expect(result.skipped).toEqual(["crm:lagebild"]);
   expect(result.routed.length).toBe(0);
   expect(fetchCalls.length).toBe(0);
 });
@@ -98,13 +106,13 @@ test("consumeIntegrationBatch dedups a queue redelivery via KV (no double-write)
   const dedup = kvDedup(kv);
 
   const first = await consumeIntegrationBatch([EVENT], SECRETS, dedup);
-  expect(first[0].routed).toEqual(["crm:pipedrive"]);
+  expect(first[0].routed).toEqual(["crm:lagebild"]);
   const afterFirst = fetchCalls.length;
-  expect(afterFirst).toBe(2);
+  expect(afterFirst).toBe(1);
 
   // Redeliver the SAME eventId — must be skipped by dedup, no new fetches.
   const second = await consumeIntegrationBatch([EVENT], SECRETS, dedup);
-  expect(second[0].skipped).toEqual(["crm:pipedrive"]);
+  expect(second[0].skipped).toEqual(["crm:lagebild"]);
   expect(fetchCalls.length).toBe(afterFirst);
   expect(kv.size()).toBe(1);
 });
