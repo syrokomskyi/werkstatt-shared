@@ -16,10 +16,7 @@
 </CHANGE_SUMMARY>
 */
 
-import {
-  telegramChannelAdapter,
-  whatsappChannelAdapter,
-} from "./adapters.ts";
+import { telegramChannelAdapter, whatsappChannelAdapter } from "./adapters.ts";
 import { lagebildDestinationAdapter } from "./lagebild-destination-adapter.ts";
 import type {
   CrmAdapter,
@@ -161,9 +158,7 @@ export function auditIntegrationReadiness(
 // integration.config.validate reports "multiple-active-executors".
 
 /** Closed registry of gogol-adapter destination implementations (RFC-0176). */
-export const DESTINATION_ADAPTERS: readonly DestinationAdapter[] = [
-  lagebildDestinationAdapter,
-];
+export const DESTINATION_ADAPTERS: readonly DestinationAdapter[] = [lagebildDestinationAdapter];
 
 /**
  * Externally-implemented destination vendors whose adapters live in separate packages
@@ -173,20 +168,14 @@ export const DESTINATION_ADAPTERS: readonly DestinationAdapter[] = [
  * `extraAdapters`; the validator checks vendor + secrets against these catalogs.
  */
 export const EXTERNAL_DESTINATION_VENDORS: Readonly<Record<DestinationKind, readonly string[]>> = {
-  crm: ["supabase-buffer"],
+  crm: [],
   calendar: [],
   email: [],
   scheduler: [],
 };
 
 /** Per `(kind, vendor)` → required secret names for externally-implemented adapters. */
-export const EXTERNAL_DESTINATION_SECRETS: Readonly<Record<string, readonly string[]>> = {
-  "crm:supabase-buffer": [
-    "SUPABASE_BUFFER_URL",
-    "SUPABASE_BUFFER_SERVICE_KEY",
-    "SUPABASE_BUFFER_TENANT_ID",
-  ],
-};
+export const EXTERNAL_DESTINATION_SECRETS: Readonly<Record<string, readonly string[]>> = {};
 
 /** Closed per-kind vendor catalog, derived from the registry + external vendors (RFC-0176/0186). */
 export const DESTINATION_VENDORS_BY_KIND: Readonly<Record<DestinationKind, readonly string[]>> =
