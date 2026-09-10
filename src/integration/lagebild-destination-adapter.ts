@@ -21,11 +21,7 @@
 </CHANGE_SUMMARY>
 */
 
-import type {
-  DestinationAdapter,
-  IntegrationEvent,
-  IntegrationSecrets,
-} from "./port.ts";
+import type { DestinationAdapter, IntegrationEvent, IntegrationSecrets } from "./port.ts";
 import {
   submitIngress,
   buildIdempotencyKey,
@@ -78,8 +74,7 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
       ...(referrer ? { referrer_uri: referrer } : {}),
     };
 
-    const message =
-      typeof event.payload.message === "string" ? event.payload.message : null;
+    const message = typeof event.payload.message === "string" ? event.payload.message : null;
 
     const result = await submitIngress(
       { apiUrl, apiKey, tenantId, sourceSystemId },
@@ -90,13 +85,19 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
         identityClaims: claims,
         message,
         origin,
+        explicitPolicyAssertions: [
+          {
+            kind: "consent",
+            purpose: "crm_projection",
+            value: true,
+            statement_ref: "contact_form_consent",
+          },
+        ],
       },
     );
 
     if (!result.accepted) {
-      throw new Error(
-        `lagebild: ingress rejected (${result.rejection_class ?? "unknown"})`,
-      );
+      throw new Error(`lagebild: ingress rejected (${result.rejection_class ?? "unknown"})`);
     }
 
     return result.submission_id ? { id: result.submission_id } : null;
