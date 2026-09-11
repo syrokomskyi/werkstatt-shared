@@ -84,7 +84,7 @@ const num01: TypographyRule = {
           m[0],
           m.index,
           `German number with dot decimal separator: "${m[0]}" — German uses comma as decimal separator (e.g. "1.234,56").`,
-          'Replace the dot with a comma and the comma thousands separator with a dot.',
+          "Replace the dot with a comma and the comma thousands separator with a dot.",
         ),
       );
     }
@@ -98,7 +98,7 @@ const num01: TypographyRule = {
 // Exclusions: dates (naturally excluded — dates use dots, not commas)
 // ---------------------------------------------------------------------------
 
-const NUM02_PATTERN = /\d{1,3}(?:\.\d{3})*,\d{2}/gu;
+const NUM02_PATTERN = /\d{1,3}(?:\.\d{3})+,\d{2}/gu;
 
 const num02: TypographyRule = {
   id: "TYPO-NUM-02",
@@ -121,7 +121,7 @@ const num02: TypographyRule = {
           m[0],
           m.index,
           `Ukrainian number with dot as thousands separator: "${m[0]}" — Ukrainian uses NNBSP (U+202F) as thousands separator (e.g. "1\u202F234,56").`,
-          'Replace the dot thousands separator with a narrow no-break space (U+202F).',
+          "Replace the dot thousands separator with a narrow no-break space (U+202F).",
         ),
       );
     }
@@ -157,7 +157,7 @@ const num03: TypographyRule = {
           m[0],
           m.index,
           `Regular space (U+0020) as thousands separator: "${m[0]}" — Ukrainian uses NNBSP (U+202F) as thousands separator.`,
-          'Replace the regular space with a narrow no-break space (U+202F).',
+          "Replace the regular space with a narrow no-break space (U+202F).",
         ),
       );
     }
@@ -196,7 +196,10 @@ const abbr01: TypographyRule = {
     const text = segment.text;
     const findings: TypographyFinding[] = [];
     for (const [bare, full] of bareMap) {
-      const pattern = new RegExp(`(?<![\\p{L}\\p{Nd}.])${escapeRegex(bare)}(?![\\p{L}\\p{Nd}.])`, "gu");
+      const pattern = new RegExp(
+        `(?<![\\p{L}\\p{Nd}.])${escapeRegex(bare)}(?![\\p{L}\\p{Nd}.])`,
+        "gu",
+      );
       for (const m of text.matchAll(pattern)) {
         const after = text[m.index + m[0].length];
         if (after === ".") continue;
@@ -222,13 +225,7 @@ const abbr01: TypographyRule = {
 // Pattern: z\.[Bb] · u\.[Aa] · d\.[Hh] · v\.[Ss] · u\.[Ää]
 // ---------------------------------------------------------------------------
 
-const ABBR02_PATTERNS: RegExp[] = [
-  /z\.[Bb]/u,
-  /u\.[Aa]/u,
-  /d\.[Hh]/u,
-  /v\.[Ss]/u,
-  /u\.[Ää]/u,
-];
+const ABBR02_PATTERNS: RegExp[] = [/z\.[Bb]/u, /u\.[Aa]/u, /d\.[Hh]/u, /v\.[Ss]/u, /u\.[Ää]/u];
 
 const ABBR02_FIXES: Record<string, string> = {
   "z.B": "z. B",
