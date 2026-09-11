@@ -109,6 +109,13 @@ export interface SystemManifest {
       extraStopPhrases?: Record<string, string[]>;
     };
   };
+  /** RFC-1070: Typography validator configuration extension point. */
+  typography?: {
+    /** Per-locale abbreviation overrides. Merged into the built-in locale defaults. */
+    abbreviations?: Record<string, string[]>;
+    /** Additional allowed tokens (extends DEFAULT_ALLOWED_TOKENS). */
+    allowedTokens?: string[];
+  };
 }
 
 export interface SystemManifestLoadResult {
