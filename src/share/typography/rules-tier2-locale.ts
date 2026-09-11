@@ -137,6 +137,27 @@ const num02: TypographyRule = {
 
 const NUM03_PATTERN = /\d{1,3}\x20\d{3}(?:,\d{2})?/gu;
 
+function isPartOfPhoneNumber(text: string, matchStart: number, _matchEnd: number): boolean {
+  // Preceded by + (e.g. "+49 711")
+  if (matchStart > 0 && text[matchStart - 1] === "+") return true;
+  // Part of a phone number group: preceded by digits+space with + earlier in the line
+  const lineStart = text.lastIndexOf("\n", matchStart - 1) + 1;
+  const line = text.slice(lineStart, matchStart);
+  if (/\d\s$/.test(line) && line.includes("+")) return true;
+  return false;
+}
+
+const STANDARD_PREFIXES = ["EN", "ISO", "DIN", "IEC", "ETSI", "RFC", "WCAG", "W3C"];
+
+function isPartOfStandardReference(text: string, matchStart: number): boolean {
+  const lineStart = text.lastIndexOf("\n", matchStart - 1) + 1;
+  const before = text.slice(lineStart, matchStart).trimEnd();
+  for (const prefix of STANDARD_PREFIXES) {
+    if (before.endsWith(prefix)) return true;
+  }
+  return false;
+}
+
 const num03: TypographyRule = {
   id: "TYPO-NUM-03",
   family: "NUM",
@@ -150,6 +171,8 @@ const num03: TypographyRule = {
       const matchStart = m.index;
       const matchEnd = m.index + m[0].length;
       if (isPartOfIpAddress(text, matchStart, matchEnd)) continue;
+      if (isPartOfPhoneNumber(text, matchStart, matchEnd)) continue;
+      if (isPartOfStandardReference(text, matchStart)) continue;
       findings.push(
         finding(
           this.id,
