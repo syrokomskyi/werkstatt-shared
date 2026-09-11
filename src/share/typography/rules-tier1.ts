@@ -5,8 +5,9 @@
 use the `u` flag and Unicode property escapes. Rules operate on TextSegment
 objects produced by the text-surface extractor, never on raw file bytes.
 TypographyRuleId and TypographyRuleFamily include Tier 2 families (HEAD, PAIR,
-MD per RFC-1069; NUM, ABBR, APOS per RFC-1070) so that Tier 2 rule arrays can be
-typed as TypographyRule[].</purpose>
+MD per RFC-1069; NUM, ABBR, APOS per RFC-1070) and Tier 3 families (UNICODE, LINK,
+SENT per RFC-1071) so that Tier 2 and Tier 3 rule arrays can be typed as
+TypographyRule[].</purpose>
 <non-goals>
   <item>Do not extract text — that is text-surface.ts.</item>
   <item>Do not handle file I/O or command registration — that is the command adapter.</item>
@@ -17,6 +18,7 @@ typed as TypographyRule[].</purpose>
   <item>RFC-1068: initial creation with 14 Tier 1 rules.</item>
   <item>RFC-1069: extended TypographyRuleId and TypographyRuleFamily with HEAD, PAIR, MD families.</item>
   <item>RFC-1070: extended TypographyRuleId and TypographyRuleFamily with NUM, ABBR, APOS families; added localeDefaults to TypographyContext.</item>
+  <item>RFC-1071: extended TypographyRuleId and TypographyRuleFamily with UNICODE, LINK, SENT families.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -42,10 +44,26 @@ export type TypographyRuleId = `TYPO-${
   | "MD"
   | "NUM"
   | "ABBR"
-  | "APOS"}-${string}`;
+  | "APOS"
+  | "UNICODE"
+  | "LINK"
+  | "SENT"}-${string}`;
 
 export type TypographyRuleFamily =
-  "PUNCT" | "SPACE" | "CASE" | "LOCALE" | "YAML" | "HEAD" | "PAIR" | "MD" | "NUM" | "ABBR" | "APOS";
+  | "PUNCT"
+  | "SPACE"
+  | "CASE"
+  | "LOCALE"
+  | "YAML"
+  | "HEAD"
+  | "PAIR"
+  | "MD"
+  | "NUM"
+  | "ABBR"
+  | "APOS"
+  | "UNICODE"
+  | "LINK"
+  | "SENT";
 
 export interface TypographyFinding {
   ruleId: TypographyRuleId;
