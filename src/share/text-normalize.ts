@@ -18,6 +18,7 @@ never touched; this only transforms output strings.
 <CHANGE_SUMMARY>
   <item>RFC-0235: initial egress text normalizer.</item>
   <item>RFC-0569: add createDevNormalizeMiddleware for dev/prod egress parity.</item>
+  <item>RFC-1070: add U+02BC modifier letter apostrophe to quotes signal.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -72,7 +73,7 @@ export const SIGNAL_REGISTRY: readonly SignalSpec[] = [
   {
     id: "quotes",
     title: "Typographic / smart quotes",
-    unicode: "U+00AB U+00BB U+2018-U+201F",
+    unicode: "U+00AB U+00BB U+2018-U+201F U+02BC",
     replacement: "straight double / single quote",
     default: true,
   },
@@ -148,8 +149,8 @@ export function resolveNormalizeConfig(manifest: unknown): NormalizeConfig {
 const RE_DASHES = /[‐‑‒–—―−]/g;
 // U+00AB U+00BB U+201C U+201D U+201E U+201F
 const RE_QUOTES_DOUBLE = /[«»“”„‟]/g;
-// U+2018 U+2019 U+201A U+201B
-const RE_QUOTES_SINGLE = /[‘’‚‛]/g;
+// U+2018 U+2019 U+201A U+201B U+02BC (modifier letter apostrophe, RFC-1070)
+const RE_QUOTES_SINGLE = /[‘’‚‛ʼ]/g;
 const RE_ELLIPSIS = /…/g;
 // U+00A0 nbsp, U+1680 ogham, U+2000-U+200A, U+202F narrow nbsp, U+205F medium math,
 // U+3000 ideographic space.

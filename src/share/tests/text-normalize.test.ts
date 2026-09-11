@@ -36,6 +36,11 @@ test("quotes: curly + guillemets become straight", () => {
   expect(normalizeText(input, ALL_ON)).toBe(`"hi" "yo" it's 'a' "de"`);
 });
 
+test("quotes: U+02BC modifier letter apostrophe becomes straight (RFC-1070)", () => {
+  const input = "it\u02BCs";
+  expect(normalizeText(input, ALL_ON)).toBe("it's");
+});
+
 test("ellipsis: single char becomes three dots", () => {
   expect(normalizeText("wait…", ALL_ON)).toBe("wait...");
 });
