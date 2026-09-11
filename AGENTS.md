@@ -87,6 +87,22 @@ seo?: {
 - Sites extend the built-in de/uk anchor-text stop-list by declaring `seo.anchorText.extraStopPhrases` in `system.md` frontmatter.
 - The field is optional; validators fall back to built-in defaults when absent.
 
+### SystemManifest `typography` field (RFC-1070)
+
+The `SystemManifest` interface in `packages/werkstatt-shared/src/content/system-manifest.ts` includes an optional `typography` field for typography validator configuration:
+
+```ts
+typography?: {
+  abbreviations?: Record<string, string[]>;
+  allowedTokens?: string[];
+};
+```
+
+- Sites extend the built-in locale abbreviation defaults by declaring `typography.abbreviations` in `system.md` frontmatter. Overrides are merged (not replacement) with built-in defaults.
+- Sites add exempt tokens (e.g. brand names with mixed case) via `typography.allowedTokens`. These extend `DEFAULT_ALLOWED_TOKENS`.
+- The Zod schema is `systemTypographySchema` in `packages/werkstatt-shared/src/ontology/schemas/system/text.ts`, referenced as a top-level field in `systemManifestSchema`.
+- The field is optional; validators fall back to built-in defaults when absent.
+
 ### Utility registry (RFC-0916)
 
 Location: `packages/werkstatt-shared/src/share/utility-registry.yaml`
