@@ -40,6 +40,7 @@ const DE_ABBREVIATIONS = new Set([
   "lit.",
   "Art.",
   "Inc.",
+  "e.V.",
 ]);
 
 const UK_ABBREVIATIONS = new Set([
@@ -54,9 +55,10 @@ const UK_ABBREVIATIONS = new Set([
   "Див.",
   "нім.",
   "Inc.",
+  "e.V.",
 ]);
 
-const EN_ABBREVIATIONS = new Set(["e.g.", "i.e.", "etc.", "vs.", "No.", "Inc."]);
+const EN_ABBREVIATIONS = new Set(["e.g.", "i.e.", "etc.", "vs.", "No.", "Inc.", "e.V."]);
 
 export const LOCALE_DEFAULTS: Record<string, LocaleTypographyDefaults> = {
   de: { abbreviations: DE_ABBREVIATIONS },

@@ -214,6 +214,8 @@ function extractFrontmatterStrings(
 const FENCED_CODE = /```[\s\S]*?```/g;
 // (1) Inline code spans
 const INLINE_CODE = /`[^`]*`/g;
+// (1b) Markdown autolinks <URL> — must be handled before HTML tag stripping
+const AUTOLINK = /<(https?:\/\/[^\s>]+)>/gi;
 // (2) HTML comments
 const HTML_COMMENT = /<!--[\s\S]*?-->/g;
 // (3) Void HTML elements
@@ -239,6 +241,8 @@ const VOID_ELEMENTS = new Set([
 ]);
 // (4) Formula expressions =(…)
 const FORMULA = /=\([^)]*\)/g;
+// (4b) CMS template expression placeholder (same as rules-tier1.ts CMS_PLACEHOLDER)
+const CMS_PLACEHOLDER = "\uE002";
 // (5) Markdown link/image targets — keep link text, remove ](…)
 const LINK_TARGET = /\]\([^)]*\)/g;
 // (6) URL, e-mail, domain tokens
@@ -251,7 +255,10 @@ function stripBodyLine(line: string): string {
 
   // (1) Remove fenced code blocks (they span multiple lines, but for per-line
   // processing we rely on the caller to skip fenced blocks entirely)
-  result = result.replace(INLINE_CODE, "");
+  result = result.replace(INLINE_CODE, CMS_PLACEHOLDER);
+
+  // (1b) Replace markdown autolinks <URL> with URL placeholder
+  result = result.replace(AUTOLINK, "\uE001");
 
   // (2) Remove HTML comments
   result = result.replace(HTML_COMMENT, "");
@@ -267,8 +274,8 @@ function stripBodyLine(line: string): string {
   // (4) Replace formulas with placeholder
   result = result.replace(FORMULA, "\uE000");
 
-  // (4b) Remove CMS template expressions ({price:...}, {t:...}, etc.)
-  result = result.replace(/\{[^}]*\}/g, "");
+  // (4b) Replace CMS template expressions ({price:...}, {t:...}, etc.) with placeholder
+  result = result.replace(/\{[^}]*\}/g, CMS_PLACEHOLDER);
 
   // (4c) Replace CMS template expressions (=(path.to.value), =(path/to/value)) with placeholder
   result = result.replace(/=\([^)]*\)/g, "\uE002");
@@ -358,6 +365,7 @@ export function extractTextSurface(
   const bodyLineOffset = frontmatterLineCount;
 
   let inFencedBlock = false;
+  let inHtmlComment = false;
 
   for (let i = 0; i < bodyLines.length; i += 1) {
     const rawLine = bodyLines[i];
@@ -369,6 +377,54 @@ export function extractTextSurface(
       continue;
     }
     if (inFencedBlock) continue;
+
+    // Track multi-line HTML comments
+    if (inHtmlComment) {
+      if (rawLine.includes("-->")) {
+        inHtmlComment = false;
+        // Strip everything up to and including -->, keep the rest
+        const after = rawLine.slice(rawLine.indexOf("-->") + 3);
+        if (after.trim().length === 0) continue;
+        const strippedAfter = stripBodyLine(after);
+        if (strippedAfter.trim().length === 0) continue;
+        segments.push({
+          file,
+          line: lineNum,
+          path: "$body",
+          source: "body",
+          text: strippedAfter,
+          raw: after,
+          isTableRow: /^\|.*\|/.test(after.trim()),
+          locale,
+        });
+      }
+      continue;
+    }
+    // Check if line opens a multi-line HTML comment (<!-- without --> on same line)
+    const openIdx = rawLine.indexOf("<!--");
+    if (openIdx !== -1) {
+      const closeIdx = rawLine.indexOf("-->", openIdx);
+      if (closeIdx === -1) {
+        // Comment opens but doesn't close on this line — keep content before <!--
+        const before = rawLine.slice(0, openIdx);
+        inHtmlComment = true;
+        if (before.trim().length === 0) continue;
+        const strippedBefore = stripBodyLine(before);
+        if (strippedBefore.trim().length === 0) continue;
+        segments.push({
+          file,
+          line: lineNum,
+          path: "$body",
+          source: "body",
+          text: strippedBefore,
+          raw: before,
+          isTableRow: /^\|.*\|/.test(before.trim()),
+          locale,
+        });
+        continue;
+      }
+      // Both on same line — stripBodyLine handles it via regex
+    }
 
     // Skip empty lines
     if (rawLine.trim().length === 0) continue;

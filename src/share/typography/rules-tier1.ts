@@ -164,7 +164,7 @@ const punct01: TypographyRule = {
   family: "PUNCT",
   tier: 1,
   severity: "error",
-  check(segment, _ctx) {
+  check(segment, ctx) {
     const findings: TypographyFinding[] = [];
     const text = segment.text;
     for (const pattern of PUNCT01_PATTERNS) {
@@ -173,6 +173,21 @@ const punct01: TypographyRule = {
         // Check if it's ?! or !? — those are allowed
         const matched = match[0];
         if (matched === "?!" || matched === "!?") continue;
+
+        // Exclusion: period followed by comma/semicolon where the period
+        // is the last char of a known abbreviation (e.g. "e.V.,", "Inc.,")
+        if (pattern.source === "\\.[,;]") {
+          const textUpToDot = text.slice(0, match.index + 1);
+          let isAbbrev = false;
+          for (const abbr of ctx.abbreviations) {
+            if (textUpToDot.endsWith(abbr)) {
+              isAbbrev = true;
+              break;
+            }
+          }
+          if (isAbbrev) continue;
+        }
+
         const key = pattern.source;
         const msg = PUNCT01_MESSAGES[key] ?? {
           message: `Doubled or clashing punctuation: "${matched}".`,
@@ -198,21 +213,32 @@ const punct02: TypographyRule = {
   family: "PUNCT",
   tier: 1,
   severity: "error",
-  check(segment, _ctx) {
+  check(segment, ctx) {
     const findings: TypographyFinding[] = [];
     const text = segment.text;
     let m = PUNCT02_DOUBLE_DOT.exec(text);
     if (m) {
-      findings.push(
-        finding(
-          this.id,
-          segment,
-          m[0],
-          m.index,
-          "Two consecutive dots (not a three-dot ellipsis).",
-          "Use a single period or a three-dot ellipsis (...).",
-        ),
-      );
+      // Exclusion: first dot is the last char of a known abbreviation
+      const textUpToFirstDot = text.slice(0, m.index + 1);
+      let isAbbrev = false;
+      for (const abbr of ctx.abbreviations) {
+        if (textUpToFirstDot.endsWith(abbr)) {
+          isAbbrev = true;
+          break;
+        }
+      }
+      if (!isAbbrev) {
+        findings.push(
+          finding(
+            this.id,
+            segment,
+            m[0],
+            m.index,
+            "Two consecutive dots (not a three-dot ellipsis).",
+            "Use a single period or a three-dot ellipsis (...).",
+          ),
+        );
+      }
     }
     m = PUNCT02_MANY_DOTS.exec(text);
     if (m) {
