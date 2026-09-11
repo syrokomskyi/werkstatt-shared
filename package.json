@@ -334,6 +334,10 @@
       "types": "./src/share/text-normalize.ts",
       "default": "./src/share/text-normalize.ts"
     },
+    "./share/typography": {
+      "types": "./src/share/typography/index.ts",
+      "default": "./src/share/typography/index.ts"
+    },
     "./share/text-position": {
       "types": "./src/share/text-position.ts",
       "default": "./src/share/text-position.ts"
