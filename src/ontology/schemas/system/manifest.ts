@@ -16,7 +16,7 @@ import { z } from "zod";
 
 import { systemSharedContextSchema, systemGrowthSchema } from "./growth.ts";
 import { systemReleaseSchema } from "./release.ts";
-import { systemTextSchema } from "./text.ts";
+import { systemTextSchema, systemTypographySchema } from "./text.ts";
 import { systemIntegrationsSchema } from "./integrations.ts";
 import { systemVerificationSchema } from "./verification.ts";
 import { semanticPageTypeSchema, articleMetadataSchema, pageOutputSchema } from "./page-output.ts";
@@ -293,6 +293,12 @@ export const systemManifestSchema = z.object({
    * Absent ⇒ all signals on. Client-writable.
    */
   text: systemTextSchema.optional(),
+
+  /**
+   * RFC-1070: typography validator configuration. Allowed tokens and
+   * per-locale abbreviation overrides. Client-writable.
+   */
+  typography: systemTypographySchema.optional(),
 
   /**
    * RFC-0169: subscription billing binding. `billing.stripeCustomerId` is the

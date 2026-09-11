@@ -7,6 +7,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0303 Phase 3: extracted from schemas/system.ts as part of the domain split.</item>
+  <item>RFC-1070: added systemTypographySchema for typography validator configuration.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -46,6 +47,20 @@ export const systemTextNormalizeSchema = z
     enabled: z.boolean().optional(),
     /** Per-signal toggles. Each absent key ⇒ true (everything on by default). */
     signals: systemTextNormalizeSignalsSchema.optional(),
+  })
+  .strict();
+
+/**
+ * The `typography` block in system.yaml (RFC-1070). Controls typography validator
+ * configuration: allowed tokens and per-locale abbreviation overrides.
+ * CLIENT-WRITABLE.
+ */
+export const systemTypographySchema = z
+  .object({
+    /** Additional allowed tokens exempt from TYPO-CASE-01 and TYPO-APOS rules. */
+    allowedTokens: z.array(z.string()).optional(),
+    /** Per-locale abbreviation overrides. Merged into built-in locale defaults. */
+    abbreviations: z.record(z.string(), z.array(z.string())).optional(),
   })
   .strict();
 
