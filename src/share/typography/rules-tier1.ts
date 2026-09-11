@@ -5,7 +5,8 @@
 use the `u` flag and Unicode property escapes. Rules operate on TextSegment
 objects produced by the text-surface extractor, never on raw file bytes.
 TypographyRuleId and TypographyRuleFamily include Tier 2 families (HEAD, PAIR,
-MD) per RFC-1069 so that TIER2_STRUCTURE_RULES can be typed as TypographyRule[].</purpose>
+MD per RFC-1069; NUM, ABBR, APOS per RFC-1070) so that Tier 2 rule arrays can be
+typed as TypographyRule[].</purpose>
 <non-goals>
   <item>Do not extract text — that is text-surface.ts.</item>
   <item>Do not handle file I/O or command registration — that is the command adapter.</item>
@@ -15,21 +16,36 @@ MD) per RFC-1069 so that TIER2_STRUCTURE_RULES can be typed as TypographyRule[].
 <CHANGE_SUMMARY>
   <item>RFC-1068: initial creation with 14 Tier 1 rules.</item>
   <item>RFC-1069: extended TypographyRuleId and TypographyRuleFamily with HEAD, PAIR, MD families.</item>
+  <item>RFC-1070: extended TypographyRuleId and TypographyRuleFamily with NUM, ABBR, APOS families; added localeDefaults to TypographyContext.</item>
 </CHANGE_SUMMARY>
 */
 
 import type { TextSegment } from "./text-surface.ts";
-import { LOCALE_DEFAULTS, getLocaleDefaults } from "./locale-defaults.ts";
+import {
+  LOCALE_DEFAULTS,
+  getLocaleDefaults,
+  type LocaleTypographyDefaults,
+} from "./locale-defaults.ts";
 
 // ---------------------------------------------------------------------------
 // Types (from RFC-1068)
 // ---------------------------------------------------------------------------
 
 export type TypographyRuleId = `TYPO-${
-  "PUNCT" | "SPACE" | "CASE" | "LOCALE" | "YAML" | "HEAD" | "PAIR" | "MD"}-${string}`;
+  | "PUNCT"
+  | "SPACE"
+  | "CASE"
+  | "LOCALE"
+  | "YAML"
+  | "HEAD"
+  | "PAIR"
+  | "MD"
+  | "NUM"
+  | "ABBR"
+  | "APOS"}-${string}`;
 
 export type TypographyRuleFamily =
-  "PUNCT" | "SPACE" | "CASE" | "LOCALE" | "YAML" | "HEAD" | "PAIR" | "MD";
+  "PUNCT" | "SPACE" | "CASE" | "LOCALE" | "YAML" | "HEAD" | "PAIR" | "MD" | "NUM" | "ABBR" | "APOS";
 
 export interface TypographyFinding {
   ruleId: TypographyRuleId;
@@ -56,6 +72,8 @@ export interface TypographyContext {
   locale: string;
   allowedTokens: ReadonlySet<string>;
   abbreviations: ReadonlySet<string>;
+  /** Locale-specific typography defaults (number format, apostrophe policy). Added by RFC-1070. */
+  localeDefaults: LocaleTypographyDefaults;
 }
 
 // ---------------------------------------------------------------------------
@@ -842,12 +860,14 @@ export const TIER1_RULES: readonly TypographyRule[] = [
 export function createTypographyContext(
   locale: string,
   allowedTokens: ReadonlySet<string>,
+  abbreviationsOverride?: ReadonlySet<string>,
 ): TypographyContext {
   const defaults = getLocaleDefaults(locale);
   return {
     locale,
     allowedTokens: new Set([...DEFAULT_ALLOWED_TOKENS, ...allowedTokens]),
-    abbreviations: defaults.abbreviations,
+    abbreviations: abbreviationsOverride ?? defaults.abbreviations,
+    localeDefaults: defaults,
   };
 }
 

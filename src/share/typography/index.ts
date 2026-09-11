@@ -10,6 +10,7 @@ the typography.validate command and future typography rule families.</purpose>
 <CHANGE_SUMMARY>
   <item>RFC-1068: initial creation.</item>
   <item>RFC-1069: added Tier 2 structure rules export.</item>
+  <item>RFC-1070: added Tier 2 locale rules export.</item>
 </CHANGE_SUMMARY>
 */
 
