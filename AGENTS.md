@@ -103,6 +103,27 @@ typography?: {
 - The Zod schema is `systemTypographySchema` in `packages/werkstatt-shared/src/ontology/schemas/system/text.ts`, referenced as a top-level field in `systemManifestSchema`.
 - The field is optional; validators fall back to built-in defaults when absent.
 
+### Typography rule tiers (RFC-1068, RFC-1069, RFC-1070, RFC-1071)
+
+Location: `packages/werkstatt-shared/src/share/typography/` — exported via `@warpgogol/werkstatt-shared/share/typography`.
+
+| Export | Purpose |
+| --- | --- |
+| `TIER1_RULES` | 15 Tier 1 rules: PUNCT (4), SPACE (4), CASE (2), LOCALE (3), YAML (2) — RFC-1068 |
+| `TIER2_STRUCTURE_RULES` | 9 Tier 2 structure rules: HEAD (3), PAIR (3), MD (3) — RFC-1069 |
+| `TIER2_LOCALE_RULES` | 7 Tier 2 locale rules: NUM (3), ABBR (2), APOS (2) — RFC-1070 |
+| `TIER3_ADVISORY_RULES` | 5 Tier 3 advisory rules: UNICODE (2), LINK (2), SENT (1) — RFC-1071 |
+
+Tier 3 advisory rules (RFC-1071):
+
+- `TYPO-UNICODE-01` — zero-width characters (U+200B, U+200C, U+200D, U+FEFF)
+- `TYPO-UNICODE-02` — soft hyphen (U+00AD)
+- `TYPO-LINK-01` — bare URL as link text (e.g. `[https://example.com](https://example.com)`)
+- `TYPO-LINK-02` — generic link text (click here, hier klicken, тут, here, hier)
+- `TYPO-SENT-01` — sentence longer than 40 words
+
+All Tier 3 rules have `severity: "warning"` and `tier: 3`. They never cause `typography.validate` to exit non-zero. The `--mode error` flag does not upgrade Tier 3 findings to error severity.
+
 ### Utility registry (RFC-0916)
 
 Location: `packages/werkstatt-shared/src/share/utility-registry.yaml`
