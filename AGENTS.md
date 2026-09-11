@@ -113,6 +113,10 @@ Location: `packages/werkstatt-shared/src/share/typography/` — exported via `@w
 | `TIER2_STRUCTURE_RULES` | 9 Tier 2 structure rules: HEAD (3), PAIR (3), MD (3) — RFC-1069 |
 | `TIER2_LOCALE_RULES` | 7 Tier 2 locale rules: NUM (3), ABBR (2), APOS (2) — RFC-1070 |
 | `TIER3_ADVISORY_RULES` | 5 Tier 3 advisory rules: UNICODE (2), LINK (2), SENT (1) — RFC-1071 |
+| `FixAction` | Discriminated union type for mechanical fix actions (`replace`, `insert`, `delete`) — RFC-1072 |
+| `FIXABLE_RULE_IDS` | Whitelist of 7 rule IDs safe for mechanical fixing — RFC-1072 |
+| `isFixable(ruleId)` | Check if a rule ID is in the fixable whitelist — RFC-1072 |
+| `applyFixes(findings, ctx)` | Apply mechanical fixes to findings, returning fixed segment text — RFC-1072 |
 
 Tier 3 advisory rules (RFC-1071):
 
