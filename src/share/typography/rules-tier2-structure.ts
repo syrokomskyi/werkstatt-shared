@@ -18,30 +18,13 @@ All regexes use the `u` flag and Unicode property escapes where applicable.</pur
 */
 
 import type { TextSegment } from "./text-surface.ts";
-import {
-  finding,
-  type TypographyFinding,
-  type TypographyRule,
-  type TypographyContext,
-} from "./rules-tier1.ts";
+import { finding, type TypographyFinding, type TypographyRule } from "./rules-tier1.ts";
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
 export type Tier2StructureRuleId = `TYPO-${"HEAD" | "PAIR" | "MD"}-${string}`;
-
-// ---------------------------------------------------------------------------
-// Placeholder characters (must match text-surface.ts)
-// ---------------------------------------------------------------------------
-
-const FORMULA_PLACEHOLDER = "\uE000";
-const URL_PLACEHOLDER = "\uE001";
-const CMS_PLACEHOLDER = "\uE002";
-
-function isPlaceholder(ch: string): boolean {
-  return ch === FORMULA_PLACEHOLDER || ch === URL_PLACEHOLDER || ch === CMS_PLACEHOLDER;
-}
 
 // ---------------------------------------------------------------------------
 // Helper: extract last path segment from a JSON-path
@@ -203,10 +186,6 @@ const pair01: TypographyRule = {
 // [text — orphaned [ is expected and not a defect); code spans
 // ---------------------------------------------------------------------------
 
-function removeBalancedBrackets(text: string): string {
-  return text.replace(/\[[^\]]*\]/gu, "");
-}
-
 const pair02: TypographyRule = {
   id: "TYPO-PAIR-02",
   family: "PAIR",
@@ -214,21 +193,30 @@ const pair02: TypographyRule = {
   severity: "error",
   check(segment) {
     const text = segment.text;
-    const cleaned = removeBalancedBrackets(text);
-    const orphanIndex = cleaned.indexOf("]");
-    if (orphanIndex === -1) return [];
-    // Map back to original text position (balanced pairs removed may shift indices)
-    const originalCol = text.indexOf("]", orphanIndex);
-    return [
-      finding(
-        "TYPO-PAIR-02",
-        segment,
-        "]",
-        originalCol,
-        "Orphaned closing square bracket — a ] without a matching [.",
-        "Add the opening [ or remove the orphaned ].",
-      ),
-    ];
+    // Find orphan ] by scanning the original string and skipping balanced [..] pairs.
+    let i = 0;
+    let bracketDepth = 0;
+    while (i < text.length) {
+      if (text[i] === "[") {
+        bracketDepth++;
+      } else if (text[i] === "]") {
+        if (bracketDepth === 0) {
+          return [
+            finding(
+              "TYPO-PAIR-02",
+              segment,
+              "]",
+              i,
+              "Orphaned closing square bracket — a ] without a matching [.",
+              "Add the opening [ or remove the orphaned ].",
+            ),
+          ];
+        }
+        bracketDepth--;
+      }
+      i++;
+    }
+    return [];
   },
 };
 

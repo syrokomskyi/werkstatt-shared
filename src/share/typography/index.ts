@@ -35,7 +35,7 @@ export {
   type TypographyContext,
 } from "./rules-tier1.ts";
 
-export { TIER2_STRUCTURE_RULES, type Tier2StructureRuleId } from "./rules-tier2-structure.ts";
+export { TIER2_STRUCTURE_RULES } from "./rules-tier2-structure.ts";
 
 export {
   LOCALE_DEFAULTS,
