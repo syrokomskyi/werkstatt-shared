@@ -13,6 +13,7 @@ typography rule families.</purpose>
   <item>RFC-1069: added Tier 2 structure rules export.</item>
   <item>RFC-1070: added Tier 2 locale rules export.</item>
   <item>RFC-1071: added Tier 3 advisory rules export.</item>
+  <item>RFC-1072: added fix module export (FixAction, FIXABLE_RULE_IDS, applyFixes, isFixable).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -49,3 +50,5 @@ export {
   getLocaleDefaults,
   type LocaleTypographyDefaults,
 } from "./locale-defaults.ts";
+
+export { type FixAction, FIXABLE_RULE_IDS, isFixable, applyFixes } from "./fix.ts";
