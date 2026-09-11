@@ -1,14 +1,15 @@
 /*
 <MODULE_CONTRACT>
-<purpose>Barrel export for the typography module (RFC-1068). Provides the
-text-surface extractor, Tier 1 rule engine, and locale defaults for the
-typography.validate command and future typography rule families.</purpose>
+<purpose>Barrel export for the typography module (RFC-1068, RFC-1069). Provides the
+text-surface extractor, Tier 1 and Tier 2 rule engines, and locale defaults for
+the typography.validate command and future typography rule families.</purpose>
 <non-goals>
   <item>Do not implement command adapters — that lives in werkstatt-site.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1068: initial creation.</item>
+  <item>RFC-1069: added Tier 2 structure rules export.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -33,6 +34,8 @@ export {
   type TypographyRule,
   type TypographyContext,
 } from "./rules-tier1.ts";
+
+export { TIER2_STRUCTURE_RULES, type Tier2StructureRuleId } from "./rules-tier2-structure.ts";
 
 export {
   LOCALE_DEFAULTS,

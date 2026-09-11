@@ -3,7 +3,9 @@
 <purpose>Tier 1 typography rule engine (RFC-1068). Implements 14 rules across
 5 families: PUNCT (4), SPACE (4), CASE (2), LOCALE (3), YAML (2). All regexes
 use the `u` flag and Unicode property escapes. Rules operate on TextSegment
-objects produced by the text-surface extractor, never on raw file bytes.</purpose>
+objects produced by the text-surface extractor, never on raw file bytes.
+TypographyRuleId and TypographyRuleFamily include Tier 2 families (HEAD, PAIR,
+MD) per RFC-1069 so that TIER2_STRUCTURE_RULES can be typed as TypographyRule[].</purpose>
 <non-goals>
   <item>Do not extract text — that is text-surface.ts.</item>
   <item>Do not handle file I/O or command registration — that is the command adapter.</item>
@@ -12,6 +14,7 @@ objects produced by the text-surface extractor, never on raw file bytes.</purpos
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1068: initial creation with 14 Tier 1 rules.</item>
+  <item>RFC-1069: extended TypographyRuleId and TypographyRuleFamily with HEAD, PAIR, MD families.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -22,9 +25,11 @@ import { LOCALE_DEFAULTS, getLocaleDefaults } from "./locale-defaults.ts";
 // Types (from RFC-1068)
 // ---------------------------------------------------------------------------
 
-export type TypographyRuleId = `TYPO-${"PUNCT" | "SPACE" | "CASE" | "LOCALE" | "YAML"}-${string}`;
+export type TypographyRuleId = `TYPO-${
+  "PUNCT" | "SPACE" | "CASE" | "LOCALE" | "YAML" | "HEAD" | "PAIR" | "MD"}-${string}`;
 
-export type TypographyRuleFamily = "PUNCT" | "SPACE" | "CASE" | "LOCALE" | "YAML";
+export type TypographyRuleFamily =
+  "PUNCT" | "SPACE" | "CASE" | "LOCALE" | "YAML" | "HEAD" | "PAIR" | "MD";
 
 export interface TypographyFinding {
   ruleId: TypographyRuleId;
@@ -77,7 +82,7 @@ export const DEFAULT_ALLOWED_TOKENS = new Set([
 // Helper: create a finding
 // ---------------------------------------------------------------------------
 
-function finding(
+export function finding(
   ruleId: TypographyRuleId,
   segment: TextSegment,
   match: string,
