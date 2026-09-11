@@ -19,14 +19,7 @@ SENT rules check segment.text via splitSentences.</purpose>
 */
 
 import type { TextSegment } from "./text-surface.ts";
-import {
-  finding,
-  type TypographyFinding,
-  type TypographyRule,
-  type TypographyContext,
-  type TypographyRuleId,
-  type TypographyRuleFamily,
-} from "./rules-tier1.ts";
+import { finding, type TypographyFinding, type TypographyRule } from "./rules-tier1.ts";
 import { splitSentences } from "../semantic/extract.ts";
 
 // ---------------------------------------------------------------------------
@@ -71,13 +64,14 @@ const UNICODE_01: TypographyRule = {
     let match: RegExpExecArray | null;
     const regex = new RegExp(ZERO_WIDTH.source, "gu");
     while ((match = regex.exec(segment.text)) !== null) {
-      const charName = match[0] === "\u200B"
-        ? "U+200B (zero-width space)"
-        : match[0] === "\u200C"
-          ? "U+200C (zero-width non-joiner)"
-          : match[0] === "\u200D"
-            ? "U+200D (zero-width joiner)"
-            : "U+FEFF (zero-width no-break space / BOM)";
+      const charName =
+        match[0] === "\u200B"
+          ? "U+200B (zero-width space)"
+          : match[0] === "\u200C"
+            ? "U+200C (zero-width non-joiner)"
+            : match[0] === "\u200D"
+              ? "U+200D (zero-width joiner)"
+              : "U+FEFF (zero-width no-break space / BOM)";
       findings.push(
         finding(
           "TYPO-UNICODE-01",
@@ -243,6 +237,3 @@ export const TIER3_ADVISORY_RULES: readonly TypographyRule[] = [
   LINK_02,
   SENT_01,
 ];
-
-// Re-export types for consumers
-export type { TypographyRuleId, TypographyRuleFamily };
