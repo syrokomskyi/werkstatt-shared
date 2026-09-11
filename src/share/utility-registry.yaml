@@ -48,3 +48,18 @@ utilities:
         reason: Consumes lookupRemediation to auto-populate Diagnostic.remediation (RFC-1027)
       - path: packages/werkstatt-engine/src/remediation/
         reason: Engine remediation module reads REMEDIATION_CATALOG for catalog.generate and hint.validate (RFC-1027)
+  - id: pbt-helpers
+    canonicalPath: packages/werkstatt-shared/src/share/pbt/
+    forbiddenImports: []
+    functionNames:
+      - fcAssert
+      - letterString
+      - composeWord
+      - safeText
+    patterns:
+      - id: fc-string-filter
+        regex: "fc\\.string\\([^)]*\\)\\.filter\\("
+        description: fc.string().filter() anti-pattern — can cause test hangs when filter rejects most candidates (RFC-1070)
+    allowlist:
+      - path: packages/werkstatt-shared/src/share/pbt/
+        reason: Canonical PBT helpers — owns all safe fast-check wrappers and arbitraries (RFC-1070)

@@ -266,6 +266,10 @@
       "types": "./src/share/remediation/remediation-catalog.ts",
       "default": "./src/share/remediation/remediation-catalog.ts"
     },
+    "./share/pbt": {
+      "types": "./src/share/pbt/index.ts",
+      "default": "./src/share/pbt/index.ts"
+    },
     "./share/rfc0042-utils": {
       "types": "./src/share/rfc0042-utils.ts",
       "default": "./src/share/rfc0042-utils.ts"
