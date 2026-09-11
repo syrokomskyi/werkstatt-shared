@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   extractEmail,
   extractListFacts,
+  extractLists,
   extractParagraphs,
   extractPostalAddress,
   mergePeople,
@@ -79,6 +80,88 @@ describe("extractListFacts", () => {
 
   it("extracts numbered list items", () => {
     expect(extractListFacts("1. First\n2. Second")).toEqual(["First", "Second"]);
+  });
+});
+
+describe("extractLists", () => {
+  it("extracts a single bullet list with dash marker", () => {
+    const result = extractLists("- Item 1\n- Item 2\n- Item 3");
+    expect(result).toEqual([{ marker: "-", items: ["Item 1", "Item 2", "Item 3"] }]);
+  });
+
+  it("extracts a single bullet list with asterisk marker", () => {
+    const result = extractLists("* Item 1\n* Item 2");
+    expect(result).toEqual([{ marker: "*", items: ["Item 1", "Item 2"] }]);
+  });
+
+  it("extracts a single bullet list with plus marker", () => {
+    const result = extractLists("+ Item 1\n+ Item 2");
+    expect(result).toEqual([{ marker: "+", items: ["Item 1", "Item 2"] }]);
+  });
+
+  it("extracts an ordered list with digit marker", () => {
+    const result = extractLists("1. First\n2. Second\n3. Third");
+    expect(result).toEqual([{ marker: "digit", items: ["First", "Second", "Third"] }]);
+  });
+
+  it("groups consecutive list lines into a single list", () => {
+    const md = "- Alpha\n- Beta\n- Gamma";
+    const result = extractLists(md);
+    expect(result).toHaveLength(1);
+    expect(result[0].items).toHaveLength(3);
+  });
+
+  it("terminates list on blank line", () => {
+    const md = "- Item 1\n- Item 2\n\nProse text";
+    const result = extractLists(md);
+    expect(result).toHaveLength(1);
+    expect(result[0].items).toEqual(["Item 1", "Item 2"]);
+  });
+
+  it("terminates list on non-list line", () => {
+    const md = "- Item 1\n- Item 2\nSome prose line";
+    const result = extractLists(md);
+    expect(result).toHaveLength(1);
+    expect(result[0].items).toEqual(["Item 1", "Item 2"]);
+  });
+
+  it("separates lists broken by prose", () => {
+    const md = "- List 1 item\n\nSome prose\n\n- List 2 item";
+    const result = extractLists(md);
+    expect(result).toHaveLength(2);
+    expect(result[0].items).toEqual(["List 1 item"]);
+    expect(result[1].items).toEqual(["List 2 item"]);
+  });
+
+  it("skips lines inside fenced code blocks", () => {
+    const md = "- Real item\n\n```text\n- Not a list item\n- Also not\n```\n\n- Another real item";
+    const result = extractLists(md);
+    expect(result).toHaveLength(2);
+    expect(result[0].items).toEqual(["Real item"]);
+    expect(result[1].items).toEqual(["Another real item"]);
+  });
+
+  it("skips indented (nested) list lines — they do not start a new list", () => {
+    const md = "- Top level\n  - Nested item\n  - Another nested\n- Top level 2";
+    const result = extractLists(md);
+    expect(result).toHaveLength(1);
+    expect(result[0].items).toEqual(["Top level", "Top level 2"]);
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(extractLists("")).toEqual([]);
+  });
+
+  it("returns empty array for prose with no lists", () => {
+    expect(extractLists("Just some prose. No lists here.")).toEqual([]);
+  });
+
+  it("separates lists with different marker types", () => {
+    const md = "- Dash item\n* Star item";
+    const result = extractLists(md);
+    expect(result).toHaveLength(2);
+    expect(result[0].marker).toBe("-");
+    expect(result[1].marker).toBe("*");
   });
 });
 

@@ -160,6 +160,105 @@ export function splitSentences(text: string, locale: string = "en"): string[] {
   return sentences.filter(Boolean);
 }
 
+export type MarkdownList = {
+  marker: "-" | "*" | "+" | "digit";
+  items: string[];
+};
+
+const LIST_MARKER_PATTERNS: Array<{ marker: MarkdownList["marker"]; regex: RegExp }> = [
+  { marker: "-", regex: /^-\s+/ },
+  { marker: "*", regex: /^\*\s+/ },
+  { marker: "+", regex: /^\+\s+/ },
+  { marker: "digit", regex: /^\d+\.\s+/ },
+];
+
+function matchListMarker(
+  line: string,
+): { marker: MarkdownList["marker"]; text: string } | undefined {
+  for (const { marker, regex } of LIST_MARKER_PATTERNS) {
+    const match = line.match(regex);
+    if (match) {
+      return { marker, text: line.slice(match[0].length).trim() };
+    }
+  }
+  return undefined;
+}
+
+function isTopLevelListLine(
+  line: string,
+): { marker: MarkdownList["marker"]; text: string } | undefined {
+  // Top-level: no leading whitespace before the marker
+  if (/^\s/.test(line)) return undefined;
+  return matchListMarker(line);
+}
+
+function isIndentedListLine(line: string): boolean {
+  // Indented list line: starts with whitespace + list marker
+  if (!/^\s/.test(line)) return false;
+  const trimmed = line.trimStart();
+  return LIST_MARKER_PATTERNS.some(({ regex }) => regex.test(trimmed));
+}
+
+export function extractLists(markdown: string): MarkdownList[] {
+  const normalized = markdown.trim();
+  if (!normalized) return [];
+
+  const lines = normalized.split("\n");
+  const lists: MarkdownList[] = [];
+  let currentList: MarkdownList | null = null;
+  let inCodeFence = false;
+
+  for (const line of lines) {
+    // Track fenced code blocks
+    if (line.trimStart().startsWith("```")) {
+      inCodeFence = !inCodeFence;
+      if (currentList) {
+        lists.push(currentList);
+        currentList = null;
+      }
+      continue;
+    }
+
+    if (inCodeFence) {
+      continue;
+    }
+
+    const topMatch = isTopLevelListLine(line);
+
+    if (topMatch) {
+      // Continue current list if same marker type
+      if (currentList && currentList.marker === topMatch.marker) {
+        currentList.items.push(topMatch.text);
+      } else {
+        // Different marker or first list — flush previous, start new
+        if (currentList) {
+          lists.push(currentList);
+        }
+        currentList = { marker: topMatch.marker, items: [topMatch.text] };
+      }
+      continue;
+    }
+
+    // Indented list line — part of parent item, not a new item
+    if (isIndentedListLine(line)) {
+      continue;
+    }
+
+    // Non-list line (blank, prose, heading, etc.) — terminate current list
+    if (currentList) {
+      lists.push(currentList);
+      currentList = null;
+    }
+  }
+
+  // Flush trailing list
+  if (currentList) {
+    lists.push(currentList);
+  }
+
+  return lists;
+}
+
 export function extractListFacts(markdown: string): string[] {
   return markdown
     .split("\n")
