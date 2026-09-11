@@ -289,6 +289,20 @@ describe("TYPO-LOCALE-01 (mixed-script word)", () => {
   it("passes clean Cyrillic text", () => {
     expect(runRule("TYPO-LOCALE-01", makeSegment("Це текст українською"))).toHaveLength(0);
   });
+
+  it("excludes hyphenated tokens when Latin parts are in allowedTokens", () => {
+    const ctx = createTypographyContext("uk", new Set(["IT", "PDF", "SEO"]));
+    const seg = makeSegment("IT-сервіс-менеджер", { locale: "uk" });
+    const findings = runRule("TYPO-LOCALE-01", seg, ctx);
+    expect(findings).toHaveLength(0);
+  });
+
+  it("flags hyphenated tokens when Latin parts are NOT in allowedTokens", () => {
+    const ctx = createTypographyContext("uk", new Set());
+    const seg = makeSegment("IT-сервіс-менеджер", { locale: "uk" });
+    const findings = runRule("TYPO-LOCALE-01", seg, ctx);
+    expect(findings).toHaveLength(1);
+  });
 });
 
 // ---------------------------------------------------------------------------

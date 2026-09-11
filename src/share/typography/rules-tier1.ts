@@ -584,23 +584,37 @@ const case02: TypographyRule = {
 // ---------------------------------------------------------------------------
 // TYPO-LOCALE-01: Mixed-script word (Latin and Cyrillic letters in one token)
 // Pattern: token matches both \p{Script=Latin} and \p{Script=Cyrillic}
-// Exclusions: none
+// Exclusions: Latin parts of hyphenated tokens in typography.allowedTokens
 // ---------------------------------------------------------------------------
 
 const LATIN_SCRIPT = /\p{Script=Latin}/u;
 const CYRILLIC_SCRIPT = /\p{Script=Cyrillic}/u;
+
+const LATIN_ONLY = /^[\p{Script=Latin}0-9.]+$/u;
+
+function extractLatinParts(token: string): string[] {
+  const parts = token.split("-");
+  return parts
+    .map((p) => p.replace(/[^\p{Script=Latin}0-9.]/gu, ""))
+    .filter((p) => p.length > 0 && LATIN_ONLY.test(p));
+}
 
 const locale01: TypographyRule = {
   id: "TYPO-LOCALE-01",
   family: "LOCALE",
   tier: 1,
   severity: "error",
-  check(segment, _ctx) {
+  check(segment, ctx) {
     const tokens = tokenize(segment.text);
     for (const token of tokens) {
       // Skip tokens with placeholders
       if (token.includes(FORMULA_PLACEHOLDER) || token.includes(URL_PLACEHOLDER)) continue;
       if (LATIN_SCRIPT.test(token) && CYRILLIC_SCRIPT.test(token)) {
+        // Check if all Latin parts are in allowedTokens
+        const latinParts = extractLatinParts(token);
+        if (latinParts.length > 0 && latinParts.every((p) => ctx.allowedTokens.has(p))) {
+          continue;
+        }
         return [
           finding(
             this.id,

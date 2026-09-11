@@ -269,6 +269,9 @@ function stripBodyLine(line: string): string {
   // (4b) Remove CMS template expressions ({price:...}, {t:...}, etc.)
   result = result.replace(/\{[^}]*\}/g, "");
 
+  // (4c) Remove CMS template expressions (=(path.to.value), =(path/to/value))
+  result = result.replace(/=\([^)]*\)/g, "");
+
   // (5) Remove markdown link targets, keep link text
   result = result.replace(LINK_TARGET, "");
 
