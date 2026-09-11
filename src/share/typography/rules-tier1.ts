@@ -19,10 +19,12 @@ TypographyRule[].</purpose>
   <item>RFC-1069: extended TypographyRuleId and TypographyRuleFamily with HEAD, PAIR, MD families.</item>
   <item>RFC-1070: extended TypographyRuleId and TypographyRuleFamily with NUM, ABBR, APOS families; added localeDefaults to TypographyContext.</item>
   <item>RFC-1071: extended TypographyRuleId and TypographyRuleFamily with UNICODE, LINK, SENT families.</item>
+  <item>RFC-1072: changed TypographyFinding.fix from null to FixAction | null; extended finding() helper with optional FixAction param; populated fix on PUNCT-01, SPACE-01, SPACE-02.</item>
 </CHANGE_SUMMARY>
 */
 
 import type { TextSegment } from "./text-surface.ts";
+import type { FixAction } from "./fix.ts";
 import {
   LOCALE_DEFAULTS,
   getLocaleDefaults,
@@ -74,8 +76,8 @@ export interface TypographyFinding {
   match: string;
   message: string;
   fixHint: string;
-  /** Set only by rules whitelisted in RFC-1072; null in this RFC. */
-  fix: null;
+  /** Set by rules whitelisted in RFC-1072; null for non-fixable rules. */
+  fix: FixAction | null;
 }
 
 export interface TypographyRule {
@@ -125,8 +127,9 @@ export function finding(
   column: number,
   message: string,
   fixHint: string,
+  fix: FixAction | null = null,
 ): TypographyFinding {
-  return { ruleId, segment, match, column, message, fixHint, fix: null };
+  return { ruleId, segment, match, column, message, fixHint, fix };
 }
 
 // ---------------------------------------------------------------------------
@@ -172,6 +175,31 @@ function isPlaceholder(ch: string): boolean {
 // ---------------------------------------------------------------------------
 
 const PUNCT01_PATTERNS: RegExp[] = [/[,;:!?]\./u, /\.[,;]/u, /::/u, /;;/u, /,,/u, /[!?]{3,}/u];
+
+/**
+ * Deduplicate clashing punctuation for PUNCT-01 fix.
+ * [,;:!?]. → . (keep the period)
+ * .[,;] → . (keep the period)
+ * :: → :
+ * ;; → ;
+ * ,, → ,
+ * [!?]{3,} → !! (keep first two)
+ */
+function dedupPunct(matched: string): string {
+  // [,;:!?]. — closing mark followed by period → keep period
+  if (/^[,;:!?]\.$/.test(matched)) return ".";
+  // .[,;] — period followed by comma/semicolon → keep period
+  if (/^\.[,;]$/.test(matched)) return ".";
+  // :: → :
+  if (matched === "::") return ":";
+  // ;; → ;
+  if (matched === ";;") return ";";
+  // ,, → ,
+  if (matched === ",,") return ",";
+  // [!?]{3,} → keep first two
+  if (/^[!?]{3,}$/.test(matched)) return matched.slice(0, 2);
+  return matched;
+}
 
 const PUNCT01_MESSAGES: Record<string, { message: string; fixHint: string }> = {
   "[,;:!?]\\.": {
@@ -234,7 +262,13 @@ const punct01: TypographyRule = {
           message: `Doubled or clashing punctuation: "${matched}".`,
           fixHint: "Keep exactly one closing mark.",
         };
-        findings.push(finding(this.id, segment, matched, match.index, msg.message, msg.fixHint));
+        findings.push(
+          finding(this.id, segment, matched, match.index, msg.message, msg.fixHint, {
+            type: "replace",
+            old: matched,
+            new: dedupPunct(matched),
+          }),
+        );
       }
     }
     return findings;
@@ -449,6 +483,7 @@ const space01: TypographyRule = {
           m.index,
           "Two or more consecutive spaces inside text.",
           "Use a single space.",
+          { type: "replace", old: m[0], new: m[0].replace(/ {2,}/g, " ") },
         ),
       ];
     }
@@ -480,6 +515,7 @@ const space02: TypographyRule = {
           m.index,
           "Trailing whitespace at end of line.",
           "Remove trailing spaces.",
+          { type: "delete", at: m.index, length: m[0].length },
         ),
       ];
     }

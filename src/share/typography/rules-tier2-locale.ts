@@ -13,11 +13,13 @@ All regexes use the `u` flag and Unicode property escapes where applicable.</pur
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1070: initial creation with 7 Tier 2 locale rules.</item>
+  <item>RFC-1072: populated fix on ABBR-01, ABBR-02, APOS-01, APOS-02.</item>
 </CHANGE_SUMMARY>
 */
 
 import type { TextSegment } from "./text-surface.ts";
 import { finding, type TypographyFinding, type TypographyRule } from "./rules-tier1.ts";
+import type { FixAction } from "./fix.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -235,6 +237,7 @@ const abbr01: TypographyRule = {
             m.index,
             `Abbreviation missing trailing period: "${m[0]}" — should be "${full}".`,
             `Add a period: "${full}".`,
+            { type: "insert", at: m.index + m[0].length, text: "." } satisfies FixAction,
           ),
         );
       }
@@ -275,6 +278,7 @@ const abbr02: TypographyRule = {
     for (const pattern of ABBR02_PATTERNS) {
       for (const m of text.matchAll(new RegExp(pattern.source, "gu"))) {
         const matched = m[0];
+        const fixed = ABBR02_FIXES[matched] ?? "";
         const fixHint = ABBR02_FIXES[matched] ?? "Add a space after the period.";
         findings.push(
           finding(
@@ -284,6 +288,7 @@ const abbr02: TypographyRule = {
             m.index,
             `German abbreviation with wrong internal spacing: "${matched}" — should be "${fixHint}".`,
             `Add a space after the period: "${fixHint}".`,
+            fixed ? ({ type: "replace", old: matched, new: fixed } satisfies FixAction) : null,
           ),
         );
       }
@@ -320,6 +325,11 @@ const apos01: TypographyRule = {
           m.index,
           `Ukrainian word with curly apostrophe (U+2019): "${matched}" — use a straight apostrophe (').`,
           "Replace the curly apostrophe with a straight apostrophe (').",
+          {
+            type: "replace",
+            old: matched,
+            new: matched.replace(/\u2019/g, "'"),
+          } satisfies FixAction,
         ),
       );
     }
@@ -355,6 +365,11 @@ const apos02: TypographyRule = {
           m.index,
           `Ukrainian word with modifier letter apostrophe (U+02BC): "${matched}" — use a straight apostrophe (').`,
           "Replace the modifier letter apostrophe with a straight apostrophe (').",
+          {
+            type: "replace",
+            old: matched,
+            new: matched.replace(/\u02BC/g, "'"),
+          } satisfies FixAction,
         ),
       );
     }
