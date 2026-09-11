@@ -267,6 +267,44 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "docs/rfcs/rfc-1070-extend-typography-validate-with-tier-2-locale-rules-for-numbers-abbreviations-and-apostrophes.md",
     targetFiles: ["src/content/**/*.md"],
   },
+  {
+    ruleId: "TYPO-UNICODE-01",
+    action: "Remove zero-width characters (U+200B, U+200C, U+200D, U+FEFF) from the source text.",
+    docRef:
+      "docs/rfcs/rfc-1071-extend-typography-validate-with-tier-3-advisory-rules-for-unicode-hygiene-link-text-and-sentence-length.md",
+    targetFiles: ["src/content/**/*.md"],
+  },
+  {
+    ruleId: "TYPO-UNICODE-02",
+    action:
+      "Remove soft hyphen (U+00AD) from the source text — it is invisible in most editors but affects rendering.",
+    docRef:
+      "docs/rfcs/rfc-1071-extend-typography-validate-with-tier-3-advisory-rules-for-unicode-hygiene-link-text-and-sentence-length.md",
+    targetFiles: ["src/content/**/*.md"],
+  },
+  {
+    ruleId: "TYPO-LINK-01",
+    action:
+      "Replace bare URL link text with descriptive link text (e.g. [Learn more](url) instead of [https://example.com](url)).",
+    docRef:
+      "docs/rfcs/rfc-1071-extend-typography-validate-with-tier-3-advisory-rules-for-unicode-hygiene-link-text-and-sentence-length.md",
+    targetFiles: ["src/content/**/*.md"],
+  },
+  {
+    ruleId: "TYPO-LINK-02",
+    action:
+      "Replace generic link text (click here, hier klicken, тут, here, hier) with a descriptive phrase that indicates the link target.",
+    docRef:
+      "docs/rfcs/rfc-1071-extend-typography-validate-with-tier-3-advisory-rules-for-unicode-hygiene-link-text-and-sentence-length.md",
+    targetFiles: ["src/content/**/*.md"],
+  },
+  {
+    ruleId: "TYPO-SENT-01",
+    action: "Split the long sentence (more than 40 words) into shorter sentences for readability.",
+    docRef:
+      "docs/rfcs/rfc-1071-extend-typography-validate-with-tier-3-advisory-rules-for-unicode-hygiene-link-text-and-sentence-length.md",
+    targetFiles: ["src/content/**/*.md"],
+  },
 ];
 
 export const REMEDIATION_CATALOG: ReadonlyMap<string, RemediationPattern> = new Map(
