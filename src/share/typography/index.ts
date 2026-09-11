@@ -38,6 +38,8 @@ export {
 
 export { TIER2_STRUCTURE_RULES } from "./rules-tier2-structure.ts";
 
+export { TIER2_LOCALE_RULES, type Tier2LocaleRuleId } from "./rules-tier2-locale.ts";
+
 export {
   LOCALE_DEFAULTS,
   getLocaleDefaults,
