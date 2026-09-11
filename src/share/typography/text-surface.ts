@@ -88,6 +88,7 @@ export const TECHNICAL_KEYS = new Set([
   "currency",
   "email",
   "phone",
+  "proseId",
 ]);
 
 // When the parent key is "icon", the child "name" is technical
@@ -269,8 +270,8 @@ function stripBodyLine(line: string): string {
   // (4b) Remove CMS template expressions ({price:...}, {t:...}, etc.)
   result = result.replace(/\{[^}]*\}/g, "");
 
-  // (4c) Remove CMS template expressions (=(path.to.value), =(path/to/value))
-  result = result.replace(/=\([^)]*\)/g, "");
+  // (4c) Replace CMS template expressions (=(path.to.value), =(path/to/value)) with placeholder
+  result = result.replace(/=\([^)]*\)/g, "\uE002");
 
   // (5) Remove markdown link targets, keep link text
   result = result.replace(LINK_TARGET, "");
@@ -296,9 +297,11 @@ export function extractTextSurface(
   const locale = deriveFileLocale(file, options.languages, options.defaultLanguage);
 
   // Parse frontmatter — catch YAML errors
-  const frontmatterMatch = source.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  // Strip BOM if present so the frontmatter regex matches
+  const bomStripped = source.replace(/^\uFEFF/, "");
+  const frontmatterMatch = bomStripped.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
   const frontmatterText = frontmatterMatch?.[1] ?? "";
-  const frontmatterLineCount = frontmatterMatch ? frontmatterMatch[0].split(/\r?\n/).length : 0;
+  const frontmatterLineCount = frontmatterMatch ? frontmatterMatch[0].split(/\r?\n/).length - 1 : 0;
 
   let data: Record<string, unknown> = {};
   let yamlError: YamlError | null = null;
@@ -350,7 +353,7 @@ export function extractTextSurface(
   }
 
   // Extract body lines
-  const body = frontmatterMatch ? source.slice(frontmatterMatch[0].length) : source;
+  const body = frontmatterMatch ? bomStripped.slice(frontmatterMatch[0].length) : bomStripped;
   const bodyLines = body.split(/\r?\n/);
   const bodyLineOffset = frontmatterLineCount;
 

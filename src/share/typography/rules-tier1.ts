@@ -93,7 +93,15 @@ function finding(
 // ---------------------------------------------------------------------------
 
 function isAllowedToken(token: string, ctx: TypographyContext): boolean {
-  return ctx.allowedTokens.has(token);
+  if (ctx.allowedTokens.has(token)) return true;
+  // Also check with leading/trailing punctuation stripped
+  const stripped = token.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "");
+  if (stripped !== token && ctx.allowedTokens.has(stripped)) return true;
+  // Also check hyphenated parts (e.g. LinkedIn-Profil → LinkedIn)
+  for (const part of stripped.split("-")) {
+    if (part.length > 0 && ctx.allowedTokens.has(part)) return true;
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -110,9 +118,10 @@ function tokenize(text: string): string[] {
 
 const FORMULA_PLACEHOLDER = "\uE000";
 const URL_PLACEHOLDER = "\uE001";
+const CMS_PLACEHOLDER = "\uE002";
 
 function isPlaceholder(ch: string): boolean {
-  return ch === FORMULA_PLACEHOLDER || ch === URL_PLACEHOLDER;
+  return ch === FORMULA_PLACEHOLDER || ch === URL_PLACEHOLDER || ch === CMS_PLACEHOLDER;
 }
 
 // ---------------------------------------------------------------------------
@@ -506,7 +515,12 @@ const case01: TypographyRule = {
     const token = text.slice(tokenStart, tokenEnd);
 
     // Skip if token contains placeholders (formula/URL)
-    if (token.includes(FORMULA_PLACEHOLDER) || token.includes(URL_PLACEHOLDER)) return [];
+    if (
+      token.includes(FORMULA_PLACEHOLDER) ||
+      token.includes(URL_PLACEHOLDER) ||
+      token.includes(CMS_PLACEHOLDER)
+    )
+      return [];
 
     if (isAllowedToken(token, ctx)) return [];
 
@@ -530,7 +544,7 @@ const case01: TypographyRule = {
 //   preceding token is ...; preceding token is a digit sequence (\d+)
 // ---------------------------------------------------------------------------
 
-const CASE02 = /[.!?]\s+\p{Ll}/u;
+const CASE02 = /[.!?]\s+\p{Ll}/gu;
 
 const case02: TypographyRule = {
   id: "TYPO-CASE-02",
@@ -539,45 +553,63 @@ const case02: TypographyRule = {
   severity: "error",
   check(segment, ctx) {
     const text = segment.text;
-    const m = CASE02.exec(text);
-    if (!m) return [];
+    for (const m of text.matchAll(CASE02)) {
+      const punctIndex = m.index;
 
-    // Find the token before the punctuation
-    const punctIndex = m.index;
-    // Scan backwards to find the token (maximal non-whitespace before punct)
-    let tokenEnd = punctIndex;
-    while (tokenEnd > 0 && /\s/.test(text[tokenEnd - 1])) tokenEnd--;
-    let tokenStart = tokenEnd;
-    while (tokenStart > 0 && !/\s/.test(text[tokenStart - 1])) tokenStart--;
+      // Find the token before the punctuation
+      // Scan backwards to find the token (maximal non-whitespace before punct)
+      let tokenEnd = punctIndex;
+      while (tokenEnd > 0 && /\s/.test(text[tokenEnd - 1])) tokenEnd--;
+      let tokenStart = tokenEnd;
+      while (tokenStart > 0 && !/\s/.test(text[tokenStart - 1])) tokenStart--;
 
-    const token = text.slice(tokenStart, tokenEnd);
+      const token = text.slice(tokenStart, tokenEnd);
 
-    // Exclusion: preceding token is a known abbreviation
-    if (ctx.abbreviations.has(token)) return [];
+      // Exclusion: preceding token is a known abbreviation
+      if (ctx.abbreviations.has(token)) continue;
 
-    // Exclusion: text ending at the punctuation matches a multi-word abbreviation
-    // (e.g. "z. B." — the period at punctIndex is part of the abbreviation)
-    const textUpToPunct = text.slice(0, punctIndex + 1);
-    for (const abbr of ctx.abbreviations) {
-      if (textUpToPunct.endsWith(abbr)) return [];
+      // Exclusion: text ending at the punctuation matches a multi-word abbreviation
+      // (e.g. "z. B." — the period at punctIndex is part of the abbreviation)
+      // Also check text including the matched characters, for abbreviations like
+      // "u. a." where the first period triggers the match but the abbreviation
+      // continues past the matched lowercase letter
+      const textUpToPunct = text.slice(0, punctIndex + 1);
+      const textUpToMatch = text.slice(0, m.index + m[0].length + 1);
+      let isAbbrev = false;
+      for (const abbr of ctx.abbreviations) {
+        if (textUpToPunct.endsWith(abbr) || textUpToMatch.endsWith(abbr)) {
+          isAbbrev = true;
+          break;
+        }
+      }
+      if (isAbbrev) continue;
+
+      // Exclusion: preceding token is "..."
+      if (token === "...") continue;
+
+      // Exclusion: preceding token is a digit sequence
+      if (/^\d+$/.test(token)) continue;
+
+      // Exclusion: preceding token contains a placeholder (formula/URL/CMS)
+      if (
+        token.includes(FORMULA_PLACEHOLDER) ||
+        token.includes(URL_PLACEHOLDER) ||
+        token.includes(CMS_PLACEHOLDER)
+      )
+        continue;
+
+      return [
+        finding(
+          this.id,
+          segment,
+          m[0],
+          m.index,
+          "Lowercase sentence start after sentence-ending punctuation.",
+          "Capitalize the first letter of the sentence.",
+        ),
+      ];
     }
-
-    // Exclusion: preceding token is "..."
-    if (token === "...") return [];
-
-    // Exclusion: preceding token is a digit sequence
-    if (/^\d+$/.test(token)) return [];
-
-    return [
-      finding(
-        this.id,
-        segment,
-        m[0],
-        m.index,
-        "Lowercase sentence start after sentence-ending punctuation.",
-        "Capitalize the first letter of the sentence.",
-      ),
-    ];
+    return [];
   },
 };
 
@@ -591,12 +623,13 @@ const LATIN_SCRIPT = /\p{Script=Latin}/u;
 const CYRILLIC_SCRIPT = /\p{Script=Cyrillic}/u;
 
 const LATIN_ONLY = /^[\p{Script=Latin}0-9.]+$/u;
+const HAS_LATIN_LETTER = /\p{Script=Latin}/u;
 
 function extractLatinParts(token: string): string[] {
   const parts = token.split("-");
   return parts
     .map((p) => p.replace(/[^\p{Script=Latin}0-9.]/gu, ""))
-    .filter((p) => p.length > 0 && LATIN_ONLY.test(p));
+    .filter((p) => p.length > 0 && LATIN_ONLY.test(p) && HAS_LATIN_LETTER.test(p));
 }
 
 const locale01: TypographyRule = {
@@ -608,7 +641,12 @@ const locale01: TypographyRule = {
     const tokens = tokenize(segment.text);
     for (const token of tokens) {
       // Skip tokens with placeholders
-      if (token.includes(FORMULA_PLACEHOLDER) || token.includes(URL_PLACEHOLDER)) continue;
+      if (
+        token.includes(FORMULA_PLACEHOLDER) ||
+        token.includes(URL_PLACEHOLDER) ||
+        token.includes(CMS_PLACEHOLDER)
+      )
+        continue;
       if (LATIN_SCRIPT.test(token) && CYRILLIC_SCRIPT.test(token)) {
         // Check if all Latin parts are in allowedTokens
         const latinParts = extractLatinParts(token);

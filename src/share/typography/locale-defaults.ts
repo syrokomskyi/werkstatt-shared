@@ -42,9 +42,21 @@ const DE_ABBREVIATIONS = new Set([
   "Inc.",
 ]);
 
-const UK_ABBREVIATIONS = new Set(["напр.", "тис.", "грн", "т. ч.", "ст.", "п.", "р.", "див."]);
+const UK_ABBREVIATIONS = new Set([
+  "напр.",
+  "тис.",
+  "грн",
+  "т. ч.",
+  "ст.",
+  "п.",
+  "р.",
+  "див.",
+  "Див.",
+  "нім.",
+  "Inc.",
+]);
 
-const EN_ABBREVIATIONS = new Set(["e.g.", "i.e.", "etc.", "vs.", "No."]);
+const EN_ABBREVIATIONS = new Set(["e.g.", "i.e.", "etc.", "vs.", "No.", "Inc."]);
 
 export const LOCALE_DEFAULTS: Record<string, LocaleTypographyDefaults> = {
   de: { abbreviations: DE_ABBREVIATIONS },

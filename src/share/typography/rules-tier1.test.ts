@@ -269,6 +269,17 @@ describe("TYPO-CASE-02 (lowercase sentence start)", () => {
   it("passes clean text", () => {
     expect(runRule("TYPO-CASE-02", makeSegment("Hello. World is nice"))).toHaveLength(0);
   });
+
+  it("allows lowercase after u. a. abbreviation (de)", () => {
+    const seg = makeSegment("Berater u. a.). Die Teilnahme");
+    const ctx = createTypographyContext("de", new Set());
+    expect(runRule("TYPO-CASE-02", seg, ctx)).toHaveLength(0);
+  });
+
+  it("skips tokens containing CMS placeholder", () => {
+    const seg = makeSegment("zum \uE002. eines jeden Monats");
+    expect(runRule("TYPO-CASE-02", seg)).toHaveLength(0);
+  });
 });
 
 // ---------------------------------------------------------------------------
