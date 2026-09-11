@@ -121,14 +121,7 @@ function isPlaceholder(ch: string): boolean {
 // Exclusions: ?! and !? are allowed
 // ---------------------------------------------------------------------------
 
-const PUNCT01_PATTERNS: RegExp[] = [
-  /[,;:!?]\./u,
-  /\.[,;]/u,
-  /::/u,
-  /;;/u,
-  /,,/u,
-  /[!?]{3,}/u,
-];
+const PUNCT01_PATTERNS: RegExp[] = [/[,;:!?]\./u, /\.[,;]/u, /::/u, /;;/u, /,,/u, /[!?]{3,}/u];
 
 const PUNCT01_MESSAGES: Record<string, { message: string; fixHint: string }> = {
   "[,;:!?]\\.": {
@@ -176,9 +169,7 @@ const punct01: TypographyRule = {
           message: `Doubled or clashing punctuation: "${matched}".`,
           fixHint: "Keep exactly one closing mark.",
         };
-        findings.push(
-          finding(this.id, segment, matched, match.index, msg.message, msg.fixHint),
-        );
+        findings.push(finding(this.id, segment, matched, match.index, msg.message, msg.fixHint));
       }
     }
     return findings;
@@ -563,6 +554,13 @@ const case02: TypographyRule = {
 
     // Exclusion: preceding token is a known abbreviation
     if (ctx.abbreviations.has(token)) return [];
+
+    // Exclusion: text ending at the punctuation matches a multi-word abbreviation
+    // (e.g. "z. B." — the period at punctIndex is part of the abbreviation)
+    const textUpToPunct = text.slice(0, punctIndex + 1);
+    for (const abbr of ctx.abbreviations) {
+      if (textUpToPunct.endsWith(abbr)) return [];
+    }
 
     // Exclusion: preceding token is "..."
     if (token === "...") return [];
