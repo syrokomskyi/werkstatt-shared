@@ -15,6 +15,19 @@ describe("loadDerivedPrices", () => {
     }
   });
 
+  it("returns null for empty {} content (RFC-1074)", () => {
+    const tmpDir = mkdtempSync(join(tmpdir(), "test-prices-"));
+    try {
+      const srcDir = join(tmpDir, "src");
+      mkdirSync(srcDir, { recursive: true });
+      writeFileSync(join(srcDir, "derived-prices.generated.json"), "{}\n");
+      const result = loadDerivedPrices(tmpDir);
+      expect(result).toBeNull();
+    } finally {
+      rmSync(tmpDir, { recursive: true });
+    }
+  });
+
   it("loads and parses JSON when file exists", () => {
     const tmpDir = mkdtempSync(join(tmpdir(), "test-prices-"));
     try {

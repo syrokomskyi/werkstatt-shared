@@ -8,6 +8,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0767: relocated loadDerivedPrices from packages/ui to packages/share to break circular dependency. Node-only subpath export.</item>
+  <item>RFC-1074: return null for empty {} content — semantically equivalent to "no derived prices".</item>
 </CHANGE_SUMMARY>
 */
 
@@ -32,5 +33,6 @@ export function loadDerivedPrices(
     }
     throw err;
   }
-  return JSON.parse(raw) as Record<string, DerivedPriceEntry[]>;
+  const parsed = JSON.parse(raw) as Record<string, DerivedPriceEntry[]>;
+  return Object.keys(parsed).length > 0 ? parsed : null;
 }
