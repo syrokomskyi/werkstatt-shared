@@ -120,11 +120,12 @@ export function deriveFileLocale(
   languages: readonly string[],
   defaultLanguage: string,
 ): string {
-  // file is repo-relative: src/content/<collection>/<lang>/...
+  // file is repo-relative: may be src/content/<collection>/<lang>/... or
+  // missions/<id>/workpiece/src/content/<collection>/<lang>/...
   const parts = file.split("/");
-  // parts[0] = "src", parts[1] = "content", parts[2] = collection, parts[3] = lang
-  if (parts.length >= 4 && parts[0] === "src" && parts[1] === "content") {
-    const lang = parts[3];
+  const srcIdx = parts.indexOf("src");
+  if (srcIdx >= 0 && srcIdx + 3 < parts.length && parts[srcIdx + 1] === "content") {
+    const lang = parts[srcIdx + 3];
     if (languages.includes(lang)) return lang;
   }
   return defaultLanguage;
@@ -215,11 +216,25 @@ const INLINE_CODE = /`[^`]*`/g;
 // (2) HTML comments
 const HTML_COMMENT = /<!--[\s\S]*?-->/g;
 // (3) Void HTML elements
-const VOID_HTML = /<(?:br|hr|img|input|meta|link|source|area|base|col|embed|param|track|wbr)\b[^>]*\/?>/giu;
+const VOID_HTML =
+  /<(?:br|hr|img|input|meta|link|source|area|base|col|embed|param|track|wbr)\b[^>]*\/?>/giu;
 // (3) Non-void HTML elements — strip tags, keep text
 const NON_VOID_HTML = /<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*\/?>/gu;
 const VOID_ELEMENTS = new Set([
-  "br", "hr", "img", "input", "meta", "link", "source", "area", "base", "col", "embed", "param", "track", "wbr",
+  "br",
+  "hr",
+  "img",
+  "input",
+  "meta",
+  "link",
+  "source",
+  "area",
+  "base",
+  "col",
+  "embed",
+  "param",
+  "track",
+  "wbr",
 ]);
 // (4) Formula expressions =(…)
 const FORMULA = /=\([^)]*\)/g;
@@ -251,6 +266,9 @@ function stripBodyLine(line: string): string {
   // (4) Replace formulas with placeholder
   result = result.replace(FORMULA, "\uE000");
 
+  // (4b) Remove CMS template expressions ({price:...}, {t:...}, etc.)
+  result = result.replace(/\{[^}]*\}/g, "");
+
   // (5) Remove markdown link targets, keep link text
   result = result.replace(LINK_TARGET, "");
 
@@ -277,9 +295,7 @@ export function extractTextSurface(
   // Parse frontmatter — catch YAML errors
   const frontmatterMatch = source.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   const frontmatterText = frontmatterMatch?.[1] ?? "";
-  const frontmatterLineCount = frontmatterMatch
-    ? frontmatterMatch[0].split(/\r?\n/).length
-    : 0;
+  const frontmatterLineCount = frontmatterMatch ? frontmatterMatch[0].split(/\r?\n/).length : 0;
 
   let data: Record<string, unknown> = {};
   let yamlError: YamlError | null = null;
@@ -290,7 +306,8 @@ export function extractTextSurface(
   } catch (err) {
     // YAML parse error — extract line/column from YAMLParseError
     if (err instanceof YAML.YAMLParseError) {
-      const linePos = (err as unknown as { linePos?: Array<{ line: number; col: number }> }).linePos;
+      const linePos = (err as unknown as { linePos?: Array<{ line: number; col: number }> })
+        .linePos;
       const line = linePos?.[0]?.line ?? 0;
       const column = linePos?.[0]?.col ?? 0;
       yamlError = { line, column, message: err.message };
@@ -311,13 +328,7 @@ export function extractTextSurface(
       lineCounter = null;
     }
 
-    const fmStrings = extractFrontmatterStrings(
-      data,
-      null,
-      skipKeys,
-      lineCounter,
-      frontmatterText,
-    );
+    const fmStrings = extractFrontmatterStrings(data, null, skipKeys, lineCounter, frontmatterText);
 
     for (const entry of fmStrings) {
       const stripped = stripBodyLine(entry.value);
@@ -336,9 +347,7 @@ export function extractTextSurface(
   }
 
   // Extract body lines
-  const body = frontmatterMatch
-    ? source.slice(frontmatterMatch[0].length)
-    : source;
+  const body = frontmatterMatch ? source.slice(frontmatterMatch[0].length) : source;
   const bodyLines = body.split(/\r?\n/);
   const bodyLineOffset = frontmatterLineCount;
 

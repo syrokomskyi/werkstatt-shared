@@ -19,6 +19,19 @@ describe("deriveFileLocale", () => {
     expect(deriveFileLocale("src/content/pages/en/index.md", LANGS, "de")).toBe("en");
   });
 
+  it("derives locale from mission workpiece content path", () => {
+    expect(
+      deriveFileLocale("missions/wg-m001/workpiece/src/content/pages/de/index.md", LANGS, "de"),
+    ).toBe("de");
+    expect(
+      deriveFileLocale(
+        "missions/wg-m001/workpiece/src/content/business-profile/uk/offerings/x.md",
+        LANGS,
+        "de",
+      ),
+    ).toBe("uk");
+  });
+
   it("falls back to default language for unknown locale", () => {
     expect(deriveFileLocale("src/content/pages/fr/index.md", LANGS, "de")).toBe("de");
   });
