@@ -54,6 +54,18 @@ Location: `packages/werkstatt-shared/src/share/semantic/` — exported via `@war
 | Export | Purpose |
 | --- | --- |
 | `splitSentences(text, locale?)` | Locale-aware sentence boundary detection with abbreviation handling for `de`, `uk`, `en` (RFC-0901) |
+| `projectClaims(claims, evidenceSources)` | Project PBP claims with evidence provenance into `SemanticClaimProvenance[]` (RFC-1076) |
+| `SemanticClaimProvenance` | Claim provenance type: id, claimClass, claimKind, statement, evidence refs |
+| `SemanticEvidenceRef` | Evidence reference type: id, kind, label, sha256, canonicalUri |
+| `formatClaims(site)` | Format claims section for `llms-full.txt` (RFC-1076) |
+
+### Claim provenance projection (RFC-1076)
+
+Location: `packages/werkstatt-shared/src/share/semantic/business-projection.ts` — exported via `@warpgogol/werkstatt-shared/share/semantic`.
+
+`projectClaims(claims, evidenceSources)` filters published claims, resolves evidence references via the `ref` field on `PbpEntityRef`, and projects canonical item hashes. Only claims with `status: "published"` and a non-empty `id` are included. Evidence sources are keyed by their `id` field.
+
+`formatClaims(site)` in `llms.ts` renders a `## Claims` section in `llms-full.txt` when `site.claims` is non-empty — omitted entirely when no claims exist.
 
 ### Canonical entity URL policy (RFC-0910)
 
