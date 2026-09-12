@@ -10,6 +10,7 @@
   <item>RFC-0148: initial projection registry — offer + location projectors and the visibility boundary.</item>
   <item>RFC-0287: added projectWeb for the Agent Surface knowledge tier.</item>
   <item>RFC-0373: added projectServices for business service catalog projection.</item>
+  <item>RFC-1076: add projectClaims projector and SemanticClaimProvenance / SemanticEvidenceRef types.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -20,6 +21,38 @@ import type {
   SemanticService,
   SemanticWeb,
 } from "./models.ts";
+
+export interface SemanticClaimProvenance {
+  /** Stable claim ID from PbpClaim.id. */
+  id: string;
+  /** Claim class: factual, risk, benefit, etc. */
+  claimClass: string;
+  /** Claim kind: risk, benefit, comparison, fact, limitation, recommendation. */
+  claimKind: string;
+  /** The claim statement text. */
+  statement: string;
+  /** ISO 639-1 language tag of the statement (RFC-0706). */
+  statementLang?: string;
+  /** Verification level N0–N3 (ADR-0028). */
+  verificationLevel?: string;
+  /** Confidence: high, medium, low. */
+  confidence?: string;
+  /** Evidence references — resolved from PbpClaim.evidenceRefs. */
+  evidence: SemanticEvidenceRef[];
+}
+
+export interface SemanticEvidenceRef {
+  /** EvidenceSource entity ID. */
+  id: string;
+  /** Evidence kind: verified-record, third-party-registry, certificate, etc. */
+  kind: string;
+  /** Human-readable label for the evidence source. */
+  label: string;
+  /** SHA-256 integrity hash of the canonical evidence artifact, if available. */
+  sha256?: string;
+  /** Canonical URI of the evidence source (RFC-1075), if available. */
+  canonicalUri?: string;
+}
 
 /**
  * RFC-0148 privacy boundary. `public` projects to AI (llms) + JSON-LD; `pageMeta`
@@ -251,6 +284,67 @@ export function projectServices(
     });
   }
   return services;
+}
+
+/**
+ * RFC-1076: project PBP claims with their evidence references into the semantic model.
+ * Only claims with status "published" are projected. The sha256 is read from the
+ * canonical item (items[key] where canonical === true), falling back to the first
+ * item. Localization is handled by the semantic loader (per-language loading with
+ * default-language fallback), not by this projector.
+ */
+export function projectClaims(
+  claims: ReadonlyArray<Record<string, unknown>> | undefined,
+  evidenceSources: Record<string, Record<string, unknown>> | undefined,
+): SemanticClaimProvenance[] {
+  if (!claims?.length) return [];
+  const result: SemanticClaimProvenance[] = [];
+  for (const claim of claims) {
+    const id = typeof claim["id"] === "string" ? claim["id"] : "";
+    if (!id) continue;
+    const status = typeof claim["status"] === "string" ? claim["status"] : "";
+    if (status !== "published") continue;
+    const evidenceRefs = (claim["evidenceRefs"] ?? {}) as Record<string, { ref?: string }>;
+    const evidence: SemanticEvidenceRef[] = [];
+    for (const ref of Object.values(evidenceRefs)) {
+      const sourceId = ref?.ref;
+      if (!sourceId) continue;
+      const source = evidenceSources?.[sourceId];
+      if (!source) continue;
+      const items = (source["items"] ?? {}) as Record<
+        string,
+        { sha256?: string; canonical?: boolean }
+      >;
+      const itemValues = Object.values(items);
+      const canonicalItem = itemValues.find((it) => it?.canonical === true) ?? itemValues[0];
+      evidence.push({
+        id: sourceId,
+        kind: typeof source["kind"] === "string" ? source["kind"] : "",
+        label: typeof source["name"] === "string" ? source["name"] : sourceId,
+        ...(typeof canonicalItem?.["sha256"] === "string"
+          ? { sha256: canonicalItem["sha256"] }
+          : {}),
+        ...(typeof source["canonicalUri"] === "string"
+          ? { canonicalUri: source["canonicalUri"] }
+          : {}),
+      });
+    }
+    result.push({
+      id,
+      claimClass: typeof claim["claimClass"] === "string" ? claim["claimClass"] : "",
+      claimKind: typeof claim["claimKind"] === "string" ? claim["claimKind"] : "",
+      statement: typeof claim["statement"] === "string" ? claim["statement"] : "",
+      ...(typeof claim["statementLang"] === "string"
+        ? { statementLang: claim["statementLang"] }
+        : {}),
+      ...(typeof claim["verificationLevel"] === "string"
+        ? { verificationLevel: claim["verificationLevel"] }
+        : {}),
+      ...(typeof claim["confidence"] === "string" ? { confidence: claim["confidence"] } : {}),
+      evidence,
+    });
+  }
+  return result;
 }
 
 /**

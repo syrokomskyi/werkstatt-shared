@@ -421,4 +421,6 @@ export type SemanticSiteModel = {
   pages: SemanticPageModel[];
   /** RFC-0789: agent block from system.md, populated by the semantic loader. */
   agent?: { enabled?: boolean };
+  /** RFC-1076: projected claims with evidence provenance, loaded by the semantic loader. */
+  claims?: import("./business-projection.ts").SemanticClaimProvenance[];
 };

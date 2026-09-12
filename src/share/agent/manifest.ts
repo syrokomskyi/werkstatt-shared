@@ -15,6 +15,7 @@ two runs on unchanged input are byte-identical (AS-7).
 <CHANGE_SUMMARY>
   <item>RFC-0286: initial manifest contract and pure builder.</item>
   <item>RFC-0954: add search interface to AgentSurfaceManifest.interfaces.</item>
+  <item>RFC-1076: add claims field to AgentSurfaceManifest, AgentClaimRef type, bump AGENT_SURFACE_VERSION to 1.1.0.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -22,7 +23,7 @@ import { createHash } from "node:crypto";
 import type { AgentSurfaceProof } from "./proof.ts";
 
 /** Semver of THIS manifest schema. Bump only via an RFC amending RFC-0286 (AS-7). */
-export const AGENT_SURFACE_VERSION = "1.0.0";
+export const AGENT_SURFACE_VERSION = "1.1.0";
 
 export interface AgentKnowledgeRef {
   /** A BusinessDomain with visibility "public" (RFC-0287). */
@@ -41,6 +42,14 @@ export interface AgentActionRef {
   entitlement: "agent.actions";
 }
 
+export interface AgentClaimRef {
+  id: string;
+  claimClass: string;
+  statement: string;
+  verificationLevel?: string;
+  evidenceCount: number;
+}
+
 export interface AgentSurfaceManifest {
   surfaceVersion: string;
   site: string;
@@ -50,6 +59,8 @@ export interface AgentSurfaceManifest {
   contentHash: string;
   knowledge: AgentKnowledgeRef[];
   actions: AgentActionRef[];
+  /** RFC-1076: claim provenance chain — claims with their evidence references. */
+  claims: AgentClaimRef[];
   interfaces: {
     llms: string;
     twins: { pattern: string } | null;
@@ -67,6 +78,8 @@ export interface AgentSurfaceManifestInput {
   languages: { default: string; supported: string[] };
   knowledge?: AgentKnowledgeRef[];
   actions?: AgentActionRef[];
+  /** RFC-1076: claim provenance summaries for the manifest. */
+  claims?: AgentClaimRef[];
   hasTwins?: boolean;
   openapiUrl?: string | null;
   mcp?: { url: string; protocolVersion: string } | null;
@@ -135,6 +148,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
     },
     knowledge: [...(input.knowledge ?? [])].sort((a, b) => a.domain.localeCompare(b.domain)),
     actions: [...(input.actions ?? [])].sort((a, b) => a.id.localeCompare(b.id)),
+    claims: [...(input.claims ?? [])].sort((a, b) => a.id.localeCompare(b.id)),
     interfaces: {
       llms: "/llms.txt",
       twins: input.hasTwins ? { pattern: "/**.md" } : null,
