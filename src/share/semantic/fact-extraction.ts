@@ -32,5 +32,15 @@ export function normalizeFactValue(type: string, value: string): string {
   const trimmed = value.trim();
   if (type === "email") return trimmed.toLowerCase();
   if (type === "phone") return trimmed.replace(/^tel:/, "").replace(/[\s\-()]/g, "");
+  if (type === "price") {
+    let stripped = trimmed.replace(/\s*(EUR|USD|GBP|CHF|UAH|€|\$|£|₴)\s*$/i, "");
+    // Handle German thousands separator: "2.000" → "2000", "1.040" → "1040"
+    stripped = stripped.replace(/(\d)\.(\d{3})(?!\d)/g, "$1$2");
+    // Handle space thousands separator: "2 000" → "2000"
+    stripped = stripped.replace(/(\d)\s(\d{3})(?!\d)/g, "$1$2");
+    const num = parseFloat(stripped);
+    if (!isNaN(num)) return String(num);
+    return stripped;
+  }
   return trimmed;
 }
