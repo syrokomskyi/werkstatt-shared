@@ -236,6 +236,8 @@ export type SemanticOfferCapacity = {
 };
 
 export type SemanticOffer = {
+  /** RFC-1075: persistent canonical URI for Linked Data @id. */
+  canonicalUri?: string;
   prices?: SemanticPrice[];
   guarantees?: SemanticGuarantee[];
   growthModules?: SemanticGrowthModule[];
@@ -269,6 +271,8 @@ export type SemanticFaqEntry = {
 };
 
 export type SemanticOrganization = {
+  /** RFC-1075: persistent canonical URI for Linked Data @id. */
+  canonicalUri?: string;
   name: string;
   legalName?: string;
   description: string;
