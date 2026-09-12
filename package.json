@@ -326,6 +326,10 @@
       "types": "./src/share/semantic/fact-extraction.ts",
       "default": "./src/share/semantic/fact-extraction.ts"
     },
+    "./share/semantic/freshness": {
+      "types": "./src/share/semantic/freshness.ts",
+      "default": "./src/share/semantic/freshness.ts"
+    },
     "./share/shared-context": {
       "types": "./src/share/shared-context.ts",
       "default": "./src/share/shared-context.ts"

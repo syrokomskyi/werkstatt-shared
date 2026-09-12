@@ -36,3 +36,4 @@ export * from "./markdown-twin-provenance.ts";
 export * from "./price-marker-resolver.ts";
 export * from "./canonical-uri.ts";
 export * from "./fact-extraction.ts";
+export * from "./freshness.ts";
