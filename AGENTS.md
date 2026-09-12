@@ -104,6 +104,21 @@ Rules:
 - An explicitly authored `canonicalUri` on a `PbpEntity` takes priority over derivation.
 - The function is pure, side-effect-free, and deterministic.
 
+### Canonical fact extraction (RFC-1077)
+
+Location: `packages/werkstatt-shared/src/share/semantic/fact-extraction.ts` — exported via `@warpgogol/werkstatt-shared/share/semantic/fact-extraction`.
+
+| Export | Purpose |
+| --- | --- |
+| `CanonicalFact` | Interface for a canonical fact: type, entityId, entityType, value, surface, source |
+| `normalizeFactValue(type, value)` | Normalize a fact value for cross-surface comparison (email→lowercase, phone→strip tel: and separators, others→trim) |
+
+Rules:
+
+- This module is package-boundary-safe: it defines the contract and normalization only. Fact extraction from PBP and rendered surfaces lives in `@warpgogol/werkstatt-site`.
+- The `CanonicalFact` interface is the shared contract between the canonical source (PBP resolved graph) and surface extractors (HTML, JSON-LD, llms-full.txt).
+- `normalizeFactValue` is pure and deterministic.
+
 ### SystemManifest `seo` field (RFC-0911)
 
 The `SystemManifest` interface in `packages/werkstatt-shared/src/content/system-manifest.ts` includes an optional `seo` field for SEO validator configuration:
