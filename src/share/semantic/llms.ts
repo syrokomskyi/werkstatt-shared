@@ -10,6 +10,7 @@
   <item>Added full llms.txt generation and optional title-aware page labels.</item>
   <item>RFC-0184: canonical Markdown links, blockquoted summary, absolute URLs, llms-full.txt reference, and empty-section filtering.</item>
   <item>RFC-0372: formatBlocks reads from unified page.blocks instead of answerBlocks + contentBlocks.</item>
+  <item>RFC-1075: emit canonicalUri for organization and offer in llms-full.txt.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -119,6 +120,9 @@ function formatInitiatives(page: SemanticPageModel): string {
 
 function formatOrganizationFacts(site: SemanticSiteModel): string[] {
   return [
+    ...(site.organization.canonicalUri
+      ? [`- Canonical URI: ${site.organization.canonicalUri}`]
+      : []),
     `- Name: ${site.organization.legalName ?? site.organization.name}`,
     ...(site.organization.foundingYear ? [`- Founded: ${site.organization.foundingYear}`] : []),
     ...(site.organization.registration
@@ -182,7 +186,8 @@ function formatOffer(site: SemanticSiteModel): string[] {
   const offer = site.organization.offer;
   if (
     !offer ||
-    (!offer.prices?.length &&
+    (!offer.canonicalUri &&
+      !offer.prices?.length &&
       !offer.guarantees?.length &&
       !offer.growthModules?.length &&
       !offer.changePrice &&
@@ -192,6 +197,9 @@ function formatOffer(site: SemanticSiteModel): string[] {
     return [];
   }
   const lines: string[] = ["## Offer"];
+  if (offer.canonicalUri) {
+    lines.push(`- Canonical URI: ${offer.canonicalUri}`);
+  }
   if (offer.prices?.length) {
     lines.push(...offer.prices.map((price) => `- ${price.label}: ${price.amount}`));
   }
