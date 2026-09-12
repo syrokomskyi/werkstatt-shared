@@ -318,6 +318,10 @@
       "types": "./src/share/semantic/derived-prices-loader.ts",
       "default": "./src/share/semantic/derived-prices-loader.ts"
     },
+    "./share/semantic/canonical-uri": {
+      "types": "./src/share/semantic/canonical-uri.ts",
+      "default": "./src/share/semantic/canonical-uri.ts"
+    },
     "./share/shared-context": {
       "types": "./src/share/shared-context.ts",
       "default": "./src/share/shared-context.ts"
