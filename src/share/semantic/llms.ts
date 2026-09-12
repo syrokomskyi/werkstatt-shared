@@ -11,6 +11,7 @@
   <item>RFC-0184: canonical Markdown links, blockquoted summary, absolute URLs, llms-full.txt reference, and empty-section filtering.</item>
   <item>RFC-0372: formatBlocks reads from unified page.blocks instead of answerBlocks + contentBlocks.</item>
   <item>RFC-1075: emit canonicalUri for organization and offer in llms-full.txt.</item>
+  <item>RFC-1076: add formatClaims section in buildLlmsFull for claim provenance.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -289,6 +290,29 @@ function formatTeam(site: SemanticSiteModel): string[] {
   return lines;
 }
 
+/** RFC-1076: render projected claims with their evidence references. */
+function formatClaims(site: SemanticSiteModel): string[] {
+  if (!site.claims?.length) return [];
+  const lines: string[] = ["## Claims"];
+  for (const claim of site.claims) {
+    lines.push(`### ${claim.statement}`);
+    lines.push(`- Class: ${claim.claimClass}`);
+    if (claim.verificationLevel) lines.push(`- Verification: ${claim.verificationLevel}`);
+    if (claim.confidence) lines.push(`- Confidence: ${claim.confidence}`);
+    if (claim.evidence.length > 0) {
+      lines.push("- Evidence:");
+      for (const ref of claim.evidence) {
+        const sha = ref.sha256 ? ` — sha256: ${ref.sha256}` : "";
+        lines.push(`  - ${ref.kind}: ${ref.label}${sha}`);
+      }
+    } else {
+      lines.push("- Evidence: none");
+    }
+  }
+  lines.push("");
+  return lines;
+}
+
 function toAbsoluteUrl(site: SemanticSiteModel, pathname: string): string {
   const rawBase = site.organization.url ?? site.baseUrl;
   const base = (() => {
@@ -388,6 +412,7 @@ export function buildLlmsFull(site: SemanticSiteModel): string {
     ...formatServices(site),
     ...formatLocation(site),
     ...formatTeam(site),
+    ...formatClaims(site),
   ].filter((s) => s.length > 0);
 
   return [
