@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildLlmsFull, buildLlmsIndex } from "../llms.ts";
 import { makePage } from "./helpers.ts";
 import type { SemanticSiteModel } from "../models.ts";
+import type { SemanticClaimProvenance } from "../business-projection.ts";
 
 function makeSite(overrides: Partial<SemanticSiteModel> = {}): SemanticSiteModel {
   const page = makePage();
@@ -114,5 +115,50 @@ describe("buildLlmsFull", () => {
     const site = makeSite();
     const result = buildLlmsFull(site);
     expect(result).toContain("## Organization facts");
+  });
+
+  it("includes claims section when claims are present", () => {
+    const claims: SemanticClaimProvenance[] = [
+      {
+        id: "c1",
+        claimClass: "factual",
+        claimKind: "fact",
+        statement: "We are certified",
+        verificationLevel: "N2",
+        confidence: "high",
+        evidence: [{ id: "ev1", kind: "certificate", label: "ISO 27001", sha256: "abc123" }],
+      },
+    ];
+    const site = makeSite({ claims });
+    const result = buildLlmsFull(site);
+    expect(result).toContain("## Claims");
+    expect(result).toContain("### We are certified");
+    expect(result).toContain("- Class: factual");
+    expect(result).toContain("- Verification: N2");
+    expect(result).toContain("- Confidence: high");
+    expect(result).toContain("- Evidence:");
+    expect(result).toContain("certificate: ISO 27001");
+    expect(result).toContain("sha256: abc123");
+  });
+
+  it("omits claims section when no claims", () => {
+    const site = makeSite();
+    const result = buildLlmsFull(site);
+    expect(result).not.toContain("## Claims");
+  });
+
+  it("shows Evidence: none when claim has no evidence", () => {
+    const claims: SemanticClaimProvenance[] = [
+      {
+        id: "c1",
+        claimClass: "factual",
+        claimKind: "fact",
+        statement: "Unevidenced claim",
+        evidence: [],
+      },
+    ];
+    const site = makeSite({ claims });
+    const result = buildLlmsFull(site);
+    expect(result).toContain("- Evidence: none");
   });
 });
