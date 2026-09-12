@@ -72,6 +72,26 @@ Rules:
 - External `Person.url` (different origin) is not canonicalized — only same-origin profile URLs are checked.
 - Enforcement: `jsonld.canonical-entity.validate` (RFC-0910) in `@warpgogol/werkstatt-site` scans rendered HTML and emits JSONLD-ENTITY-01..03.
 
+### Canonical URI derivation (RFC-1075)
+
+Location: `packages/werkstatt-shared/src/share/semantic/canonical-uri.ts` — exported via `@warpgogol/werkstatt-shared/share/semantic/canonical-uri`.
+
+| Export | Purpose |
+| --- | --- |
+| `deriveCanonicalUri(siteOrigin, entityType, entityId?)` | Derive a persistent canonical URI for Linked Data `@id` from site origin and entity identity |
+
+Format: `{siteOrigin}/.well-known/entity/{entityType}/{entityId}`
+
+Rules:
+
+- The URI is an identifier, not necessarily a dereferenceable resource. No resolver endpoint is implemented.
+- For `business` entities, `entityId` is omitted: `{origin}/.well-known/entity/business`.
+- For `offering` entities, `entityId` is the offering ID: `{origin}/.well-known/entity/offering/{id}`.
+- Trailing slashes on `siteOrigin` are stripped before derivation.
+- If `siteOrigin` is absent or empty, `deriveCanonicalUri` returns `undefined` and no `@id` is emitted.
+- An explicitly authored `canonicalUri` on a `PbpEntity` takes priority over derivation.
+- The function is pure, side-effect-free, and deterministic.
+
 ### SystemManifest `seo` field (RFC-0911)
 
 The `SystemManifest` interface in `packages/werkstatt-shared/src/content/system-manifest.ts` includes an optional `seo` field for SEO validator configuration:
