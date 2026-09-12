@@ -111,7 +111,7 @@ Location: `packages/werkstatt-shared/src/share/semantic/fact-extraction.ts` — 
 | Export | Purpose |
 | --- | --- |
 | `CanonicalFact` | Interface for a canonical fact: type, entityId, entityType, value, surface, source |
-| `normalizeFactValue(type, value)` | Normalize a fact value for cross-surface comparison (email→lowercase, phone→strip tel: and separators, others→trim) |
+| `normalizeFactValue(type, value)` | Normalize a fact value for cross-surface comparison (email→lowercase, phone→strip tel: and separators, price→strip currency suffix + German thousands separator + parse as float, others→trim) |
 
 Rules:
 
