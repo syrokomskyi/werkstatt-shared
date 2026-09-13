@@ -14,6 +14,7 @@ agnostic contract consumed by the build-time resolver, the feature gates, and ru
   <item>RFC-0706: add nachweis feature for Nachweisregister commercial module.</item>
   <item>RFC-0741: add multi-currency feature for multi-currency build pipeline.</item>
   <item>RFC-0932: add external-link-qr feature for QR code modal entitlement module.</item>
+  <item>Make external-link-qr a free feature enabled for all sites by default.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -41,6 +42,12 @@ export const ENTITLED_FEATURES = [
   // RFC-0932: external-link QR code modal module
   "external-link-qr",
 ] as const;
+
+/**
+ * Features that are always enabled for all sites, regardless of Stripe or override state.
+ * These are platform-level capabilities that every site gets for free.
+ */
+export const FREE_ENTITLED_FEATURES: EntitledFeature[] = ["external-link-qr"];
 
 export type EntitledFeature = (typeof ENTITLED_FEATURES)[number];
 
@@ -149,10 +156,13 @@ export function resolveEntitlements(input: {
       ? { pseo: { indexBudget: input.pseoIndexBudget, regionalUnlocked } }
       : {};
 
+  const mergeFree = (features: string[]): EntitledFeature[] =>
+    dedupe([...features, ...FREE_ENTITLED_FEATURES]);
+
   if (input.override && input.override.length > 0) {
     return {
       customerId: input.customerId,
-      features: dedupe(input.override),
+      features: mergeFree(input.override),
       source: "override",
       ...pseo,
     };
@@ -160,12 +170,17 @@ export function resolveEntitlements(input: {
   if (input.stripeFeatures) {
     return {
       customerId: input.customerId,
-      features: dedupe(input.stripeFeatures),
+      features: mergeFree(input.stripeFeatures),
       source: "stripe",
       ...pseo,
     };
   }
-  return { customerId: input.customerId, features: [], source: "none", ...pseo };
+  return {
+    customerId: input.customerId,
+    features: dedupe([...FREE_ENTITLED_FEATURES]),
+    source: "none",
+    ...pseo,
+  };
 }
 
 /** Reader used by build gates (which modules compile) and runtime endpoints. */
