@@ -114,29 +114,27 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
     return !modal.hidden;
   }
 
-  function handleTriggerClick(e: Event): void {
-    const trigger = e.currentTarget as HTMLElement;
-    const anchor = trigger.closest("a");
+  function handleDelegatedClick(e: Event): void {
+    const anchor = (e.target as HTMLElement)?.closest?.("a[data-external-link]");
     if (!anchor) return;
 
     const href = anchor.getAttribute("href");
     if (!href) return;
 
     e.preventDefault();
-    e.stopPropagation();
-    openModal(href, trigger);
+    openModal(href, anchor);
   }
 
-  function handleTriggerKeydown(e: KeyboardEvent): void {
+  function handleDelegatedKeydown(e: KeyboardEvent): void {
     if (e.key !== "Enter" && e.key !== " ") return;
-    e.preventDefault();
-    e.stopPropagation();
-    const trigger = e.currentTarget as HTMLElement;
-    const anchor = trigger.closest("a");
+    const anchor = (e.target as HTMLElement)?.closest?.("a[data-external-link]");
     if (!anchor) return;
+
     const href = anchor.getAttribute("href");
     if (!href) return;
-    openModal(href, trigger);
+
+    e.preventDefault();
+    openModal(href, anchor);
   }
 
   function handleKeydown(e: KeyboardEvent): void {
@@ -173,11 +171,8 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
   }
 
   function attachTriggers(): void {
-    const triggers = document.querySelectorAll<HTMLElement>("[data-qr-trigger]");
-    for (const trigger of triggers) {
-      trigger.addEventListener("click", handleTriggerClick);
-      trigger.addEventListener("keydown", handleTriggerKeydown);
-    }
+    document.addEventListener("click", handleDelegatedClick);
+    document.addEventListener("keydown", handleDelegatedKeydown);
   }
 
   overlay.addEventListener("click", closeModal);
