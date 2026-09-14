@@ -426,35 +426,21 @@ const punct04: TypographyRule = {
       // the dot (must be a digit) and the letter after the dot (must be "x"
       // followed by a non-word character or end of string).
       const beforeChar = text[m.index - 1];
-      const letterAfterDot = text[m.index + 1];
       const afterLetter = text[m.index + 2];
-      if (
+      const isVersion =
         beforeChar !== undefined &&
         /\p{Nd}/u.test(beforeChar) &&
-        letterAfterDot === "x" &&
-        (afterLetter === undefined || /\W/u.test(afterLetter) || afterLetter === " ")
-      ) {
+        m[0][1] === "x" &&
+        (afterLetter === undefined || /\W/u.test(afterLetter));
+      if (isVersion) {
         // version designator like "4.x" — skip
       } else {
         // Skip if preceded by a single letter (abbreviation like z.B.)
-        if (beforeChar && /\p{L}/u.test(beforeChar)) {
-          // Check if it's a single-letter abbreviation (X.Y pattern)
-          const beforeBefore = text[m.index - 2];
-          if (!beforeBefore || /\s/.test(beforeBefore)) {
-            // Single letter before dot — likely abbreviation, skip
-          } else {
-            findings.push(
-              finding(
-                this.id,
-                segment,
-                m[0],
-                m.index,
-                "Missing space after a period before a letter.",
-                "Add a space after the period.",
-              ),
-            );
-          }
-        } else {
+        const isSingleLetterAbbrev =
+          beforeChar !== undefined &&
+          /\p{L}/u.test(beforeChar) &&
+          (text[m.index - 2] === undefined || /\s/.test(text[m.index - 2]));
+        if (!isSingleLetterAbbrev) {
           findings.push(
             finding(
               this.id,
