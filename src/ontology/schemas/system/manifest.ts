@@ -500,6 +500,8 @@ export const systemManifestSchema = z.object({
    * `responsibilityBlock.swapOrder` is true, the page handler swaps
    * primaryItems/secondaryItems and labels.primary/labels.secondary at
    * render time. Default false = render as authored in content.
+   * RFC-1087: `codeHighlightTheme` selects the Shiki theme for build-time
+   * syntax highlighting. Default "github-light" when absent.
    */
   ui: z
     .object({
@@ -508,6 +510,7 @@ export const systemManifestSchema = z.object({
           swapOrder: z.boolean().optional().default(false),
         })
         .optional(),
+      codeHighlightTheme: z.string().min(1).optional(),
     })
     .optional(),
 
