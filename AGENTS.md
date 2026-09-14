@@ -150,6 +150,21 @@ typography?: {
 - The Zod schema is `systemTypographySchema` in `packages/werkstatt-shared/src/ontology/schemas/system/text.ts`, referenced as a top-level field in `systemManifestSchema`.
 - The field is optional; validators fall back to built-in defaults when absent.
 
+### SystemManifest `ui` field (RFC-1087)
+
+The `SystemManifest` interface in `packages/werkstatt-shared/src/ontology/schemas/system/manifest.ts` includes an optional `ui` object with a `codeHighlightTheme` field:
+
+```ts
+ui?: {
+  codeHighlightTheme?: string;
+};
+```
+
+- Sites declare a Shiki theme name (e.g. `github-dark`, `one-dark-pro`) for build-time code highlighting.
+- The theme is threaded through `highlightCodeBlocks` and `ProsePipelineOptions` in `@warpgogol/werkstatt-site`.
+- When absent, the default `github-light` theme is used.
+- The field is optional; consumers fall back to the default theme when absent.
+
 ### Typography rule tiers (RFC-1068, RFC-1069, RFC-1070, RFC-1071)
 
 Location: `packages/werkstatt-shared/src/share/typography/` — exported via `@warpgogol/werkstatt-shared/share/typography`.
