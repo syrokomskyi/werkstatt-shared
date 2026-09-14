@@ -122,7 +122,7 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
     if (!href) return;
 
     e.preventDefault();
-    openModal(href, anchor);
+    openModal(href, anchor as HTMLElement);
   }
 
   function handleDelegatedKeydown(e: KeyboardEvent): void {
@@ -134,7 +134,7 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
     if (!href) return;
 
     e.preventDefault();
-    openModal(href, anchor);
+    openModal(href, anchor as HTMLElement);
   }
 
   function handleKeydown(e: KeyboardEvent): void {
