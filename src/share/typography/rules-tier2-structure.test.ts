@@ -18,10 +18,7 @@ import {
   type TypographyFinding,
 } from "./index.ts";
 
-function makeSegment(
-  text: string,
-  overrides: Partial<TextSegment> = {},
-): TextSegment {
+function makeSegment(text: string, overrides: Partial<TextSegment> = {}): TextSegment {
   return {
     file: "test.md",
     line: 1,
@@ -90,6 +87,17 @@ describe("TYPO-HEAD-01", () => {
   it("does not flag a non-heading body line ending with a period", () => {
     const seg = makeSegment("This is a sentence.");
     expect(runRule("TYPO-HEAD-01", seg)).toHaveLength(0);
+  });
+
+  // RFC-1083: multi-line body fields starting with ## are NOT headings
+  it("does not flag a multi-line body field starting with ##", () => {
+    const seg = makeSegment("## Heading\nMore body content.");
+    expect(runRule("TYPO-HEAD-01", seg)).toHaveLength(0);
+  });
+
+  it("still flags a single-line heading ending with a period", () => {
+    const seg = makeSegment("## Heading.");
+    expect(runRule("TYPO-HEAD-01", seg)).toHaveLength(1);
   });
 });
 

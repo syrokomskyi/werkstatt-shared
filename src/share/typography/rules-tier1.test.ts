@@ -138,6 +138,23 @@ describe("TYPO-PUNCT-04 (missing space after closing punctuation)", () => {
   it("passes clean text", () => {
     expect(runRule("TYPO-PUNCT-04", makeSegment("Hello, World"))).toHaveLength(0);
   });
+
+  // RFC-1083: version pattern exclusion
+  it("does not flag version pattern 4.x", () => {
+    expect(runRule("TYPO-PUNCT-04", makeSegment("Requires 4.x or later"))).toHaveLength(0);
+  });
+
+  it("does not flag version pattern 2.0.x", () => {
+    expect(runRule("TYPO-PUNCT-04", makeSegment("Supports 2.0.x"))).toHaveLength(0);
+  });
+
+  it("still flags 4.The (not a version pattern)", () => {
+    expect(runRule("TYPO-PUNCT-04", makeSegment("4.The"))).toHaveLength(1);
+  });
+
+  it("still flags end.Start (not a version pattern)", () => {
+    expect(runRule("TYPO-PUNCT-04", makeSegment("end.Start"))).toHaveLength(1);
+  });
 });
 
 // ---------------------------------------------------------------------------
