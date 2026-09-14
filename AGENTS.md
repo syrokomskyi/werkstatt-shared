@@ -175,6 +175,11 @@ Tier 3 advisory rules (RFC-1071):
 
 All Tier 3 rules have `severity: "warning"` and `tier: 3`. They never cause `typography.validate` to exit non-zero. The `--mode error` flag does not upgrade Tier 3 findings to error severity.
 
+Typography rule implementation notes (RFC-1083):
+
+- `isBodyHeading` checks per-line (not whole body): a segment is a heading only if it is a single line matching `^#{1,6}\s+.+$`. Multi-line body fields starting with `##` are NOT headings — they are body content.
+- PUNCT-04 excludes `\d+\.x` version patterns: the DOT_LETTER branch checks the character before the dot (must be a digit) and the letter after the dot (must be `x` followed by a non-word character or end of string). This prevents false positives on version strings like "4.x" or "2.0.x".
+
 ### Utility registry (RFC-0916)
 
 Location: `packages/werkstatt-shared/src/share/utility-registry.yaml`
