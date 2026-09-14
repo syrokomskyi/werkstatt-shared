@@ -5,6 +5,7 @@ export default defineConfig({
     environment: "node",
     testTimeout: 30_000,
     include: ["src/**/*.test.ts"],
+    poolOptions: { forks: { maxWorkers: "50%" } },
     coverage: {
       provider: "v8",
       reporter: ["json", "json-summary", "text-summary", "html"],
