@@ -43,7 +43,11 @@ function lastPathKey(path: string): string | undefined {
 // ---------------------------------------------------------------------------
 
 function isBodyHeading(text: string): boolean {
-  return /^#{1,6}\s+/u.test(text);
+  // A body segment is a heading only if it is a single line starting with #
+  // (RFC-1083). Multi-line body fields starting with ## are NOT headings —
+  // they are body content. The `m` flag is unnecessary because
+  // !text.includes("\n") guarantees a single-line string.
+  return /^#{1,6}\s+.+$/u.test(text) && !text.includes("\n");
 }
 
 function isFrontmatterHeading(segment: TextSegment): boolean {

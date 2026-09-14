@@ -421,13 +421,39 @@ const punct04: TypographyRule = {
 
     m = PUNCT04_DOT_LETTER.exec(text);
     if (m) {
-      // Skip if preceded by a single letter (abbreviation like z.B.)
+      // Version pattern exclusion: \d+\.x\b (e.g. "4.x", "2.0.x") — RFC-1083.
+      // match[0] is ".x" (dot + letter), NOT "4.x". Check the character before
+      // the dot (must be a digit) and the letter after the dot (must be "x"
+      // followed by a non-word character or end of string).
       const beforeChar = text[m.index - 1];
-      if (beforeChar && /\p{L}/u.test(beforeChar)) {
-        // Check if it's a single-letter abbreviation (X.Y pattern)
-        const beforeBefore = text[m.index - 2];
-        if (!beforeBefore || /\s/.test(beforeBefore)) {
-          // Single letter before dot — likely abbreviation, skip
+      const letterAfterDot = text[m.index + 1];
+      const afterLetter = text[m.index + 2];
+      if (
+        beforeChar !== undefined &&
+        /\p{Nd}/u.test(beforeChar) &&
+        letterAfterDot === "x" &&
+        (afterLetter === undefined || /\W/u.test(afterLetter) || afterLetter === " ")
+      ) {
+        // version designator like "4.x" — skip
+      } else {
+        // Skip if preceded by a single letter (abbreviation like z.B.)
+        if (beforeChar && /\p{L}/u.test(beforeChar)) {
+          // Check if it's a single-letter abbreviation (X.Y pattern)
+          const beforeBefore = text[m.index - 2];
+          if (!beforeBefore || /\s/.test(beforeBefore)) {
+            // Single letter before dot — likely abbreviation, skip
+          } else {
+            findings.push(
+              finding(
+                this.id,
+                segment,
+                m[0],
+                m.index,
+                "Missing space after a period before a letter.",
+                "Add a space after the period.",
+              ),
+            );
+          }
         } else {
           findings.push(
             finding(
@@ -440,17 +466,6 @@ const punct04: TypographyRule = {
             ),
           );
         }
-      } else {
-        findings.push(
-          finding(
-            this.id,
-            segment,
-            m[0],
-            m.index,
-            "Missing space after a period before a letter.",
-            "Add a space after the period.",
-          ),
-        );
       }
     }
 
