@@ -11,25 +11,20 @@ built-in via a stable idempotency_key (derived from submission_id + tenant).</pu
   <item>Do not retry on non-2xx — the caller decides retry strategy.</item>
 </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1097: sweep — tail packages clean
+
+Sweep batch 3: rewrote ~95 purposes across werkstatt-knowledge, werkstatt-shared, godot-game, phaser-game, lifecycle-core, projektarchiv-*, portal-*, billing-*, typescript (CONTRACT-02/PURPOSE-02). Real KEY_DECISIONS on 5 godot utils, non-goals on 5 CONTRACT-03 files, headers on 4 headerless files, CS-07 history literal fix on 2 files. Policy: vitest.config.ts + test-fixtures testPatterns, worker-configuration.d.ts excludedPath. All non-site/engine packages now 0 diagnostics.</item>
+</CHANGE_SUMMARY>
 */
 
 export const LAGEBILD_INGRESS_CONTRACT_VERSION = 1 as const;
 
 export type IngressInteractionKind =
-  | "inquiry"
-  | "contact_message"
-  | "callback_request"
-  | "appointment_request"
-  | "other";
+  "inquiry" | "contact_message" | "callback_request" | "appointment_request" | "other";
 
 export type IdentityClaimType =
-  | "person_name"
-  | "organization_name"
-  | "email"
-  | "phone"
-  | "website"
-  | "postal_address"
-  | "other";
+  "person_name" | "organization_name" | "email" | "phone" | "website" | "postal_address" | "other";
 
 export interface IdentityClaim {
   readonly claim_type: IdentityClaimType;
