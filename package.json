@@ -274,6 +274,10 @@
       "types": "./src/share/rfc0042-utils.ts",
       "default": "./src/share/rfc0042-utils.ts"
     },
+    "./share/run-tool": {
+      "types": "./src/share/run-tool.ts",
+      "default": "./src/share/run-tool.ts"
+    },
     "./share/runtime-context": {
       "types": "./src/share/runtime-context.ts",
       "default": "./src/share/runtime-context.ts"
@@ -342,6 +346,10 @@
       "types": "./src/share/routes/template-filter.ts",
       "default": "./src/share/routes/template-filter.ts"
     },
+    "./share/stack-checks": {
+      "types": "./src/share/stack-checks.ts",
+      "default": "./src/share/stack-checks.ts"
+    },
     "./share/string-utils": {
       "types": "./src/share/string-utils.ts",
       "default": "./src/share/string-utils.ts"
@@ -361,6 +369,10 @@
     "./share/visibility": {
       "types": "./src/share/visibility.ts",
       "default": "./src/share/visibility.ts"
+    },
+    "./share/walk-files": {
+      "types": "./src/share/walk-files.ts",
+      "default": "./src/share/walk-files.ts"
     },
     "./share/wrap-inline-numbers": {
       "types": "./src/share/wrap-inline-numbers.ts",
@@ -1339,10 +1351,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "src",
-    "tsconfig.json"
-  ],
+  "files": ["src", "tsconfig.json"],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@sindresorhus/slugify": "^3.0.1",
