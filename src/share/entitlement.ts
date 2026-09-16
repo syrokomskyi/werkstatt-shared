@@ -14,7 +14,9 @@ agnostic contract consumed by the build-time resolver, the feature gates, and ru
   <item>RFC-0706: add nachweis feature for Nachweisregister commercial module.</item>
   <item>RFC-0741: add multi-currency feature for multi-currency build pipeline.</item>
   <item>RFC-0932: add external-link-qr feature for QR code modal entitlement module.</item>
-  <item>Make external-link-qr a free feature enabled for all sites by default.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

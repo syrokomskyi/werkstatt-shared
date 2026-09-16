@@ -10,8 +10,10 @@ external-link-qr entitlement is active, also injects a QR trigger span into each
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0011 Phase 2: Extracted from layout.astro inline script into src/scripts canonical pattern.</item>
-  <item>Migrated to @warpgogol/werkstatt-shared/share/scripts for platform-wide reuse.</item>
   <item>RFC-0932: accept ExternalLinkBehaviorOptions, inject QR trigger span when entitled.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

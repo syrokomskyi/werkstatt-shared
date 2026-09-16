@@ -6,9 +6,10 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Added Service JSON-LD generation.</item>
-  <item>Moved from app semantic/jsonld/service to packages/share.</item>
   <item>RFC-0498: extend buildServiceNodes to gate Service emission by per-depth policy for all surface depths (website-local depth-1, website-service depth-1, website-local depth-5).</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

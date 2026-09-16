@@ -9,7 +9,9 @@
 <CHANGE_SUMMARY>
   <item>RFC-0588: extracted parseRedirectRules and RedirectRule from site-kernel-checks/managed-public.ts into @warpgogol/werkstatt-shared/share/redirects subpath.</item>
   <item>RFC-0595: add extractRedirectTarget helper for parsing url= from meta-refresh tags.</item>
-  <item>Add PAGE_ROUTE_EXCLUDED_EXTENSIONS constant — single source of truth for isPageRoute exclusion list, injected into worker.ts and markdown-negotiation.ts templates.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

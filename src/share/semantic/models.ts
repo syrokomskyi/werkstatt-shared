@@ -7,13 +7,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
-  <item>RFC-0165/0167: SemanticImage.contentImage flag + PageOutputProjection.image (author-declared per-page content illustration, single source for image:image + top-precedence og:image).</item>
-  <item>RFC-0328: Added "legal" to the SemanticPageType closed enum.</item>
   <item>RFC-0490: Added "collection" to the SemanticPageType closed enum.</item>
   <item>RFC-0508: Added "participant" to the SemanticPageType closed enum.</item>
   <item>RFC-0372: Unified SemanticBlock type replaces SemanticAnswerBlock + SemanticContentBlock; SemanticPageModel.blocks replaces answerBlocks/contentBlocks/bodyText.</item>
   <item>RFC-0912: Added VideoSeoData type and optional SemanticBlock.video field for opted-in content video structured data.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
+  <history>RFC-0133, RFC-0165, RFC-0328</history>
 </CHANGE_SUMMARY>
 */
 

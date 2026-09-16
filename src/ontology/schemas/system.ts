@@ -13,10 +13,11 @@ Stored at apps/<app-slug>/system.yaml.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Wave 1 (RFC-0025): Initial creation.</item>
-  <item>Wave 1 (RFC-0027): Added growth block — vendor adapter binding, active funnels, active experiments.</item>
   <item>RFC-0328: Added "legal" to semanticPageTypeSchema.</item>
   <item>RFC-0303 Phase 3: split the flat 822-line file into sub-modules under system/; this file is now the re-export shim.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

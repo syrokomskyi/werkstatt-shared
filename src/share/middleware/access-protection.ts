@@ -1,14 +1,8 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0899: Runtime access protection middleware for dev/alt subdomains. Checks Host header and requires Basic Auth with a 4-digit PIN for dev.* and alt.* hosts. Sets X-Robots-Tag headers to prevent indexing.</purpose>
-<keywords>middleware, access-protection, basic-auth, pin, dev, alt, RFC-0899</keywords>
-<responsibilities>
-  <item>Check Host header against dev.* and alt.* patterns — pass through for main domain.</item>
-  <item>Require Basic Auth (username: warp, password: ACCESS_PIN env var) for dev/alt hosts.</item>
-  <item>Set X-Robots-Tag: noindex, nofollow, noai, noimageai on ALL dev/alt responses (including 401).</item>
-  <item>Use constant-time string comparison for auth check to prevent timing attacks.</item>
-  <item>Pass through when ACCESS_PIN is unset (allows new sites before protection is configured).</item>
-</responsibilities>
+
+
 <non-goals>
   <item>Do not modify the HTML response body — only headers and access gating.</item>
   <item>Do not activate for the main/production domain, even if the PIN secret is set on the main Worker.</item>
@@ -17,6 +11,9 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0899: Initial access protection middleware for dev/alt subdomains.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

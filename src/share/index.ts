@@ -15,9 +15,10 @@ their re-export blocks are deleted here — import them from
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Initial barrel created alongside package extraction.</item>
   <item>RFC-0264: split into subpath entry points. Root barrel shrunk to a deprecated compatibility surface; page and i18n domains fully migrated (root re-export blocks deleted, all consumers rewritten).</item>
-  <item>C6: image-utils.ts shim deleted; root barrel re-exports from @warpgogol/werkstatt-site/content-source directly. page-handler.ts shim deleted; export map points to resolve-route.ts.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

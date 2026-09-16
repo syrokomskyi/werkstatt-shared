@@ -12,8 +12,9 @@ provides the reusable logic without hard-coding any language list.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Initial extraction from app utils/localization into packages/share.</item>
-  <item>Refactored to factory pattern so LANGUAGE_MAPPING stays in each app and the shared logic is truly app-agnostic.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

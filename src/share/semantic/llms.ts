@@ -7,11 +7,13 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Added full llms.txt generation and optional title-aware page labels.</item>
   <item>RFC-0184: canonical Markdown links, blockquoted summary, absolute URLs, llms-full.txt reference, and empty-section filtering.</item>
   <item>RFC-0372: formatBlocks reads from unified page.blocks instead of answerBlocks + contentBlocks.</item>
   <item>RFC-1075: emit canonicalUri for organization and offer in llms-full.txt.</item>
   <item>RFC-1076: add formatClaims section in buildLlmsFull for claim provenance.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

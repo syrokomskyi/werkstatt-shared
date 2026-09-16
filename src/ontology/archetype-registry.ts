@@ -14,7 +14,9 @@ fast instead of producing silently empty maps.
 <CHANGE_SUMMARY>
   <item>RFC-0091: Initial creation — typed re-export of derived archetype registry maps.</item>
   <item>RFC-0263: also re-export roleByCosmicName (manifest-authored role, derived) — replaces name-keyed dispatch literals in packages/share.</item>
-  <item>Architecture review 2026-07-10: validate index.json with Zod instead of unchecked cast — fail-fast on registry shape drift.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

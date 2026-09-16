@@ -11,12 +11,13 @@ pipeline for each block defined in a page's content.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Wave 1 (RFC-0026): Initial creation — ResolvedPage/ResolvedBlock types and buildPage pipeline.</item>
-  <item>Moved SectionProps into shared package for cross-app consumption.</item>
   <item>RFC-0091: PLANET_IMPORT_PATHS and BLOCK_TYPE_TO_COSMIC_NAME now derived from registry; import from @warpgogol/werkstatt-shared/ontology/archetypes instead of literal constants.</item>
   <item>RFC-0262: add the optional BuildPageOptions.validateProps dev-time fail-fast hook, called once per resolved shell and content block.</item>
   <item>RFC-0263: hideSectionNumber injection now keyed off registry-derived roleByCosmicName[planetName] === "hero" instead of the hardcoded UNNUMBERED_HERO_PLANETS literal set (deleted).</item>
   <item>RFC-0264: relocated SectionProps/SectionPageOverride here from the @warpgogol/werkstatt-shared/share root barrel (its natural domain owner); consumers now import from @warpgogol/werkstatt-shared/share/page.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

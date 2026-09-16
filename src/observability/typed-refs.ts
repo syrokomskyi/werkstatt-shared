@@ -8,9 +8,10 @@
 @ai-invariant: METRIC_REFS keys must match WARPGOGOL_METRIC_REGISTRY names exactly — enforced by compile-time type assertion below.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Add typed metric references for compile-time label-key enforcement across all consumers.</item>
-  <item>wg-review: correct non-goals, add compile-time registry-coverage assertion.</item>
   <item>RFC-0807: add back prefix metric refs for service health monitoring.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

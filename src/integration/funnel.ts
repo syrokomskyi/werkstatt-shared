@@ -14,7 +14,9 @@ types + constants + pure helpers — no I/O, no astro:env, no vendor SDK.</purpo
 <CHANGE_SUMMARY>
   <item>RFC-0188 Phase 2 (contract): initial funnel stage/event/transition contracts.</item>
   <item>RFC-0219: add FUNNEL_SYSTEM_TRIGGERS, FunnelTransitionTrigger, FUNNEL_TRANSITION_TRIGGERS — trigger overlay for the state-chart generator.</item>
-  <item>Cleanup: move BUFFER_DEAL_STAGES, FUNNEL_STAGE_TO_BUFFER_STAGE, bridgeFunnelStage, SYNC_OUTBOX_STATUSES, SYNC_OUTBOX_OPS from deleted crm-buffer.ts into this module.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

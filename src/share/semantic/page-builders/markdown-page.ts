@@ -7,10 +7,10 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Consolidated 7 copy-paste page builders (impressum, datenschutz, agb, widerruf, open-source, projekte, wir-ueber-uns) into one generic function.</item>
-  <item>Introduced app-agnostic markdown-page semantic builder and breadcrumb normalization.</item>
-  <item>Unified blocksToMarkdown signature — eliminated duplication.</item>
   <item>RFC-0372: MarkdownPageInput now accepts blocks: SemanticBlock[] directly; removed bodyText/contentBlocks/answerBlocks from input and output.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 

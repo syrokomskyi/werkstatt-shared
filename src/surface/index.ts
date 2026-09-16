@@ -6,14 +6,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0192: initial barrel.</item>
-  <item>RFC-0271: export SurfaceModuleContext schema, type, and ownership helpers.</item>
-  <item>RFC-0276: export Bordbuch event/status schemas and types.</item>
-  <item>RFC-0280/RFC-0281: export DemandSignal and WerkRecord schemas.</item>
   <item>RFC-0278/RFC-0279/RFC-0285: export governance schemas and types.</item>
   <item>RFC-0282/RFC-0283: export visibility and breaker schemas.</item>
   <item>RFC-0284: export fleet Leitstand schemas and types.</item>
   <item>RFC-0264 cleanup: root barrel delegates governance exports to the governance subpath.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
+  <history>RFC-0192, RFC-0271, RFC-0276, RFC-0280</history>
 </CHANGE_SUMMARY>
 */
 

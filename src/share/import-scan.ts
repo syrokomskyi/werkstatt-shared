@@ -3,7 +3,7 @@
 <purpose>Shared utility for scanning TypeScript source files for import specifiers
 matching a pattern. Used by werkstatt.autonomy.validate, werkstatt.shared.validate,
 and forge.autonomy.validate to avoid code duplication (Fowler: Duplicated Code).</purpose>
-<keywords>scan, import, utility, shared, validate, autonomy</keywords>
+
 <non-goals>
   <item>Does not define what is forbidden or exempt — callers provide the pattern and filter.</item>
   <item>Does not scan test files — .test.ts and .spec.ts are always excluded.</item>
@@ -12,6 +12,9 @@ and forge.autonomy.validate to avoid code duplication (Fowler: Duplicated Code).
 <CHANGE_SUMMARY>
   <item>RFC-0868: extract shared directory-scanning utility from autonomy-validate and shared-validate.</item>
   <item>RFC-0940: move to @warpgogol/werkstatt-shared so forge can import without depending on @warpgogol/werkstatt-engine.</item>
+  <item>RFC-1097: step 6 — compass.migrate codemod run
+
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
 </CHANGE_SUMMARY>
 */
 
