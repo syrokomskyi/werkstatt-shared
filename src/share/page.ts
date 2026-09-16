@@ -11,13 +11,16 @@ pipeline for each block defined in a page's content.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0091: PLANET_IMPORT_PATHS and BLOCK_TYPE_TO_COSMIC_NAME now derived from registry; import from @warpgogol/werkstatt-shared/ontology/archetypes instead of literal constants.</item>
   <item>RFC-0262: add the optional BuildPageOptions.validateProps dev-time fail-fast hook, called once per resolved shell and content block.</item>
   <item>RFC-0263: hideSectionNumber injection now keyed off registry-derived roleByCosmicName[planetName] === "hero" instead of the hardcoded UNNUMBERED_HERO_PLANETS literal set (deleted).</item>
   <item>RFC-0264: relocated SectionProps/SectionPageOverride here from the @warpgogol/werkstatt-shared/share root barrel (its natural domain owner); consumers now import from @warpgogol/werkstatt-shared/share/page.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into <history>, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
+Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
+  <item>RFC-1097: sweep — werkstatt-engine clean
+
+Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <history>RFC-0091</history>
 </CHANGE_SUMMARY>
 */
 
