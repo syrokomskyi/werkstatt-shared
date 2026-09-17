@@ -14,10 +14,6 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
     "./plugin": {
       "types": "./src/plugin/plugin-contract.ts",
       "default": "./src/plugin/plugin-contract.ts"
@@ -406,10 +402,6 @@
       "types": "./src/checks/index.ts",
       "default": "./src/checks/index.ts"
     },
-    "./index": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
     "./integration/adapters": {
       "types": "./src/integration/adapters.ts",
       "default": "./src/integration/adapters.ts"
@@ -441,10 +433,6 @@
     "./integration/sharding": {
       "types": "./src/integration/sharding.ts",
       "default": "./src/integration/sharding.ts"
-    },
-    "./integration/vitest.config": {
-      "types": "./src/integration/vitest.config.ts",
-      "default": "./src/integration/vitest.config.ts"
     },
     "./observability/conventions": {
       "types": "./src/observability/conventions.ts",
@@ -485,10 +473,6 @@
     "./observability/typed-refs": {
       "types": "./src/observability/typed-refs.ts",
       "default": "./src/observability/typed-refs.ts"
-    },
-    "./observability/vitest.config": {
-      "types": "./src/observability/vitest.config.ts",
-      "default": "./src/observability/vitest.config.ts"
     },
     "./ontology/archetype-registry": {
       "types": "./src/ontology/archetype-registry.ts",
@@ -610,25 +594,9 @@
       "types": "./src/ontology/shared-section-props/visual-header.ts",
       "default": "./src/ontology/shared-section-props/visual-header.ts"
     },
-    "./ontology/vitest.config": {
-      "types": "./src/ontology/vitest.config.ts",
-      "default": "./src/ontology/vitest.config.ts"
-    },
-    "./passport/dht-sign.test": {
-      "types": "./src/passport/dht-sign.test.ts",
-      "default": "./src/passport/dht-sign.test.ts"
-    },
-    "./passport/identity-sign.test": {
-      "types": "./src/passport/identity-sign.test.ts",
-      "default": "./src/passport/identity-sign.test.ts"
-    },
     "./passport/index": {
       "types": "./src/passport/index.ts",
       "default": "./src/passport/index.ts"
-    },
-    "./passport/vitest.config": {
-      "types": "./src/passport/vitest.config.ts",
-      "default": "./src/passport/vitest.config.ts"
     },
     "./agent/api-catalog": {
       "types": "./src/agent/api-catalog.ts",
@@ -1078,98 +1046,6 @@
       "types": "./src/surface/visibility.ts",
       "default": "./src/surface/visibility.ts"
     },
-    "./surface/vitest.config": {
-      "types": "./src/surface/vitest.config.ts",
-      "default": "./src/surface/vitest.config.ts"
-    },
-    "./integration/tests/deliver-event.test": {
-      "types": "./src/integration/tests/deliver-event.test.ts",
-      "default": "./src/integration/tests/deliver-event.test.ts"
-    },
-    "./integration/tests/dispatch.test": {
-      "types": "./src/integration/tests/dispatch.test.ts",
-      "default": "./src/integration/tests/dispatch.test.ts"
-    },
-    "./integration/tests/funnel-bridge.test": {
-      "types": "./src/integration/tests/funnel-bridge.test.ts",
-      "default": "./src/integration/tests/funnel-bridge.test.ts"
-    },
-    "./integration/tests/hub-runtime.test": {
-      "types": "./src/integration/tests/hub-runtime.test.ts",
-      "default": "./src/integration/tests/hub-runtime.test.ts"
-    },
-    "./integration/tests/lifecycle.test": {
-      "types": "./src/integration/tests/lifecycle.test.ts",
-      "default": "./src/integration/tests/lifecycle.test.ts"
-    },
-    "./integration/tests/qstash.test": {
-      "types": "./src/integration/tests/qstash.test.ts",
-      "default": "./src/integration/tests/qstash.test.ts"
-    },
-    "./integration/tests/sharding.test": {
-      "types": "./src/integration/tests/sharding.test.ts",
-      "default": "./src/integration/tests/sharding.test.ts"
-    },
-    "./observability/tests/conventions.test": {
-      "types": "./src/observability/tests/conventions.test.ts",
-      "default": "./src/observability/tests/conventions.test.ts"
-    },
-    "./observability/tests/metric-registry.test": {
-      "types": "./src/observability/tests/metric-registry.test.ts",
-      "default": "./src/observability/tests/metric-registry.test.ts"
-    },
-    "./observability/tests/otlp-converter.pbt.test": {
-      "types": "./src/observability/tests/otlp-converter.pbt.test.ts",
-      "default": "./src/observability/tests/otlp-converter.pbt.test.ts"
-    },
-    "./observability/tests/otlp-converter.test": {
-      "types": "./src/observability/tests/otlp-converter.test.ts",
-      "default": "./src/observability/tests/otlp-converter.test.ts"
-    },
-    "./observability/tests/otlp-json.test": {
-      "types": "./src/observability/tests/otlp-json.test.ts",
-      "default": "./src/observability/tests/otlp-json.test.ts"
-    },
-    "./observability/tests/pusher.test": {
-      "types": "./src/observability/tests/pusher.test.ts",
-      "default": "./src/observability/tests/pusher.test.ts"
-    },
-    "./observability/tests/redact.pbt.test": {
-      "types": "./src/observability/tests/redact.pbt.test.ts",
-      "default": "./src/observability/tests/redact.pbt.test.ts"
-    },
-    "./observability/tests/redact.test": {
-      "types": "./src/observability/tests/redact.test.ts",
-      "default": "./src/observability/tests/redact.test.ts"
-    },
-    "./ontology/tests/catalogs.pbt.test": {
-      "types": "./src/ontology/tests/catalogs.pbt.test.ts",
-      "default": "./src/ontology/tests/catalogs.pbt.test.ts"
-    },
-    "./ontology/tests/enums.test": {
-      "types": "./src/ontology/tests/enums.test.ts",
-      "default": "./src/ontology/tests/enums.test.ts"
-    },
-    "./ontology/tests/sternsystem-owner.test": {
-      "types": "./src/ontology/tests/sternsystem-owner.test.ts",
-      "default": "./src/ontology/tests/sternsystem-owner.test.ts"
-    },
-    "./passport/tests/schema.pbt.test": {
-      "types": "./src/passport/tests/schema.pbt.test.ts",
-      "default": "./src/passport/tests/schema.pbt.test.ts"
-    },
-    "./passport/tests/schema.test": {
-      "types": "./src/passport/tests/schema.test.ts",
-      "default": "./src/passport/tests/schema.test.ts"
-    },
-    "./surface/tests/eligibility.pbt.test": {
-      "types": "./src/surface/tests/eligibility.pbt.test.ts",
-      "default": "./src/surface/tests/eligibility.pbt.test.ts"
-    },
-    "./surface/tests/eligibility.test": {
-      "types": "./src/surface/tests/eligibility.test.ts",
-      "default": "./src/surface/tests/eligibility.test.ts"
-    },
     "./legal/index": {
       "types": "./src/legal/index.ts",
       "default": "./src/legal/index.ts"
@@ -1195,7 +1071,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": ["src", "tsconfig.json"],
+  "files": [
+    "src",
+    "tsconfig.json"
+  ],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@noble/ed25519": "^3.2.0",
@@ -1226,7 +1105,7 @@
     "eslint": "^10.10.0",
     "fast-check": "^4.10.0",
     "gsap": "^3.15.0",
-    "typescript": "^7.0.2",
+    "typescript": "~5.9.3",
     "typescript-eslint": "8.70.0",
     "vitest": "^5.0.0"
   }
