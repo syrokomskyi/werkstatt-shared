@@ -9,7 +9,7 @@
 
 import { test, expect } from "vitest";
 import { diagnosticsResult } from "../result-helpers.ts";
-import type { Diagnostic } from "@warpgogol/werkstatt-engine/kernel";
+import type { Diagnostic } from "@warpgogol/werkstatt-shared/kernel";
 
 test("diagnosticsResult: auto-populates remediation from catalog for known ruleId", () => {
   const diagnostics: Diagnostic[] = [

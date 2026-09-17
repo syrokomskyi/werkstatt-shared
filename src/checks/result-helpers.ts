@@ -22,7 +22,7 @@ import type {
   Diagnostic,
   KernelCommandResult,
   KernelNextStep,
-} from "@warpgogol/werkstatt-engine/kernel";
+} from "@warpgogol/werkstatt-shared/kernel";
 import { lookupRemediation } from "../share/remediation/remediation-catalog.ts";
 
 function defaultFailNextSteps(command: string): KernelNextStep[] {

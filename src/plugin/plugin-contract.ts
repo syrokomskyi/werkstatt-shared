@@ -14,7 +14,7 @@ are shared infrastructure, not engine internals.</purpose>
   <item>RFC-0942: moved from werkstatt-engine/src/plugin-contract.ts to werkstatt-shared/src/plugin/plugin-contract.ts.</item>
 </CHANGE_SUMMARY>
 */
-import type { KernelModule, KernelPipelineStep } from "@warpgogol/werkstatt-engine/kernel/types";
+import type { KernelModule, KernelPipelineStep } from "@warpgogol/werkstatt-shared/kernel";
 
 /**
  * Placeholder type for deploy adapter factories.

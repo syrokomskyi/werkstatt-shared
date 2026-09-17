@@ -20,7 +20,7 @@ KernelCommandResult or register commands themselves.</purpose>
 import type {
   KernelCommandDefinition,
   KernelCommandResult,
-} from "@warpgogol/werkstatt-engine/kernel/types";
+} from "@warpgogol/werkstatt-shared/kernel";
 import type { HookResult, PluginHookContext } from "../plugin/plugin-contract.ts";
 
 /** A single rule violation emitted by a stack check() function. */

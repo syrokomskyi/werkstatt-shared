@@ -7,7 +7,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0921: delegate Ed25519 sign/verify/keygen to shared signing core (@warpgogol/werkstatt-engine/signing). Remove @noble/ed25519 import.</item>
+  <item>RFC-0921: delegate Ed25519 sign/verify/keygen to shared signing core (@warpgogol/werkstatt-shared/signing). Remove @noble/ed25519 import.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -37,7 +37,7 @@ import {
   verifyBytes as signingVerifyBytes,
   fromHex,
   toHex,
-} from "@warpgogol/werkstatt-engine/signing";
+} from "@warpgogol/werkstatt-shared/signing";
 import type { VCProof, VerifiableCredential } from "./schema.ts";
 
 // ---------------------------------------------------------------------------

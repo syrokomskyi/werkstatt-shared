@@ -74,6 +74,22 @@
       "types": "./src/observability/index.ts",
       "default": "./src/observability/index.ts"
     },
+    "./kernel": {
+      "types": "./src/kernel/index.ts",
+      "default": "./src/kernel/index.ts"
+    },
+    "./component": {
+      "types": "./src/component/index.ts",
+      "default": "./src/component/index.ts"
+    },
+    "./signing": {
+      "types": "./src/signing/index.ts",
+      "default": "./src/signing/index.ts"
+    },
+    "./fingerprint": {
+      "types": "./src/fingerprint/index.ts",
+      "default": "./src/fingerprint/index.ts"
+    },
     "./ontology": {
       "types": "./src/ontology/index.ts",
       "default": "./src/ontology/index.ts"
@@ -1354,8 +1370,8 @@
   "files": ["src", "tsconfig.json"],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
+    "@noble/ed25519": "^3.2.0",
     "@sindresorhus/slugify": "^3.0.1",
-    "@warpgogol/werkstatt-engine": "workspace:*",
     "ajv": "^8.20.0",
     "bs58": "^6.0.0",
     "cyrillic-to-translit-js": "^3.2.1",
@@ -1378,7 +1394,6 @@
     "@types/node": "^26.5.1",
     "@types/qrcode": "^1.5.6",
     "@vitest/coverage-v8": "^5.0.0",
-    "@warpgogol/werkstatt-engine": "*",
     "astro": "^7.3.2",
     "eslint": "^10.10.0",
     "fast-check": "^4.10.0",

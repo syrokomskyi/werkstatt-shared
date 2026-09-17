@@ -1,5 +1,5 @@
 import { test, expect, describe } from "vitest";
-import { systemConfigSchema } from "@warpgogol/werkstatt-engine/schemas";
+import { systemConfigSchema } from "@warpgogol/werkstatt-shared/ontology/operations";
 
 const validBaseEntry = {
   schemaVersion: "system-config/v1",

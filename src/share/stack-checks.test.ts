@@ -6,7 +6,7 @@ import type {
   KernelCommandInput,
   KernelCommandResult,
   KernelRuntimeContext,
-} from "@warpgogol/werkstatt-engine/kernel/types";
+} from "@warpgogol/werkstatt-shared/kernel";
 
 const PASS_SPEC: StackCheckSpec = {
   name: "stack.alpha.validate",

@@ -8,8 +8,26 @@ This is a **package** workspace. Expose stable typed APIs. Do not import from `w
 
 ## Boundary rules
 
-- This package MUST NOT import from `@warpgogol/werkstatt-site` — enforced by `werkstatt.shared.validate`.
-- This package MAY import from `@warpgogol/werkstatt-engine` (engine) and external packages.
+- This package MUST NOT import from `@warpgogol/werkstatt-site` — enforced by `werkstatt.shared.validate` (SHARED-03).
+- This package MUST NOT import from `@warpgogol/werkstatt-engine` — enforced by `werkstatt.shared.validate` (SHARED-04, RFC-1104). This package is a leaf: the engine depends on it, never the reverse.
+- This package MAY import external packages declared in its own `package.json`.
+
+## Canonical homes (RFC-1104)
+
+The kernel contract cluster and platform-operations schemas are owned here, not in the engine:
+
+| Home | Contents | Subpath |
+| --- | --- | --- |
+| `src/kernel/` | Kernel command/pipeline types, `WorkspaceIO`, `writeFileAtomic`, `DesiredState`, diagnostic schemas | `@warpgogol/werkstatt-shared/kernel` |
+| `src/component/` | Component contract types (`ComponentId`, `CapabilityId`, `EffectClass`, `IsolationTier`, `ComponentDeclaration`, `SCOPE_ERROR_CODES`) | `@warpgogol/werkstatt-shared/component` |
+| `src/signing/` | Ed25519 signing core (`generateKeyPair`, `signBytes`, `verifyBytes`, `canonicalBytes`) | `@warpgogol/werkstatt-shared/signing` |
+| `src/fingerprint/` | Hashing primitives (`byteHash`, `stableStringify`, `isSha256Digest`) and canonical JSON v1 | `@warpgogol/werkstatt-shared/fingerprint` |
+| `src/ontology/operations/` | Platform-ops schemas (handoff, sternsystem, werkstatt, mission, release, leitstand, notausgang, materialization, artifact-store, naming-policy, dht) | `@warpgogol/werkstatt-shared/ontology/operations` |
+
+Rules:
+
+- `src/kernel/` and `src/signing/` import Node-only APIs (`node:fs`, `node:child_process`, `@noble/ed25519`) — they MUST NOT be re-exported from browser-reachable barrels (`src/index.ts` or any module imported by client-side code). Consumers use the dedicated subpaths above.
+- The engine preserves its old package specifiers via forwarding modules and retargeted barrels — consumers of `@warpgogol/werkstatt-engine/kernel`, `/schemas`, `/signing`, `/fingerprint`, `/component` keep working, but new code SHOULD import from the `@warpgogol/werkstatt-shared/*` canonical homes.
 - Axiom dependencies (`@syrokomskyi/axiom-*`) are `optionalDependencies` — consumers without axiom installed must use type-only imports or guard runtime access.
 
 ## Scripts
