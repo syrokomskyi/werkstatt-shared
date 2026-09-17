@@ -78,6 +78,18 @@
       "types": "./src/kernel/index.ts",
       "default": "./src/kernel/index.ts"
     },
+    "./kernel/types": {
+      "types": "./src/kernel/types.ts",
+      "default": "./src/kernel/types.ts"
+    },
+    "./kernel/workspace-io": {
+      "types": "./src/kernel/workspace-io.ts",
+      "default": "./src/kernel/workspace-io.ts"
+    },
+    "./kernel/desired-state": {
+      "types": "./src/kernel/desired-state.ts",
+      "default": "./src/kernel/desired-state.ts"
+    },
     "./component": {
       "types": "./src/component/index.ts",
       "default": "./src/component/index.ts"
