@@ -164,7 +164,7 @@ Rules:
 
 ### SystemManifest `seo` field (RFC-0911)
 
-The `SystemManifest` interface in `packages/werkstatt-shared/src/content/system-manifest.ts` includes an optional `seo` field for SEO validator configuration:
+The `SystemManifest` type (derived from `systemManifestSchema` in `packages/werkstatt-shared/src/ontology/schemas/system/manifest.ts`) includes an optional `seo` field for SEO validator configuration:
 
 ```ts
 seo?: {
@@ -179,7 +179,7 @@ seo?: {
 
 ### SystemManifest `typography` field (RFC-1070)
 
-The `SystemManifest` interface in `packages/werkstatt-shared/src/content/system-manifest.ts` includes an optional `typography` field for typography validator configuration:
+The `SystemManifest` type (derived from `systemManifestSchema` in `packages/werkstatt-shared/src/ontology/schemas/system/manifest.ts`) includes an optional `typography` field for typography validator configuration:
 
 ```ts
 typography?: {
@@ -195,7 +195,7 @@ typography?: {
 
 ### SystemManifest `ui` field (RFC-1087)
 
-The `SystemManifest` interface in `packages/werkstatt-shared/src/ontology/schemas/system/manifest.ts` includes an optional `ui` object with a `codeHighlightTheme` field:
+The `SystemManifest` type (derived from `systemManifestSchema` in `packages/werkstatt-shared/src/ontology/schemas/system/manifest.ts`) includes an optional `ui` object with a `codeHighlightTheme` field:
 
 ```ts
 ui?: {
@@ -207,6 +207,13 @@ ui?: {
 - The theme is threaded through `highlightCodeBlocks` and `ProsePipelineOptions` in `@warpgogol/werkstatt-site`.
 - When absent, the default `github-light` theme is used.
 - The field is optional; consumers fall back to the default theme when absent.
+
+### SystemManifest strict parse (RFC-1106)
+
+`loadSystemManifest` / `loadSystemManifestSync` in `src/content/system-manifest.ts` run `systemManifestSchema.parse()` — there is no interface and no `as unknown as` cast. The Zod schema in `src/ontology/schemas/system/manifest.ts` is the sole contract.
+
+- Test fixtures writing `system.md` MUST be complete manifests: `app` (kebab-case), `version` (semver), `identity.systemStar`, `identity.biome` are required; `i18n` (when present) needs `default` + `supported` record (not a `languages` array); `pages[]` entries need `pageId` + `cosmicStar`; URL fields like `release.passport.heartbeatUrl` must be valid URLs (empty string fails).
+- Do not re-add a hand-written `interface SystemManifest` — extend the schema instead.
 
 ### Typography rule tiers (RFC-1068, RFC-1069, RFC-1070, RFC-1071)
 
