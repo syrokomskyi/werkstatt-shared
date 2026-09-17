@@ -7,6 +7,9 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0303 Phase 3: extracted from schemas/system.ts as part of the domain split.</item>
+  <item>RFC-1106: step 4 — single-source SemanticPageType
+
+semanticPageTypeSchema (ontology/schemas/system/page-output.ts) is now the sole declaration of the closed DNA-19 vocabulary. semantic/models.ts derives the type via z.infer and SEMANTIC_PAGE_TYPES via schema.options — the hand-synced union/array and stale circular-dependency comments are deleted.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -17,11 +20,9 @@ import { z } from "zod";
  * construction and the default llms inclusion depth. Mirrors
  * SemanticPageType in @warpgogol/werkstatt-shared/semantic.
  */
-// NOTE: This enum is mirrored by the `SemanticPageType` union in
-// `@warpgogol/werkstatt-shared/semantic/models.ts`. The Zod schema here is the runtime
-// validator for `system.md`; the TypeScript union in `share` is the
-// compile-time contract. They are kept in sync manually to avoid a circular
-// dependency between `ontology` and `share`.
+// RFC-1106: this schema is the sole declaration of the SemanticPageType closed
+// vocabulary (DNA-19). `semantic/models.ts` derives the type and the runtime
+// array from it — do not declare a parallel union elsewhere.
 export const semanticPageTypeSchema = z.enum([
   "home",
   "about",

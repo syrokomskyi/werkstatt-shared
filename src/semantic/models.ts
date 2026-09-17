@@ -7,7 +7,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0508: Added "participant" to the SemanticPageType closed enum.</item>
   <item>RFC-0372: Unified SemanticBlock type replaces SemanticAnswerBlock + SemanticContentBlock; SemanticPageModel.blocks replaces answerBlocks/contentBlocks/bodyText.</item>
   <item>RFC-0912: Added VideoSeoData type and optional SemanticBlock.video field for opted-in content video structured data.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
@@ -16,43 +15,23 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — tail packages clean
 
 Sweep batch 3: rewrote ~95 purposes across werkstatt-knowledge, werkstatt-shared, godot-game, phaser-game, lifecycle-core, projektarchiv-*, portal-*, billing-*, typescript (CONTRACT-02/PURPOSE-02). Real KEY_DECISIONS on 5 godot utils, non-goals on 5 CONTRACT-03 files, headers on 4 headerless files, CS-07 history literal fix on 2 files. Policy: vitest.config.ts + test-fixtures testPatterns, worker-configuration.d.ts excludedPath. All non-site/engine packages now 0 diagnostics.</item>
-  <history>RFC-0133, RFC-0165, RFC-0328, RFC-0490</history>
+  <item>RFC-1106: step 4 — single-source SemanticPageType
+
+semanticPageTypeSchema (ontology/schemas/system/page-output.ts) is now the sole declaration of the closed DNA-19 vocabulary. semantic/models.ts derives the type via z.infer and SEMANTIC_PAGE_TYPES via schema.options — the hand-synced union/array and stale circular-dependency comments are deleted.</item>
+  <history>RFC-0133, RFC-0165, RFC-0328, RFC-0490, RFC-0508</history>
 </CHANGE_SUMMARY>
 */
 
-// NOTE: This closed union is mirrored by `semanticPageTypeSchema` in
-// `@warpgogol/werkstatt-shared/ontology/src/schemas/system.ts`. `share` owns the compile-time
-// contract used by lightweight consumers; `ontology` owns the runtime Zod
-// validator for `system.md`. They are kept in sync manually because deriving
-// one from the other would create a circular dependency between the two
-// packages.
-export type SemanticPageType =
-  | "home"
-  | "about"
-  | "projects"
-  | "donationContact"
-  | "openSource"
-  | "content"
-  | "article"
-  | "person"
-  | "participant"
-  | "legal"
-  | "collection";
+import { z } from "zod";
+import { semanticPageTypeSchema } from "../ontology/schemas/system/page-output.ts";
 
-/** Runtime counterpart to the `SemanticPageType` closed union. Keep in sync manually. */
-export const SEMANTIC_PAGE_TYPES: readonly SemanticPageType[] = [
-  "home",
-  "about",
-  "projects",
-  "donationContact",
-  "openSource",
-  "content",
-  "article",
-  "person",
-  "participant",
-  "legal",
-  "collection",
-];
+// RFC-1106: semanticPageTypeSchema (ontology/schemas/system/page-output.ts) is
+// the sole declaration of this closed DNA-19 vocabulary. The type and the
+// runtime array derive from it — no hand-synced mirror.
+export type SemanticPageType = z.infer<typeof semanticPageTypeSchema>;
+
+/** Runtime list of the closed vocabulary — derived from the schema's options. */
+export const SEMANTIC_PAGE_TYPES: readonly SemanticPageType[] = semanticPageTypeSchema.options;
 
 export type SemanticBreadcrumb = {
   name: string;
