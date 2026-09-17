@@ -1018,14 +1018,6 @@
       "types": "./src/types/hls-js-light.d.ts",
       "default": "./src/types/hls-js-light.d.ts"
     },
-    "./surface/blueprint-schema": {
-      "types": "./src/surface/blueprint-schema.ts",
-      "default": "./src/surface/blueprint-schema.ts"
-    },
-    "./surface/blueprint-types": {
-      "types": "./src/surface/blueprint-types.ts",
-      "default": "./src/surface/blueprint-types.ts"
-    },
     "./surface/blueprint": {
       "types": "./src/surface/blueprint.ts",
       "default": "./src/surface/blueprint.ts"
@@ -1207,10 +1199,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "src",
-    "tsconfig.json"
-  ],
+  "files": ["src", "tsconfig.json"],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@noble/ed25519": "^3.2.0",

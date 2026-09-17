@@ -6,7 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0282/RFC-0283: export visibility and breaker schemas.</item>
   <item>RFC-0284: export fleet Leitstand schemas and types.</item>
   <item>RFC-0264 cleanup: root barrel delegates governance exports to the governance subpath.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
@@ -15,7 +14,10 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — tail packages clean
 
 Sweep batch 3: rewrote ~95 purposes across werkstatt-knowledge, werkstatt-shared, godot-game, phaser-game, lifecycle-core, projektarchiv-*, portal-*, billing-*, typescript (CONTRACT-02/PURPOSE-02). Real KEY_DECISIONS on 5 godot utils, non-goals on 5 CONTRACT-03 files, headers on 4 headerless files, CS-07 history literal fix on 2 files. Policy: vitest.config.ts + test-fixtures testPatterns, worker-configuration.d.ts excludedPath. All non-site/engine packages now 0 diagnostics.</item>
-  <history>RFC-0192, RFC-0271, RFC-0276, RFC-0278, RFC-0280</history>
+  <item>RFC-1106: step 5 — merge blueprint triplet
+
+surface/blueprint.ts now holds the blueprintSchema (sole declaration), all ~30 contract type names derived via z.infer, parseBlueprint, and the pure helpers. Deleted satellites blueprint-types.ts + blueprint-schema.ts, their package.json export entries, and the zero-consumer site shims (domain/surface/blueprint{,-types,-schema}.ts + 2 load-verification tests). All barrel consumers unchanged.</item>
+  <history>RFC-0192, RFC-0271, RFC-0276, RFC-0278, RFC-0280, RFC-0282</history>
 </CHANGE_SUMMARY>
 */
 
@@ -89,7 +91,7 @@ export {
   type LocalizedString,
 } from "./blueprint.ts";
 
-export { blueprintSchema, parseBlueprint, type ParseBlueprintResult } from "./blueprint-schema.ts";
+export { blueprintSchema, parseBlueprint, type ParseBlueprintResult } from "./blueprint.ts";
 
 // Governance and operational schema bags (RFC-0271..0285) — explicit re-exports.
 export type {
