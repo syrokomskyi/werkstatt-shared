@@ -9,6 +9,9 @@
   <item>RFC-0303 Phase 3: extracted from schemas/system.ts as part of the domain split.</item>
   <item>RFC-0377: added optional `audience` field to the per-page pin schema.</item>
   <item>ADR-0062: added `ctaTarget` to identity, `sectionNav` + `ctaTarget` to page pins, created `systemCollectionSchema` for content collection typing.</item>
+  <item>RFC-1106: step 2 — extend systemManifestSchema
+
+Add identity.legal (RFC-0096) and seo.anchorText.extraStopPhrases (RFC-0911) to systemManifestSchema — the two interface-only fields with living consumers. No dead fields found: all other interface fields already exist in the schema.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -87,6 +90,18 @@ export const systemManifestSchema = z.object({
      * Used by resolve-route.ts to populate `ctaTarget` in PageRouteData.
      */
     ctaTarget: z.string().min(1).optional(),
+
+    /**
+     * RFC-0096: Operator details consumed by legal.scaffold to fill
+     * Impressum / Datenschutz stubs.
+     */
+    legal: z
+      .object({
+        responsibleName: z.string().min(1).optional(),
+        address: z.string().min(1).optional(),
+        email: z.string().min(1).optional(),
+      })
+      .optional(),
   }),
 
   /**
@@ -520,6 +535,21 @@ export const systemManifestSchema = z.object({
    * When absent, search.verification.validate emits SEARCH-VERIFY-01.
    */
   verification: systemVerificationSchema.optional(),
+
+  /**
+   * RFC-0911: SEO validator configuration extension point.
+   * Sites extend the built-in de/uk anchor-text stop-list via
+   * `seo.anchorText.extraStopPhrases` (lang → phrases).
+   */
+  seo: z
+    .object({
+      anchorText: z
+        .object({
+          extraStopPhrases: z.record(z.string(), z.array(z.string())).optional(),
+        })
+        .optional(),
+    })
+    .optional(),
 });
 
 export type SystemManifest = z.infer<typeof systemManifestSchema>;
