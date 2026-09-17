@@ -30,6 +30,31 @@ Rules:
 - The engine preserves its old package specifiers via forwarding modules and retargeted barrels — consumers of `@warpgogol/werkstatt-engine/kernel`, `/schemas`, `/signing`, `/fingerprint`, `/component` keep working, but new code SHOULD import from the `@warpgogol/werkstatt-shared/*` canonical homes.
 - Axiom dependencies (`@syrokomskyi/axiom-*`) are `optionalDependencies` — consumers without axiom installed must use type-only imports or guard runtime access.
 
+## Domain layout (RFC-1105)
+
+The `src/share/` namespace is dissolved. Every former `share/` subdomain is now a top-level `src/` directory with a matching subpath export:
+
+| Domain | Subpath | Notes |
+| --- | --- | --- |
+| `agent`, `content-discipline`, `i18n`, `knowledge`, `legal`, `middleware`, `pbt`, `remediation`, `routes`, `schemas`, `semantic`, `slug`, `typography`, `types` | `@warpgogol/werkstatt-shared/<name>` | Mechanical promotion |
+| `content` | `@warpgogol/werkstatt-shared/content` | `share/content/*` merged into the existing dir |
+| `onboarding` | `@warpgogol/werkstatt-shared/onboarding` | `share/onboarding-yaml` merged as `onboarding/yaml.ts` |
+| `client-scripts` | `@warpgogol/werkstatt-shared/client-scripts` | Browser-only (gsap, lenis, plyr, hls, lordicon, counter-utils) |
+| `node` | `@warpgogol/werkstatt-shared/node/*` | Node-only (`node/fs`, `node/import-scan`, `node/dev-props-validator`, `node/semantic/*`) |
+| `text`, `policy`, `page`, `redirects`, `image-provider`, `attribution`, `offers`, `checks`, `runtime`, `sections`, `stack` | `@warpgogol/werkstatt-shared/<name>` | Former loose files grouped by domain |
+
+Classification rule for new modules:
+
+- **Node-only** (`node:*` imports, `createRequire`, subprocess) → `src/node/` with domain-preserving structure (`node/<domain>/…`).
+- **Browser-only** (DOM, `window`, client script init) → `src/client-scripts/`.
+- **Everything else** → runtime-agnostic domain dir; pick the domain whose name matches the module's responsibility, or create a new top-level domain dir — never a catch-all.
+
+Rules:
+
+- `src/node/` modules MUST NOT be re-exported from runtime-agnostic domain barrels (`src/<domain>/index.ts`) or the root barrel — the browser/Node seam is a filesystem fact, keep it that way.
+- `utility-registry.yaml` lives at the package root (not under `src/`).
+- Tests live in `<domain>/tests/` next to their domain.
+
 ## Scripts
 
 | Script        | Command                                   |
@@ -51,7 +76,7 @@ Rules:
 
 ### Slug generation (RFC-0915, DNA-88)
 
-Location: `packages/werkstatt-shared/src/share/slug/` — exported via `@warpgogol/werkstatt-shared/slug`.
+Location: `packages/werkstatt-shared/src/slug/` — exported via `@warpgogol/werkstatt-shared/slug`.
 
 | Export | Purpose |
 | --- | --- |
@@ -67,7 +92,7 @@ Rules:
 
 ### Semantic extraction (RFC-0901)
 
-Location: `packages/werkstatt-shared/src/share/semantic/` — exported via `@warpgogol/werkstatt-shared/semantic`.
+Location: `packages/werkstatt-shared/src/semantic/` — exported via `@warpgogol/werkstatt-shared/semantic`.
 
 | Export | Purpose |
 | --- | --- |
@@ -79,7 +104,7 @@ Location: `packages/werkstatt-shared/src/share/semantic/` — exported via `@war
 
 ### Claim provenance projection (RFC-1076)
 
-Location: `packages/werkstatt-shared/src/share/semantic/business-projection.ts` — exported via `@warpgogol/werkstatt-shared/semantic`.
+Location: `packages/werkstatt-shared/src/semantic/business-projection.ts` — exported via `@warpgogol/werkstatt-shared/semantic`.
 
 `projectClaims(claims, evidenceSources)` filters published claims, resolves evidence references via the `ref` field on `PbpEntityRef`, and projects canonical item hashes. Only claims with `status: "published"` and a non-empty `id` are included. Evidence sources are keyed by their `id` field.
 
@@ -104,7 +129,7 @@ Rules:
 
 ### Canonical URI derivation (RFC-1075)
 
-Location: `packages/werkstatt-shared/src/share/semantic/canonical-uri.ts` — exported via `@warpgogol/werkstatt-shared/semantic/canonical-uri`.
+Location: `packages/werkstatt-shared/src/semantic/canonical-uri.ts` — exported via `@warpgogol/werkstatt-shared/semantic/canonical-uri`.
 
 | Export | Purpose |
 | --- | --- |
@@ -124,7 +149,7 @@ Rules:
 
 ### Canonical fact extraction (RFC-1077)
 
-Location: `packages/werkstatt-shared/src/share/semantic/fact-extraction.ts` — exported via `@warpgogol/werkstatt-shared/semantic/fact-extraction`.
+Location: `packages/werkstatt-shared/src/semantic/fact-extraction.ts` — exported via `@warpgogol/werkstatt-shared/semantic/fact-extraction`.
 
 | Export | Purpose |
 | --- | --- |
@@ -185,7 +210,7 @@ ui?: {
 
 ### Typography rule tiers (RFC-1068, RFC-1069, RFC-1070, RFC-1071)
 
-Location: `packages/werkstatt-shared/src/share/typography/` — exported via `@warpgogol/werkstatt-shared/typography`.
+Location: `packages/werkstatt-shared/src/typography/` — exported via `@warpgogol/werkstatt-shared/typography`.
 
 | Export | Purpose |
 | --- | --- |
@@ -215,18 +240,18 @@ Typography rule implementation notes (RFC-1083):
 
 ### Utility registry (RFC-0916)
 
-Location: `packages/werkstatt-shared/src/share/utility-registry.yaml`
+Location: `packages/werkstatt-shared/utility-registry.yaml`
 
 To add a new canonical utility:
 
-1. Implement the utility in `packages/werkstatt-shared/src/share/<name>/`
+1. Implement the utility in `packages/werkstatt-shared/src/<name>/`
 2. Add a subpath export to `packages/werkstatt-shared/package.json`
 3. Add an entry to `utility-registry.yaml` with `id`, `canonicalPath`, `forbiddenImports`, `functionNames`, `patterns`, and `allowlist`
 4. Document the utility in this AGENTS.md section
 
 ### Remediation catalog (RFC-1027)
 
-Location: `packages/werkstatt-shared/src/share/remediation/remediation-catalog.ts` — exported via `@warpgogol/werkstatt-shared/remediation`.
+Location: `packages/werkstatt-shared/src/remediation/remediation-catalog.ts` — exported via `@warpgogol/werkstatt-shared/remediation`.
 
 | Export | Purpose |
 | --- | --- |
@@ -243,7 +268,7 @@ Rules:
 
 ### Agent Surface search (RFC-0954)
 
-Location: `packages/werkstatt-shared/src/share/agent/search.ts` — exported via `@warpgogol/werkstatt-shared/agent/search`.
+Location: `packages/werkstatt-shared/src/agent/search.ts` — exported via `@warpgogol/werkstatt-shared/agent/search`.
 
 | Export | Purpose |
 | --- | --- |
@@ -264,7 +289,7 @@ Location: `packages/werkstatt-shared/src/share/agent/search.ts` — exported via
 
 ### Placeholder route filtering (RFC-0917)
 
-Location: `packages/werkstatt-shared/src/share/routes/template-filter.ts` — exported via `@warpgogol/werkstatt-shared/routes/template-filter`.
+Location: `packages/werkstatt-shared/src/routes/template-filter.ts` — exported via `@warpgogol/werkstatt-shared/routes/template-filter`.
 
 | Export | Purpose |
 | --- | --- |
@@ -277,7 +302,7 @@ Rules:
 
 ### Client-side dependency import guidance (RFC-0955)
 
-When adding a third-party dependency to `packages/werkstatt-shared/package.json` `dependencies` that is imported by client-side scripts (`src/share/scripts/**/*.ts`) or client-side components (`packages/werkstatt-site/src/domain/ui/components/**/*.client.ts`):
+When adding a third-party dependency to `packages/werkstatt-shared/package.json` `dependencies` that is imported by client-side scripts (`src/client-scripts/**/*.ts`) or client-side components (`packages/werkstatt-site/src/domain/ui/components/**/*.client.ts`):
 
 1. Check if the package has a `browser` field in its `package.json` — if yes, no action needed.
 2. If no `browser` field, use a deep import to the browser-compatible entry (e.g. `qrcode/lib/browser.js`).
@@ -288,7 +313,7 @@ Agents MUST NOT automatically replace imports based on validator output — the 
 
 ### Scroll-spy URL hash updates (RFC-1061)
 
-Location: `packages/werkstatt-shared/src/share/scripts/scroll-spy.ts` — exported via `@warpgogol/werkstatt-shared/client-scripts`.
+Location: `packages/werkstatt-shared/src/client-scripts/scroll-spy.ts` — exported via `@warpgogol/werkstatt-shared/client-scripts`.
 
 | Export | Purpose |
 | --- | --- |
