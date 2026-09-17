@@ -434,10 +434,6 @@
       "types": "./src/integration/orchestration.ts",
       "default": "./src/integration/orchestration.ts"
     },
-    "./integration/port-barrel": {
-      "types": "./src/integration/port-barrel.ts",
-      "default": "./src/integration/port-barrel.ts"
-    },
     "./integration/qstash": {
       "types": "./src/integration/qstash.ts",
       "default": "./src/integration/qstash.ts"
