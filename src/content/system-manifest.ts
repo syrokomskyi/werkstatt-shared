@@ -10,6 +10,9 @@ Stack-agnostic utility used by both engine and site plugin (RFC-0868).</purpose>
 <CHANGE_SUMMARY>
   <item>RFC-0868: extracted from werkstatt-site/src/content/system-manifest.ts.</item>
   <item>RFC-0911: add seo?.anchorText?.extraStopPhrases for anchor-text stop-list extension.</item>
+  <item>RFC-1106: step 3 — sole SystemManifest definition, loaders parse()
+
+Delete the hand-written SystemManifest interface; content/system-manifest.ts re-exports the schema-inferred type. Both loaders switch from 'as unknown as' to systemManifestSchema.parse() — the schema now executes at load. system.manifest.validate catches ZodError and maps issues into structured diagnostics; the post-load safeParse was dead code. Zero consumer breaks: all growth/release/tagline readers were already optional-safe. New adjacent test pins parse-at-load (AC-7).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -17,106 +20,14 @@ import { readFile, access } from "node:fs/promises";
 import { readFileSync, accessSync } from "node:fs";
 import { join } from "node:path";
 import { parseMarkdownFrontmatter } from "./markdown-frontmatter.ts";
+import { systemManifestSchema } from "../ontology/schemas/system/manifest.ts";
+import type { SystemManifest } from "../ontology/schemas/system/manifest.ts";
 
-export interface SystemManifest {
-  app: string;
-  version: string;
-  identity: {
-    systemStar: string;
-    biome: string;
-    tagline: string;
-    domain?: string;
-    /** RFC-0087: Per-app default CTA pageId for shared header and final-cta. */
-    ctaTarget?: string;
-    /** RFC-0096: Operator details consumed by legal.scaffold to fill Impressum / Datenschutz stubs. */
-    legal?: {
-      responsibleName?: string;
-      address?: string;
-      email?: string;
-    };
-  };
-  i18n?: {
-    default: string;
-    supported: Record<string, unknown>;
-  };
-  constellations: string[];
-  clientEditable: string[];
-  sharedContext?: {
-    requiredPageIds: string[];
-  };
-  pages: Array<{
-    pageId: string;
-    routes?: Record<string, string>;
-    route?: string;
-    /** RFC-0097: explicit locale opt-in; the page exists only in these locales. */
-    locales?: string[];
-    cosmicStar: string;
-    planets: Array<{
-      cosmicPlanet: string;
-      pin: string;
-    }>;
-  }>;
-  growth: {
-    vendor: {
-      adapter: string;
-      options: Record<string, unknown>;
-    };
-    funnels: unknown[];
-    experiments: unknown[];
-  };
-  release: {
-    passport: {
-      enabled: boolean;
-      indexable: boolean;
-      keyVersion: string;
-      heartbeatUrl: string;
-    };
-  };
-  /**
-   * RFC-0211 Content Knowledge Lifecycle policy. Mirrors the `knowledge` block in
-   * the ontology systemManifestSchema; declared here so the CKL kernel commands
-   * (content.freshness.validate RFC-0213, content.plan.build RFC-0216) read it
-   * with real types instead of structural casts.
-   */
-  knowledge?: {
-    freshness?: {
-      soonWindowDays?: number;
-      critical?: Array<{ match: string; criticality: "advisory" | "important" | "blocking" }>;
-    };
-    derivation?: {
-      critical?: Array<{ match: string; criticality: "advisory" | "important" | "blocking" }>;
-    };
-    plan?: {
-      leadTimeDays?: number;
-      defaultOwner?: string;
-      criticalityMap?: Array<{ match: string; criticality: "advisory" | "important" | "blocking" }>;
-    };
-  };
-  /** RFC-0487: Business model declaration. Closed enum — currently only "b2b-only". */
-  businessModel?: "b2b-only";
-  /** RFC-0487/RFC-0509: Retired page routes — 410 Gone tombstones or 301 redirects. */
-  retiredRoutes?: Array<{ slug: string; status: 410 } | { slug: string; status: 301; to: string }>;
-  /** UI-level rendering toggles for split-list column order. */
-  ui?: {
-    responsibilityBlock?: {
-      swapOrder?: boolean;
-    };
-  };
-  /** RFC-0911: SEO validator configuration extension point. */
-  seo?: {
-    anchorText?: {
-      /** Added to the built-in de/uk stop-list. */
-      extraStopPhrases?: Record<string, string[]>;
-    };
-  };
-  /** RFC-1070: Typography validator configuration extension point. */
-  typography?: {
-    /** Per-locale abbreviation overrides. Merged into the built-in locale defaults. */
-    abbreviations?: Record<string, string[]>;
-    /** Additional allowed tokens (extends DEFAULT_ALLOWED_TOKENS). */
-    allowedTokens?: string[];
-  };
-}
+// RFC-1106: systemManifestSchema is the sole SystemManifest definition.
+// The inferred output type materializes .default()s (pages, constellations,
+// clientEditable, retiredRoutes, planets stay non-optional) and keeps
+// growth/release/tagline optional — the old interface lied about those.
+export type { SystemManifest };
 
 export interface SystemManifestLoadResult {
   manifest: SystemManifest;
@@ -139,7 +50,7 @@ export async function loadSystemManifest(
   const parsed = parseMarkdownFrontmatter(content);
 
   return {
-    manifest: parsed.data as unknown as SystemManifest,
+    manifest: systemManifestSchema.parse(parsed.data),
     source: "system.md",
     filePath: systemMdPath,
   };
@@ -158,7 +69,7 @@ export function loadSystemManifestSync(contentDirectory: string): SystemManifest
   const parsed = parseMarkdownFrontmatter(content);
 
   return {
-    manifest: parsed.data as unknown as SystemManifest,
+    manifest: systemManifestSchema.parse(parsed.data),
     source: "system.md",
     filePath: systemMdPath,
   };
