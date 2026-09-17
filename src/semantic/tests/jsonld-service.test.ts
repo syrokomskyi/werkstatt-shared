@@ -12,8 +12,8 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { buildJsonLd } from "../semantic/jsonld.ts";
-import type { SemanticPageModel, SemanticOrganization } from "../semantic/models.ts";
+import { buildJsonLd } from "../jsonld.ts";
+import type { SemanticPageModel, SemanticOrganization } from "../models.ts";
 
 function makeOrg(): SemanticOrganization {
   return {

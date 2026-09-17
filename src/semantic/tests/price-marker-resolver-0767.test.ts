@@ -12,8 +12,8 @@ import {
   OFFERING_URI_PREFIX,
   PRICE_MARKER_RE,
   type DerivedPriceEntry,
-} from "../semantic/price-marker-resolver.ts";
-import { loadDerivedPrices } from "../semantic/derived-prices-loader.ts";
+} from "../price-marker-resolver.ts";
+import { loadDerivedPrices } from "../../node/semantic/derived-prices-loader.ts";
 
 const fixturePrices: Record<string, DerivedPriceEntry[]> = {
   [`${OFFERING_URI_PREFIX}referral-fee`]: [

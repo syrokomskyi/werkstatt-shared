@@ -13,7 +13,7 @@ import {
   extractJsonPath,
   compareValues,
   coerceNumber,
-} from "../knowledge/source.ts";
+} from "../source.ts";
 
 test("descriptor: valid http-json passes", () => {
   const r = sourceDescriptorSchema.safeParse({

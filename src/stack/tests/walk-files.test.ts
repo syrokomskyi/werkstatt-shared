@@ -7,7 +7,7 @@ import {
   readTextFile,
   readTextFiles,
   readBinaryFiles,
-} from "./walk-files.ts";
+} from "../walk-files.ts";
 
 describe("walkFiles", () => {
   let root: string;

@@ -8,7 +8,7 @@
 */
 
 import { test, expect } from "vitest";
-import { normalizeForHash, hashSourceValue, derivedState } from "../knowledge/derivation.ts";
+import { normalizeForHash, hashSourceValue, derivedState } from "../derivation.ts";
 
 test("normalize: whitespace and markdown are insensitive", () => {
   expect(normalizeForHash("Hello   world")).toBe("Hello world");

@@ -9,8 +9,8 @@
 */
 
 import { test, expect } from "vitest";
-import { buildArdCatalog } from "../agent/ard-catalog.ts";
-import { buildAgentSurfaceManifest } from "../agent/manifest.ts";
+import { buildArdCatalog } from "../ard-catalog.ts";
+import { buildAgentSurfaceManifest } from "../manifest.ts";
 
 test("buildArdCatalog: produces specVersion, host, and entries array", () => {
   const manifest = buildAgentSurfaceManifest({

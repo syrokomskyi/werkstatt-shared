@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { buildVideoObjectNodes } from "../semantic/jsonld/video.ts";
-import { createJsonLdContext } from "../semantic/jsonld/context.ts";
-import type { SemanticPageModel, VideoSeoData } from "../semantic/models.ts";
+import { buildVideoObjectNodes } from "../jsonld/video.ts";
+import { createJsonLdContext } from "../jsonld/context.ts";
+import type { SemanticPageModel, VideoSeoData } from "../models.ts";
 
 /*
 <MODULE_CONTRACT>

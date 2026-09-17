@@ -13,8 +13,8 @@ import {
   registerPipeFormatter,
   getPipeFormatter,
 } from "../formula-eval.ts";
-import type { ContentRefIndex, SourceRef } from "../content-reference.ts";
-import { EMPTY_CONTENT_REF_INDEX } from "../content-reference.ts";
+import type { ContentRefIndex, SourceRef } from "../../content/content-reference.ts";
+import { EMPTY_CONTENT_REF_INDEX } from "../../content/content-reference.ts";
 
 describe("extractNumeric", () => {
   it("extracts number from string with currency suffix", () => {

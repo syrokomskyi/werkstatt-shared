@@ -95,7 +95,7 @@ afterEach(() => {
 });
 
 async function triggerUpgrade(video: any): Promise<void> {
-  const { initVideoPlayers } = await import("../scripts/video-player.ts");
+  const { initVideoPlayers } = await import("../video-player.ts");
   vi.spyOn(globalThis.document as any, "querySelectorAll").mockReturnValue([video]);
   await initVideoPlayers();
 
@@ -109,7 +109,7 @@ async function triggerUpgrade(video: any): Promise<void> {
 test("initVideoPlayers: returns early when no [data-video-player] elements", async () => {
   const querySelectorAll = vi.spyOn(globalThis.document as any, "querySelectorAll");
   querySelectorAll.mockReturnValue([]);
-  const { initVideoPlayers } = await import("../scripts/video-player.ts");
+  const { initVideoPlayers } = await import("../video-player.ts");
   await initVideoPlayers();
   expect(observerCallbacks.length).toBe(0);
   querySelectorAll.mockRestore();

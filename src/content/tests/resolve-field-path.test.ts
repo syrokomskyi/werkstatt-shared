@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { resolveFieldPath } from "../content/resolve-field-path.ts";
+import { resolveFieldPath } from "../resolve-field-path.ts";
 
 test("resolveFieldPath resolves shallow field", () => {
   const result = resolveFieldPath({ companyName: "Warpgogol" }, ["companyName"]);

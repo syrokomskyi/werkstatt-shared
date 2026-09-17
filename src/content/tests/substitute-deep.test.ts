@@ -1,5 +1,5 @@
 import { test, expect } from "vitest";
-import { substituteRefsDeep } from "../content/substitute-deep.ts";
+import { substituteRefsDeep } from "../substitute-deep.ts";
 
 // RFC-0138 fixture: a tiny disk-free stand-in for the RFC-0045 resolver. It models the
 // canonical business offer file so we can assert a {business.offer.price.*} reference written

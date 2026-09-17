@@ -12,8 +12,8 @@
 */
 
 import { test, expect } from "vitest";
-import { buildMcpServerCard } from "../agent/mcp-card.ts";
-import { buildAgentSurfaceManifest } from "../agent/manifest.ts";
+import { buildMcpServerCard } from "../mcp-card.ts";
+import { buildAgentSurfaceManifest } from "../manifest.ts";
 
 test("buildMcpServerCard: null mcp → returns null", () => {
   const manifest = buildAgentSurfaceManifest({

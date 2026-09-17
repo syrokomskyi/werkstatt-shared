@@ -5,7 +5,7 @@ import {
   isHtmlRedirectPage,
   isSyntheticPreviewUrl,
   type SitemapImageEntry,
-} from "../semantic/image-sitemap.ts";
+} from "../image-sitemap.ts";
 
 const SITE = "https://example.org";
 

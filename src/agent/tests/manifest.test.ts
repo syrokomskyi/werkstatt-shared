@@ -19,7 +19,7 @@ import {
   computeAgentManifestContentHash,
   computeSignedContentHash,
   canonicalJson,
-} from "../agent/manifest.ts";
+} from "../manifest.ts";
 
 const baseInput = {
   site: "warpgogol-com",

@@ -18,7 +18,7 @@ import {
   projectGraph,
   projectTemporalSeo,
   type ClaimEvent,
-} from "../knowledge/ledger.ts";
+} from "../ledger.ts";
 
 function evt(partial: Partial<ClaimEvent>): ClaimEvent {
   const subject = partial.subject ?? "business/de/location#residents";

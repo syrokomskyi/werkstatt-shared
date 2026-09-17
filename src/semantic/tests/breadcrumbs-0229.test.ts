@@ -14,7 +14,7 @@ import {
   surfaceAncestorPageIds,
   type BreadcrumbAncestorResolver,
   type BreadcrumbCrumb,
-} from "../semantic/breadcrumbs.ts";
+} from "../breadcrumbs.ts";
 
 const HOME = "https://example.com/";
 const SELF = "https://example.com/website/schreiner/muenchen/";

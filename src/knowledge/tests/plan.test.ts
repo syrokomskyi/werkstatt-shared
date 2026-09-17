@@ -18,7 +18,7 @@ import {
   defaultCriticality,
   isRedTask,
   type MaintenanceTask,
-} from "../knowledge/plan.ts";
+} from "../plan.ts";
 
 test("stableTaskId: idempotent for the same (subject, trigger)", () => {
   const a = stableTaskId("business/de/offer#price.monthly", "expired");

@@ -12,8 +12,8 @@
 */
 
 import { test, expect } from "vitest";
-import { buildLlmsIndex } from "../semantic/llms.ts";
-import type { SemanticSiteModel } from "../semantic/models.ts";
+import { buildLlmsIndex } from "../llms.ts";
+import type { SemanticSiteModel } from "../models.ts";
 
 function makeSite(overrides: Partial<SemanticSiteModel> = {}): SemanticSiteModel {
   return {

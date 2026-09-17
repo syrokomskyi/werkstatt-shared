@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { defineStackChecks } from "./stack-checks.ts";
-import type { StackCheckData, StackCheckSpec, StackCheckViolation } from "./stack-checks.ts";
-import type { PluginHookContext } from "../plugin/plugin-contract.ts";
+import { defineStackChecks } from "../stack-checks.ts";
+import type { StackCheckData, StackCheckSpec, StackCheckViolation } from "../stack-checks.ts";
+import type { PluginHookContext } from "../../plugin/plugin-contract.ts";
 import type {
   KernelCommandInput,
   KernelCommandResult,

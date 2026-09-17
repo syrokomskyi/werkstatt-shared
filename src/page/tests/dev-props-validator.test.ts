@@ -1,6 +1,6 @@
 import { test, expect } from "vitest";
 import { buildPage, type PageEntry } from "../page.ts";
-import { EMPTY_RUNTIME_CONTEXT } from "../runtime-context.ts";
+import { EMPTY_RUNTIME_CONTEXT } from "../../runtime/runtime-context.ts";
 
 /*
 <MODULE_CONTRACT>

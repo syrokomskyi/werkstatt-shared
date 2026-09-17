@@ -23,7 +23,7 @@ import {
   parseOnboardingArtifactHeader,
   parseOnboardingArtifactPayload,
   RFC_METADATA_KEYS,
-} from "../onboarding-yaml/index.ts";
+} from "../yaml.ts";
 
 const HEADER_FIXTURE = `phase: 04-author
 derivedFromInputHash: sha256:deadbeef

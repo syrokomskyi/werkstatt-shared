@@ -18,7 +18,7 @@
 */
 
 import { test, expect } from "vitest";
-import { markdownTwinRelPath, markdownTwinUrlPath } from "../semantic/ids.ts";
+import { markdownTwinRelPath, markdownTwinUrlPath } from "../ids.ts";
 
 const supportedLangs = ["de", "en"] as const;
 

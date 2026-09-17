@@ -8,9 +8,9 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { buildWebPageNode } from "../semantic/jsonld/webpage.ts";
-import { createJsonLdContext } from "../semantic/jsonld/context.ts";
-import type { SemanticPageModel, SemanticOrganization } from "../semantic/models.ts";
+import { buildWebPageNode } from "../jsonld/webpage.ts";
+import { createJsonLdContext } from "../jsonld/context.ts";
+import type { SemanticPageModel, SemanticOrganization } from "../models.ts";
 
 function makeModel(overrides: Partial<SemanticPageModel> = {}): SemanticPageModel {
   const org: SemanticOrganization = {

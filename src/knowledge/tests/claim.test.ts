@@ -17,7 +17,7 @@ import {
   formatClaimSubject,
   claimSubjectsEqual,
   ClaimSubjectParseError,
-} from "../knowledge/claim.ts";
+} from "../claim.ts";
 
 test("parse: lang-scoped subject with simple field", () => {
   const s = parseClaimSubject("business/de/location#residents");

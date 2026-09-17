@@ -8,9 +8,9 @@
 */
 
 import { describe, expect, it } from "vitest";
-import { buildOrganizationNode } from "../semantic/jsonld/organization.ts";
-import { createJsonLdContext } from "../semantic/jsonld/context.ts";
-import type { SemanticPageModel, SemanticOrganization } from "../semantic/models.ts";
+import { buildOrganizationNode } from "../jsonld/organization.ts";
+import { createJsonLdContext } from "../jsonld/context.ts";
+import type { SemanticPageModel, SemanticOrganization } from "../models.ts";
 
 function makeOrgWithPrices(
   prices: Array<{ id: string; label: string; amount: string; currency?: string }>,

@@ -16,8 +16,8 @@ import {
   AGENT_KNOWLEDGE_DOMAINS,
   isAgentKnowledgeDomain,
   formatAgentKnowledge,
-} from "../agent/knowledge.ts";
-import { BUSINESS_DOMAIN_VISIBILITY } from "../semantic/business-projection.ts";
+} from "../knowledge.ts";
+import { BUSINESS_DOMAIN_VISIBILITY } from "../../semantic/business-projection.ts";
 
 test("AGENT_KNOWLEDGE_DOMAINS: matches exactly the `public` BUSINESS_DOMAIN_VISIBILITY keys", () => {
   const publicDomains = Object.entries(BUSINESS_DOMAIN_VISIBILITY)

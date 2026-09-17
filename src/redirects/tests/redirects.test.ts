@@ -8,7 +8,7 @@
 */
 
 import { test, expect } from "vitest";
-import { extractRedirectTarget, parseRedirectRules } from "./redirects.ts";
+import { extractRedirectTarget, parseRedirectRules } from "../redirects.ts";
 
 test("extractRedirectTarget: extracts url from standard meta-refresh tag", () => {
   const html = `<html><head><meta http-equiv="refresh" content="0;url=/de/agb"></head><body></body></html>`;

@@ -7,7 +7,7 @@ import {
   parseMarkdownTwinFrontmatter,
   verifyMarkdownTwinHash,
   type MarkdownTwinProvenance,
-} from "../markdown-twin-provenance.ts";
+} from "../semantic/markdown-twin-provenance.ts";
 
 const baseProvenance: MarkdownTwinProvenance = {
   canonical: "https://example.com/de/page",

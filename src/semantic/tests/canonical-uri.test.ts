@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveCanonicalUri } from "../canonical-uri.js";
+import { deriveCanonicalUri } from "../canonical-uri.ts";
 
 describe("RFC-1075 AC-4: deriveCanonicalUri is pure and deterministic", () => {
   it("returns undefined for undefined siteOrigin", () => {

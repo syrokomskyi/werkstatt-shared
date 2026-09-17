@@ -16,7 +16,7 @@ import {
   resolveActiveCapabilities,
   capabilityToActionRef,
   type CapabilityRecord,
-} from "../agent/capability.ts";
+} from "../capability.ts";
 
 function makeCap(overrides: Partial<CapabilityRecord> = {}): CapabilityRecord {
   return {

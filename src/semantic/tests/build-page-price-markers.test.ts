@@ -10,8 +10,8 @@ import {
   buildSemanticPageModelWith,
   type SemanticContentReader,
   type SemanticBuildProfile,
-} from "../semantic/build-page.ts";
-import { OFFERING_URI_PREFIX, type DerivedPriceEntry } from "../semantic/price-marker-resolver.ts";
+} from "../build-page.ts";
+import { OFFERING_URI_PREFIX, type DerivedPriceEntry } from "../price-marker-resolver.ts";
 
 const fixturePrices: Record<string, DerivedPriceEntry[]> = {
   [`${OFFERING_URI_PREFIX}referral-fee`]: [

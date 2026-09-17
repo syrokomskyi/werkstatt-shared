@@ -8,7 +8,7 @@
 */
 
 import { test, expect } from "vitest";
-import { addDuration, evaluateFreshness } from "../knowledge/freshness.ts";
+import { addDuration, evaluateFreshness } from "../freshness.ts";
 
 test("addDuration: months and years are calendar-correct", () => {
   expect(addDuration("2026-01-15", "P1Y")).toBe("2027-01-15");

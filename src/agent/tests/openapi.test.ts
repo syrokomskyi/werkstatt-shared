@@ -13,8 +13,8 @@
 */
 
 import { test, expect } from "vitest";
-import { formatAgentOpenApi } from "../agent/openapi.ts";
-import { buildAgentSurfaceManifest } from "../agent/manifest.ts";
+import { formatAgentOpenApi } from "../openapi.ts";
+import { buildAgentSurfaceManifest } from "../manifest.ts";
 
 test("formatAgentOpenApi: empty manifest yields a valid document with no paths", () => {
   const manifest = buildAgentSurfaceManifest({

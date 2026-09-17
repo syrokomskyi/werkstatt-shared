@@ -16,7 +16,7 @@ import {
   buildFleetAgentCatalog,
   computeFleetCatalogContentHash,
   FLEET_AGENT_CATALOG_SCHEMA,
-} from "../agent/fleet-catalog.ts";
+} from "../fleet-catalog.ts";
 
 const sampleDoc = {
   surfaceVersion: "1.0.0",

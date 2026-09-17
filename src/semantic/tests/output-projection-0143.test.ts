@@ -6,7 +6,7 @@
 */
 
 import { test, expect } from "vitest";
-import { resolvePageOutput } from "../semantic/output-projection.ts";
+import { resolvePageOutput } from "../output-projection.ts";
 
 test("content defaults apply when no semanticType is given", () => {
   const result = resolvePageOutput(undefined, {});

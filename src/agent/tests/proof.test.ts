@@ -16,7 +16,7 @@ import {
   buildAgentSigningPayload,
   AGENT_PROOF_DOMAIN,
   type AgentProofArtifactKind,
-} from "../agent/proof.ts";
+} from "../proof.ts";
 
 function decodePayload(bytes: Uint8Array): string {
   return new TextDecoder().decode(bytes);

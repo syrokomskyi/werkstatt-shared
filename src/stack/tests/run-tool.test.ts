@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { runTool } from "./run-tool.ts";
-import type { ToolSpec, ToolResult, ToolExecutor } from "./run-tool.ts";
+import { runTool } from "../run-tool.ts";
+import type { ToolSpec, ToolResult, ToolExecutor } from "../run-tool.ts";
 
 function recordingExecutor(
   calls: ToolSpec[],

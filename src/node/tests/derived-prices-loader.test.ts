@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { loadDerivedPrices } from "../derived-prices-loader.ts";
+import { loadDerivedPrices } from "../semantic/derived-prices-loader.ts";
 
 describe("loadDerivedPrices", () => {
   it("returns null when file does not exist", () => {

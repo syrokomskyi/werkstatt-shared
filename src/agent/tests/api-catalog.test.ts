@@ -12,8 +12,8 @@
 */
 
 import { test, expect } from "vitest";
-import { buildApiCatalog } from "../agent/api-catalog.ts";
-import { buildAgentSurfaceManifest } from "../agent/manifest.ts";
+import { buildApiCatalog } from "../api-catalog.ts";
+import { buildAgentSurfaceManifest } from "../manifest.ts";
 
 test("buildApiCatalog: empty manifest yields service-meta + service-doc links", () => {
   const manifest = buildAgentSurfaceManifest({
