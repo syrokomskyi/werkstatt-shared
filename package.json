@@ -162,249 +162,237 @@
       "types": "./src/passport/sign.ts",
       "default": "./src/passport/sign.ts"
     },
-    "./share": {
-      "types": "./src/share/index.ts",
-      "default": "./src/share/index.ts"
+    "./agent": {
+      "types": "./src/agent/index.ts",
+      "default": "./src/agent/index.ts"
     },
-    "./share/agent": {
-      "types": "./src/share/agent/index.ts",
-      "default": "./src/share/agent/index.ts"
+    "./attribution/attribution-display": {
+      "types": "./src/attribution/attribution-display.ts",
+      "default": "./src/attribution/attribution-display.ts"
     },
-    "./share/attribution-display": {
-      "types": "./src/share/attribution-display.ts",
-      "default": "./src/share/attribution-display.ts"
+    "./checks/check-hints": {
+      "types": "./src/checks/check-hints.ts",
+      "default": "./src/checks/check-hints.ts"
     },
-    "./share/check-hints": {
-      "types": "./src/share/check-hints.ts",
-      "default": "./src/share/check-hints.ts"
+    "./content-discipline": {
+      "types": "./src/content-discipline/index.ts",
+      "default": "./src/content-discipline/index.ts"
     },
-    "./share/content": {
-      "types": "./src/share/content/index.ts",
-      "default": "./src/share/content/index.ts"
+    "./content/content-reference": {
+      "types": "./src/content/content-reference.ts",
+      "default": "./src/content/content-reference.ts"
     },
-    "./share/content-discipline": {
-      "types": "./src/share/content-discipline/index.ts",
-      "default": "./src/share/content-discipline/index.ts"
+    "./content/resolve-field-path": {
+      "types": "./src/content/resolve-field-path.ts",
+      "default": "./src/content/resolve-field-path.ts"
     },
-    "./share/content-reference": {
-      "types": "./src/share/content-reference.ts",
-      "default": "./src/share/content-reference.ts"
+    "./client-scripts/counter-utils": {
+      "types": "./src/client-scripts/counter-utils.ts",
+      "default": "./src/client-scripts/counter-utils.ts"
     },
-    "./share/content/resolve-field-path": {
-      "types": "./src/share/content/resolve-field-path.ts",
-      "default": "./src/share/content/resolve-field-path.ts"
+    "./text/css-value-normalize": {
+      "types": "./src/text/css-value-normalize.ts",
+      "default": "./src/text/css-value-normalize.ts"
     },
-    "./share/counter-utils": {
-      "types": "./src/share/counter-utils.ts",
-      "default": "./src/share/counter-utils.ts"
+    "./node/dev-props-validator": {
+      "types": "./src/node/dev-props-validator.ts",
+      "default": "./src/node/dev-props-validator.ts"
     },
-    "./share/css-value-normalize": {
-      "types": "./src/share/css-value-normalize.ts",
-      "default": "./src/share/css-value-normalize.ts"
+    "./policy/entitlement": {
+      "types": "./src/policy/entitlement.ts",
+      "default": "./src/policy/entitlement.ts"
     },
-    "./share/dev-props-validator": {
-      "types": "./src/share/dev-props-validator.ts",
-      "default": "./src/share/dev-props-validator.ts"
+    "./policy/feature-policy": {
+      "types": "./src/policy/feature-policy.ts",
+      "default": "./src/policy/feature-policy.ts"
     },
-    "./share/entitlement": {
-      "types": "./src/share/entitlement.ts",
-      "default": "./src/share/entitlement.ts"
+    "./offers/formula-eval": {
+      "types": "./src/offers/formula-eval.ts",
+      "default": "./src/offers/formula-eval.ts"
     },
-    "./share/feature-policy": {
-      "types": "./src/share/feature-policy.ts",
-      "default": "./src/share/feature-policy.ts"
+    "./node/fs": {
+      "types": "./src/node/fs/index.ts",
+      "default": "./src/node/fs/index.ts"
     },
-    "./share/formula-eval": {
-      "types": "./src/share/formula-eval.ts",
-      "default": "./src/share/formula-eval.ts"
+    "./image-provider": {
+      "types": "./src/image-provider/image-provider.ts",
+      "default": "./src/image-provider/image-provider.ts"
     },
-    "./share/fs": {
-      "types": "./src/share/fs/index.ts",
-      "default": "./src/share/fs/index.ts"
+    "./node/import-scan": {
+      "types": "./src/node/import-scan.ts",
+      "default": "./src/node/import-scan.ts"
     },
-    "./share/image-provider": {
-      "types": "./src/share/image-provider.ts",
-      "default": "./src/share/image-provider.ts"
+    "./knowledge": {
+      "types": "./src/knowledge/index.ts",
+      "default": "./src/knowledge/index.ts"
     },
-    "./share/import-scan": {
-      "types": "./src/share/import-scan.ts",
-      "default": "./src/share/import-scan.ts"
+    "./knowledge/claim": {
+      "types": "./src/knowledge/claim.ts",
+      "default": "./src/knowledge/claim.ts"
     },
-    "./share/knowledge": {
-      "types": "./src/share/knowledge/index.ts",
-      "default": "./src/share/knowledge/index.ts"
+    "./knowledge/derivation": {
+      "types": "./src/knowledge/derivation.ts",
+      "default": "./src/knowledge/derivation.ts"
     },
-    "./share/knowledge/claim": {
-      "types": "./src/share/knowledge/claim.ts",
-      "default": "./src/share/knowledge/claim.ts"
+    "./knowledge/freshness": {
+      "types": "./src/knowledge/freshness.ts",
+      "default": "./src/knowledge/freshness.ts"
     },
-    "./share/knowledge/derivation": {
-      "types": "./src/share/knowledge/derivation.ts",
-      "default": "./src/share/knowledge/derivation.ts"
+    "./knowledge/ledger": {
+      "types": "./src/knowledge/ledger.ts",
+      "default": "./src/knowledge/ledger.ts"
     },
-    "./share/knowledge/freshness": {
-      "types": "./src/share/knowledge/freshness.ts",
-      "default": "./src/share/knowledge/freshness.ts"
+    "./knowledge/plan": {
+      "types": "./src/knowledge/plan.ts",
+      "default": "./src/knowledge/plan.ts"
     },
-    "./share/knowledge/ledger": {
-      "types": "./src/share/knowledge/ledger.ts",
-      "default": "./src/share/knowledge/ledger.ts"
+    "./knowledge/source": {
+      "types": "./src/knowledge/source.ts",
+      "default": "./src/knowledge/source.ts"
     },
-    "./share/knowledge/plan": {
-      "types": "./src/share/knowledge/plan.ts",
-      "default": "./src/share/knowledge/plan.ts"
+    "./legal/translation-policy": {
+      "types": "./src/legal/translation-policy.ts",
+      "default": "./src/legal/translation-policy.ts"
     },
-    "./share/knowledge/source": {
-      "types": "./src/share/knowledge/source.ts",
-      "default": "./src/share/knowledge/source.ts"
+    "./attribution/material-credits": {
+      "types": "./src/attribution/material-credits.ts",
+      "default": "./src/attribution/material-credits.ts"
     },
-    "./share/legal/translation-policy": {
-      "types": "./src/share/legal/translation-policy.ts",
-      "default": "./src/share/legal/translation-policy.ts"
+    "./middleware": {
+      "types": "./src/middleware/language-redirect.ts",
+      "default": "./src/middleware/language-redirect.ts"
     },
-    "./share/material-credits": {
-      "types": "./src/share/material-credits.ts",
-      "default": "./src/share/material-credits.ts"
+    "./middleware/access-protection": {
+      "types": "./src/middleware/access-protection.ts",
+      "default": "./src/middleware/access-protection.ts"
     },
-    "./share/middleware": {
-      "types": "./src/share/middleware/language-redirect.ts",
-      "default": "./src/share/middleware/language-redirect.ts"
+    "./offers/offer-capacity": {
+      "types": "./src/offers/offer-capacity.ts",
+      "default": "./src/offers/offer-capacity.ts"
     },
-    "./share/middleware/access-protection": {
-      "types": "./src/share/middleware/access-protection.ts",
-      "default": "./src/share/middleware/access-protection.ts"
+    "./page": {
+      "types": "./src/page/page.ts",
+      "default": "./src/page/page.ts"
     },
-    "./share/offer-capacity": {
-      "types": "./src/share/offer-capacity.ts",
-      "default": "./src/share/offer-capacity.ts"
+    "./redirects": {
+      "types": "./src/redirects/redirects.ts",
+      "default": "./src/redirects/redirects.ts"
     },
-    "./share/onboarding-yaml": {
-      "types": "./src/share/onboarding-yaml/index.ts",
-      "default": "./src/share/onboarding-yaml/index.ts"
+    "./remediation": {
+      "types": "./src/remediation/remediation-catalog.ts",
+      "default": "./src/remediation/remediation-catalog.ts"
     },
-    "./share/page": {
-      "types": "./src/share/page.ts",
-      "default": "./src/share/page.ts"
+    "./pbt": {
+      "types": "./src/pbt/index.ts",
+      "default": "./src/pbt/index.ts"
     },
-    "./share/redirects": {
-      "types": "./src/share/redirects.ts",
-      "default": "./src/share/redirects.ts"
+    "./sections/rfc0042-utils": {
+      "types": "./src/sections/rfc0042-utils.ts",
+      "default": "./src/sections/rfc0042-utils.ts"
     },
-    "./share/remediation": {
-      "types": "./src/share/remediation/remediation-catalog.ts",
-      "default": "./src/share/remediation/remediation-catalog.ts"
+    "./stack/run-tool": {
+      "types": "./src/stack/run-tool.ts",
+      "default": "./src/stack/run-tool.ts"
     },
-    "./share/pbt": {
-      "types": "./src/share/pbt/index.ts",
-      "default": "./src/share/pbt/index.ts"
+    "./runtime/runtime-context": {
+      "types": "./src/runtime/runtime-context.ts",
+      "default": "./src/runtime/runtime-context.ts"
     },
-    "./share/rfc0042-utils": {
-      "types": "./src/share/rfc0042-utils.ts",
-      "default": "./src/share/rfc0042-utils.ts"
+    "./schemas": {
+      "types": "./src/schemas/index.ts",
+      "default": "./src/schemas/index.ts"
     },
-    "./share/run-tool": {
-      "types": "./src/share/run-tool.ts",
-      "default": "./src/share/run-tool.ts"
+    "./schemas/effects": {
+      "types": "./src/schemas/effects.ts",
+      "default": "./src/schemas/effects.ts"
     },
-    "./share/runtime-context": {
-      "types": "./src/share/runtime-context.ts",
-      "default": "./src/share/runtime-context.ts"
+    "./schemas/features": {
+      "types": "./src/schemas/features.ts",
+      "default": "./src/schemas/features.ts"
     },
-    "./share/schemas": {
-      "types": "./src/share/schemas/index.ts",
-      "default": "./src/share/schemas/index.ts"
+    "./schemas/material-credit": {
+      "types": "./src/schemas/material-credit.ts",
+      "default": "./src/schemas/material-credit.ts"
     },
-    "./share/schemas/effects": {
-      "types": "./src/share/schemas/effects.ts",
-      "default": "./src/share/schemas/effects.ts"
+    "./schemas/media": {
+      "types": "./src/schemas/media.ts",
+      "default": "./src/schemas/media.ts"
     },
-    "./share/schemas/features": {
-      "types": "./src/share/schemas/features.ts",
-      "default": "./src/share/schemas/features.ts"
+    "./schemas/print": {
+      "types": "./src/schemas/print.ts",
+      "default": "./src/schemas/print.ts"
     },
-    "./share/schemas/material-credit": {
-      "types": "./src/share/schemas/material-credit.ts",
-      "default": "./src/share/schemas/material-credit.ts"
+    "./schemas/site-background": {
+      "types": "./src/schemas/site-background.ts",
+      "default": "./src/schemas/site-background.ts"
     },
-    "./share/schemas/media": {
-      "types": "./src/share/schemas/media.ts",
-      "default": "./src/share/schemas/media.ts"
+    "./client-scripts/gsap-mountain-journey": {
+      "types": "./src/client-scripts/gsap-mountain-journey.ts",
+      "default": "./src/client-scripts/gsap-mountain-journey.ts"
     },
-    "./share/schemas/print": {
-      "types": "./src/share/schemas/print.ts",
-      "default": "./src/share/schemas/print.ts"
+    "./semantic": {
+      "types": "./src/semantic/index.ts",
+      "default": "./src/semantic/index.ts"
     },
-    "./share/schemas/site-background": {
-      "types": "./src/share/schemas/site-background.ts",
-      "default": "./src/share/schemas/site-background.ts"
+    "./node/semantic/derived-prices-loader": {
+      "types": "./src/node/semantic/derived-prices-loader.ts",
+      "default": "./src/node/semantic/derived-prices-loader.ts"
     },
-    "./share/scripts/gsap-mountain-journey": {
-      "types": "./src/share/scripts/gsap-mountain-journey.ts",
-      "default": "./src/share/scripts/gsap-mountain-journey.ts"
+    "./semantic/canonical-uri": {
+      "types": "./src/semantic/canonical-uri.ts",
+      "default": "./src/semantic/canonical-uri.ts"
     },
-    "./share/semantic": {
-      "types": "./src/share/semantic/index.ts",
-      "default": "./src/share/semantic/index.ts"
+    "./semantic/fact-extraction": {
+      "types": "./src/semantic/fact-extraction.ts",
+      "default": "./src/semantic/fact-extraction.ts"
     },
-    "./share/semantic/derived-prices-loader": {
-      "types": "./src/share/semantic/derived-prices-loader.ts",
-      "default": "./src/share/semantic/derived-prices-loader.ts"
+    "./semantic/freshness": {
+      "types": "./src/semantic/freshness.ts",
+      "default": "./src/semantic/freshness.ts"
     },
-    "./share/semantic/canonical-uri": {
-      "types": "./src/share/semantic/canonical-uri.ts",
-      "default": "./src/share/semantic/canonical-uri.ts"
+    "./runtime/shared-context": {
+      "types": "./src/runtime/shared-context.ts",
+      "default": "./src/runtime/shared-context.ts"
     },
-    "./share/semantic/fact-extraction": {
-      "types": "./src/share/semantic/fact-extraction.ts",
-      "default": "./src/share/semantic/fact-extraction.ts"
+    "./slug": {
+      "types": "./src/slug/index.ts",
+      "default": "./src/slug/index.ts"
     },
-    "./share/semantic/freshness": {
-      "types": "./src/share/semantic/freshness.ts",
-      "default": "./src/share/semantic/freshness.ts"
+    "./routes/template-filter": {
+      "types": "./src/routes/template-filter.ts",
+      "default": "./src/routes/template-filter.ts"
     },
-    "./share/shared-context": {
-      "types": "./src/share/shared-context.ts",
-      "default": "./src/share/shared-context.ts"
+    "./stack/stack-checks": {
+      "types": "./src/stack/stack-checks.ts",
+      "default": "./src/stack/stack-checks.ts"
     },
-    "./share/slug": {
-      "types": "./src/share/slug/index.ts",
-      "default": "./src/share/slug/index.ts"
+    "./text/string-utils": {
+      "types": "./src/text/string-utils.ts",
+      "default": "./src/text/string-utils.ts"
     },
-    "./share/routes/template-filter": {
-      "types": "./src/share/routes/template-filter.ts",
-      "default": "./src/share/routes/template-filter.ts"
+    "./text/text-normalize": {
+      "types": "./src/text/text-normalize.ts",
+      "default": "./src/text/text-normalize.ts"
     },
-    "./share/stack-checks": {
-      "types": "./src/share/stack-checks.ts",
-      "default": "./src/share/stack-checks.ts"
+    "./typography": {
+      "types": "./src/typography/index.ts",
+      "default": "./src/typography/index.ts"
     },
-    "./share/string-utils": {
-      "types": "./src/share/string-utils.ts",
-      "default": "./src/share/string-utils.ts"
+    "./text/text-position": {
+      "types": "./src/text/text-position.ts",
+      "default": "./src/text/text-position.ts"
     },
-    "./share/text-normalize": {
-      "types": "./src/share/text-normalize.ts",
-      "default": "./src/share/text-normalize.ts"
+    "./policy/visibility": {
+      "types": "./src/policy/visibility.ts",
+      "default": "./src/policy/visibility.ts"
     },
-    "./share/typography": {
-      "types": "./src/share/typography/index.ts",
-      "default": "./src/share/typography/index.ts"
+    "./stack/walk-files": {
+      "types": "./src/stack/walk-files.ts",
+      "default": "./src/stack/walk-files.ts"
     },
-    "./share/text-position": {
-      "types": "./src/share/text-position.ts",
-      "default": "./src/share/text-position.ts"
-    },
-    "./share/visibility": {
-      "types": "./src/share/visibility.ts",
-      "default": "./src/share/visibility.ts"
-    },
-    "./share/walk-files": {
-      "types": "./src/share/walk-files.ts",
-      "default": "./src/share/walk-files.ts"
-    },
-    "./share/wrap-inline-numbers": {
-      "types": "./src/share/wrap-inline-numbers.ts",
-      "default": "./src/share/wrap-inline-numbers.ts"
+    "./text/wrap-inline-numbers": {
+      "types": "./src/text/wrap-inline-numbers.ts",
+      "default": "./src/text/wrap-inline-numbers.ts"
     },
     "./surface": {
       "types": "./src/surface/index.ts",
@@ -646,409 +634,389 @@
       "types": "./src/passport/vitest.config.ts",
       "default": "./src/passport/vitest.config.ts"
     },
-    "./share/agent/api-catalog": {
-      "types": "./src/share/agent/api-catalog.ts",
-      "default": "./src/share/agent/api-catalog.ts"
-    },
-    "./share/agent/capability": {
-      "types": "./src/share/agent/capability.ts",
-      "default": "./src/share/agent/capability.ts"
-    },
-    "./share/agent/dns-aid.test": {
-      "types": "./src/share/agent/dns-aid.test.ts",
-      "default": "./src/share/agent/dns-aid.test.ts"
-    },
-    "./share/agent/dns-aid": {
-      "types": "./src/share/agent/dns-aid.ts",
-      "default": "./src/share/agent/dns-aid.ts"
-    },
-    "./share/agent/fleet-catalog": {
-      "types": "./src/share/agent/fleet-catalog.ts",
-      "default": "./src/share/agent/fleet-catalog.ts"
-    },
-    "./share/agent/index": {
-      "types": "./src/share/agent/index.ts",
-      "default": "./src/share/agent/index.ts"
-    },
-    "./share/agent/knowledge": {
-      "types": "./src/share/agent/knowledge.ts",
-      "default": "./src/share/agent/knowledge.ts"
-    },
-    "./share/agent/manifest": {
-      "types": "./src/share/agent/manifest.ts",
-      "default": "./src/share/agent/manifest.ts"
-    },
-    "./share/agent/mcp-card": {
-      "types": "./src/share/agent/mcp-card.ts",
-      "default": "./src/share/agent/mcp-card.ts"
-    },
-    "./share/agent/omit-empty": {
-      "types": "./src/share/agent/omit-empty.ts",
-      "default": "./src/share/agent/omit-empty.ts"
-    },
-    "./share/agent/openapi": {
-      "types": "./src/share/agent/openapi.ts",
-      "default": "./src/share/agent/openapi.ts"
-    },
-    "./share/agent/proof": {
-      "types": "./src/share/agent/proof.ts",
-      "default": "./src/share/agent/proof.ts"
-    },
-    "./share/agent/search": {
-      "types": "./src/share/agent/search.ts",
-      "default": "./src/share/agent/search.ts"
-    },
-    "./share/content/entity-id": {
-      "types": "./src/share/content/entity-id.ts",
-      "default": "./src/share/content/entity-id.ts"
-    },
-    "./share/content/index": {
-      "types": "./src/share/content/index.ts",
-      "default": "./src/share/content/index.ts"
-    },
-    "./share/content/merge": {
-      "types": "./src/share/content/merge.ts",
-      "default": "./src/share/content/merge.ts"
-    },
-    "./share/content/substitute-deep": {
-      "types": "./src/share/content/substitute-deep.ts",
-      "default": "./src/share/content/substitute-deep.ts"
-    },
-    "./share/content-discipline/index": {
-      "types": "./src/share/content-discipline/index.ts",
-      "default": "./src/share/content-discipline/index.ts"
-    },
-    "./share/content-discipline/parsers": {
-      "types": "./src/share/content-discipline/parsers.ts",
-      "default": "./src/share/content-discipline/parsers.ts"
-    },
-    "./share/content-discipline/types": {
-      "types": "./src/share/content-discipline/types.ts",
-      "default": "./src/share/content-discipline/types.ts"
-    },
-    "./share/env.d": {
-      "types": "./src/share/env.d.ts",
-      "default": "./src/share/env.d.ts"
-    },
-    "./share/fs/index": {
-      "types": "./src/share/fs/index.ts",
-      "default": "./src/share/fs/index.ts"
-    },
-    "./share/i18n/localization": {
-      "types": "./src/share/i18n/localization.ts",
-      "default": "./src/share/i18n/localization.ts"
-    },
-    "./share/index": {
-      "types": "./src/share/index.ts",
-      "default": "./src/share/index.ts"
-    },
-    "./share/knowledge/index": {
-      "types": "./src/share/knowledge/index.ts",
-      "default": "./src/share/knowledge/index.ts"
-    },
-    "./share/middleware/language-redirect": {
-      "types": "./src/share/middleware/language-redirect.ts",
-      "default": "./src/share/middleware/language-redirect.ts"
-    },
-    "./share/onboarding-yaml/index": {
-      "types": "./src/share/onboarding-yaml/index.ts",
-      "default": "./src/share/onboarding-yaml/index.ts"
-    },
-    "./share/redirects.test": {
-      "types": "./src/share/redirects.test.ts",
-      "default": "./src/share/redirects.test.ts"
-    },
-    "./share/schemas/claim-records": {
-      "types": "./src/share/schemas/claim-records.ts",
-      "default": "./src/share/schemas/claim-records.ts"
-    },
-    "./share/schemas/claims": {
-      "types": "./src/share/schemas/claims.ts",
-      "default": "./src/share/schemas/claims.ts"
-    },
-    "./share/schemas/horizontal-align": {
-      "types": "./src/share/schemas/horizontal-align.ts",
-      "default": "./src/share/schemas/horizontal-align.ts"
-    },
-    "./share/schemas/icon-color": {
-      "types": "./src/share/schemas/icon-color.ts",
-      "default": "./src/share/schemas/icon-color.ts"
-    },
-    "./share/schemas/index": {
-      "types": "./src/share/schemas/index.ts",
-      "default": "./src/share/schemas/index.ts"
-    },
-    "./share/schemas/live-photo": {
-      "types": "./src/share/schemas/live-photo.ts",
-      "default": "./src/share/schemas/live-photo.ts"
-    },
-    "./share/schemas/navigation": {
-      "types": "./src/share/schemas/navigation.ts",
-      "default": "./src/share/schemas/navigation.ts"
-    },
-    "./share/schemas/page-base": {
-      "types": "./src/share/schemas/page-base.ts",
-      "default": "./src/share/schemas/page-base.ts"
-    },
-    "./share/schemas/participant": {
-      "types": "./src/share/schemas/participant.ts",
-      "default": "./src/share/schemas/participant.ts"
-    },
-    "./share/schemas/person": {
-      "types": "./src/share/schemas/person.ts",
-      "default": "./src/share/schemas/person.ts"
-    },
-    "./share/schemas/section-background": {
-      "types": "./src/share/schemas/section-background.ts",
-      "default": "./src/share/schemas/section-background.ts"
-    },
-    "./share/schemas/section-body": {
-      "types": "./src/share/schemas/section-body.ts",
-      "default": "./src/share/schemas/section-body.ts"
-    },
-    "./share/schemas/section-cards": {
-      "types": "./src/share/schemas/section-cards.ts",
-      "default": "./src/share/schemas/section-cards.ts"
-    },
-    "./share/schemas/section-cta": {
-      "types": "./src/share/schemas/section-cta.ts",
-      "default": "./src/share/schemas/section-cta.ts"
-    },
-    "./share/schemas/section-header": {
-      "types": "./src/share/schemas/section-header.ts",
-      "default": "./src/share/schemas/section-header.ts"
-    },
-    "./share/schemas/section-image": {
-      "types": "./src/share/schemas/section-image.ts",
-      "default": "./src/share/schemas/section-image.ts"
-    },
-    "./share/schemas/section-motion": {
-      "types": "./src/share/schemas/section-motion.ts",
-      "default": "./src/share/schemas/section-motion.ts"
-    },
-    "./share/schemas/section-shell": {
-      "types": "./src/share/schemas/section-shell.ts",
-      "default": "./src/share/schemas/section-shell.ts"
-    },
-    "./share/schemas/section-stats": {
-      "types": "./src/share/schemas/section-stats.ts",
-      "default": "./src/share/schemas/section-stats.ts"
-    },
-    "./share/schemas/standard-list-item": {
-      "types": "./src/share/schemas/standard-list-item.ts",
-      "default": "./src/share/schemas/standard-list-item.ts"
-    },
-    "./share/scripts/external-links": {
-      "types": "./src/share/scripts/external-links.ts",
-      "default": "./src/share/scripts/external-links.ts"
-    },
-    "./share/scripts/gsap-counter": {
-      "types": "./src/share/scripts/gsap-counter.ts",
-      "default": "./src/share/scripts/gsap-counter.ts"
-    },
-    "./share/scripts/gsap-parallax": {
-      "types": "./src/share/scripts/gsap-parallax.ts",
-      "default": "./src/share/scripts/gsap-parallax.ts"
-    },
-    "./share/scripts/gsap-reveal": {
-      "types": "./src/share/scripts/gsap-reveal.ts",
-      "default": "./src/share/scripts/gsap-reveal.ts"
-    },
-    "./share/scripts/gsap-stagger": {
-      "types": "./src/share/scripts/gsap-stagger.ts",
-      "default": "./src/share/scripts/gsap-stagger.ts"
-    },
-    "./share/scripts/index": {
-      "types": "./src/share/scripts/index.ts",
-      "default": "./src/share/scripts/index.ts"
-    },
-    "./share/scripts/inline-number-animation": {
-      "types": "./src/share/scripts/inline-number-animation.ts",
-      "default": "./src/share/scripts/inline-number-animation.ts"
-    },
-    "./share/scripts/lenis": {
-      "types": "./src/share/scripts/lenis.ts",
-      "default": "./src/share/scripts/lenis.ts"
-    },
-    "./share/scripts/live-photos": {
-      "types": "./src/share/scripts/live-photos.ts",
-      "default": "./src/share/scripts/live-photos.ts"
-    },
-    "./share/scripts/lordicon": {
-      "types": "./src/share/scripts/lordicon.ts",
-      "default": "./src/share/scripts/lordicon.ts"
-    },
-    "./share/scripts/orchestrator": {
-      "types": "./src/share/scripts/orchestrator.ts",
-      "default": "./src/share/scripts/orchestrator.ts"
-    },
-    "./share/scripts/scheduler": {
-      "types": "./src/share/scripts/scheduler.ts",
-      "default": "./src/share/scripts/scheduler.ts"
-    },
-    "./share/scripts/video-player": {
-      "types": "./src/share/scripts/video-player.ts",
-      "default": "./src/share/scripts/video-player.ts"
-    },
-    "./share/semantic/ai": {
-      "types": "./src/share/semantic/ai.ts",
-      "default": "./src/share/semantic/ai.ts"
-    },
-    "./share/semantic/block-extraction": {
-      "types": "./src/share/semantic/block-extraction.ts",
-      "default": "./src/share/semantic/block-extraction.ts"
-    },
-    "./share/semantic/block-extractors/index": {
-      "types": "./src/share/semantic/block-extractors/index.ts",
-      "default": "./src/share/semantic/block-extractors/index.ts"
-    },
-    "./share/semantic/breadcrumbs": {
-      "types": "./src/share/semantic/breadcrumbs.ts",
-      "default": "./src/share/semantic/breadcrumbs.ts"
-    },
-    "./share/semantic/build-page": {
-      "types": "./src/share/semantic/build-page.ts",
-      "default": "./src/share/semantic/build-page.ts"
-    },
-    "./share/semantic/business-projection": {
-      "types": "./src/share/semantic/business-projection.ts",
-      "default": "./src/share/semantic/business-projection.ts"
-    },
-    "./share/semantic/extract": {
-      "types": "./src/share/semantic/extract.ts",
-      "default": "./src/share/semantic/extract.ts"
-    },
-    "./share/semantic/feed": {
-      "types": "./src/share/semantic/feed.ts",
-      "default": "./src/share/semantic/feed.ts"
-    },
-    "./share/semantic/ids": {
-      "types": "./src/share/semantic/ids.ts",
-      "default": "./src/share/semantic/ids.ts"
-    },
-    "./share/semantic/image-sitemap": {
-      "types": "./src/share/semantic/image-sitemap.ts",
-      "default": "./src/share/semantic/image-sitemap.ts"
-    },
-    "./share/semantic/index": {
-      "types": "./src/share/semantic/index.ts",
-      "default": "./src/share/semantic/index.ts"
-    },
-    "./share/semantic/jsonld/article": {
-      "types": "./src/share/semantic/jsonld/article.ts",
-      "default": "./src/share/semantic/jsonld/article.ts"
-    },
-    "./share/semantic/jsonld/breadcrumb": {
-      "types": "./src/share/semantic/jsonld/breadcrumb.ts",
-      "default": "./src/share/semantic/jsonld/breadcrumb.ts"
-    },
-    "./share/semantic/jsonld/collection-list": {
-      "types": "./src/share/semantic/jsonld/collection-list.ts",
-      "default": "./src/share/semantic/jsonld/collection-list.ts"
-    },
-    "./share/semantic/jsonld/context": {
-      "types": "./src/share/semantic/jsonld/context.ts",
-      "default": "./src/share/semantic/jsonld/context.ts"
-    },
-    "./share/semantic/jsonld/faq": {
-      "types": "./src/share/semantic/jsonld/faq.ts",
-      "default": "./src/share/semantic/jsonld/faq.ts"
-    },
-    "./share/semantic/jsonld/initiative": {
-      "types": "./src/share/semantic/jsonld/initiative.ts",
-      "default": "./src/share/semantic/jsonld/initiative.ts"
-    },
-    "./share/semantic/jsonld/organization": {
-      "types": "./src/share/semantic/jsonld/organization.ts",
-      "default": "./src/share/semantic/jsonld/organization.ts"
-    },
-    "./share/semantic/jsonld/person": {
-      "types": "./src/share/semantic/jsonld/person.ts",
-      "default": "./src/share/semantic/jsonld/person.ts"
-    },
-    "./share/semantic/jsonld/service": {
-      "types": "./src/share/semantic/jsonld/service.ts",
-      "default": "./src/share/semantic/jsonld/service.ts"
-    },
-    "./share/semantic/jsonld/shared": {
-      "types": "./src/share/semantic/jsonld/shared.ts",
-      "default": "./src/share/semantic/jsonld/shared.ts"
-    },
-    "./share/semantic/jsonld/types": {
-      "types": "./src/share/semantic/jsonld/types.ts",
-      "default": "./src/share/semantic/jsonld/types.ts"
-    },
-    "./share/semantic/jsonld/webpage": {
-      "types": "./src/share/semantic/jsonld/webpage.ts",
-      "default": "./src/share/semantic/jsonld/webpage.ts"
-    },
-    "./share/semantic/jsonld/website": {
-      "types": "./src/share/semantic/jsonld/website.ts",
-      "default": "./src/share/semantic/jsonld/website.ts"
-    },
-    "./share/semantic/jsonld": {
-      "types": "./src/share/semantic/jsonld.ts",
-      "default": "./src/share/semantic/jsonld.ts"
-    },
-    "./share/semantic/llms-policy": {
-      "types": "./src/share/semantic/llms-policy.ts",
-      "default": "./src/share/semantic/llms-policy.ts"
-    },
-    "./share/semantic/llms": {
-      "types": "./src/share/semantic/llms.ts",
-      "default": "./src/share/semantic/llms.ts"
-    },
-    "./share/semantic/markdown-hygiene": {
-      "types": "./src/share/semantic/markdown-hygiene.ts",
-      "default": "./src/share/semantic/markdown-hygiene.ts"
-    },
-    "./share/semantic/markdown-twin-provenance": {
-      "types": "./src/share/semantic/markdown-twin-provenance.ts",
-      "default": "./src/share/semantic/markdown-twin-provenance.ts"
-    },
-    "./share/semantic/models": {
-      "types": "./src/share/semantic/models.ts",
-      "default": "./src/share/semantic/models.ts"
-    },
-    "./share/semantic/organization-profile": {
-      "types": "./src/share/semantic/organization-profile.ts",
-      "default": "./src/share/semantic/organization-profile.ts"
-    },
-    "./share/semantic/output-projection": {
-      "types": "./src/share/semantic/output-projection.ts",
-      "default": "./src/share/semantic/output-projection.ts"
-    },
-    "./share/semantic/page-builders/markdown-page": {
-      "types": "./src/share/semantic/page-builders/markdown-page.ts",
-      "default": "./src/share/semantic/page-builders/markdown-page.ts"
-    },
-    "./share/semantic/page-markdown": {
-      "types": "./src/share/semantic/page-markdown.ts",
-      "default": "./src/share/semantic/page-markdown.ts"
-    },
-    "./share/semantic/page-utils": {
-      "types": "./src/share/semantic/page-utils.ts",
-      "default": "./src/share/semantic/page-utils.ts"
-    },
-    "./share/semantic/price-marker-resolver": {
-      "types": "./src/share/semantic/price-marker-resolver.ts",
-      "default": "./src/share/semantic/price-marker-resolver.ts"
-    },
-    "./share/semantic/robots": {
-      "types": "./src/share/semantic/robots.ts",
-      "default": "./src/share/semantic/robots.ts"
-    },
-    "./share/semantic/update-stamp": {
-      "types": "./src/share/semantic/update-stamp.ts",
-      "default": "./src/share/semantic/update-stamp.ts"
-    },
-    "./share/types/hls-js-light.d": {
-      "types": "./src/share/types/hls-js-light.d.ts",
-      "default": "./src/share/types/hls-js-light.d.ts"
-    },
-    "./share/vitest.config": {
-      "types": "./src/share/vitest.config.ts",
-      "default": "./src/share/vitest.config.ts"
+    "./agent/api-catalog": {
+      "types": "./src/agent/api-catalog.ts",
+      "default": "./src/agent/api-catalog.ts"
+    },
+    "./agent/capability": {
+      "types": "./src/agent/capability.ts",
+      "default": "./src/agent/capability.ts"
+    },
+    "./agent/dns-aid": {
+      "types": "./src/agent/dns-aid.ts",
+      "default": "./src/agent/dns-aid.ts"
+    },
+    "./agent/fleet-catalog": {
+      "types": "./src/agent/fleet-catalog.ts",
+      "default": "./src/agent/fleet-catalog.ts"
+    },
+    "./agent/index": {
+      "types": "./src/agent/index.ts",
+      "default": "./src/agent/index.ts"
+    },
+    "./agent/knowledge": {
+      "types": "./src/agent/knowledge.ts",
+      "default": "./src/agent/knowledge.ts"
+    },
+    "./agent/manifest": {
+      "types": "./src/agent/manifest.ts",
+      "default": "./src/agent/manifest.ts"
+    },
+    "./agent/mcp-card": {
+      "types": "./src/agent/mcp-card.ts",
+      "default": "./src/agent/mcp-card.ts"
+    },
+    "./agent/omit-empty": {
+      "types": "./src/agent/omit-empty.ts",
+      "default": "./src/agent/omit-empty.ts"
+    },
+    "./agent/openapi": {
+      "types": "./src/agent/openapi.ts",
+      "default": "./src/agent/openapi.ts"
+    },
+    "./agent/proof": {
+      "types": "./src/agent/proof.ts",
+      "default": "./src/agent/proof.ts"
+    },
+    "./agent/search": {
+      "types": "./src/agent/search.ts",
+      "default": "./src/agent/search.ts"
+    },
+    "./content/entity-id": {
+      "types": "./src/content/entity-id.ts",
+      "default": "./src/content/entity-id.ts"
+    },
+    "./content/index": {
+      "types": "./src/content/index.ts",
+      "default": "./src/content/index.ts"
+    },
+    "./content/merge": {
+      "types": "./src/content/merge.ts",
+      "default": "./src/content/merge.ts"
+    },
+    "./content/substitute-deep": {
+      "types": "./src/content/substitute-deep.ts",
+      "default": "./src/content/substitute-deep.ts"
+    },
+    "./content-discipline/index": {
+      "types": "./src/content-discipline/index.ts",
+      "default": "./src/content-discipline/index.ts"
+    },
+    "./content-discipline/parsers": {
+      "types": "./src/content-discipline/parsers.ts",
+      "default": "./src/content-discipline/parsers.ts"
+    },
+    "./content-discipline/types": {
+      "types": "./src/content-discipline/types.ts",
+      "default": "./src/content-discipline/types.ts"
+    },
+    "./node/fs/index": {
+      "types": "./src/node/fs/index.ts",
+      "default": "./src/node/fs/index.ts"
+    },
+    "./i18n/localization": {
+      "types": "./src/i18n/localization.ts",
+      "default": "./src/i18n/localization.ts"
+    },
+    "./knowledge/index": {
+      "types": "./src/knowledge/index.ts",
+      "default": "./src/knowledge/index.ts"
+    },
+    "./middleware/language-redirect": {
+      "types": "./src/middleware/language-redirect.ts",
+      "default": "./src/middleware/language-redirect.ts"
+    },
+    "./onboarding/index": {
+      "types": "./src/onboarding/index.ts",
+      "default": "./src/onboarding/index.ts"
+    },
+    "./schemas/claim-records": {
+      "types": "./src/schemas/claim-records.ts",
+      "default": "./src/schemas/claim-records.ts"
+    },
+    "./schemas/claims": {
+      "types": "./src/schemas/claims.ts",
+      "default": "./src/schemas/claims.ts"
+    },
+    "./schemas/horizontal-align": {
+      "types": "./src/schemas/horizontal-align.ts",
+      "default": "./src/schemas/horizontal-align.ts"
+    },
+    "./schemas/icon-color": {
+      "types": "./src/schemas/icon-color.ts",
+      "default": "./src/schemas/icon-color.ts"
+    },
+    "./schemas/index": {
+      "types": "./src/schemas/index.ts",
+      "default": "./src/schemas/index.ts"
+    },
+    "./schemas/live-photo": {
+      "types": "./src/schemas/live-photo.ts",
+      "default": "./src/schemas/live-photo.ts"
+    },
+    "./schemas/navigation": {
+      "types": "./src/schemas/navigation.ts",
+      "default": "./src/schemas/navigation.ts"
+    },
+    "./schemas/page-base": {
+      "types": "./src/schemas/page-base.ts",
+      "default": "./src/schemas/page-base.ts"
+    },
+    "./schemas/participant": {
+      "types": "./src/schemas/participant.ts",
+      "default": "./src/schemas/participant.ts"
+    },
+    "./schemas/person": {
+      "types": "./src/schemas/person.ts",
+      "default": "./src/schemas/person.ts"
+    },
+    "./schemas/section-background": {
+      "types": "./src/schemas/section-background.ts",
+      "default": "./src/schemas/section-background.ts"
+    },
+    "./schemas/section-body": {
+      "types": "./src/schemas/section-body.ts",
+      "default": "./src/schemas/section-body.ts"
+    },
+    "./schemas/section-cards": {
+      "types": "./src/schemas/section-cards.ts",
+      "default": "./src/schemas/section-cards.ts"
+    },
+    "./schemas/section-cta": {
+      "types": "./src/schemas/section-cta.ts",
+      "default": "./src/schemas/section-cta.ts"
+    },
+    "./schemas/section-header": {
+      "types": "./src/schemas/section-header.ts",
+      "default": "./src/schemas/section-header.ts"
+    },
+    "./schemas/section-image": {
+      "types": "./src/schemas/section-image.ts",
+      "default": "./src/schemas/section-image.ts"
+    },
+    "./schemas/section-motion": {
+      "types": "./src/schemas/section-motion.ts",
+      "default": "./src/schemas/section-motion.ts"
+    },
+    "./schemas/section-shell": {
+      "types": "./src/schemas/section-shell.ts",
+      "default": "./src/schemas/section-shell.ts"
+    },
+    "./schemas/section-stats": {
+      "types": "./src/schemas/section-stats.ts",
+      "default": "./src/schemas/section-stats.ts"
+    },
+    "./schemas/standard-list-item": {
+      "types": "./src/schemas/standard-list-item.ts",
+      "default": "./src/schemas/standard-list-item.ts"
+    },
+    "./client-scripts/external-links": {
+      "types": "./src/client-scripts/external-links.ts",
+      "default": "./src/client-scripts/external-links.ts"
+    },
+    "./client-scripts/gsap-counter": {
+      "types": "./src/client-scripts/gsap-counter.ts",
+      "default": "./src/client-scripts/gsap-counter.ts"
+    },
+    "./client-scripts/gsap-parallax": {
+      "types": "./src/client-scripts/gsap-parallax.ts",
+      "default": "./src/client-scripts/gsap-parallax.ts"
+    },
+    "./client-scripts/gsap-reveal": {
+      "types": "./src/client-scripts/gsap-reveal.ts",
+      "default": "./src/client-scripts/gsap-reveal.ts"
+    },
+    "./client-scripts/gsap-stagger": {
+      "types": "./src/client-scripts/gsap-stagger.ts",
+      "default": "./src/client-scripts/gsap-stagger.ts"
+    },
+    "./client-scripts/index": {
+      "types": "./src/client-scripts/index.ts",
+      "default": "./src/client-scripts/index.ts"
+    },
+    "./client-scripts/inline-number-animation": {
+      "types": "./src/client-scripts/inline-number-animation.ts",
+      "default": "./src/client-scripts/inline-number-animation.ts"
+    },
+    "./client-scripts/lenis": {
+      "types": "./src/client-scripts/lenis.ts",
+      "default": "./src/client-scripts/lenis.ts"
+    },
+    "./client-scripts/live-photos": {
+      "types": "./src/client-scripts/live-photos.ts",
+      "default": "./src/client-scripts/live-photos.ts"
+    },
+    "./client-scripts/lordicon": {
+      "types": "./src/client-scripts/lordicon.ts",
+      "default": "./src/client-scripts/lordicon.ts"
+    },
+    "./client-scripts/orchestrator": {
+      "types": "./src/client-scripts/orchestrator.ts",
+      "default": "./src/client-scripts/orchestrator.ts"
+    },
+    "./client-scripts/scheduler": {
+      "types": "./src/client-scripts/scheduler.ts",
+      "default": "./src/client-scripts/scheduler.ts"
+    },
+    "./client-scripts/video-player": {
+      "types": "./src/client-scripts/video-player.ts",
+      "default": "./src/client-scripts/video-player.ts"
+    },
+    "./semantic/ai": {
+      "types": "./src/semantic/ai.ts",
+      "default": "./src/semantic/ai.ts"
+    },
+    "./semantic/block-extraction": {
+      "types": "./src/semantic/block-extraction.ts",
+      "default": "./src/semantic/block-extraction.ts"
+    },
+    "./semantic/block-extractors/index": {
+      "types": "./src/semantic/block-extractors/index.ts",
+      "default": "./src/semantic/block-extractors/index.ts"
+    },
+    "./semantic/breadcrumbs": {
+      "types": "./src/semantic/breadcrumbs.ts",
+      "default": "./src/semantic/breadcrumbs.ts"
+    },
+    "./semantic/build-page": {
+      "types": "./src/semantic/build-page.ts",
+      "default": "./src/semantic/build-page.ts"
+    },
+    "./semantic/business-projection": {
+      "types": "./src/semantic/business-projection.ts",
+      "default": "./src/semantic/business-projection.ts"
+    },
+    "./semantic/extract": {
+      "types": "./src/semantic/extract.ts",
+      "default": "./src/semantic/extract.ts"
+    },
+    "./semantic/feed": {
+      "types": "./src/semantic/feed.ts",
+      "default": "./src/semantic/feed.ts"
+    },
+    "./semantic/ids": {
+      "types": "./src/semantic/ids.ts",
+      "default": "./src/semantic/ids.ts"
+    },
+    "./semantic/image-sitemap": {
+      "types": "./src/semantic/image-sitemap.ts",
+      "default": "./src/semantic/image-sitemap.ts"
+    },
+    "./semantic/index": {
+      "types": "./src/semantic/index.ts",
+      "default": "./src/semantic/index.ts"
+    },
+    "./semantic/jsonld/article": {
+      "types": "./src/semantic/jsonld/article.ts",
+      "default": "./src/semantic/jsonld/article.ts"
+    },
+    "./semantic/jsonld/breadcrumb": {
+      "types": "./src/semantic/jsonld/breadcrumb.ts",
+      "default": "./src/semantic/jsonld/breadcrumb.ts"
+    },
+    "./semantic/jsonld/collection-list": {
+      "types": "./src/semantic/jsonld/collection-list.ts",
+      "default": "./src/semantic/jsonld/collection-list.ts"
+    },
+    "./semantic/jsonld/context": {
+      "types": "./src/semantic/jsonld/context.ts",
+      "default": "./src/semantic/jsonld/context.ts"
+    },
+    "./semantic/jsonld/faq": {
+      "types": "./src/semantic/jsonld/faq.ts",
+      "default": "./src/semantic/jsonld/faq.ts"
+    },
+    "./semantic/jsonld/initiative": {
+      "types": "./src/semantic/jsonld/initiative.ts",
+      "default": "./src/semantic/jsonld/initiative.ts"
+    },
+    "./semantic/jsonld/organization": {
+      "types": "./src/semantic/jsonld/organization.ts",
+      "default": "./src/semantic/jsonld/organization.ts"
+    },
+    "./semantic/jsonld/person": {
+      "types": "./src/semantic/jsonld/person.ts",
+      "default": "./src/semantic/jsonld/person.ts"
+    },
+    "./semantic/jsonld/service": {
+      "types": "./src/semantic/jsonld/service.ts",
+      "default": "./src/semantic/jsonld/service.ts"
+    },
+    "./semantic/jsonld/shared": {
+      "types": "./src/semantic/jsonld/shared.ts",
+      "default": "./src/semantic/jsonld/shared.ts"
+    },
+    "./semantic/jsonld/types": {
+      "types": "./src/semantic/jsonld/types.ts",
+      "default": "./src/semantic/jsonld/types.ts"
+    },
+    "./semantic/jsonld/webpage": {
+      "types": "./src/semantic/jsonld/webpage.ts",
+      "default": "./src/semantic/jsonld/webpage.ts"
+    },
+    "./semantic/jsonld/website": {
+      "types": "./src/semantic/jsonld/website.ts",
+      "default": "./src/semantic/jsonld/website.ts"
+    },
+    "./semantic/jsonld": {
+      "types": "./src/semantic/jsonld.ts",
+      "default": "./src/semantic/jsonld.ts"
+    },
+    "./semantic/llms-policy": {
+      "types": "./src/semantic/llms-policy.ts",
+      "default": "./src/semantic/llms-policy.ts"
+    },
+    "./semantic/llms": {
+      "types": "./src/semantic/llms.ts",
+      "default": "./src/semantic/llms.ts"
+    },
+    "./semantic/markdown-hygiene": {
+      "types": "./src/semantic/markdown-hygiene.ts",
+      "default": "./src/semantic/markdown-hygiene.ts"
+    },
+    "./node/semantic/markdown-twin-provenance": {
+      "types": "./src/node/semantic/markdown-twin-provenance.ts",
+      "default": "./src/node/semantic/markdown-twin-provenance.ts"
+    },
+    "./semantic/models": {
+      "types": "./src/semantic/models.ts",
+      "default": "./src/semantic/models.ts"
+    },
+    "./semantic/organization-profile": {
+      "types": "./src/semantic/organization-profile.ts",
+      "default": "./src/semantic/organization-profile.ts"
+    },
+    "./semantic/output-projection": {
+      "types": "./src/semantic/output-projection.ts",
+      "default": "./src/semantic/output-projection.ts"
+    },
+    "./semantic/page-builders/markdown-page": {
+      "types": "./src/semantic/page-builders/markdown-page.ts",
+      "default": "./src/semantic/page-builders/markdown-page.ts"
+    },
+    "./semantic/page-markdown": {
+      "types": "./src/semantic/page-markdown.ts",
+      "default": "./src/semantic/page-markdown.ts"
+    },
+    "./semantic/page-utils": {
+      "types": "./src/semantic/page-utils.ts",
+      "default": "./src/semantic/page-utils.ts"
+    },
+    "./semantic/price-marker-resolver": {
+      "types": "./src/semantic/price-marker-resolver.ts",
+      "default": "./src/semantic/price-marker-resolver.ts"
+    },
+    "./semantic/robots": {
+      "types": "./src/semantic/robots.ts",
+      "default": "./src/semantic/robots.ts"
+    },
+    "./semantic/update-stamp": {
+      "types": "./src/semantic/update-stamp.ts",
+      "default": "./src/semantic/update-stamp.ts"
+    },
+    "./types/hls-js-light.d": {
+      "types": "./src/types/hls-js-light.d.ts",
+      "default": "./src/types/hls-js-light.d.ts"
     },
     "./surface/blueprint-schema": {
       "types": "./src/surface/blueprint-schema.ts",
@@ -1206,146 +1174,6 @@
       "types": "./src/passport/tests/schema.test.ts",
       "default": "./src/passport/tests/schema.test.ts"
     },
-    "./share/tests/api-catalog.test": {
-      "types": "./src/share/tests/api-catalog.test.ts",
-      "default": "./src/share/tests/api-catalog.test.ts"
-    },
-    "./share/tests/breadcrumbs.test": {
-      "types": "./src/share/tests/breadcrumbs.test.ts",
-      "default": "./src/share/tests/breadcrumbs.test.ts"
-    },
-    "./share/tests/build-page-price-markers.test": {
-      "types": "./src/share/tests/build-page-price-markers.test.ts",
-      "default": "./src/share/tests/build-page-price-markers.test.ts"
-    },
-    "./share/tests/capability.test": {
-      "types": "./src/share/tests/capability.test.ts",
-      "default": "./src/share/tests/capability.test.ts"
-    },
-    "./share/tests/claim.test": {
-      "types": "./src/share/tests/claim.test.ts",
-      "default": "./src/share/tests/claim.test.ts"
-    },
-    "./share/tests/content-ref-index.test": {
-      "types": "./src/share/tests/content-ref-index.test.ts",
-      "default": "./src/share/tests/content-ref-index.test.ts"
-    },
-    "./share/tests/create-dev-props-validator.test": {
-      "types": "./src/share/tests/create-dev-props-validator.test.ts",
-      "default": "./src/share/tests/create-dev-props-validator.test.ts"
-    },
-    "./share/tests/derivation.test": {
-      "types": "./src/share/tests/derivation.test.ts",
-      "default": "./src/share/tests/derivation.test.ts"
-    },
-    "./share/tests/dev-props-validator.test": {
-      "types": "./src/share/tests/dev-props-validator.test.ts",
-      "default": "./src/share/tests/dev-props-validator.test.ts"
-    },
-    "./share/tests/fleet-catalog.test": {
-      "types": "./src/share/tests/fleet-catalog.test.ts",
-      "default": "./src/share/tests/fleet-catalog.test.ts"
-    },
-    "./share/tests/formula-eval.test": {
-      "types": "./src/share/tests/formula-eval.test.ts",
-      "default": "./src/share/tests/formula-eval.test.ts"
-    },
-    "./share/tests/freshness.test": {
-      "types": "./src/share/tests/freshness.test.ts",
-      "default": "./src/share/tests/freshness.test.ts"
-    },
-    "./share/tests/hero-section-numbering-parity.test": {
-      "types": "./src/share/tests/hero-section-numbering-parity.test.ts",
-      "default": "./src/share/tests/hero-section-numbering-parity.test.ts"
-    },
-    "./share/tests/image-sitemap.test": {
-      "types": "./src/share/tests/image-sitemap.test.ts",
-      "default": "./src/share/tests/image-sitemap.test.ts"
-    },
-    "./share/tests/jsonld-service.test": {
-      "types": "./src/share/tests/jsonld-service.test.ts",
-      "default": "./src/share/tests/jsonld-service.test.ts"
-    },
-    "./share/tests/knowledge.test": {
-      "types": "./src/share/tests/knowledge.test.ts",
-      "default": "./src/share/tests/knowledge.test.ts"
-    },
-    "./share/tests/ledger.test": {
-      "types": "./src/share/tests/ledger.test.ts",
-      "default": "./src/share/tests/ledger.test.ts"
-    },
-    "./share/tests/llms-0789.test": {
-      "types": "./src/share/tests/llms-0789.test.ts",
-      "default": "./src/share/tests/llms-0789.test.ts"
-    },
-    "./share/tests/manifest.test": {
-      "types": "./src/share/tests/manifest.test.ts",
-      "default": "./src/share/tests/manifest.test.ts"
-    },
-    "./share/tests/markdown-twin-provenance.test": {
-      "types": "./src/share/tests/markdown-twin-provenance.test.ts",
-      "default": "./src/share/tests/markdown-twin-provenance.test.ts"
-    },
-    "./share/tests/mcp-card.test": {
-      "types": "./src/share/tests/mcp-card.test.ts",
-      "default": "./src/share/tests/mcp-card.test.ts"
-    },
-    "./share/tests/onboarding-yaml.test": {
-      "types": "./src/share/tests/onboarding-yaml.test.ts",
-      "default": "./src/share/tests/onboarding-yaml.test.ts"
-    },
-    "./share/tests/ontology-role-by-cosmic-name.test": {
-      "types": "./src/share/tests/ontology-role-by-cosmic-name.test.ts",
-      "default": "./src/share/tests/ontology-role-by-cosmic-name.test.ts"
-    },
-    "./share/tests/openapi.test": {
-      "types": "./src/share/tests/openapi.test.ts",
-      "default": "./src/share/tests/openapi.test.ts"
-    },
-    "./share/tests/organization-jsonld.test": {
-      "types": "./src/share/tests/organization-jsonld.test.ts",
-      "default": "./src/share/tests/organization-jsonld.test.ts"
-    },
-    "./share/tests/output-projection.test": {
-      "types": "./src/share/tests/output-projection.test.ts",
-      "default": "./src/share/tests/output-projection.test.ts"
-    },
-    "./share/tests/plan.test": {
-      "types": "./src/share/tests/plan.test.ts",
-      "default": "./src/share/tests/plan.test.ts"
-    },
-    "./share/tests/price-marker-resolver.test": {
-      "types": "./src/share/tests/price-marker-resolver.test.ts",
-      "default": "./src/share/tests/price-marker-resolver.test.ts"
-    },
-    "./share/tests/proof.test": {
-      "types": "./src/share/tests/proof.test.ts",
-      "default": "./src/share/tests/proof.test.ts"
-    },
-    "./share/tests/resolve-field-path.test": {
-      "types": "./src/share/tests/resolve-field-path.test.ts",
-      "default": "./src/share/tests/resolve-field-path.test.ts"
-    },
-    "./share/tests/source.test": {
-      "types": "./src/share/tests/source.test.ts",
-      "default": "./src/share/tests/source.test.ts"
-    },
-    "./share/tests/substitute-deep.test": {
-      "types": "./src/share/tests/substitute-deep.test.ts",
-      "default": "./src/share/tests/substitute-deep.test.ts"
-    },
-    "./share/tests/text-normalize.pbt.test": {
-      "types": "./src/share/tests/text-normalize.pbt.test.ts",
-      "default": "./src/share/tests/text-normalize.pbt.test.ts"
-    },
-    "./share/tests/text-normalize.test": {
-      "types": "./src/share/tests/text-normalize.test.ts",
-      "default": "./src/share/tests/text-normalize.test.ts"
-    },
-    "./share/tests/twin-path.test": {
-      "types": "./src/share/tests/twin-path.test.ts",
-      "default": "./src/share/tests/twin-path.test.ts"
-    },
     "./surface/tests/eligibility.pbt.test": {
       "types": "./src/surface/tests/eligibility.pbt.test.ts",
       "default": "./src/surface/tests/eligibility.pbt.test.ts"
@@ -1354,13 +1182,13 @@
       "types": "./src/surface/tests/eligibility.test.ts",
       "default": "./src/surface/tests/eligibility.test.ts"
     },
-    "./share/legal/index": {
-      "types": "./src/share/legal/index.ts",
-      "default": "./src/share/legal/index.ts"
+    "./legal/index": {
+      "types": "./src/legal/index.ts",
+      "default": "./src/legal/index.ts"
     },
-    "./share/scripts": {
-      "types": "./src/share/scripts/index.ts",
-      "default": "./src/share/scripts/index.ts"
+    "./client-scripts": {
+      "types": "./src/client-scripts/index.ts",
+      "default": "./src/client-scripts/index.ts"
     },
     "./integration/lagebild-ingress": {
       "types": "./src/integration/lagebild-ingress.ts",
@@ -1379,7 +1207,10 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": ["src", "tsconfig.json"],
+  "files": [
+    "src",
+    "tsconfig.json"
+  ],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@noble/ed25519": "^3.2.0",

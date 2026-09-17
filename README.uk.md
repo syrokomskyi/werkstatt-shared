@@ -57,7 +57,7 @@ pnpm add @warpgogol/werkstatt-shared
 | `HeadingSlugger` | Станковий дедуплікатор якорів заголовків |
 
 ```ts
-import { slugUrl } from "@warpgogol/werkstatt-shared/share/slug";
+import { slugUrl } from "@warpgogol/werkstatt-shared/slug";
 
 const url = slugUrl("Über uns", "de"); // "ueber-uns"
 ```

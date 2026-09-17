@@ -57,7 +57,7 @@ The engine and site plugin both import from this package. It MUST NOT import fro
 | `HeadingSlugger` | Stateful heading anchor deduplication |
 
 ```ts
-import { slugUrl } from "@warpgogol/werkstatt-shared/share/slug";
+import { slugUrl } from "@warpgogol/werkstatt-shared/slug";
 
 const url = slugUrl("Über uns", "de"); // "ueber-uns"
 ```

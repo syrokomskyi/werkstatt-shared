@@ -13,6 +13,9 @@ markdown frontmatter utilities and system manifest loading (RFC-0868).</purpose>
 
 export { parseMarkdownFrontmatter, stringifyMarkdownFrontmatter } from "./markdown-frontmatter.ts";
 export type { ParsedFrontmatter } from "./markdown-frontmatter.ts";
+export * from "./entity-id.ts";
+export * from "./merge.ts";
+export * from "./resolve-field-path.ts";
 export {
   loadSystemManifest,
   loadSystemManifestSync,

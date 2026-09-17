@@ -51,7 +51,7 @@ Rules:
 
 ### Slug generation (RFC-0915, DNA-88)
 
-Location: `packages/werkstatt-shared/src/share/slug/` — exported via `@warpgogol/werkstatt-shared/share/slug`.
+Location: `packages/werkstatt-shared/src/share/slug/` — exported via `@warpgogol/werkstatt-shared/slug`.
 
 | Export | Purpose |
 | --- | --- |
@@ -61,13 +61,13 @@ Location: `packages/werkstatt-shared/src/share/slug/` — exported via `@warpgog
 
 Rules:
 
-- Agents MUST import slug utilities from `@warpgogol/werkstatt-shared/share/slug` and MUST NOT reimplement slugify logic.
+- Agents MUST import slug utilities from `@warpgogol/werkstatt-shared/slug` and MUST NOT reimplement slugify logic.
 - The external packages `@sindresorhus/slugify`, `cyrillic-to-translit-js`, and `github-slugger` are dependencies of this package only — no other package may declare them as direct dependencies.
 - Enforcement: `utility.provenance.validate` (RFC-0916) scans for reimplementations outside the canonical path.
 
 ### Semantic extraction (RFC-0901)
 
-Location: `packages/werkstatt-shared/src/share/semantic/` — exported via `@warpgogol/werkstatt-shared/share/semantic`.
+Location: `packages/werkstatt-shared/src/share/semantic/` — exported via `@warpgogol/werkstatt-shared/semantic`.
 
 | Export | Purpose |
 | --- | --- |
@@ -79,7 +79,7 @@ Location: `packages/werkstatt-shared/src/share/semantic/` — exported via `@war
 
 ### Claim provenance projection (RFC-1076)
 
-Location: `packages/werkstatt-shared/src/share/semantic/business-projection.ts` — exported via `@warpgogol/werkstatt-shared/share/semantic`.
+Location: `packages/werkstatt-shared/src/share/semantic/business-projection.ts` — exported via `@warpgogol/werkstatt-shared/semantic`.
 
 `projectClaims(claims, evidenceSources)` filters published claims, resolves evidence references via the `ref` field on `PbpEntityRef`, and projects canonical item hashes. Only claims with `status: "published"` and a non-empty `id` are included. Evidence sources are keyed by their `id` field.
 
@@ -104,7 +104,7 @@ Rules:
 
 ### Canonical URI derivation (RFC-1075)
 
-Location: `packages/werkstatt-shared/src/share/semantic/canonical-uri.ts` — exported via `@warpgogol/werkstatt-shared/share/semantic/canonical-uri`.
+Location: `packages/werkstatt-shared/src/share/semantic/canonical-uri.ts` — exported via `@warpgogol/werkstatt-shared/semantic/canonical-uri`.
 
 | Export | Purpose |
 | --- | --- |
@@ -124,7 +124,7 @@ Rules:
 
 ### Canonical fact extraction (RFC-1077)
 
-Location: `packages/werkstatt-shared/src/share/semantic/fact-extraction.ts` — exported via `@warpgogol/werkstatt-shared/share/semantic/fact-extraction`.
+Location: `packages/werkstatt-shared/src/share/semantic/fact-extraction.ts` — exported via `@warpgogol/werkstatt-shared/semantic/fact-extraction`.
 
 | Export | Purpose |
 | --- | --- |
@@ -185,7 +185,7 @@ ui?: {
 
 ### Typography rule tiers (RFC-1068, RFC-1069, RFC-1070, RFC-1071)
 
-Location: `packages/werkstatt-shared/src/share/typography/` — exported via `@warpgogol/werkstatt-shared/share/typography`.
+Location: `packages/werkstatt-shared/src/share/typography/` — exported via `@warpgogol/werkstatt-shared/typography`.
 
 | Export | Purpose |
 | --- | --- |
@@ -226,7 +226,7 @@ To add a new canonical utility:
 
 ### Remediation catalog (RFC-1027)
 
-Location: `packages/werkstatt-shared/src/share/remediation/remediation-catalog.ts` — exported via `@warpgogol/werkstatt-shared/share/remediation`.
+Location: `packages/werkstatt-shared/src/share/remediation/remediation-catalog.ts` — exported via `@warpgogol/werkstatt-shared/remediation`.
 
 | Export | Purpose |
 | --- | --- |
@@ -243,7 +243,7 @@ Rules:
 
 ### Agent Surface search (RFC-0954)
 
-Location: `packages/werkstatt-shared/src/share/agent/search.ts` — exported via `@warpgogol/werkstatt-shared/share/agent/search`.
+Location: `packages/werkstatt-shared/src/share/agent/search.ts` — exported via `@warpgogol/werkstatt-shared/agent/search`.
 
 | Export | Purpose |
 | --- | --- |
@@ -264,7 +264,7 @@ Location: `packages/werkstatt-shared/src/share/agent/search.ts` — exported via
 
 ### Placeholder route filtering (RFC-0917)
 
-Location: `packages/werkstatt-shared/src/share/routes/template-filter.ts` — exported via `@warpgogol/werkstatt-shared/share/routes/template-filter`.
+Location: `packages/werkstatt-shared/src/share/routes/template-filter.ts` — exported via `@warpgogol/werkstatt-shared/routes/template-filter`.
 
 | Export | Purpose |
 | --- | --- |
@@ -272,7 +272,7 @@ Location: `packages/werkstatt-shared/src/share/routes/template-filter.ts` — ex
 
 Rules:
 
-- All `system.md` consumers MUST import placeholder detection from `@warpgogol/werkstatt-shared/share/routes/template-filter`.
+- All `system.md` consumers MUST import placeholder detection from `@warpgogol/werkstatt-shared/routes/template-filter`.
 - Enforcement: `utility.provenance.validate` (RFC-0916) scans for reimplementations outside the canonical path.
 
 ### Client-side dependency import guidance (RFC-0955)
@@ -288,7 +288,7 @@ Agents MUST NOT automatically replace imports based on validator output — the 
 
 ### Scroll-spy URL hash updates (RFC-1061)
 
-Location: `packages/werkstatt-shared/src/share/scripts/scroll-spy.ts` — exported via `@warpgogol/werkstatt-shared/share/scripts`.
+Location: `packages/werkstatt-shared/src/share/scripts/scroll-spy.ts` — exported via `@warpgogol/werkstatt-shared/client-scripts`.
 
 | Export | Purpose |
 | --- | --- |
