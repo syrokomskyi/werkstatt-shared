@@ -5,7 +5,7 @@ scans text for =(...) formula expressions, and evaluates arithmetic over content
 using a sandboxed math parser (expr-eval). RFC-0729: pipe syntax for post-evaluation formatting,
 plugin-registration formatter registry, and money formatter built on Intl.NumberFormat.</purpose>
 <non-goals>
-  <item>Do not resolve content references directly — use resolveReference from @warpgogol/werkstatt-shared/share/content-reference.</item>
+  <item>Do not resolve content references directly — use resolveReference from @warpgogol/werkstatt-shared/content/content-reference.</item>
   <item>Do not support non-arithmetic expressions (string concatenation, conditionals, date math).</item>
   <item>Do not add formatters other than money — date, percent, unit formatters are follow-up RFCs.</item>
 </non-goals>

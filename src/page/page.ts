@@ -13,7 +13,7 @@ pipeline for each block defined in a page's content.
 <CHANGE_SUMMARY>
   <item>RFC-0262: add the optional BuildPageOptions.validateProps dev-time fail-fast hook, called once per resolved shell and content block.</item>
   <item>RFC-0263: hideSectionNumber injection now keyed off registry-derived roleByCosmicName[planetName] === "hero" instead of the hardcoded UNNUMBERED_HERO_PLANETS literal set (deleted).</item>
-  <item>RFC-0264: relocated SectionProps/SectionPageOverride here from the @warpgogol/werkstatt-shared/share root barrel (its natural domain owner); consumers now import from @warpgogol/werkstatt-shared/share/page.</item>
+  <item>RFC-0264: relocated SectionProps/SectionPageOverride here from the @warpgogol/werkstatt-shared root barrel (its natural domain owner); consumers now import from @warpgogol/werkstatt-shared/page.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -115,7 +115,7 @@ export interface ResolvedPage {
 }
 
 // RFC-0035: Universal Section Props Contract — every resolved content block's
-// props extend this shape. RFC-0264: relocated from the @warpgogol/werkstatt-shared/share root
+// props extend this shape. RFC-0264: relocated from the @warpgogol/werkstatt-shared root
 // barrel to page.ts (its natural domain owner); re-exported from the `./page`
 // subpath.
 export interface SectionProps {

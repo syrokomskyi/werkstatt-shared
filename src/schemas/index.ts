@@ -1,7 +1,7 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-RFC-0264: barrel for the entire @warpgogol/werkstatt-shared/share schemas domain — base page schema,
+RFC-0264: barrel for the entire @warpgogol/werkstatt-shared/schemas domain — base page schema,
 navigation, feature policy, and the RFC-0101..0106/0202/0210/0220/0231/0257
 canonical section-visual / section-content / media / material-credit / print
 contracts. Consumers should prefer `@warpgogol/werkstatt-shared/schemas` over the deprecated

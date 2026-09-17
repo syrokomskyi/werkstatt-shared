@@ -160,7 +160,7 @@ const manifestBaseSchema = z.object({
 
   /**
    * Key of the Zod content schema this component consumes.
-   * Must match an export of @warpgogol/werkstatt-shared/share or the app-local content/schemas/.
+   * Must match an export of @warpgogol/werkstatt-shared or the app-local content/schemas/.
    * Set to null for structural components that consume no content schema
    * (e.g. breadcrumbs, lang-switcher).
    */

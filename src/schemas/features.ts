@@ -12,7 +12,7 @@ copy-pasting. Canonical home per RFC-0033.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0033: Moved from app content schemas/features to @warpgogol/werkstatt-shared/share. Import switched from "astro/zod" to "zod" for framework neutrality.</item>
+  <item>RFC-0033: Moved from app content schemas/features to @warpgogol/werkstatt-shared/schemas. Import switched from "astro/zod" to "zod" for framework neutrality.</item>
   <item>RFC-0183: Added Feature Policy schema for policy embedded in existing RFC-0047 content domains.</item>
 </CHANGE_SUMMARY>
 */

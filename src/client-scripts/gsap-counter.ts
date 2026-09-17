@@ -8,7 +8,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0040: Created as shared GSAP counter initialization module in @warpgogol/werkstatt-shared/share/scripts.</item>
+  <item>RFC-0040: Created as shared GSAP counter initialization module in @warpgogol/werkstatt-shared/client-scripts.</item>
   <item>RFC-0758: Extended selector to support .dynamic-status-block__stat.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 

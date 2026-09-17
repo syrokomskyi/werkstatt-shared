@@ -8,7 +8,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0041: Created as SSR inline number pre-wrap utility in @warpgogol/werkstatt-shared/share.</item>
+  <item>RFC-0041: Created as SSR inline number pre-wrap utility in @warpgogol/werkstatt-shared/text.</item>
 </CHANGE_SUMMARY>
 */
 

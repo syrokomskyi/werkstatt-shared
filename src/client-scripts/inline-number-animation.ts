@@ -8,7 +8,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0041: Created as shared GSAP inline number animation module in @warpgogol/werkstatt-shared/share/scripts.</item>
+  <item>RFC-0041: Created as shared GSAP inline number animation module in @warpgogol/werkstatt-shared/client-scripts.</item>
 </CHANGE_SUMMARY>
 */
 

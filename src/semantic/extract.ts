@@ -7,7 +7,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
-  <item>RFC-0915: removed custom slugify() — replaced by slugId from @warpgogol/werkstatt-shared/share/slug.</item>
+  <item>RFC-0915: removed custom slugify() — replaced by slugId from @warpgogol/werkstatt-shared/slug.</item>
 </CHANGE_SUMMARY>
 */
 

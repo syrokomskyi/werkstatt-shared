@@ -61,7 +61,7 @@ export interface RuntimeContext {
  *
  * Usage in page routes:
  * ```ts
- * import { EMPTY_RUNTIME_CONTEXT } from "@warpgogol/werkstatt-shared/share";
+ * import { EMPTY_RUNTIME_CONTEXT } from "@warpgogol/werkstatt-shared/runtime";
  * const ctx = EMPTY_RUNTIME_CONTEXT(lang);
  * const page = await buildPage(entry, ctx);
  * ```
