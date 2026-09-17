@@ -2,7 +2,7 @@
 
 [Українська](README.uk.md) | English
 
-Stack-agnostic shared infrastructure extracted from `werkstatt-site` (RFC-0868). Owns checks, integration, ontology, passport, share, and surface domains consumed by both the Werkstatt engine and the site plugin.
+Stack-agnostic shared infrastructure extracted from `werkstatt-site` (RFC-0868). Owns checks, integration, ontology, passport, slug, semantic, typography, middleware, and surface domains consumed by both the Werkstatt engine and the site plugin.
 
 > Engineered at [Warpgogol](https://warpgogol.com) · Released as open source.
 
@@ -16,7 +16,8 @@ This is a **shared infrastructure library** used by the [Werkstatt](https://www.
 - **Integration** — CRM, funnel, hub, sharding, QStash adapters
 - **Ontology** — catalogs, enums, Sternsystem owner types
 - **Passport** — DHT signing, identity signing, schema validation
-- **Share** — slug generation, semantic extraction, URL canonicalization, route filtering, middleware, access protection
+- **Slug / Semantic / Routes** — slug generation, semantic extraction, URL canonicalization, route filtering
+- **Middleware** — access protection, language redirect, retired tombstones
 - **Surface** — surface expand/bake helpers and labels
 
 You don't use this package on its own — it is consumed by the engine and site plugin as a dependency.
@@ -39,8 +40,8 @@ This package is installed automatically when you install `@warpgogol/werkstatt` 
 | --- | --- |
 | `@warpgogol/forge` | Governance layer — skills, RFC/ADR workflows, CLI, project scaffolding |
 | `@warpgogol/werkstatt` | Runtime engine — missions, releases, deployment, certification, Bordbuch |
-| `@warpgogol/werkstatt-shared` | **This package** — shared infrastructure (checks, integration, ontology, passport, share) |
-| `@warpgogol/werkstatt-site` | Astro site plugin — consumes this package for checks, integration, ontology, passport, share |
+| `@warpgogol/werkstatt-shared` | **This package** — shared infrastructure (checks, integration, ontology, passport, semantic) |
+| `@warpgogol/werkstatt-site` | Astro site plugin — consumes this package for checks, integration, ontology, passport, semantic |
 
 The engine and site plugin both import from this package. It MUST NOT import from `werkstatt-site` — enforced by `werkstatt.shared.validate`.
 
@@ -84,16 +85,23 @@ const url = slugUrl("Über uns", "de"); // "ueber-uns"
 
 ## Architecture
 
-| Directory          | Purpose                                                                     |
-| ------------------ | --------------------------------------------------------------------------- |
-| `src/index.ts`     | Main barrel export                                                          |
-| `src/checks/`      | Content validators, SEO validators, surface expand/bake                     |
-| `src/integration/` | CRM, funnel, hub, sharding, QStash adapters                                 |
-| `src/ontology/`    | Catalogs, enums, Sternsystem owner types                                    |
-| `src/passport/`    | DHT signing, identity signing, schema validation                            |
-| `src/share/`       | Slug, semantic, URL canonicalization, routes, middleware, access protection |
-| `src/surface/`     | Surface expand/bake helpers and labels                                      |
-| `src/content/`     | SystemManifest types and content schema                                     |
+The package has **no root barrel export** (RFC-1106) — all consumption is via subpath exports (`@warpgogol/werkstatt-shared/<domain>`). The former `src/share/` namespace is dissolved (RFC-1105): every subdomain is a top-level `src/` directory.
+
+| Directory | Purpose |
+| --- | --- |
+| `src/checks/` | Content validators, SEO validators, surface expand/bake |
+| `src/integration/` | CRM, funnel, hub, sharding, QStash adapters |
+| `src/ontology/` | Catalogs, enums, Sternsystem owner types |
+| `src/passport/` | DHT signing, identity signing, schema validation |
+| `src/slug/` | Locale-aware slug generation |
+| `src/semantic/` | Semantic extraction, fact extraction, freshness, canonical URIs |
+| `src/typography/` | Typography rules (Tier 1–3) and fix engine |
+| `src/middleware/` | Access protection, language redirect, retired tombstones |
+| `src/routes/` | Route filtering, placeholder route detection |
+| `src/surface/` | Surface expand/bake helpers and labels |
+| `src/content/` | SystemManifest types and content schema |
+| `src/node/` | Node-only utilities (fs, import-scan) — never re-exported from browser barrels |
+| `src/client-scripts/` | Browser-only scripts (gsap, lenis, plyr, hls, lordicon) |
 
 ---
 
