@@ -26,7 +26,7 @@ The kernel contract cluster and platform-operations schemas are owned here, not 
 
 Rules:
 
-- `src/kernel/` and `src/signing/` import Node-only APIs (`node:fs`, `node:child_process`, `@noble/ed25519`) — they MUST NOT be re-exported from browser-reachable barrels (`src/index.ts` or any module imported by client-side code). Consumers use the dedicated subpaths above.
+- `src/kernel/` and `src/signing/` import Node-only APIs (`node:fs`, `node:child_process`, `@noble/ed25519`) — they MUST NOT be re-exported from browser-reachable barrels (any module imported by client-side code). Consumers use the dedicated subpaths above. The package has no root `.` export (RFC-1106) — all consumption is via subpaths.
 - The engine preserves its old package specifiers via forwarding modules and retargeted barrels — consumers of `@warpgogol/werkstatt-engine/kernel`, `/schemas`, `/signing`, `/fingerprint`, `/component` keep working, but new code SHOULD import from the `@warpgogol/werkstatt-shared/*` canonical homes.
 - Axiom dependencies (`@syrokomskyi/axiom-*`) are `optionalDependencies` — consumers without axiom installed must use type-only imports or guard runtime access.
 
@@ -51,7 +51,7 @@ Classification rule for new modules:
 
 Rules:
 
-- `src/node/` modules MUST NOT be re-exported from runtime-agnostic domain barrels (`src/<domain>/index.ts`) or the root barrel — the browser/Node seam is a filesystem fact, keep it that way.
+- `src/node/` modules MUST NOT be re-exported from runtime-agnostic domain barrels (`src/<domain>/index.ts`) — the browser/Node seam is a filesystem fact, keep it that way.
 - `utility-registry.yaml` lives at the package root (not under `src/`).
 - Tests live in `<domain>/tests/` next to their domain.
 
