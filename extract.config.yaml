@@ -32,7 +32,7 @@ ignoreDirs:
 excludePathSegments:
   - .npmrc
   - pnpm-lock.yaml
-  - src/share/tests/create-dev-props-validator.test.ts
+  - create-dev-props-validator.test.ts
 
 postProcess:
   - action: delete
