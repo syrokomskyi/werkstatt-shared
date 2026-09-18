@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  AMOUNT_MARKER_RE,
   OFFERING_URI_PREFIX,
   PRICE_MARKER_RE,
   formatSourcePrice,
@@ -43,7 +42,10 @@ describe("resolvePriceMarkersForSemantic", () => {
         chargeRef: "monthly",
         targetCurrency: "USD",
         amount: { value: "15", currency: "USD" },
-        trace: { source: { amount: "10", currency: "EUR" }, rate: { value: "0.9", pair: "EUR/USD" } },
+        trace: {
+          source: { amount: "10", currency: "EUR" },
+          rate: { value: "0.9", pair: "EUR/USD" },
+        },
       },
     ],
   };

@@ -18,12 +18,7 @@ replaces KernelModule.register().
 */
 
 import type { Sha256Digest } from "../fingerprint/primitives.ts";
-import type {
-  CapabilityId,
-  ComponentScope,
-  ScopeContext,
-  ComponentDeclaration,
-} from "../component/contracts.ts";
+import type { ComponentScope, ScopeContext, ComponentDeclaration } from "../component/contracts.ts";
 import type {
   KernelFlagSpec,
   GeneratedArtifactSpec,

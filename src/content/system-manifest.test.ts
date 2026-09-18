@@ -11,7 +11,7 @@ Delete the hand-written SystemManifest interface; content/system-manifest.ts re-
 */
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ZodError } from "zod";

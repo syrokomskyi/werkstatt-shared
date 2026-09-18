@@ -6,7 +6,36 @@
 <CHANGE_SUMMARY><item>RFC-0950: initial video-player tests.</item></CHANGE_SUMMARY>
 */
 
-import { test, expect, vi, beforeEach, afterEach } from "vitest";
+import { test, expect, vi, beforeEach, afterEach, type Mock } from "vitest";
+
+// ── Mock types ──────────────────────────────────────────────────────────────
+
+interface MockVideo {
+  dataset: Record<string, string>;
+  canPlayType: ReturnType<typeof vi.fn>;
+  play: ReturnType<typeof vi.fn>;
+  pause: ReturnType<typeof vi.fn>;
+  load: ReturnType<typeof vi.fn>;
+  insertBefore: ReturnType<typeof vi.fn>;
+  firstChild: null;
+}
+interface MockHlsInstance {
+  loadSource: ReturnType<typeof vi.fn>;
+  attachMedia: ReturnType<typeof vi.fn>;
+  destroy: ReturnType<typeof vi.fn>;
+  on: Mock<(event: string, cb: () => void) => void>;
+}
+interface MockEntry {
+  isIntersecting: boolean;
+  target: MockVideo;
+}
+interface MockObserver {
+  unobserve: () => void;
+}
+interface MockDocument {
+  querySelectorAll: ReturnType<typeof vi.fn>;
+  createElement: ReturnType<typeof vi.fn>;
+}
 
 // ── Mocks ───────────────────────────────────────────────────────────────────
 
@@ -15,7 +44,7 @@ vi.mock("plyr", () => ({
 }));
 
 vi.mock("hls.js/light", () => {
-  const hlsRef = { current: null as any };
+  const hlsRef = { current: null as MockHlsInstance | null };
   const fn = vi.fn(function Hls() {
     return hlsRef.current;
   });
@@ -28,8 +57,8 @@ vi.mock("hls.js/light", () => {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function createMockVideo(attrs: Record<string, string | undefined> = {}): any {
-  const video: any = {
+function createMockVideo(attrs: Record<string, string | undefined> = {}): MockVideo {
+  const video: MockVideo = {
     dataset: {},
     canPlayType: vi.fn(() => ""),
     play: vi.fn(() => Promise.resolve()),
@@ -44,23 +73,15 @@ function createMockVideo(attrs: Record<string, string | undefined> = {}): any {
   return video;
 }
 
-let observerCallbacks: ((
-  entries: { isIntersecting: boolean; target: any }[],
-  obs: { unobserve: () => void },
-) => void)[] = [];
+let observerCallbacks: ((entries: MockEntry[], obs: MockObserver) => void)[] = [];
 let observerOptions: { threshold?: number; rootMargin?: string }[] = [];
+let mockDocument: MockDocument;
 
 class MockIntersectionObserver {
-  callback: (
-    entries: { isIntersecting: boolean; target: any }[],
-    obs: { unobserve: () => void },
-  ) => void;
+  callback: (entries: MockEntry[], obs: MockObserver) => void;
   options: { threshold?: number; rootMargin?: string };
   constructor(
-    cb: (
-      entries: { isIntersecting: boolean; target: any }[],
-      obs: { unobserve: () => void },
-    ) => void,
+    cb: (entries: MockEntry[], obs: MockObserver) => void,
     opts: { threshold?: number; rootMargin?: string },
   ) {
     this.callback = cb;
@@ -79,24 +100,23 @@ beforeEach(() => {
   vi.clearAllMocks();
   observerCallbacks = [];
   observerOptions = [];
-  (globalThis as any).IntersectionObserver = MockIntersectionObserver;
-  (globalThis as any).window = globalThis;
-  (globalThis as any).document = {
+  mockDocument = {
     querySelectorAll: vi.fn(() => []),
     createElement: vi.fn((tag: string) => ({ tagName: tag.toUpperCase() })),
   };
+  vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
+  vi.stubGlobal("window", globalThis);
+  vi.stubGlobal("document", mockDocument);
 });
 
 afterEach(() => {
-  delete (globalThis as any).IntersectionObserver;
-  delete (globalThis as any).window;
-  delete (globalThis as any).document;
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
-async function triggerUpgrade(video: any): Promise<void> {
+async function triggerUpgrade(video: MockVideo): Promise<void> {
   const { initVideoPlayers } = await import("../video-player.ts");
-  vi.spyOn(globalThis.document as any, "querySelectorAll").mockReturnValue([video]);
+  mockDocument.querySelectorAll.mockReturnValue([video]);
   await initVideoPlayers();
 
   expect(observerCallbacks.length).toBeGreaterThanOrEqual(1);
@@ -107,12 +127,10 @@ async function triggerUpgrade(video: any): Promise<void> {
 // ── Tests ───────────────────────────────────────────────────────────────────
 
 test("initVideoPlayers: returns early when no [data-video-player] elements", async () => {
-  const querySelectorAll = vi.spyOn(globalThis.document as any, "querySelectorAll");
-  querySelectorAll.mockReturnValue([]);
+  mockDocument.querySelectorAll.mockReturnValue([]);
   const { initVideoPlayers } = await import("../video-player.ts");
   await initVideoPlayers();
   expect(observerCallbacks.length).toBe(0);
-  querySelectorAll.mockRestore();
 });
 
 test("upgrade: data-controls='false' configures Plyr with only ['mute']", async () => {
@@ -165,7 +183,9 @@ test("upgrade: data-autoplay='true' with HLS waits for MEDIA_ATTACHED before pla
     destroy: vi.fn(),
     on: vi.fn(),
   };
-  const Hls = (await import("hls.js/light")).default as any;
+  const Hls = (await import("hls.js/light")).default as unknown as {
+    _hlsRef: { current: MockHlsInstance | null };
+  };
   Hls._hlsRef.current = hlsInstance;
 
   await triggerUpgrade(video);
@@ -173,7 +193,7 @@ test("upgrade: data-autoplay='true' with HLS waits for MEDIA_ATTACHED before pla
   expect(Hls).toHaveBeenCalled();
   expect(hlsInstance.attachMedia).toHaveBeenCalledWith(video);
 
-  const attachedCall = hlsInstance.on.mock.calls.find((c: any[]) => c[0] === "hls.MEDIA_ATTACHED");
+  const attachedCall = hlsInstance.on.mock.calls.find((c) => c[0] === "hls.MEDIA_ATTACHED");
   expect(attachedCall, "Hls must register a MEDIA_ATTACHED listener before play()").toBeDefined();
   attachedCall![1]();
 

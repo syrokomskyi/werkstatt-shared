@@ -29,7 +29,6 @@ export interface ScrollSpyOptions {
   clearAtTop?: boolean;
 }
 
-let activeObserver: IntersectionObserver | null = null;
 let activeCleanup: (() => void) | null = null;
 
 export function initScrollSpy(options?: ScrollSpyOptions): () => void {
@@ -42,7 +41,6 @@ export function initScrollSpy(options?: ScrollSpyOptions): () => void {
 
   if (activeCleanup) {
     activeCleanup();
-    activeObserver = null;
     activeCleanup = null;
   }
 
@@ -98,11 +96,8 @@ export function initScrollSpy(options?: ScrollSpyOptions): () => void {
     observer.observe(section);
   }
 
-  activeObserver = observer;
-
   const cleanup = () => {
     observer.disconnect();
-    activeObserver = null;
     activeCleanup = null;
   };
 

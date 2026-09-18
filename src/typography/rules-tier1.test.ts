@@ -8,7 +8,7 @@
 */
 
 import { describe, it, expect } from "vitest";
-import { TIER1_RULES, createTypographyContext, DEFAULT_ALLOWED_TOKENS } from "./rules-tier1.ts";
+import { TIER1_RULES, createTypographyContext } from "./rules-tier1.ts";
 import type { TypographyRule, TypographyContext } from "./rules-tier1.ts";
 import type { TextSegment } from "./text-surface.ts";
 

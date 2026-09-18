@@ -21,7 +21,7 @@ import {
   type TypographyRule,
   type TypographyFinding,
 } from "./rules-tier1.ts";
-import { fcAssert, letterString, composeWord, safeText } from "../pbt/index.ts";
+import { fcAssert, composeWord, safeText } from "../pbt/index.ts";
 
 function makeSegment(text: string, locale: string): TextSegment {
   return {

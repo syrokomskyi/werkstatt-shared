@@ -210,8 +210,6 @@ function extractFrontmatterStrings(
 // Body text extraction with normative stripping order
 // ---------------------------------------------------------------------------
 
-// (1) Fenced code blocks
-const FENCED_CODE = /```[\s\S]*?```/g;
 // (1) Inline code spans
 const INLINE_CODE = /`[^`]*`/g;
 // (1b) Markdown autolinks <URL> — must be handled before HTML tag stripping

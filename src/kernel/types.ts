@@ -283,7 +283,7 @@ export interface KernelRuntimeContext {
  * code that uses KernelCommandDefinition<TData>, but the underlying type is
  * CommandDeclaration (which has the same structure).
  */
-export type KernelCommandDefinition<TData = unknown> = CommandDeclaration;
+export type KernelCommandDefinition<_TData = unknown> = CommandDeclaration;
 export interface KernelPipelineStep {
   command: string;
   args?: string[];

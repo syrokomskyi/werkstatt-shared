@@ -164,10 +164,6 @@ const FORMULA_PLACEHOLDER = "\uE000";
 const URL_PLACEHOLDER = "\uE001";
 const CMS_PLACEHOLDER = "\uE002";
 
-function isPlaceholder(ch: string): boolean {
-  return ch === FORMULA_PLACEHOLDER || ch === URL_PLACEHOLDER || ch === CMS_PLACEHOLDER;
-}
-
 // ---------------------------------------------------------------------------
 // TYPO-PUNCT-01: Doubled or clashing punctuation
 // Pattern: [,;:!?]\. · \.[,;] · :: · ;; · ,, · [!?]{3,}

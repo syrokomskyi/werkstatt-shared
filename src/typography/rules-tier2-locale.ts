@@ -17,7 +17,6 @@ All regexes use the `u` flag and Unicode property escapes where applicable.</pur
 </CHANGE_SUMMARY>
 */
 
-import type { TextSegment } from "./text-surface.ts";
 import { finding, type TypographyFinding, type TypographyRule } from "./rules-tier1.ts";
 import type { FixAction } from "./fix.ts";
 

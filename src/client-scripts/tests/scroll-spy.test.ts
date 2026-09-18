@@ -1,15 +1,43 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { initScrollSpy } from "../scroll-spy.ts";
 
-let observerCallbacks: Array<(entries: any[]) => void>;
-let observerInstances: any[];
-let mockHistory: { replaceState: ReturnType<typeof vi.fn> };
-let mockDocument: any;
-let sectionCache: Map<string, any>;
+interface MockRect {
+  top: number;
+}
+interface MockElement {
+  id: string;
+  closest: (sel: string) => object | null;
+  getBoundingClientRect: () => MockRect;
+}
+interface MockEntry {
+  target: MockElement;
+  isIntersecting: boolean;
+  boundingClientRect: MockRect;
+}
+interface MockObserverInstance {
+  observe: ReturnType<typeof vi.fn>;
+  unobserve: ReturnType<typeof vi.fn>;
+  disconnect: ReturnType<typeof vi.fn>;
+  takeRecords: ReturnType<typeof vi.fn>;
+}
+interface MockDocument {
+  body: { innerHTML: string };
+  readyState: string;
+  querySelector: ReturnType<typeof vi.fn>;
+  querySelectorAll: ReturnType<typeof vi.fn>;
+  getElementById: ReturnType<typeof vi.fn>;
+  addEventListener: ReturnType<typeof vi.fn>;
+}
 
-function parseSections(html: string, selector: string): any[] {
+let observerCallbacks: Array<(entries: MockEntry[]) => void>;
+let observerInstances: MockObserverInstance[];
+let mockHistory: { replaceState: ReturnType<typeof vi.fn> };
+let mockDocument: MockDocument;
+let sectionCache: Map<string, MockElement>;
+
+function parseSections(html: string, selector: string): MockElement[] {
   if (selector !== "section[id]") return [];
-  const sections: any[] = [];
+  const sections: MockElement[] = [];
   const sectionRegex = /<section\s+id="([^"]+)"[^>]*>([\s\S]*?)<\/section>/gi;
   let match;
   while ((match = sectionRegex.exec(html)) !== null) {
@@ -35,7 +63,7 @@ describe("initScrollSpy", () => {
     sectionCache = new Map();
 
     class MockIntersectionObserver {
-      constructor(cb: (entries: any[]) => void) {
+      constructor(cb: (entries: MockEntry[]) => void) {
         observerCallbacks.push(cb);
         const instance = {
           observe: vi.fn(),
@@ -132,7 +160,7 @@ describe("initScrollSpy", () => {
   });
 
   it("AC-4: returns immediately without creating an observer when no section[id] elements exist", () => {
-    mockDocument.body.innerHTML = '<div>No sections here</div>';
+    mockDocument.body.innerHTML = "<div>No sections here</div>";
     const cleanup = initScrollSpy();
 
     expect(observerInstances.length).toBe(0);
@@ -171,8 +199,6 @@ describe("initScrollSpy", () => {
 
     expect(observerInstances.length).toBe(1);
     expect(observerInstances[0].observe).toHaveBeenCalledTimes(1);
-    expect(observerInstances[0].observe).toHaveBeenCalledWith(
-      sectionCache.get("page-section"),
-    );
+    expect(observerInstances[0].observe).toHaveBeenCalledWith(sectionCache.get("page-section"));
   });
 });

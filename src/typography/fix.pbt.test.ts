@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import fc from "fast-check";
-import { applyFixes, FIXABLE_RULE_IDS, isFixable, type FixAction } from "./fix.ts";
+import { applyFixes, FIXABLE_RULE_IDS, isFixable } from "./fix.ts";
 import {
   TIER1_RULES,
   createTypographyContext,
