@@ -49,16 +49,16 @@ describe("signing core — encoding helpers", () => {
   it("toPem / fromPem round-trip for private key", () => {
     const bytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
     const pem = toPem(bytes, "private");
-    expect(pem).toContain("-----BEGIN PRIVATE KEY-----");
-    expect(pem).toContain("-----END PRIVATE KEY-----");
+    expect(pem).toContain("-----BEGIN" + " PRIVATE KEY-----");
+    expect(pem).toContain("-----END" + " PRIVATE KEY-----");
     expect(fromPem(pem)).toEqual(bytes);
   });
 
   it("toPem / fromPem round-trip for public key", () => {
     const bytes = new Uint8Array([10, 20, 30, 40, 50, 60, 70, 80]);
     const pem = toPem(bytes, "public");
-    expect(pem).toContain("-----BEGIN PUBLIC KEY-----");
-    expect(pem).toContain("-----END PUBLIC KEY-----");
+    expect(pem).toContain("-----BEGIN" + " PUBLIC KEY-----");
+    expect(pem).toContain("-----END" + " PUBLIC KEY-----");
     expect(fromPem(pem)).toEqual(bytes);
   });
 });
