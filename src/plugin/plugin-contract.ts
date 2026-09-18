@@ -95,7 +95,7 @@ export interface WerkstattPlugin {
   schema: "werkstatt/plugin@1";
   /** Plugin id: "werkstatt-site" | "werkstatt-phaser-game" | "werkstatt-godot-game". */
   id: string;
-  /** Forge stack profile id, e.g. "astro-typescript-turborepo". */
+  /** Forge stack profile id, e.g. "site". */
   profileId: string;
   /** Kernel modules the plugin contributes (validators, codegen, content, onboarding). */
   moduleLoaders: Record<string, () => Promise<KernelModule>>;
