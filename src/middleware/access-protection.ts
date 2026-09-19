@@ -9,6 +9,9 @@
   <item>Do not use Node.js-specific APIs (Buffer, crypto.timingSafeEqual) — runs in Cloudflare Workers runtime.</item>
 </non-goals>
 </MODULE_CONTRACT>
+<KEY_DECISIONS>
+  <item>PIN check runs in the Workers runtime — Web Crypto only, no Node APIs.</item>
+</KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-0899: Initial access protection middleware for dev/alt subdomains.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run

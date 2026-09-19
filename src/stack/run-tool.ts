@@ -1,6 +1,6 @@
 /*
 <MODULE_CONTRACT>
-<purpose>runTool — the single subprocess seam for stack plugins (RFC-1100). Owns the
+<purpose>runTool — the single subprocess seam that lets stack plugins run external binaries (RFC-1100). Owns the
 shared prologue every external-binary call needs: dist/ preflight, required-env
 presence check, env merge, timeout, and error mapping to ToolResult. Production
 uses the default execFileSync adapter; tests inject a recording ToolExecutor so no
@@ -91,9 +91,7 @@ export function runTool(spec: ToolSpec, executor: ToolExecutor = execFileExecuto
     if (missing.length > 0) {
       return {
         success: false,
-        errors: missing.map(
-          (name) => `Required environment variable ${name} is not set`,
-        ),
+        errors: missing.map((name) => `Required environment variable ${name} is not set`),
         failedAt: "preflight",
       };
     }

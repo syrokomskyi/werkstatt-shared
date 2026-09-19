@@ -6,6 +6,9 @@
 </non-goals>
 <!-- @ai-invariant Generated factory output (RFC-0055) flows through system.md i18n config; do not hand-edit app copies. -->
 </MODULE_CONTRACT>
+<KEY_DECISIONS>
+  <item>Redirect target derives from system.md i18n config — no hardcoded locale list.</item>
+</KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
 </CHANGE_SUMMARY>
