@@ -15,6 +15,7 @@ lossless projection to both OpenAPI (RFC-0289) and MCP tool schemas (RFC-0290).
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0288: initial capability record schema.</item>
+  <item>RFC-1112: add sideEffect ("write"|"none"); integration + humanEquivalent become optional and are required unless sideEffect is "none".</item>
 </CHANGE_SUMMARY>
 */
 
@@ -90,15 +91,38 @@ export const capabilityRecordSchema = z
     /** Integer; bump on breaking input/output change (by RFC). */
     version: z.number().int().positive(),
     kind: z.literal("action"),
+    /**
+     * RFC-1112: "write" (default when absent) dispatches an IntegrationEvent;
+     * "none" marks a side-effect-free preview that validates input and returns
+     * a draftId without dispatching.
+     */
+    sideEffect: z.enum(["write", "none"]).optional(),
     title: localizedStringSchema,
     description: localizedStringSchema,
     input: capabilityInputOutputSchema,
     output: capabilityInputOutputSchema,
-    integration: capabilityIntegrationSchema,
+    integration: capabilityIntegrationSchema.optional(),
     requires: capabilityRequiresSchema,
-    humanEquivalent: capabilityHumanEquivalentSchema,
+    humanEquivalent: capabilityHumanEquivalentSchema.optional(),
     limits: capabilityLimitsSchema,
   })
-  .strict();
+  .strict()
+  .superRefine((record, ctx) => {
+    if (record.sideEffect === "none") return;
+    if (!record.integration) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["integration"],
+        message: 'required unless sideEffect is "none"',
+      });
+    }
+    if (!record.humanEquivalent) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["humanEquivalent"],
+        message: 'required unless sideEffect is "none"',
+      });
+    }
+  });
 
 export type CapabilityRecord = z.infer<typeof capabilityRecordSchema>;

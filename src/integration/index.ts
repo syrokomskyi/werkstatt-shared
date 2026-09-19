@@ -116,6 +116,10 @@ export {
   restRedisLedger,
 } from "./qstash.ts";
 
+// RFC-1112: agent-action receipt store (Upstash Redis EU).
+export type { ReceiptStoreRecord, ActionReceiptStore } from "./idempotency.ts";
+export { restRedisReceiptStore } from "./idempotency.ts";
+
 // Runtime modules — explicit re-exports to keep the public API surface clear.
 export type {
   DeliverResult,

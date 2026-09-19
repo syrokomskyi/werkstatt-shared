@@ -16,6 +16,7 @@ copied verbatim (AGO-04 enforces this).
 <CHANGE_SUMMARY>
   <item>RFC-0289: initial OpenAPI projection.</item>
   <item>RFC-0954: add /api/agent/search path with dynamic lang enum from manifest.languages.supported.</item>
+  <item>RFC-1112: Idempotency-Key header param + application/problem+json error responses on action paths.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -47,7 +48,12 @@ export interface OpenApiOperation {
   };
   responses: Record<
     string,
-    { description: string; content?: { "application/json": { schema: unknown } } }
+    {
+      description: string;
+      content?: Partial<
+        Record<"application/json" | "application/problem+json", { schema: unknown }>
+      >;
+    }
   >;
 }
 
@@ -67,6 +73,62 @@ export interface CapabilitySchemaInput {
   id: string;
   input: CapabilityInputOutputSchema;
   output: CapabilityInputOutputSchema;
+}
+
+/** RFC-1112: shared RFC 9457 problem-details schema referenced by every action error response. */
+function problemDetailsSchema(): Record<string, unknown> {
+  return {
+    type: "object",
+    required: ["type", "title", "status", "code", "retryable"],
+    properties: {
+      type: { type: "string" },
+      title: { type: "string" },
+      status: { type: "integer" },
+      detail: { type: "string" },
+      code: {
+        type: "string",
+        enum: [
+          "invalid-json",
+          "schema-violation",
+          "unknown-capability",
+          "payload-too-large",
+          "rate-limited",
+          "dispatch-failed",
+          "idempotency-key-reuse",
+        ],
+      },
+      retryable: { type: "boolean" },
+      errors: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { path: { type: "string" }, message: { type: "string" } },
+        },
+      },
+      schemaRef: { type: "string" },
+      retryAfterSeconds: { type: "integer" },
+    },
+  };
+}
+
+/** RFC-1112: the standard error responses every action path declares. */
+function actionErrorResponses(): OpenApiOperation["responses"] {
+  const problem = {
+    "application/problem+json": {
+      schema: { $ref: "#/components/schemas/problem-details" },
+    },
+  };
+  return {
+    "400": { description: "Request body is not valid JSON", content: problem },
+    "409": {
+      description: "Idempotency-Key was used with a different payload",
+      content: problem,
+    },
+    "413": { description: "Payload exceeds the capability limit", content: problem },
+    "422": { description: "Input failed schema validation", content: problem },
+    "429": { description: "Rate limit exceeded", content: problem },
+    "502": { description: "Delivery substrate rejected the event", content: problem },
+  };
 }
 
 /** Generic envelope schema — every knowledge domain shares this wrapper shape (RFC-0287); only `data`'s inner shape varies by domain and is intentionally left untyped here. */
@@ -118,6 +180,8 @@ export function formatAgentOpenApi(
     };
   }
 
+  componentSchemas["problem-details"] = problemDetailsSchema();
+
   for (const ref of manifest.actions) {
     const schemas = schemasById.get(ref.id);
     if (!schemas) continue; // defensive — AGO-04-checked at validate time
@@ -128,6 +192,16 @@ export function formatAgentOpenApi(
         operationId: `action.${ref.id}`,
         summary: ref.title[manifest.languages.default] ?? ref.id,
         tags: ["actions"],
+        parameters: [
+          {
+            name: "Idempotency-Key",
+            in: "header",
+            required: false,
+            schema: { type: "string", maxLength: 255 },
+            description:
+              "Optional dedup key. Repeating a request with the same key and body returns the original receipt; the same key with a different body is rejected with 409.",
+          },
+        ],
         requestBody: {
           required: true,
           content: { "application/json": { schema: schemas.input } },
@@ -137,8 +211,7 @@ export function formatAgentOpenApi(
             description: `${ref.id} accepted`,
             content: { "application/json": { schema: schemas.output } },
           },
-          "400": { description: "Schema violation" },
-          "429": { description: "Rate limit exceeded" },
+          ...actionErrorResponses(),
         },
       },
     };

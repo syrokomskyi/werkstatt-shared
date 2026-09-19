@@ -84,6 +84,20 @@ test("formatAgentOpenApi: one action ref → one POST path with verbatim input/o
   expect(doc.components.schemas["lead.submit-input"]).toEqual(inputSchema);
   expect(doc.components.schemas["lead.submit-output"]).toEqual(outputSchema);
   expect(op!.requestBody!.content["application/json"].schema).toEqual(inputSchema);
+
+  // RFC-1112: Idempotency-Key header parameter.
+  const idemParam = op!.parameters!.find((p) => p.name === "Idempotency-Key");
+  expect(idemParam).toBeTruthy();
+  expect(idemParam!.in).toBe("header");
+  expect(idemParam!.required).toBe(false);
+
+  // RFC-1112: problem+json error responses + shared problem-details schema.
+  expect(doc.components.schemas["problem-details"]).toBeTruthy();
+  for (const status of ["400", "409", "413", "422", "429", "502"]) {
+    const res = op!.responses[status];
+    expect(res, `missing ${status} response`).toBeTruthy();
+    expect(res!.content?.["application/problem+json"]).toBeTruthy();
+  }
 });
 
 test("formatAgentOpenApi: an action ref without a matching capability schema is skipped defensively", () => {

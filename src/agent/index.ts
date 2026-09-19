@@ -15,6 +15,7 @@ here (knowledge, capability, openapi, proof) and re-export them from this barrel
   <item>RFC-0783: re-export api-catalog and mcp-card modules.</item>
   <item>RFC-0786: re-export dns-aid module.</item>
   <item>RFC-0954: re-export search module.</item>
+  <item>RFC-1112: re-export receipt module (ActionReceipt, AgentProblemDetails, deriveActionEventId).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -30,3 +31,4 @@ export * from "./mcp-card.ts";
 export * from "./dns-aid.ts";
 export * from "./ard-catalog.ts";
 export * from "./search.ts";
+export * from "./receipt.ts";

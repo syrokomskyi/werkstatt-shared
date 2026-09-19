@@ -16,6 +16,7 @@ two runs on unchanged input are byte-identical (AS-7).
   <item>RFC-0286: initial manifest contract and pure builder.</item>
   <item>RFC-0954: add search interface to AgentSurfaceManifest.interfaces.</item>
   <item>RFC-1076: add claims field to AgentSurfaceManifest, AgentClaimRef type, bump AGENT_SURFACE_VERSION to 1.1.0.</item>
+  <item>RFC-1112: bump AGENT_SURFACE_VERSION to 2.0.0 — action responses become ActionReceipt + problem+json.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -23,7 +24,7 @@ import { createHash } from "node:crypto";
 import type { AgentSurfaceProof } from "./proof.ts";
 
 /** Semver of THIS manifest schema. Bump only via an RFC amending RFC-0286 (AS-7). */
-export const AGENT_SURFACE_VERSION = "1.1.0";
+export const AGENT_SURFACE_VERSION = "2.0.0";
 
 export interface AgentKnowledgeRef {
   /** A BusinessDomain with visibility "public" (RFC-0287). */

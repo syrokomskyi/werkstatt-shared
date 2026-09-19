@@ -1,6 +1,7 @@
 id: lead.submit
-version: 1
+version: 2
 kind: action
+sideEffect: write
 title:
   de: Anfrage senden
   en: Submit a lead
@@ -26,11 +27,22 @@ input:
       maxLength: 5000
 output:
   type: object
-  required: [accepted]
+  required: [receiptId, status, duplicate, submittedAt]
   additionalProperties: false
   properties:
-    accepted:
+    receiptId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      minLength: 1
+      maxLength: 16
+    duplicate:
       type: boolean
+    submittedAt:
+      type: string
+      minLength: 20
+      maxLength: 32
 integration:
   eventKind: lead
   source: agent

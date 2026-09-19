@@ -1,0 +1,44 @@
+id: lead.prepare
+version: 1
+kind: action
+sideEffect: none
+title:
+  de: Anfrage prüfen
+  en: Preview a lead
+description:
+  de: "Prüft eine Kontaktanfrage (Name, E-Mail, Nachricht) ohne sie abzusenden — liefert eine draftId, die als Idempotency-Key eines späteren lead.submit dient. Nebenwirkungsfrei: es wird nichts zugestellt."
+  en: "Validates a contact request (name, email, message) without submitting it — returns a draftId usable as the Idempotency-Key of a later lead.submit. Side-effect-free: nothing is dispatched."
+input:
+  type: object
+  required: [name, email, message]
+  additionalProperties: false
+  properties:
+    name:
+      type: string
+      minLength: 1
+      maxLength: 200
+    email:
+      type: string
+      format: email
+      maxLength: 254
+    message:
+      type: string
+      minLength: 1
+      maxLength: 5000
+output:
+  type: object
+  required: [valid, draftId]
+  additionalProperties: false
+  properties:
+    valid:
+      type: boolean
+    draftId:
+      type: string
+      minLength: 71
+      maxLength: 71
+requires:
+  entitlements: [agent.actions]
+  sections: [send-message]
+limits:
+  perMinutePerIp: 10
+  maxPayloadBytes: 10240
