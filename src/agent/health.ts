@@ -1,0 +1,68 @@
+/*
+<MODULE_CONTRACT>
+<purpose>
+RFC-1116: contracts for the agent surface health endpoint and the external
+contract check. AgentHealth is the runtime response of GET /api/agent/health;
+AgentContractCheckResult is the diagnostics payload of the
+agent.surface.contract.check kernel command. The probe-id union is the closed
+vocabulary both sides share — the route emits "health", the command emits the
+full golden-journey list.
+</purpose>
+<non-goals>
+  <item>Do not implement probe logic here — the command lives in
+        @warpgogol/werkstatt-site/checks, the route factory in
+        @warpgogol/werkstatt-engine/agent-gate.</item>
+</non-goals>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1116: initial contracts — AgentHealth, AgentContractCheckResult, AgentContractProbeId.</item>
+</CHANGE_SUMMARY>
+*/
+
+/** Response of GET /api/agent/health (RFC-1116). */
+export interface AgentHealth {
+  status: "ok" | "degraded";
+  /** AGENT_SURFACE_VERSION constant. */
+  surfaceVersion: string;
+  /** distTreeHash self-fetched from /.well-known/build-identity.json; "" when unavailable. */
+  contentHash: string;
+  checks: {
+    manifest: "ok" | "missing";
+    knowledge: "ok" | "missing";
+    /** QStash publish token present? */
+    dispatch: "configured" | "unconfigured";
+    search: "available" | "unavailable";
+  };
+}
+
+/**
+ * Closed probe-id vocabulary for the golden journey (RFC-1116). The command
+ * derives the active subset from the deployed agent.json — capabilities absent
+ * from the manifest yield `skipped` probes, not failures.
+ */
+export type AgentContractProbeId =
+  | "discovery.agent-json"
+  | "discovery.api-catalog"
+  | "discovery.llms"
+  | "knowledge.fetch"
+  | "mcp.initialize"
+  | "mcp.tools-list"
+  | "action.lead-prepare"
+  | "action.error-shape"
+  | "health";
+
+export interface AgentContractProbe {
+  id: AgentContractProbeId;
+  ok: boolean;
+  /** Capability absent from deployed agent.json, or agent.enabled: false. */
+  skipped?: boolean;
+  detail?: string;
+}
+
+/** Diagnostics payload of agent.surface.contract.check (RFC-1116, DNA-82). */
+export interface AgentContractCheckResult {
+  command: "agent.surface.contract.check";
+  status: "pass" | "fail";
+  url: string;
+  probes: AgentContractProbe[];
+}
