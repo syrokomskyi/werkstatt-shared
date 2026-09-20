@@ -1,6 +1,6 @@
 /*
 <MODULE_CONTRACT>
-  <purpose>RFC-1075: derive persistent canonical URIs for PBP entity envelopes from site origin and entity identity. Used for Linked Data @id fields in JSON-LD and llms-full.txt projections.</purpose>
+  <purpose>RFC-1075: derive persistent canonical URIs for PBP entity envelopes from site origin and entity identity. Used for Linked Data @id fields in JSON-LD and llms-full.txt projections. RFC-1115: URIs carry a .json suffix and are dereferenceable — agent.knowledge.generate emits a static JSON-LD document at each path.</purpose>
   <non-goals>
     <item>Does not validate that the entity ID is well-formed — callers are responsible for providing valid IDs.</item>
     <item>Does not perform URL normalization beyond trailing-slash removal on the site origin.</item>
@@ -8,23 +8,26 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1075: initial — deriveCanonicalUri pure function for persistent entity @id URIs.</item>
+  <item>RFC-1115: canonical entity URIs gain a .json suffix and become dereferenceable — agent.knowledge.generate emits a JSON-LD document at each emitted path.</item>
 </CHANGE_SUMMARY>
 */
 
 /**
  * Entity types supported by the PBP canonical URI scheme.
  *
- * The URI path pattern is `/.well-known/entity/{type}/{id}` for typed entities
- * (e.g. offerings) and `/.well-known/entity/business` for the single business entity.
+ * The URI path pattern is `/.well-known/entity/{type}/{id}.json` for typed entities
+ * (e.g. offerings) and `/.well-known/entity/business.json` for the single business entity.
+ * RFC-1115: the .json suffix makes every URI dereferenceable on a static host —
+ * agent.knowledge.generate emits a JSON-LD document at each path.
  */
 export type CanonicalEntityType = "business" | "offering";
 
 /**
  * RFC-1075: derive a persistent canonical URI for a PBP entity.
  *
- * The URI follows the pattern:
- * - Business: `{siteOrigin}/.well-known/entity/business`
- * - Offering: `{siteOrigin}/.well-known/entity/offering/{entityId}`
+ * The URI follows the pattern (RFC-1115 — dereferenceable .json form):
+ * - Business: `{siteOrigin}/.well-known/entity/business.json`
+ * - Offering: `{siteOrigin}/.well-known/entity/offering/{entityId}.json`
  *
  * The `siteOrigin` is stripped of trailing slashes to produce a clean base.
  * When `siteOrigin` is absent or empty, the function returns `undefined` —
@@ -45,10 +48,10 @@ export function deriveCanonicalUri(
   const base = siteOrigin.replace(/\/+$/, "");
 
   if (type === "business") {
-    return `${base}/.well-known/entity/business`;
+    return `${base}/.well-known/entity/business.json`;
   }
 
   if (!entityId) return undefined;
 
-  return `${base}/.well-known/entity/offering/${entityId}`;
+  return `${base}/.well-known/entity/offering/${entityId}.json`;
 }

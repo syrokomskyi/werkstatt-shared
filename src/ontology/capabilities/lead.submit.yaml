@@ -54,3 +54,8 @@ humanEquivalent:
 limits:
   perMinutePerIp: 3
   maxPayloadBytes: 10240
+agentGuidance:
+  sideEffect: write
+  whenToUse: "a visitor wants to contact the business — a question, a request, or a booking inquiry that needs a human reply."
+  whenNotToUse: "the visitor only needs information already published on the site — answer from the knowledge files or search instead of creating a lead."
+  retrySemantics: "safe to retry with the same Idempotency-Key — a repeated submission returns the original receipt instead of creating a duplicate lead."

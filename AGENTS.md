@@ -135,13 +135,13 @@ Location: `packages/werkstatt-shared/src/semantic/canonical-uri.ts` — exported
 | --- | --- |
 | `deriveCanonicalUri(siteOrigin, entityType, entityId?)` | Derive a persistent canonical URI for Linked Data `@id` from site origin and entity identity |
 
-Format: `{siteOrigin}/.well-known/entity/{entityType}/{entityId}`
+Format (RFC-1115): `{siteOrigin}/.well-known/entity/{entityType}/{entityId}.json`
 
 Rules:
 
-- The URI is an identifier, not necessarily a dereferenceable resource. No resolver endpoint is implemented.
-- For `business` entities, `entityId` is omitted: `{origin}/.well-known/entity/business`.
-- For `offering` entities, `entityId` is the offering ID: `{origin}/.well-known/entity/offering/{id}`.
+- The URI is dereferenceable — `agent.knowledge.generate` emits a static JSON-LD document at each path under `public/.well-known/entity/`, served as `application/ld+json` via the `_headers` rule.
+- For `business` entities, `entityId` is omitted: `{origin}/.well-known/entity/business.json`.
+- For `offering` entities, `entityId` is the offering ID: `{origin}/.well-known/entity/offering/{id}.json`.
 - Trailing slashes on `siteOrigin` are stripped before derivation.
 - If `siteOrigin` is absent or empty, `deriveCanonicalUri` returns `undefined` and no `@id` is emitted.
 - An explicitly authored `canonicalUri` on a `PbpEntity` takes priority over derivation.

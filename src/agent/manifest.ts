@@ -18,6 +18,7 @@ two runs on unchanged input are byte-identical (AS-7).
   <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
   <item>RFC-1114: add "a2a" to AgentProtocol and interfaces.a2a (url + protocolVersion).</item>
   <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
+  <item>RFC-1115: search results flattened to citation shape (title, canonicalUrl, updatedAt, lang, type, score, text) under the existing 2.0.0 surface; capability agentGuidance rendered into tool/operation descriptions.</item>
   <history>RFC-0286, RFC-0954, RFC-1076</history>
 </CHANGE_SUMMARY>
 */

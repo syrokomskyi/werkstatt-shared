@@ -16,6 +16,7 @@ lossless projection to both OpenAPI (RFC-0289) and MCP tool schemas (RFC-0290).
 <CHANGE_SUMMARY>
   <item>RFC-0288: initial capability record schema.</item>
   <item>RFC-1112: add sideEffect ("write"|"none"); integration + humanEquivalent become optional and are required unless sideEffect is "none".</item>
+  <item>RFC-1115: add optional agentGuidance block (sideEffect, whenToUse, whenNotToUse, retrySemantics) rendered into MCP tool descriptions and OpenAPI operation docs.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -81,6 +82,22 @@ const capabilityLimitsSchema = z
   })
   .strict();
 
+/**
+ * RFC-1115: model-oriented guidance rendered into MCP tool descriptions and
+ * OpenAPI operation docs. `sideEffect` restates the record-level sideEffect so
+ * the guidance block is self-contained — a superRefine keeps them consistent.
+ * `retrySemantics` describes the RFC-1112 Idempotency-Key contract
+ * descriptively; the mechanism stays owned by RFC-1112.
+ */
+const capabilityAgentGuidanceSchema = z
+  .object({
+    sideEffect: z.enum(["write", "none"]),
+    whenToUse: z.string().min(1),
+    whenNotToUse: z.string().min(1).optional(),
+    retrySemantics: z.string().min(1).optional(),
+  })
+  .strict();
+
 /** RFC-0288: one capability catalog record (packages/werkstatt-site/src/domain/ontology/capabilities/<id>.yaml). */
 export const capabilityRecordSchema = z
   .object({
@@ -105,9 +122,20 @@ export const capabilityRecordSchema = z
     requires: capabilityRequiresSchema,
     humanEquivalent: capabilityHumanEquivalentSchema.optional(),
     limits: capabilityLimitsSchema,
+    agentGuidance: capabilityAgentGuidanceSchema.optional(),
   })
   .strict()
   .superRefine((record, ctx) => {
+    // RFC-1115: agentGuidance.sideEffect must restate the effective record-level
+    // sideEffect (absent means "write") — contradictory declarations are drift.
+    const effectiveSideEffect = record.sideEffect ?? "write";
+    if (record.agentGuidance && record.agentGuidance.sideEffect !== effectiveSideEffect) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["agentGuidance", "sideEffect"],
+        message: `must match the record-level sideEffect ("${effectiveSideEffect}")`,
+      });
+    }
     if (record.sideEffect === "none") return;
     if (!record.integration) {
       ctx.addIssue({

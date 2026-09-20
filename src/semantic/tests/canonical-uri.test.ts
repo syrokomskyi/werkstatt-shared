@@ -12,15 +12,15 @@ describe("RFC-1075 AC-4: deriveCanonicalUri is pure and deterministic", () => {
     expect(deriveCanonicalUri("", "offering", "off-1")).toBeUndefined();
   });
 
-  it("derives business URI without entityId", () => {
+  it("derives business URI without entityId — RFC-1115 .json form", () => {
     expect(deriveCanonicalUri("https://example.example", "business")).toBe(
-      "https://example.example/.well-known/entity/business",
+      "https://example.example/.well-known/entity/business.json",
     );
   });
 
-  it("derives offering URI with entityId", () => {
+  it("derives offering URI with entityId — RFC-1115 .json form", () => {
     expect(deriveCanonicalUri("https://example.example", "offering", "off-1")).toBe(
-      "https://example.example/.well-known/entity/offering/off-1",
+      "https://example.example/.well-known/entity/offering/off-1.json",
     );
   });
 
@@ -31,10 +31,10 @@ describe("RFC-1075 AC-4: deriveCanonicalUri is pure and deterministic", () => {
 
   it("strips trailing slashes from siteOrigin", () => {
     expect(deriveCanonicalUri("https://example.example/", "business")).toBe(
-      "https://example.example/.well-known/entity/business",
+      "https://example.example/.well-known/entity/business.json",
     );
     expect(deriveCanonicalUri("https://example.example//", "business")).toBe(
-      "https://example.example/.well-known/entity/business",
+      "https://example.example/.well-known/entity/business.json",
     );
   });
 

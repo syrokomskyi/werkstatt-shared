@@ -19,6 +19,9 @@ const baseChunk: SearchChunk = {
   blockId: "block-intro",
   heading: "About",
   text: "About the company",
+  title: "About",
+  canonicalUrl: "https://example.example/about",
+  updatedAt: "2026-08-20",
 };
 
 describe("buildSearchManifest", () => {

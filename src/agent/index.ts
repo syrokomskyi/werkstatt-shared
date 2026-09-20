@@ -32,3 +32,4 @@ export * from "./dns-aid.ts";
 export * from "./ard-catalog.ts";
 export * from "./search.ts";
 export * from "./receipt.ts";
+export * from "./guidance.ts";

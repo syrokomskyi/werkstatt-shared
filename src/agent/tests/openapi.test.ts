@@ -166,3 +166,98 @@ test("formatAgentOpenApi: search interface absent → no search path", () => {
   expect(doc.paths["/api/agent/search"]).toBe(undefined);
   expect(doc.components.schemas["search-response"]).toBe(undefined);
 });
+
+test("formatAgentOpenApi: agentGuidance renders into the operation description (RFC-1115 AC-4)", () => {
+  const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    site: "s",
+    baseUrl: "https://s.example",
+    languages: { default: "de", supported: ["de"] },
+    actions: [
+      {
+        id: "lead.submit",
+        url: "/api/agent/actions/lead.submit",
+        title: { de: "Anfrage senden" },
+        inputSchemaRef: "#/components/schemas/lead.submit-input",
+        entitlement: "agent.actions",
+      },
+    ],
+  });
+  const doc = formatAgentOpenApi(manifest, [
+    {
+      id: "lead.submit",
+      input: { type: "object" },
+      output: { type: "object" },
+      description: { de: "Reicht eine Kontaktanfrage ein." },
+      agentGuidance: {
+        sideEffect: "write",
+        whenToUse: "ein Besucher das Gewerbe kontaktieren will.",
+        whenNotToUse: "die Antwort bereits auf der Seite steht.",
+        retrySemantics: "mit demselben Idempotency-Key sicher wiederholbar.",
+      },
+    },
+  ]);
+  const op = doc.paths["/api/agent/actions/lead.submit"]?.post;
+  expect(op).toBeTruthy();
+  expect(op!.description).toContain("Reicht eine Kontaktanfrage ein.");
+  expect(op!.description).toContain("Use this when ein Besucher das Gewerbe kontaktieren will.");
+  expect(op!.description).toContain("Do not use this when die Antwort bereits auf der Seite steht.");
+  expect(op!.description).toContain("side effects");
+  expect(op!.description).toContain(
+    "Retry semantics: mit demselben Idempotency-Key sicher wiederholbar.",
+  );
+});
+
+test("formatAgentOpenApi: absent agentGuidance falls back to the base description (RFC-1115 AC-5)", () => {
+  const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    site: "s",
+    baseUrl: "https://s.example",
+    languages: { default: "de", supported: ["de"] },
+    actions: [
+      {
+        id: "lead.submit",
+        url: "/api/agent/actions/lead.submit",
+        title: { de: "Anfrage senden" },
+        inputSchemaRef: "#/components/schemas/lead.submit-input",
+        entitlement: "agent.actions",
+      },
+    ],
+  });
+  const doc = formatAgentOpenApi(manifest, [
+    {
+      id: "lead.submit",
+      input: { type: "object" },
+      output: { type: "object" },
+      description: { de: "Reicht eine Kontaktanfrage ein." },
+    },
+  ]);
+  const op = doc.paths["/api/agent/actions/lead.submit"]?.post;
+  expect(op!.description).toBe("Reicht eine Kontaktanfrage ein.");
+});
+
+test("formatAgentOpenApi: search-response schema matches the flattened citation shape (RFC-1115 AC-1)", () => {
+  const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    site: "s",
+    baseUrl: "https://s.example",
+    languages: { default: "de", supported: ["de"] },
+    search: { url: "/api/agent/search", model: "@cf/baai/bge-m3", dimensions: 1024 },
+  });
+  const doc = formatAgentOpenApi(manifest, []);
+  const schema = doc.components.schemas["search-response"] as {
+    properties: { results: { items: { required: string[]; properties: Record<string, unknown> } } };
+  };
+  const item = schema.properties.results.items;
+  expect(item.required).toEqual([
+    "title",
+    "canonicalUrl",
+    "updatedAt",
+    "lang",
+    "type",
+    "score",
+    "text",
+  ]);
+  expect(item.properties.canonicalUrl).toEqual({ type: "string" });
+  expect(item.properties.chunk).toBeUndefined();
+});

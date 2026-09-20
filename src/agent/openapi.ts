@@ -17,11 +17,13 @@ copied verbatim (AGO-04 enforces this).
   <item>RFC-0289: initial OpenAPI projection.</item>
   <item>RFC-0954: add /api/agent/search path with dynamic lang enum from manifest.languages.supported.</item>
   <item>RFC-1112: Idempotency-Key header param + application/problem+json error responses on action paths.</item>
+  <item>RFC-1115: agentGuidance rendered into operation descriptions; search-response schema matches the flattened citation shape.</item>
 </CHANGE_SUMMARY>
 */
 
 import type { AgentSurfaceManifest } from "./manifest.ts";
 import type { CapabilityInputOutputSchema } from "@warpgogol/werkstatt-shared/ontology";
+import { renderAgentGuidanceDescription, type CapabilityAgentGuidance } from "./guidance.ts";
 
 export interface OpenApiSchemaObject {
   type: string;
@@ -34,6 +36,7 @@ export interface OpenApiSchemaObject {
 export interface OpenApiOperation {
   operationId: string;
   summary?: string;
+  description?: string;
   tags: string[];
   parameters?: Array<{
     name: string;
@@ -73,6 +76,10 @@ export interface CapabilitySchemaInput {
   id: string;
   input: CapabilityInputOutputSchema;
   output: CapabilityInputOutputSchema;
+  /** RFC-1115: localized base description for operation docs. */
+  description?: Record<string, string>;
+  /** RFC-1115: model-oriented guidance rendered into the operation description. */
+  agentGuidance?: CapabilityAgentGuidance;
 }
 
 /** RFC-1112: shared RFC 9457 problem-details schema referenced by every action error response. */
@@ -187,10 +194,17 @@ export function formatAgentOpenApi(
     if (!schemas) continue; // defensive — AGO-04-checked at validate time
     componentSchemas[`${ref.id}-input`] = schemas.input;
     componentSchemas[`${ref.id}-output`] = schemas.output;
+    // RFC-1115: agentGuidance composes a model-oriented operation description;
+    // absent guidance falls back to the base capability description.
+    const baseDescription =
+      schemas.description?.[manifest.languages.default] ??
+      ref.title[manifest.languages.default] ??
+      ref.id;
     paths[ref.url] = {
       post: {
         operationId: `action.${ref.id}`,
         summary: ref.title[manifest.languages.default] ?? ref.id,
+        description: renderAgentGuidanceDescription(baseDescription, schemas.agentGuidance),
         tags: ["actions"],
         parameters: [
           {
@@ -227,9 +241,15 @@ export function formatAgentOpenApi(
           type: "array",
           items: {
             type: "object",
+            required: ["title", "canonicalUrl", "updatedAt", "lang", "type", "score", "text"],
             properties: {
-              chunk: { type: "object" },
+              title: { type: ["string", "null"] },
+              canonicalUrl: { type: "string" },
+              updatedAt: { type: ["string", "null"] },
+              lang: { type: "string" },
+              type: { type: "string", enum: ["page", "knowledge", "faq", "prose"] },
               score: { type: "number" },
+              text: { type: "string" },
             },
           },
         },

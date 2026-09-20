@@ -20,6 +20,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1115: SearchChunk gains citation fields (title, canonicalUrl, updatedAt); SearchResult flattened to { title, canonicalUrl, updatedAt, lang, type, score, text }; SEARCH_MANIFEST_SCHEMA_VERSION "1" → "2".</item>
 </CHANGE_SUMMARY>
 */
 
@@ -44,8 +45,8 @@ export const SEARCH_DEFAULT_TOP_K = 5;
 /** Maximum character length for a chunk's `text` field (truncated before embedding). */
 export const SEARCH_CHUNK_TEXT_MAX_LENGTH = 2000;
 
-/** Schema version for the search manifest. */
-export const SEARCH_MANIFEST_SCHEMA_VERSION = "1";
+/** Schema version for the search manifest. RFC-1115: "2" adds citation fields to chunks. */
+export const SEARCH_MANIFEST_SCHEMA_VERSION = "2";
 
 /** Static asset path for the generated search manifest. */
 export const SEARCH_MANIFEST_PATH = "public/api/agent/v1/search-manifest.json";
@@ -86,6 +87,12 @@ export interface SearchChunk {
   heading: string | null;
   /** Body text extracted from the block, truncated to SEARCH_CHUNK_TEXT_MAX_LENGTH. */
   text: string;
+  /** RFC-1115: display title for citations (from heading; null when absent). */
+  title: string | null;
+  /** RFC-1115: absolute canonical URL (site origin + url) — citable without a follow-up fetch. */
+  canonicalUrl: string;
+  /** RFC-1115: source-backed update stamp YYYY-MM-DD (RFC-0317); null when unknown. */
+  updatedAt: string | null;
 }
 
 /** Static search manifest — build-time output written to public/api/agent/v1/search-manifest.json. */
@@ -117,11 +124,25 @@ export interface SearchQuery {
   topK?: number;
 }
 
-/** A single search result — chunk + similarity score. */
+/**
+ * RFC-1115: a single search result — flattened citation shape.
+ * Carries everything an agent needs to cite without a follow-up fetch.
+ */
 export interface SearchResult {
-  chunk: SearchChunk;
+  /** Display title (from chunk heading; null when absent). */
+  title: string | null;
+  /** Absolute canonical URL of the chunk's page or resource. */
+  canonicalUrl: string;
+  /** Source-backed update stamp YYYY-MM-DD (RFC-0317); null when unknown. */
+  updatedAt: string | null;
+  /** ISO 639-1 language code. */
+  lang: string;
+  /** Content type of the underlying chunk. */
+  type: SearchChunkType;
   /** Cosine similarity score (0..1, higher = more similar). */
   score: number;
+  /** Body text of the chunk. */
+  text: string;
 }
 
 /** Response from the search endpoint. */
