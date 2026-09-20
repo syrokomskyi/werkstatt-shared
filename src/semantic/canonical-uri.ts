@@ -38,6 +38,17 @@ export type CanonicalEntityType = "business" | "offering";
  * @param entityId - The entity ID (required for `"offering"`, ignored for `"business"`)
  * @returns The canonical URI string, or `undefined` when `siteOrigin` is absent
  */
+/**
+ * Reduce a PBP entity id to the slug used in canonical entity URIs and file
+ * paths. Entity IDs are URIs (e.g. `https://warpgogol.com/id/offerings/automation`);
+ * the last non-empty path segment is the slug (`automation`). Plain slugs pass
+ * through unchanged. Single source for the id→slug mapping so the canonical
+ * `@id`, the emitted file path, and the fact-parity comparator stay consistent.
+ */
+export function canonicalEntitySlug(entityId: string): string {
+  return entityId.split("/").filter(Boolean).pop() ?? entityId;
+}
+
 export function deriveCanonicalUri(
   siteOrigin: string | undefined,
   type: CanonicalEntityType,
@@ -57,8 +68,7 @@ export function deriveCanonicalUri(
   // Embedding the raw URI into the path produces a malformed double-scheme URI
   // (`.../offering/https://warpgogol.com/...`) and a non-filesystem-safe path
   // (`path.join` collapses `//` → `/`, breaking the @id = served-path parity).
-  // Use the last non-empty path segment as the slug; plain slugs pass through.
-  const slug = entityId.split("/").filter(Boolean).pop() ?? entityId;
+  const slug = canonicalEntitySlug(entityId);
 
   return `${base}/.well-known/entity/offering/${slug}.json`;
 }
