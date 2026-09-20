@@ -5,6 +5,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>Initial ARD ai-catalog.json projection tests.</item>
+  <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
 </CHANGE_SUMMARY>
 */
 
@@ -14,6 +15,7 @@ import { buildAgentSurfaceManifest } from "../manifest.ts";
 
 test("buildArdCatalog: produces specVersion, host, and entries array", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -27,6 +29,7 @@ test("buildArdCatalog: produces specVersion, host, and entries array", () => {
 
 test("buildArdCatalog: each entry has identifier, displayName, type, url, representativeQueries", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -48,6 +51,7 @@ test("buildArdCatalog: each entry has identifier, displayName, type, url, repres
 
 test("buildArdCatalog: MCP interface adds MCP server entry", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -62,6 +66,7 @@ test("buildArdCatalog: MCP interface adds MCP server entry", () => {
 
 test("buildArdCatalog: knowledge refs produce entries", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -78,6 +83,7 @@ test("buildArdCatalog: knowledge refs produce entries", () => {
 
 test("buildArdCatalog: entries are sorted by identifier", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -97,6 +103,7 @@ test("buildArdCatalog: determinism — same input produces identical output", ()
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
+    generatedAt: "2026-01-01T00:00:00.000Z",
     knowledge: [
       { domain: "offer", url: "/api/agent/v1/offer.json", schema: "gogol.agent.knowledge/offer@1" },
     ],
@@ -109,6 +116,7 @@ test("buildArdCatalog: determinism — same input produces identical output", ()
 
 test("buildArdCatalog: host identifier uses did:web format with domain", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "warpgogol-com",
     baseUrl: "https://warpgogol.com",
     languages: { default: "de", supported: ["de"] },
@@ -120,6 +128,7 @@ test("buildArdCatalog: host identifier uses did:web format with domain", () => {
 
 test("buildArdCatalog: default hostDisplayName falls back to site name", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "my-site",
     baseUrl: "https://example.com",
     languages: { default: "de", supported: ["de"] },

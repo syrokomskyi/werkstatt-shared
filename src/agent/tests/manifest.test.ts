@@ -9,11 +9,13 @@
 <CHANGE_SUMMARY>
   <item>RFC-0286: initial builder tests.</item>
   <item>RFC-0954: add search interface tests.</item>
+  <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
 </CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";
 import {
+  AGENT_SURFACE_SCHEMA_ID,
   AGENT_SURFACE_VERSION,
   buildAgentSurfaceManifest,
   computeAgentManifestContentHash,
@@ -25,6 +27,7 @@ const baseInput = {
   site: "warpgogol-com",
   baseUrl: "https://warpgogol.com/",
   languages: { default: "de", supported: ["uk", "de"] },
+  generatedAt: "2026-01-01T00:00:00.000Z",
 };
 
 test("buildAgentSurfaceManifest: strips trailing slash and sorts supported languages", () => {
@@ -148,4 +151,50 @@ test("computeSignedContentHash: supports additional excludeFields", () => {
 test("computeSignedContentHash: matches computeAgentManifestContentHash for same inputs", () => {
   const doc = { a: 1, b: 2, contentHash: "x", proof: null };
   expect(computeSignedContentHash(doc)).toBe(computeAgentManifestContentHash(doc));
+});
+
+// ---------------------------------------------------------------------------
+// RFC-1113: discovery metadata fields
+// ---------------------------------------------------------------------------
+
+test("buildAgentSurfaceManifest: emits $schema, generatedAt, supportedProtocols", () => {
+  const m = buildAgentSurfaceManifest(baseInput);
+  expect(m.$schema).toBe(AGENT_SURFACE_SCHEMA_ID);
+  expect(m.generatedAt).toBe("2026-01-01T00:00:00.000Z");
+  // Unconditional discovery artifacts only — no interfaces were provided.
+  expect(m.supportedProtocols).toEqual(["agent-skills", "ard", "dns-aid", "linkset", "llms"]);
+});
+
+test("buildAgentSurfaceManifest: supportedProtocols follows emitted interfaces", () => {
+  const m = buildAgentSurfaceManifest({
+    ...baseInput,
+    hasTwins: true,
+    openapiUrl: "/.well-known/agent.openapi.json",
+    mcp: { url: "/api/agent/mcp", protocolVersion: "2026-07-28" },
+    search: { url: "/api/agent/search", model: "@cf/baai/bge-m3", dimensions: 1024 },
+  });
+  expect(m.supportedProtocols).toEqual([
+    "agent-skills",
+    "ard",
+    "dns-aid",
+    "linkset",
+    "llms",
+    "mcp",
+    "openapi",
+    "search",
+    "twins",
+  ]);
+});
+
+test("buildAgentSurfaceManifest: generatedAt does not change contentHash (AC-3)", () => {
+  const a = buildAgentSurfaceManifest(baseInput);
+  const b = buildAgentSurfaceManifest({ ...baseInput, generatedAt: "2026-12-31T23:59:59.000Z" });
+  expect(a.contentHash).toBe(b.contentHash);
+  expect(a.generatedAt).not.toBe(b.generatedAt);
+});
+
+test("computeAgentManifestContentHash: excludes generatedAt", () => {
+  const doc = { a: 1, generatedAt: "2026-01-01T00:00:00Z" };
+  const other = { a: 1, generatedAt: "2026-06-06T06:06:06Z" };
+  expect(computeAgentManifestContentHash(doc)).toBe(computeAgentManifestContentHash(other));
 });

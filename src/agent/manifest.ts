@@ -13,10 +13,12 @@ two runs on unchanged input are byte-identical (AS-7).
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0286: initial manifest contract and pure builder.</item>
   <item>RFC-0954: add search interface to AgentSurfaceManifest.interfaces.</item>
   <item>RFC-1076: add claims field to AgentSurfaceManifest, AgentClaimRef type, bump AGENT_SURFACE_VERSION to 1.1.0.</item>
   <item>RFC-1112: bump AGENT_SURFACE_VERSION to 2.0.0 — action responses become ActionReceipt + problem+json.</item>
+  <item>RFC-1113: add $schema, generatedAt (excluded from contentHash), supportedProtocols; AgentProtocol closed vocabulary.</item>
+  <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
+  <history>RFC-0286</history>
 </CHANGE_SUMMARY>
 */
 
@@ -25,6 +27,18 @@ import type { AgentSurfaceProof } from "./proof.ts";
 
 /** Semver of THIS manifest schema. Bump only via an RFC amending RFC-0286 (AS-7). */
 export const AGENT_SURFACE_VERSION = "2.0.0";
+
+/** RFC-1113: $schema identifier for the Agent Surface Manifest document. */
+export const AGENT_SURFACE_SCHEMA_ID = "gogol.agent.surface/2";
+
+/**
+ * RFC-1113: closed vocabulary for AgentSurfaceManifest.supportedProtocols.
+ * Every value MUST correspond to a discovery artifact or interface the surface
+ * actually emits — agent.surface.validate enforces the honesty invariant
+ * (AGS-DISCOVERY-01).
+ */
+export type AgentProtocol =
+  "mcp" | "openapi" | "linkset" | "llms" | "twins" | "ard" | "dns-aid" | "agent-skills" | "search";
 
 export interface AgentKnowledgeRef {
   /** A BusinessDomain with visibility "public" (RFC-0287). */
@@ -52,11 +66,17 @@ export interface AgentClaimRef {
 }
 
 export interface AgentSurfaceManifest {
+  /** RFC-1113: schema identifier — "gogol.agent.surface/2". */
+  $schema: string;
   surfaceVersion: string;
   site: string;
   baseUrl: string;
   languages: { default: string; supported: string[] };
-  /** sha256 hex over sorted-key JSON of this document minus contentHash + proof. */
+  /** RFC-1113: ISO 8601 build timestamp — excluded from contentHash + signing payload. */
+  generatedAt: string;
+  /** RFC-1113: closed vocabulary — only the protocols this surface actually emits. */
+  supportedProtocols: AgentProtocol[];
+  /** sha256 hex over sorted-key JSON of this document minus contentHash + proof + generatedAt. */
   contentHash: string;
   knowledge: AgentKnowledgeRef[];
   actions: AgentActionRef[];
@@ -77,6 +97,8 @@ export interface AgentSurfaceManifestInput {
   site: string;
   baseUrl: string;
   languages: { default: string; supported: string[] };
+  /** RFC-1113: ISO 8601 build timestamp supplied by the caller (the builder stays pure). */
+  generatedAt: string;
   knowledge?: AgentKnowledgeRef[];
   actions?: AgentActionRef[];
   /** RFC-1076: claim provenance summaries for the manifest. */
@@ -128,9 +150,13 @@ export function computeSignedContentHash(
   return createHash("sha256").update(canonicalJson(rest), "utf8").digest("hex");
 }
 
-/** sha256 hex over the canonical JSON of `doc` with `contentHash` and `proof` removed. */
+/**
+ * sha256 hex over the canonical JSON of `doc` with `contentHash`, `proof`, and
+ * `generatedAt` removed. RFC-1113: `generatedAt` is a build timestamp — including
+ * it would produce a spurious hash (and signature) change on every rebuild.
+ */
 export function computeAgentManifestContentHash(doc: Record<string, unknown>): string {
-  return computeSignedContentHash(doc);
+  return computeSignedContentHash(doc, ["generatedAt"]);
 }
 
 // ---------------------------------------------------------------------------
@@ -139,10 +165,30 @@ export function computeAgentManifestContentHash(doc: Record<string, unknown>): s
 
 /** Pure: assemble + hash the manifest. Deterministic — sorts refs and languages. */
 export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): AgentSurfaceManifest {
+  // RFC-1113: honesty invariant — supportedProtocols lists only what the surface
+  // emits. The unconditional entries are the artifacts every enabled agent
+  // surface generates (llms.txt, api-catalog linkset, ai-catalog ARD document,
+  // DNS-AID record, agent-skills index); the conditional ones follow interfaces.
+  const supportedProtocols: AgentProtocol[] = (
+    [
+      "agent-skills",
+      "ard",
+      "dns-aid",
+      "linkset",
+      "llms",
+      ...(input.mcp ? ["mcp"] : []),
+      ...(input.openapiUrl ? ["openapi"] : []),
+      ...(input.search ? ["search"] : []),
+      ...(input.hasTwins ? ["twins"] : []),
+    ] as AgentProtocol[]
+  ).sort();
   const base: Omit<AgentSurfaceManifest, "contentHash"> = {
+    $schema: AGENT_SURFACE_SCHEMA_ID,
     surfaceVersion: AGENT_SURFACE_VERSION,
     site: input.site,
     baseUrl: input.baseUrl.replace(/\/+$/, ""),
+    generatedAt: input.generatedAt,
+    supportedProtocols,
     languages: {
       default: input.languages.default,
       supported: [...input.languages.supported].sort(),

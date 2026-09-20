@@ -8,6 +8,7 @@
 </MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0783: initial API Catalog projection tests.</item>
+  <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
 </CHANGE_SUMMARY>
 */
 
@@ -17,6 +18,7 @@ import { buildAgentSurfaceManifest } from "../manifest.ts";
 
 test("buildApiCatalog: empty manifest yields service-meta + service-doc links", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -34,6 +36,7 @@ test("buildApiCatalog: empty manifest yields service-meta + service-doc links", 
 
 test("buildApiCatalog: one knowledge ref → one item link", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -51,6 +54,7 @@ test("buildApiCatalog: one knowledge ref → one item link", () => {
 
 test("buildApiCatalog: mcp interface adds service-desc + service links", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -69,6 +73,7 @@ test("buildApiCatalog: determinism — same input produces identical output", ()
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
+    generatedAt: "2026-01-01T00:00:00.000Z",
     knowledge: [
       { domain: "offer", url: "/api/agent/v1/offer.json", schema: "gogol.agent.knowledge/offer@1" },
       { domain: "team", url: "/api/agent/v1/team.json", schema: "gogol.agent.knowledge/team@1" },
@@ -82,6 +87,7 @@ test("buildApiCatalog: determinism — same input produces identical output", ()
 
 test("buildApiCatalog: links are sorted by href within each relation", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },

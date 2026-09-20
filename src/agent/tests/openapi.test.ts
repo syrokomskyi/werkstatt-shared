@@ -9,6 +9,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0289: initial OpenAPI formatter tests.</item>
   <item>RFC-0954: add search path projection tests.</item>
+  <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
 </CHANGE_SUMMARY>
 */
 
@@ -18,6 +19,7 @@ import { buildAgentSurfaceManifest } from "../manifest.ts";
 
 test("formatAgentOpenApi: empty manifest yields a valid document with no paths", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -33,6 +35,7 @@ test("formatAgentOpenApi: empty manifest yields a valid document with no paths",
 
 test("formatAgentOpenApi: one knowledge ref → one GET path + one component schema", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -61,6 +64,7 @@ test("formatAgentOpenApi: one action ref → one POST path with verbatim input/o
     properties: { accepted: { type: "boolean" as const } },
   };
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -102,6 +106,7 @@ test("formatAgentOpenApi: one action ref → one POST path with verbatim input/o
 
 test("formatAgentOpenApi: an action ref without a matching capability schema is skipped defensively", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -121,6 +126,7 @@ test("formatAgentOpenApi: an action ref without a matching capability schema is 
 
 test("formatAgentOpenApi: mcp interface present → x-gogol-mcp is set", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -132,6 +138,7 @@ test("formatAgentOpenApi: mcp interface present → x-gogol-mcp is set", () => {
 
 test("formatAgentOpenApi: search interface present → /api/agent/search GET path with dynamic lang enum", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de", "uk"] },
@@ -150,6 +157,7 @@ test("formatAgentOpenApi: search interface present → /api/agent/search GET pat
 
 test("formatAgentOpenApi: search interface absent → no search path", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },

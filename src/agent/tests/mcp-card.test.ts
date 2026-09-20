@@ -8,6 +8,7 @@
 </MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0783: initial MCP Server Card projection tests.</item>
+  <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
 </CHANGE_SUMMARY>
 */
 
@@ -17,6 +18,7 @@ import { buildAgentSurfaceManifest } from "../manifest.ts";
 
 test("buildMcpServerCard: null mcp → returns null", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
@@ -26,6 +28,7 @@ test("buildMcpServerCard: null mcp → returns null", () => {
 
 test("buildMcpServerCard: mcp interface → card with correct fields", () => {
   const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
     site: "warpgogol",
     baseUrl: "https://warpgogol.com",
     languages: { default: "de", supported: ["de"] },
@@ -49,6 +52,7 @@ test("buildMcpServerCard: determinism — same input produces identical output",
     site: "s",
     baseUrl: "https://s.example",
     languages: { default: "de", supported: ["de"] },
+    generatedAt: "2026-01-01T00:00:00.000Z",
     mcp: { url: "/api/agent/mcp", protocolVersion: "2025-06-18" },
   };
   const a = buildMcpServerCard(buildAgentSurfaceManifest(input));
