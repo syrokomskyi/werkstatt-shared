@@ -24,6 +24,18 @@ describe("RFC-1075 AC-4: deriveCanonicalUri is pure and deterministic", () => {
     );
   });
 
+  it("slugifies URI-form entityId to its last path segment", () => {
+    // PBP entity IDs are URIs; the canonical entity URI must embed a slug,
+    // not the raw URI (which would produce a double-scheme, non-FS-safe path).
+    expect(
+      deriveCanonicalUri(
+        "https://example.example",
+        "offering",
+        "https://example.example/id/offerings/automation",
+      ),
+    ).toBe("https://example.example/.well-known/entity/offering/automation.json");
+  });
+
   it("returns undefined for offering without entityId", () => {
     expect(deriveCanonicalUri("https://example.example", "offering")).toBeUndefined();
     expect(deriveCanonicalUri("https://example.example", "offering", "")).toBeUndefined();

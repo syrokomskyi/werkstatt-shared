@@ -53,5 +53,12 @@ export function deriveCanonicalUri(
 
   if (!entityId) return undefined;
 
-  return `${base}/.well-known/entity/offering/${entityId}.json`;
+  // Entity IDs are URIs (e.g. `https://warpgogol.com/id/offerings/automation`).
+  // Embedding the raw URI into the path produces a malformed double-scheme URI
+  // (`.../offering/https://warpgogol.com/...`) and a non-filesystem-safe path
+  // (`path.join` collapses `//` → `/`, breaking the @id = served-path parity).
+  // Use the last non-empty path segment as the slug; plain slugs pass through.
+  const slug = entityId.split("/").filter(Boolean).pop() ?? entityId;
+
+  return `${base}/.well-known/entity/offering/${slug}.json`;
 }
