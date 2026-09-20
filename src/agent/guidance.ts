@@ -10,7 +10,8 @@ description consumed verbatim by MCP tools/list and OpenAPI operation docs.
   <item>Do not restate the RFC-1112 Idempotency-Key mechanism — retrySemantics
         text is authored in capability YAMLs and passed through unchanged.</item>
   <item>Do not localize — callers pick the base description language; guidance
-        fields are authored in the site's default language.</item>
+        fields are authored in English by design (capability YAMLs are global,
+        not per-site) — English is the model-facing lingua franca.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
