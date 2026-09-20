@@ -13,6 +13,8 @@ No I/O — the kernel command loads the manifest and passes it here.
 <CHANGE_SUMMARY>
   <item>RFC-0783: initial API Catalog linkset+json projection.</item>
   <item>RFC-0954: add search endpoint link when interfaces.search is non-null.</item>
+  <item>RFC-1114: link agent-card.json (service-desc) + a2a endpoint (service) when interfaces.a2a is non-null.</item>
+  <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
 </CHANGE_SUMMARY>
 */
 
@@ -63,13 +65,24 @@ export function buildApiCatalog(manifest: AgentSurfaceManifest): ApiCatalog {
   if (manifest.interfaces.mcp) {
     serviceDesc.push({ href: "/.well-known/mcp/server-card.json", type: "application/json" });
   }
+  if (manifest.interfaces.a2a) {
+    serviceDesc.push({ href: "/.well-known/agent-card.json", type: "application/json" });
+  }
   if (serviceDesc.length > 0) {
     serviceDesc.sort((a, b) => a.href.localeCompare(b.href));
     entry["service-desc"] = serviceDesc;
   }
 
+  const service: ApiCatalogLink[] = [];
   if (manifest.interfaces.mcp) {
-    entry["service"] = [{ href: manifest.interfaces.mcp.url, type: "application/json" }];
+    service.push({ href: manifest.interfaces.mcp.url, type: "application/json" });
+  }
+  if (manifest.interfaces.a2a) {
+    service.push({ href: manifest.interfaces.a2a.url, type: "application/json" });
+  }
+  if (service.length > 0) {
+    service.sort((a, b) => a.href.localeCompare(b.href));
+    entry["service"] = service;
   }
 
   if (manifest.interfaces.search) {

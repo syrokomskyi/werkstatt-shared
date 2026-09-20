@@ -13,12 +13,12 @@ two runs on unchanged input are byte-identical (AS-7).
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0954: add search interface to AgentSurfaceManifest.interfaces.</item>
-  <item>RFC-1076: add claims field to AgentSurfaceManifest, AgentClaimRef type, bump AGENT_SURFACE_VERSION to 1.1.0.</item>
   <item>RFC-1112: bump AGENT_SURFACE_VERSION to 2.0.0 — action responses become ActionReceipt + problem+json.</item>
   <item>RFC-1113: add $schema, generatedAt (excluded from contentHash), supportedProtocols; AgentProtocol closed vocabulary.</item>
   <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
-  <history>RFC-0286</history>
+  <item>RFC-1114: add "a2a" to AgentProtocol and interfaces.a2a (url + protocolVersion).</item>
+  <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
+  <history>RFC-0286, RFC-0954, RFC-1076</history>
 </CHANGE_SUMMARY>
 */
 
@@ -38,7 +38,16 @@ export const AGENT_SURFACE_SCHEMA_ID = "gogol.agent.surface/2";
  * (AGS-DISCOVERY-01).
  */
 export type AgentProtocol =
-  "mcp" | "openapi" | "linkset" | "llms" | "twins" | "ard" | "dns-aid" | "agent-skills" | "search";
+  | "mcp"
+  | "a2a"
+  | "openapi"
+  | "linkset"
+  | "llms"
+  | "twins"
+  | "ard"
+  | "dns-aid"
+  | "agent-skills"
+  | "search";
 
 export interface AgentKnowledgeRef {
   /** A BusinessDomain with visibility "public" (RFC-0287). */
@@ -87,6 +96,8 @@ export interface AgentSurfaceManifest {
     twins: { pattern: string } | null;
     openapi: string | null;
     mcp: { url: string; protocolVersion: string } | null;
+    /** RFC-1114: the A2A endpoint — null when the surface ships no A2A route. */
+    a2a: { url: string; protocolVersion: string } | null;
     search: { url: string; model: string; dimensions: number } | null;
   };
   /** Null until agent.surface.sign signs it (RFC-0308) or when no key material exists. */
@@ -106,6 +117,8 @@ export interface AgentSurfaceManifestInput {
   hasTwins?: boolean;
   openapiUrl?: string | null;
   mcp?: { url: string; protocolVersion: string } | null;
+  /** RFC-1114: the A2A endpoint descriptor — omit/null when no A2A route exists. */
+  a2a?: { url: string; protocolVersion: string } | null;
   search?: { url: string; model: string; dimensions: number } | null;
 }
 
@@ -177,6 +190,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       "linkset",
       "llms",
       ...(input.mcp ? ["mcp"] : []),
+      ...(input.a2a ? ["a2a"] : []),
       ...(input.openapiUrl ? ["openapi"] : []),
       ...(input.search ? ["search"] : []),
       ...(input.hasTwins ? ["twins"] : []),
@@ -201,6 +215,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       twins: input.hasTwins ? { pattern: "/**.md" } : null,
       openapi: input.openapiUrl ?? null,
       mcp: input.mcp ?? null,
+      a2a: input.a2a ?? null,
       search: input.search ?? null,
     },
     proof: null,

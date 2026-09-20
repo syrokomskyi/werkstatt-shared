@@ -10,6 +10,8 @@
   <item>RFC-0286: initial builder tests.</item>
   <item>RFC-0954: add search interface tests.</item>
   <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
+  <item>RFC-1114: add a2a interface + supportedProtocols tests (AC-5).</item>
+  <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
 </CHANGE_SUMMARY>
 */
 
@@ -42,6 +44,7 @@ test("buildAgentSurfaceManifest: safe default — empty knowledge/actions, null 
   expect(m.actions).toEqual([]);
   expect(m.interfaces.openapi).toBe(null);
   expect(m.interfaces.mcp).toBe(null);
+  expect(m.interfaces.a2a).toBe(null);
   expect(m.interfaces.twins).toBe(null);
   expect(m.interfaces.search).toBe(null);
   expect(m.proof).toBe(null);
@@ -184,6 +187,25 @@ test("buildAgentSurfaceManifest: supportedProtocols follows emitted interfaces",
     "search",
     "twins",
   ]);
+});
+
+// ---------------------------------------------------------------------------
+// RFC-1114: a2a interface (AC-5)
+// ---------------------------------------------------------------------------
+
+test("buildAgentSurfaceManifest: populates interfaces.a2a and lists a2a in supportedProtocols", () => {
+  const m = buildAgentSurfaceManifest({
+    ...baseInput,
+    a2a: { url: "/api/agent/a2a", protocolVersion: "1.0" },
+  });
+  expect(m.interfaces.a2a).toEqual({ url: "/api/agent/a2a", protocolVersion: "1.0" });
+  expect(m.supportedProtocols).toContain("a2a");
+});
+
+test("buildAgentSurfaceManifest: a2a absent from supportedProtocols when no a2a interface", () => {
+  const m = buildAgentSurfaceManifest(baseInput);
+  expect(m.interfaces.a2a).toBe(null);
+  expect(m.supportedProtocols).not.toContain("a2a");
 });
 
 test("buildAgentSurfaceManifest: generatedAt does not change contentHash (AC-3)", () => {
