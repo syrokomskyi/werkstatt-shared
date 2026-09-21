@@ -346,18 +346,26 @@ function formatMarkdownLinkRow(site: SemanticSiteModel, page: SemanticPageModel)
   return `- [${title}](${url}): ${summary}`;
 }
 
-export function buildLlmsIndex(site: SemanticSiteModel): string {
+export function buildLlmsIndex(site: SemanticSiteModel, opts?: { servesSsr?: boolean }): string {
   const indexPages = site.pages.filter(inIndex);
   const llmsFullUrl = canonicalStaticUrl("/llms-full.txt", { baseUrl: site.baseUrl });
   const siteDescription = site.organization.description ?? "";
 
   // RFC-0789: agent discovery links — omitted when agent.enabled is false.
+  // The MCP Server Card exists only when the deployment adapter serves SSR
+  // routes (interfaces.mcp is set) — callers pass servesSsr=false on static
+  // adapters so the card is not advertised (PUBTXT-07 honesty).
   const agentEnabled = site.agent?.enabled !== false;
+  const servesSsr = opts?.servesSsr !== false;
   const agentLinks = agentEnabled
     ? [
         `> Machine-readable Agent Surface (structured knowledge + capabilities): [agent.json](${canonicalStaticUrl("/.well-known/agent.json", { baseUrl: site.baseUrl })}).`,
         `> API discovery catalog (RFC 9727): [api-catalog](${canonicalStaticUrl("/.well-known/api-catalog", { baseUrl: site.baseUrl })}).`,
-        `> MCP Server Card (SEP-1649): [server-card.json](${canonicalStaticUrl("/.well-known/mcp/server-card.json", { baseUrl: site.baseUrl })}).`,
+        ...(servesSsr
+          ? [
+              `> MCP Server Card (SEP-1649): [server-card.json](${canonicalStaticUrl("/.well-known/mcp/server-card.json", { baseUrl: site.baseUrl })}).`,
+            ]
+          : []),
         `> OpenAPI 3.1 specification: [agent.openapi.json](${canonicalStaticUrl("/.well-known/agent.openapi.json", { baseUrl: site.baseUrl })}).`,
       ]
     : [];
