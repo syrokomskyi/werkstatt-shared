@@ -50,6 +50,14 @@ export {
   type UnixNanoString,
 } from "./otlp-json.ts";
 
+export {
+  emitPipelineLogEvent,
+  getPipelineLogEvents,
+  type PipelineLogEvent,
+  type PipelineLogKind,
+  type PipelineLogSeverity,
+} from "./pipeline-log.ts";
+
 export { createMetricsPusher, type MetricsPusher, type MetricsPusherEnv } from "./pusher.ts";
 
 export { redactUrl } from "./redact.ts";

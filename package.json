@@ -462,6 +462,10 @@
       "types": "./src/observability/otlp-transport.ts",
       "default": "./src/observability/otlp-transport.ts"
     },
+    "./observability/pipeline-log": {
+      "types": "./src/observability/pipeline-log.ts",
+      "default": "./src/observability/pipeline-log.ts"
+    },
     "./observability/pusher": {
       "types": "./src/observability/pusher.ts",
       "default": "./src/observability/pusher.ts"
@@ -1071,10 +1075,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "src",
-    "tsconfig.json"
-  ],
+  "files": ["src", "tsconfig.json"],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@noble/ed25519": "^3.2.0",
