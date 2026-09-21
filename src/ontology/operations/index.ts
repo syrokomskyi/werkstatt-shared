@@ -158,11 +158,17 @@ export {
   integrationManifestSchema,
   integrationNullingSchema,
   notausgangManifestSchema,
+  notausgangEvidenceArtifactSchema,
+  notausgangEvidenceVerdictSchema,
+  notausgangFeatureNoteSchema,
 } from "./notausgang.ts";
 export type {
   IntegrationSecretLocation,
   IntegrationManifest,
   IntegrationNulling,
+  NotausgangEvidenceArtifact,
+  NotausgangEvidenceVerdict,
+  NotausgangFeatureNote,
   NotausgangManifest,
 } from "./notausgang.ts";
 
