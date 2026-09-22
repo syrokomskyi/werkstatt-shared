@@ -26,7 +26,8 @@ but for the git-native fleet claims registry claim shape.
  * canonicalization (it is computed over the claim data without the signature).
  */
 
-import { signBytes, verifyBytes } from "./sign.ts";
+import { fromHex } from "@warpgogol/werkstatt-shared/signing";
+import { signBytes, toMultibase, verifyBytes } from "./sign.ts";
 
 /**
  * One signed claim file: claims/<system-id>.json in the fleet claims repo.
@@ -58,9 +59,11 @@ export interface FleetClaim {
    */
   supersededBy: string | null;
   /**
-   * Multibase Ed25519 public key of the signer — embedded so the claims repo
-   * is self-contained for offline verification. Equals the creator's key for
-   * self-claims; equals the PREVIOUS creator's key for transfer claims.
+   * Hex Ed25519 public key of the signer — same format as
+   * passport.creator.publicKey, so deriveInstanceId(signerPublicKey) matches
+   * instanceId for self-claims. Embedded so the claims repo is self-contained
+   * for offline verification. Equals the creator's key for self-claims;
+   * equals the PREVIOUS creator's key for transfer claims.
    */
   signerPublicKey: string;
   /**
@@ -110,5 +113,8 @@ export async function signClaim(claim: FleetClaimData, privateKeyHex: string): P
  */
 export async function verifyClaim(claim: FleetClaim): Promise<boolean> {
   const { signature, ...claimData } = claim;
-  return verifyBytes(claim.signerPublicKey, claimBytes(claimData), signature);
+  // signerPublicKey is hex (passport.creator.publicKey format); verifyBytes
+  // expects multibase — convert here so callers never juggle encodings.
+  const signerMultibase = toMultibase(fromHex(claim.signerPublicKey));
+  return verifyBytes(signerMultibase, claimBytes(claimData), signature);
 }
