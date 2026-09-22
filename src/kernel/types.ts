@@ -11,7 +11,6 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1028: add moduleBasePath to KernelRegisteredCommandInfo, derived from modulePath (RFC-0960) for dynamic moduleSrcDir resolution in the pipeline executor.</item>
   <item>RFC-1038: replace KernelModule with ModuleExport, KernelCommandDefinition with CommandDeclaration, KernelRuntimeContext.registry with actualState, KernelAppConfig uses ModuleExport.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
@@ -22,7 +21,10 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
   <item>RFC-1126: step 1 — shared contracts (drift guard + workpiece env)
 
 Add guardTrackedOverwrite (json/yaml/text lost-key diff, warn-by-default, --strict fail-hard) and loadWorkpieceEnv (dotenv.parse wrapper) to werkstatt-shared kernel subpath; extend KernelRuntimeContext with optional workpieceEnv field.</item>
-  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027</history>
+  <item>RFC-1130: qa.independent.run cacheable + cacheBypassFlags
+
+Steps 1-4: cacheBypassFlags field on KernelCommandDefinition, executor bypass at both cache call sites (hasCacheBypassFlag), qa.independent.run flipped to cacheable with narrowed reads + modulePaths, 14 new contract tests.</item>
+  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028</history>
 </CHANGE_SUMMARY>
 */
 
@@ -96,6 +98,12 @@ export interface KernelCommandMetadata {
    * command.reads.validate enforces this. Defaults to true.
    */
   cacheable?: boolean;
+  /**
+   * RFC-1130: flag names that bypass the result cache when present in argv
+   * (`--name` or `--name=value` forms). Both the cache read and the cache
+   * write are skipped — for flags that reduce coverage (e.g. `--rfc`).
+   */
+  cacheBypassFlags?: string[];
   /**
    * RFC-0518: declarative gate metadata. Optional. When present, describes the
    * gate's severity, phase, conditional logic, surfaces protected, rules enforced,
