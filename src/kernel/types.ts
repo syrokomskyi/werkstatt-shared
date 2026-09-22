@@ -11,7 +11,6 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1027: add RemediationHint interface and optional remediationHints field to KernelExecutionReport for agent-actionable fix suggestions.</item>
   <item>RFC-1028: add moduleBasePath to KernelRegisteredCommandInfo, derived from modulePath (RFC-0960) for dynamic moduleSrcDir resolution in the pipeline executor.</item>
   <item>RFC-1038: replace KernelModule with ModuleExport, KernelCommandDefinition with CommandDeclaration, KernelRuntimeContext.registry with actualState, KernelAppConfig uses ModuleExport.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
@@ -20,7 +19,10 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
-  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026</history>
+  <item>RFC-1126: step 1 — shared contracts (drift guard + workpiece env)
+
+Add guardTrackedOverwrite (json/yaml/text lost-key diff, warn-by-default, --strict fail-hard) and loadWorkpieceEnv (dotenv.parse wrapper) to werkstatt-shared kernel subpath; extend KernelRuntimeContext with optional workpieceEnv field.</item>
+  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027</history>
 </CHANGE_SUMMARY>
 */
 
@@ -275,6 +277,14 @@ export interface KernelRuntimeContext {
    * plugin. Validators consume this instead of a static constant.
    */
   ownershipMap?: GeneratorOwnershipEntry[];
+  /**
+   * RFC-1126: parsed `.env` of the resolved site workspace (mission workpiece
+   * for mission.* commands, cache clone otherwise). Populated by the executor
+   * from `context.site.directory/.env` via dotenv.parse; absent or empty when
+   * no site is resolved or no .env exists. Fallback only — `process.env`
+   * always wins: `process.env["KEY"] ?? context.workpieceEnv?.get("KEY")`.
+   */
+  workpieceEnv?: ReadonlyMap<string, string>;
 }
 
 /**
