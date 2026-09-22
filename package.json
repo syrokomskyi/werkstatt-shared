@@ -138,6 +138,10 @@
       "types": "./src/passport/index.ts",
       "default": "./src/passport/index.ts"
     },
+    "./passport/claim-sign": {
+      "types": "./src/passport/claim-sign.ts",
+      "default": "./src/passport/claim-sign.ts"
+    },
     "./passport/dht-sign": {
       "types": "./src/passport/dht-sign.ts",
       "default": "./src/passport/dht-sign.ts"

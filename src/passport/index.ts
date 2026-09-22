@@ -56,3 +56,6 @@ export type { IdentityCredentialSubject } from "./identity-sign.ts";
 
 export { dhtEntryBytes, signDhtEntry, verifyDhtEntry } from "./dht-sign.ts";
 export type { DHTEntryData } from "./dht-sign.ts";
+
+export { claimBytes, signClaim, verifyClaim } from "./claim-sign.ts";
+export type { FleetClaim, FleetClaimData } from "./claim-sign.ts";
