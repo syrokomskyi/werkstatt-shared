@@ -11,7 +11,6 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1038: replace KernelModule with ModuleExport, KernelCommandDefinition with CommandDeclaration, KernelRuntimeContext.registry with actualState, KernelAppConfig uses ModuleExport.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -24,7 +23,8 @@ Add guardTrackedOverwrite (json/yaml/text lost-key diff, warn-by-default, --stri
   <item>RFC-1130: qa.independent.run cacheable + cacheBypassFlags
 
 Steps 1-4: cacheBypassFlags field on KernelCommandDefinition, executor bypass at both cache call sites (hasCacheBypassFlag), qa.independent.run flipped to cacheable with narrowed reads + modulePaths, 14 new contract tests.</item>
-  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028</history>
+  <item>RFC-1133: cache direct executeKernelCommand executions with flag-keyed results</item>
+  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038</history>
 </CHANGE_SUMMARY>
 */
 
@@ -293,6 +293,44 @@ export interface KernelRuntimeContext {
    * always wins: `process.env["KEY"] ?? context.workpieceEnv?.get("KEY")`.
    */
   workpieceEnv?: ReadonlyMap<string, string>;
+  /**
+   * RFC-1133: per-invocation command-result cache carrier. Pipeline executors
+   * populate it with the shared layer plus `treeIndex`/`moduleHashCache`
+   * amortization; `executeKernelCommand` sets `{ layer }` once per invocation.
+   * When absent, `executeRegisteredCommand` lazily opens a layer for that call.
+   */
+  resultCache?: KernelResultCacheContext;
+}
+
+/**
+ * RFC-1133: narrow structural port over the engine's `CacheLayer`.
+ * werkstatt-shared cannot import engine types (SHARED-04), so the carrier is
+ * declared here and satisfied structurally — `CacheLayer` needs no explicit
+ * `implements`.
+ */
+export interface KernelResultCacheStore {
+  readonly available: boolean;
+  get(namespace: string, key: string): Promise<{ data: unknown } | null>;
+  set(
+    namespace: string,
+    key: string,
+    data: unknown,
+    mtime: number,
+    contentHash: string,
+  ): Promise<void>;
+  close(): Promise<void>;
+}
+
+/**
+ * RFC-1133: cache structures shared across one pipeline run or one direct
+ * `executeKernelCommand` invocation.
+ */
+export interface KernelResultCacheContext {
+  layer: KernelResultCacheStore;
+  /** Pipeline-only: workspace tree index enabling the mtime fast path (RFC-0685). */
+  treeIndex?: Map<string, { mtimeMs: number; size: number }>;
+  /** Pipeline-only: per-run module hash memo (RFC-0637). */
+  moduleHashCache?: Map<string, string>;
 }
 
 /**
