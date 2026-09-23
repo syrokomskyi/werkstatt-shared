@@ -40,7 +40,7 @@ postProcess:
   - action: delete
     path: pnpm-lock.yaml
   - action: copy
-    from: packages/werkstatt-shared/pnpm-workspace.override.yaml
+    from: pnpm-workspace.override.yaml
     to: pnpm-workspace.yaml
 
 git:
