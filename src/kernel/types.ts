@@ -155,11 +155,9 @@ export interface KernelRegisteredCommandInfo extends KernelCommandMetadata {
   name: string;
   /**
    * "workspace" — registered by the workspace-root kernel config.
-   * "site" — registered by a discovered site's runtime (transient, RFC-1147 deletes this).
    * "site-module" — registered by the canonical site module set (SITE_MODULE_MAP, RFC-1148).
    */
-  provider: "workspace" | "site" | "site-module";
-  siteName?: string;
+  provider: "workspace" | "site-module";
   /** The name of the KernelModule that registered this command. */
   module?: string;
   /** RFC-0260: declared flag schema, when the command opts in. */
