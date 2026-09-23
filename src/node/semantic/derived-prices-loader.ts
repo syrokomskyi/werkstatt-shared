@@ -9,6 +9,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0767: relocated loadDerivedPrices from packages/ui to packages/share to break circular dependency. Node-only subpath export.</item>
   <item>RFC-1074: return null for empty {} content — semantically equivalent to "no derived prices".</item>
+  <item>RFC-1137: explicit site root for derived-prices loaders (ADR-0089 instance)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -16,9 +17,10 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { DerivedPriceEntry } from "../../semantic/price-marker-resolver.ts";
 
-export function loadDerivedPrices(
-  cwd: string = process.cwd(),
-): Record<string, DerivedPriceEntry[]> | null {
+// RFC-1137 / ADR-0089 (DNA-105): cwd is required — callers must pass the
+// site/workpiece root explicitly. The old process.cwd() default resolved
+// against the werkstatt repo root inside kernel pipeline steps.
+export function loadDerivedPrices(cwd: string): Record<string, DerivedPriceEntry[]> | null {
   const filePath = join(cwd, "src", "derived-prices.generated.json");
   let raw: string;
   try {
