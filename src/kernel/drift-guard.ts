@@ -13,7 +13,7 @@ throws (--strict) listing the exact keys/sections that would be lost.
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>Warn-by-default: an unattended pipeline must not break on pre-existing drift; --strict is the sole fail-hard opt-in (never --force, which keeps DNA-93 cache-clearing semantics).</item>
+  <item>Warn-by-default; --strict is the sole fail-hard opt-in — --force keeps DNA-93 cache-clearing semantics.</item>
   <item>The guard is a pre-write side effect, never a cached result — command-result caching (RFC-0390) must not cache it.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>

@@ -13,13 +13,12 @@ two runs on unchanged input are byte-identical (AS-7).
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1112: bump AGENT_SURFACE_VERSION to 2.0.0 — action responses become ActionReceipt + problem+json.</item>
   <item>RFC-1113: add $schema, generatedAt (excluded from contentHash), supportedProtocols; AgentProtocol closed vocabulary.</item>
   <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
   <item>RFC-1114: add "a2a" to AgentProtocol and interfaces.a2a (url + protocolVersion).</item>
   <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
   <item>RFC-1115: search results flattened to citation shape (title, canonicalUrl, updatedAt, lang, type, score, text) under the existing 2.0.0 surface; capability agentGuidance rendered into tool/operation descriptions.</item>
-  <history>RFC-0286, RFC-0954, RFC-1076</history>
+  <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112</history>
 </CHANGE_SUMMARY>
 */
 
