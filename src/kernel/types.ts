@@ -11,12 +11,6 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1126: step 1 — shared contracts (drift guard + workpiece env)
 
 Add guardTrackedOverwrite (json/yaml/text lost-key diff, warn-by-default, --strict fail-hard) and loadWorkpieceEnv (dotenv.parse wrapper) to werkstatt-shared kernel subpath; extend KernelRuntimeContext with optional workpieceEnv field.</item>
@@ -27,7 +21,10 @@ Steps 1-4: cacheBypassFlags field on KernelCommandDefinition, executor bypass at
   <item>ADR-0089: kernel and shared code must not depend on ambient process state
 
 KernelRuntimeContext is the explicit-context carrier (workspaceRoot, site, workpieceEnv) — command handlers and shared code must not fall back to process.cwd() or process.env.NODE_ENV for correctness; callers pass roots and modes explicitly.</item>
-  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038</history>
+  <item>RFC-1144: run read-only steps to completion in collect-errors pipeline mode
+
+Scheduler: collectErrors option on executeScheduledSteps — read-only steps (ScheduledStep.readOnly, executor-resolved from mutatesState === false) run after dependency failures with ranAfterFailedDependency annotation; ranTainted set propagates taint transitively so mutating dependents still skip. Executor: mergeCollectErrorsOption OR-merges PipelineDeclaration.collectErrors with the CLI flag at registry resolution; readOnly annotated post-buildSchedule; taint flag copied to step reports; tainted failures marked in pretty output. Contracts: PipelineDeclaration.collectErrors, KernelExecutionReport.ranAfterFailedDependency, pipelines maps store full declarations. Declarations: collectErrors on validation-gate registrations (build.post, check, build.check, compass, integrity.release in the workpiece template; packages.check in checks module). Tests: 10 new cases covering AC-1..AC-6 plus transitive taint.</item>
+  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -409,6 +406,12 @@ export interface KernelExecutionReport<TData = unknown> {
   filesModified?: string[];
   /** RFC-0390: true when this report was served from the command-result cache instead of real execution. */
   cached?: boolean;
+  /**
+   * RFC-1144: step ran despite a failed, failure-skipped, or tainted
+   * transitive dependency (collect-errors mode only). Signals the result
+   * may be a cascaded secondary failure.
+   */
+  ranAfterFailedDependency?: boolean;
 }
 
 /**
@@ -505,7 +508,13 @@ export interface ExecuteKernelPipelineOptions {
   concurrency?: number;
   /** RFC-0732: pipeline-level flags merged into each step's KernelCommandInput.flags. Step-level flags take precedence. */
   flags?: Record<string, unknown>;
-  /** RFC-0809: when true, continue executing independent steps after a failure and aggregate all errors in the final report. Default: false (fail-fast). No effect when concurrency=1 (scheduler uses full sequential abort-on-failure). */
+  /**
+   * RFC-0809: when true, continue executing independent steps after a failure
+   * and aggregate all errors in the final report. Default: false (fail-fast).
+   * RFC-1144: OR-merged with `PipelineDeclaration.collectErrors` — either
+   * opt-in enables the mode; under collect-errors the failure cascade skips
+   * only mutating dependents while read-only steps run annotated.
+   */
   collectErrors?: boolean;
 }
 

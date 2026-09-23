@@ -14,6 +14,9 @@ replaces KernelModule.register().
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1038: initial implementation — desired-state composition types replacing ComponentManifestV1, KernelModule, KernelRegistry.</item>
+  <item>RFC-1144: run read-only steps to completion in collect-errors pipeline mode
+
+Scheduler: collectErrors option on executeScheduledSteps — read-only steps (ScheduledStep.readOnly, executor-resolved from mutatesState === false) run after dependency failures with ranAfterFailedDependency annotation; ranTainted set propagates taint transitively so mutating dependents still skip. Executor: mergeCollectErrorsOption OR-merges PipelineDeclaration.collectErrors with the CLI flag at registry resolution; readOnly annotated post-buildSchedule; taint flag copied to step reports; tainted failures marked in pretty output. Contracts: PipelineDeclaration.collectErrors, KernelExecutionReport.ranAfterFailedDependency, pipelines maps store full declarations. Declarations: collectErrors on validation-gate registrations (build.post, check, build.check, compass, integrity.release in the workpiece template; packages.check in checks module). Tests: 10 new cases covering AC-1..AC-6 plus transitive taint.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -117,6 +120,14 @@ export interface PipelineDeclaration {
   name: string;
   /** Pipeline steps with command references, args, timeouts, and dependsOn (RFC-0686). */
   steps: KernelPipelineStep[];
+  /**
+   * RFC-1144: when true, the executor behaves as if `--collect-errors` was
+   * passed — read-only steps (`mutatesState === false`) run to completion
+   * after dependency failures instead of being cascade-skipped. OR-merged
+   * with the CLI flag; there is no opt-out flag. Declare on validation-gate
+   * pipelines only — deployment/mutation pipelines keep fail-fast.
+   */
+  collectErrors?: boolean;
 }
 
 /**
@@ -187,9 +198,10 @@ export interface ActualState {
   commands: ReadonlyMap<string, CommandDeclaration>;
   /**
    * All declared pipelines from all ModuleExport[], keyed by pipeline name.
-   * Populated once at startup, never changes.
+   * Populated once at startup, never changes. RFC-1144: values are full
+   * PipelineDeclaration objects (steps + pipeline-level options).
    */
-  pipelines: ReadonlyMap<string, KernelPipelineStep[]>;
+  pipelines: ReadonlyMap<string, PipelineDeclaration>;
   /**
    * Map from command name to module name — used for command manifest generation.
    * Populated once at startup alongside commands.
@@ -204,7 +216,7 @@ export interface ActualState {
 export interface MutableActualState {
   components: Map<string, { declaration: ComponentDeclaration; state: ModuleFiberState }>;
   commands: ReadonlyMap<string, CommandDeclaration>;
-  pipelines: ReadonlyMap<string, KernelPipelineStep[]>;
+  pipelines: ReadonlyMap<string, PipelineDeclaration>;
 }
 
 /**
