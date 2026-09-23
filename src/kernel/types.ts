@@ -24,6 +24,9 @@ Add guardTrackedOverwrite (json/yaml/text lost-key diff, warn-by-default, --stri
 
 Steps 1-4: cacheBypassFlags field on KernelCommandDefinition, executor bypass at both cache call sites (hasCacheBypassFlag), qa.independent.run flipped to cacheable with narrowed reads + modulePaths, 14 new contract tests.</item>
   <item>RFC-1133: cache direct executeKernelCommand executions with flag-keyed results</item>
+  <item>ADR-0089: kernel and shared code must not depend on ambient process state
+
+KernelRuntimeContext is the explicit-context carrier (workspaceRoot, site, workpieceEnv) — command handlers and shared code must not fall back to process.cwd() or process.env.NODE_ENV for correctness; callers pass roots and modes explicitly.</item>
   <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038</history>
 </CHANGE_SUMMARY>
 */
