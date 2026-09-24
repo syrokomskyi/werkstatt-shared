@@ -72,7 +72,7 @@ export const KNOWN_TLDS: ReadonlySet<string> = new Set([
   "gg",
   "to",
   "xyz",
-  "site",
+  // "site" intentionally absent — legitimate suffix in system IDs (forge-site), not a domain-derived TLD marker.
   "online",
   "store",
   "shop",
