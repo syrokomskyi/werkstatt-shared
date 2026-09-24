@@ -42,6 +42,11 @@ import {
   rm as fsRm,
   readdir as fsReaddir,
   stat,
+  rename as fsRename,
+  appendFile as fsAppendFile,
+  copyFile as fsCopyFile,
+  mkdtemp as fsMkdtemp,
+  realpath as fsRealpath,
 } from "node:fs/promises";
 import { glob as fsGlob } from "node:fs/promises";
 import { spawn } from "node:child_process";
@@ -51,6 +56,8 @@ import { writeFileAtomic } from "./fs-atomic.ts";
 export interface ExecOptions {
   cwd?: string;
   timeoutMs?: number;
+  /** Extra environment variables merged over `process.env` for the child. */
+  env?: Record<string, string>;
 }
 
 export interface ExecResult {
@@ -70,6 +77,14 @@ export interface DirEntry {
   isDirectory: boolean;
 }
 
+/** Port-neutral `stat` result — no `node:fs` `Stats` leaks through the port. */
+export interface FileStat {
+  isFile: boolean;
+  isDirectory: boolean;
+  mtimeMs: number;
+  size: number;
+}
+
 export interface WorkspaceIO {
   readFile(path: string): Promise<string>;
   readFileBytes(path: string): Promise<Uint8Array>;
@@ -77,16 +92,29 @@ export interface WorkspaceIO {
   glob(pattern: string, opts?: { cwd?: string }): Promise<string[]>;
   /** List a directory's immediate entries. Read-only; throws if the path is not a directory. */
   readdir(path: string): Promise<DirEntry[]>;
+  /** File metadata in a port-neutral shape. Throws when the path does not exist. */
+  stat(path: string): Promise<FileStat>;
+  /** Resolve symlinks to the canonical absolute path. Read-only. */
+  realpath(path: string): Promise<string>;
   /** Atomic by contract (rfc-0258). */
   writeFile(path: string, content: string | Uint8Array): Promise<void>;
+  /** Append content to a file, creating it (and parent dirs) when absent. */
+  appendFile(path: string, content: string | Uint8Array): Promise<void>;
   mkdir(path: string): Promise<void>;
   rm(path: string, opts?: { recursive?: boolean }): Promise<void>;
+  rename(src: string, dst: string): Promise<void>;
+  copyFile(src: string, dst: string): Promise<void>;
+  /** Create a unique temporary directory under `prefix`; returns its path. */
+  mkdtemp(prefix: string): Promise<string>;
   exec(command: string, args: string[], opts?: ExecOptions): Promise<ExecResult>;
 }
 
 async function execImpl(command: string, args: string[], opts?: ExecOptions): Promise<ExecResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd: opts?.cwd });
+    const child = spawn(command, args, {
+      cwd: opts?.cwd,
+      env: opts?.env ? { ...process.env, ...opts.env } : undefined,
+    });
     let stdout = "";
     let stderr = "";
     child.stdout?.on("data", (chunk) => {
@@ -165,6 +193,35 @@ export function createDefaultIO(): { io: WorkspaceIO; intents: WriteIntent[] } {
       await fsRm(path, { recursive: opts?.recursive ?? false, force: true });
       intents.push({ kind: "rm", path });
     },
+    async stat(path) {
+      const s = await stat(path);
+      return { isFile: s.isFile(), isDirectory: s.isDirectory(), mtimeMs: s.mtimeMs, size: s.size };
+    },
+    async realpath(path) {
+      return fsRealpath(path);
+    },
+    async appendFile(path, content) {
+      await fsMkdir(dirname(path), { recursive: true });
+      await fsAppendFile(path, content);
+      const bytes =
+        typeof content === "string" ? Buffer.byteLength(content, "utf8") : content.byteLength;
+      intents.push({ kind: "write", path, bytes });
+    },
+    async rename(src, dst) {
+      await fsMkdir(dirname(dst), { recursive: true });
+      await fsRename(src, dst);
+      intents.push({ kind: "write", path: dst });
+    },
+    async copyFile(src, dst) {
+      await fsMkdir(dirname(dst), { recursive: true });
+      await fsCopyFile(src, dst);
+      intents.push({ kind: "write", path: dst });
+    },
+    async mkdtemp(prefix) {
+      const dir = await fsMkdtemp(prefix);
+      intents.push({ kind: "mkdir", path: dir });
+      return dir;
+    },
     exec: execImpl,
   };
   return { io, intents };
@@ -189,7 +246,14 @@ export function createRecordingIO(base: WorkspaceIO): { io: WorkspaceIO; intents
     exists: base.exists.bind(base),
     glob: base.glob.bind(base),
     readdir: base.readdir.bind(base),
+    stat: base.stat.bind(base),
+    realpath: base.realpath.bind(base),
     async writeFile(path, content) {
+      const bytes =
+        typeof content === "string" ? Buffer.byteLength(content, "utf8") : content.byteLength;
+      intents.push({ kind: "write", path, bytes });
+    },
+    async appendFile(path, content) {
       const bytes =
         typeof content === "string" ? Buffer.byteLength(content, "utf8") : content.byteLength;
       intents.push({ kind: "write", path, bytes });
@@ -199,6 +263,17 @@ export function createRecordingIO(base: WorkspaceIO): { io: WorkspaceIO; intents
     },
     async rm(path) {
       intents.push({ kind: "rm", path });
+    },
+    async rename(_src, dst) {
+      intents.push({ kind: "write", path: dst });
+    },
+    async copyFile(_src, dst) {
+      intents.push({ kind: "write", path: dst });
+    },
+    async mkdtemp(prefix) {
+      const dir = `${prefix}dry-run`;
+      intents.push({ kind: "mkdir", path: dir });
+      return dir;
     },
     async exec() {
       throw new Error("createRecordingIO: exec() is not supported under --dry-run.");
@@ -232,7 +307,12 @@ export function createReadOnlyIO(base: WorkspaceIO, commandName: string): Worksp
     exists: base.exists.bind(base),
     glob: base.glob.bind(base),
     readdir: base.readdir.bind(base),
+    stat: base.stat.bind(base),
+    realpath: base.realpath.bind(base),
     async writeFile(path) {
+      throw new KernelMetaError(commandName, path);
+    },
+    async appendFile(path) {
       throw new KernelMetaError(commandName, path);
     },
     async mkdir(path) {
@@ -240,6 +320,15 @@ export function createReadOnlyIO(base: WorkspaceIO, commandName: string): Worksp
     },
     async rm(path) {
       throw new KernelMetaError(commandName, path);
+    },
+    async rename(_src, dst) {
+      throw new KernelMetaError(commandName, dst);
+    },
+    async copyFile(_src, dst) {
+      throw new KernelMetaError(commandName, dst);
+    },
+    async mkdtemp(prefix) {
+      throw new KernelMetaError(commandName, prefix);
     },
     async exec(command, args) {
       throw new KernelMetaError(commandName, `${command} ${args.join(" ")}`);
