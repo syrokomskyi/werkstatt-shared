@@ -177,6 +177,13 @@ export const systemStateSchema = z.object({
       channel: z.string(),
     })
     .optional(),
+  // ADR-0091: optional git SHA baseline — commits at-or-older-than this SHA in
+  // rev-list order are grandfathered by the external-edit guard (pre-bordbuch
+  // history). Operator-set mutable state; no kernel command writes it.
+  externalEditBaselineSha: z
+    .string()
+    .regex(/^[0-9a-f]{40}$/, "externalEditBaselineSha must be a full 40-char lowercase git SHA")
+    .optional(),
 });
 
 export const servicesRegistrySchema = z.object({
