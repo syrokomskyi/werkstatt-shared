@@ -16,7 +16,6 @@ RFC-0790: add systemConfigSchema, systemStateSchema, servicesRegistrySchema for 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0966: add passportRequired to systemStateSchema for passport enforcement gating.</item>
   <item>RFC-0967: add ownershipRequired to systemStateSchema for ownership enforcement gating.</item>
   <item>RFC-1065: add lagebild to systemStateSchema for Lagebild connection metadata.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
@@ -25,7 +24,8 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
-  <history>RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964</history>
+  <item>ADR-0091: add externalEditBaselineSha to systemStateSchema — operator-set baseline that grandfathers pre-bordbuch commits in the external-edit guard.</item>
+  <history>RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966</history>
 </CHANGE_SUMMARY>
 */
 
