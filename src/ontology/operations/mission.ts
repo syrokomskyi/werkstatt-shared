@@ -55,6 +55,7 @@ export const bordbuchEntryKindSchema = z.enum([
   "mission-close",
   "mission-abort",
   "mission-open-rolled-back",
+  "mission-reconcile",
   "release-ready",
   "release-rolled-back",
   "pin-update",
