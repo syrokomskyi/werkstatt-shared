@@ -22,9 +22,12 @@ import { parse as parseYaml } from "yaml";
 import { normalizeSurfaceModules, type SurfaceModules } from "../index.ts";
 import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
-async function loadSystemManifestRaw(contentDirectory: string, io: WorkspaceIO = createDefaultIO().io): Promise<Record<string, unknown>> {
+async function loadSystemManifestRaw(
+  contentDirectory: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<Record<string, unknown>> {
   const systemMdPath = join(contentDirectory, "system.md");
-  await io.exists(systemMdPath);
+  if (!(await io.exists(systemMdPath))) return {};
   const content = await io.readFile(systemMdPath);
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) return {};
