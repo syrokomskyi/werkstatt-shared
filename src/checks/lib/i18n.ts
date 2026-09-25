@@ -13,8 +13,8 @@ Sweep batch 3: rewrote ~95 purposes across werkstatt-knowledge, werkstatt-shared
 */
 
 import { join } from "node:path";
-import { readFile } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
+import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 function parseFrontmatter(source: string): { data: Record<string, unknown> } {
   const match = source.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
@@ -23,9 +23,9 @@ function parseFrontmatter(source: string): { data: Record<string, unknown> } {
   return { data };
 }
 
-export async function readDefaultLanguageCode(contentRoot: string): Promise<string> {
+export async function readDefaultLanguageCode(contentRoot: string, io: WorkspaceIO = createDefaultIO().io): Promise<string> {
   const systemPath = join(contentRoot, "system.md");
-  const raw = await readFile(systemPath, "utf-8");
+  const raw = await io.readFile(systemPath);
   const { data } = parseFrontmatter(raw);
   const i18n = (data as Record<string, unknown>).i18n as { default?: unknown } | undefined;
   if (typeof i18n?.default === "string" && i18n.default.trim() !== "") {

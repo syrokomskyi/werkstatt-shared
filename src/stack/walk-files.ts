@@ -18,8 +18,8 @@ contents in bulk, so validators never import node:fs directly.</purpose>
 
 // Server-only. Do not import from browser/client scripts.
 
-import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 export interface WalkFilesOptions {
   /** Recurse into subdirectories. Default true. */
@@ -32,29 +32,30 @@ export interface WalkFilesOptions {
  * Lists files under `dir` as relative paths with forward slashes.
  * Missing or unreadable directories yield an empty array.
  */
-export async function walkFiles(
-  dir: string,
-  options: WalkFilesOptions = {},
-): Promise<string[]> {
+export async function walkFiles(dir: string, options: WalkFilesOptions = {}): Promise<string[]> {
   const { recursive = true, filter } = options;
   const results: string[] = [];
 
-  async function walk(current: string, relPrefix: string): Promise<void> {
+  async function walk(
+    current: string,
+    relPrefix: string,
+    io: WorkspaceIO = createDefaultIO().io,
+  ): Promise<void> {
     let entries;
     try {
-      entries = await readdir(current, { withFileTypes: true });
+      entries = await io.readdir(current);
     } catch {
       return;
     }
     for (const entry of entries) {
       const relPath = relPrefix ? `${relPrefix}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) {
+      if (entry.isDirectory) {
         if (recursive) {
           await walk(join(current, entry.name), relPath);
         }
         continue;
       }
-      if (!entry.isFile()) continue;
+      if (!entry.isFile) continue;
       if (filter && !filter(relPath)) continue;
       results.push(relPath);
     }
@@ -67,9 +68,12 @@ export async function walkFiles(
 /**
  * Reads a single file as utf-8. Returns null when the file is missing or unreadable.
  */
-export async function readTextFile(path: string): Promise<string | null> {
+export async function readTextFile(
+  path: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<string | null> {
   try {
-    return await readFile(path, "utf-8");
+    return await io.readFile(path);
   } catch {
     return null;
   }
@@ -79,10 +83,7 @@ export async function readTextFile(path: string): Promise<string | null> {
  * Reads multiple files under `dir` as utf-8, keyed by their walkFiles-relative path.
  * Unreadable entries are omitted from the result.
  */
-export async function readTextFiles(
-  dir: string,
-  relPaths: string[],
-): Promise<Map<string, string>> {
+export async function readTextFiles(dir: string, relPaths: string[]): Promise<Map<string, string>> {
   const contents = new Map<string, string>();
   for (const relPath of relPaths) {
     const content = await readTextFile(join(dir, relPath));
@@ -101,11 +102,12 @@ export async function readTextFiles(
 export async function readBinaryFiles(
   dir: string,
   relPaths: string[],
+  io: WorkspaceIO = createDefaultIO().io,
 ): Promise<Map<string, Buffer>> {
   const contents = new Map<string, Buffer>();
   for (const relPath of relPaths) {
     try {
-      contents.set(relPath, await readFile(join(dir, relPath)));
+      contents.set(relPath, Buffer.from(await io.readFileBytes(join(dir, relPath))));
     } catch {
       // Skip unreadable files — same tolerance as the walkers this replaces.
     }

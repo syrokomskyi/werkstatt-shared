@@ -32,11 +32,11 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
  * - Old public keys remain in the file (active: false) for historical verification.
  */
 
-import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { generateKeypair } from "./sign.ts";
 import { PassportPublicKeyFileSchema } from "./schema.ts";
 import type { PassportPublicKeyFile, PassportPublicKeyEntry } from "./schema.ts";
+import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 export interface KeyRotateOptions {
   /** Absolute path to the app directory */
@@ -78,7 +78,7 @@ export interface KeyRotateResult {
  *   - Paste the returned privateKeyHex into GitHub Actions secret PASSPORT_SIGNING_KEY
  *   - Commit the updated public key file
  */
-export async function rotateKey(options: KeyRotateOptions): Promise<KeyRotateResult> {
+export async function rotateKey(options: KeyRotateOptions, io: WorkspaceIO = createDefaultIO().io): Promise<KeyRotateResult> {
   const { appDirectory, appId, initial = false } = options;
   const publicKeyFilePath = join(appDirectory, "public", ".well-known", "cosmic-passport-key.json");
 
@@ -91,7 +91,7 @@ export async function rotateKey(options: KeyRotateOptions): Promise<KeyRotateRes
 
   if (!initial) {
     try {
-      const raw = await readFile(publicKeyFilePath, "utf8");
+      const raw = await io.readFile(publicKeyFilePath);
       const existing = PassportPublicKeyFileSchema.parse(JSON.parse(raw));
       existingKeys = existing.keys;
 
@@ -129,8 +129,8 @@ export async function rotateKey(options: KeyRotateOptions): Promise<KeyRotateRes
     keys: updatedKeys,
   };
 
-  await mkdir(dirname(publicKeyFilePath), { recursive: true });
-  await writeFile(publicKeyFilePath, JSON.stringify(updatedFile, null, 2), "utf8");
+  await io.mkdir(dirname(publicKeyFilePath));
+  await io.writeFile(publicKeyFilePath, JSON.stringify(updatedFile, null, 2));
 
   return {
     newVersion,

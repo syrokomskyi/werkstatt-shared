@@ -24,9 +24,9 @@ Add guardTrackedOverwrite (json/yaml/text lost-key diff, warn-by-default, --stri
 </CHANGE_SUMMARY>
 */
 
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse as dotenvParse } from "dotenv";
+import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 /** Shared empty map for contexts without a resolved site or .env file. */
 export const EMPTY_WORKPIECE_ENV: ReadonlyMap<string, string> = new Map();
@@ -36,11 +36,11 @@ export const EMPTY_WORKPIECE_ENV: ReadonlyMap<string, string> = new Map();
  * the site is undefined or the file is missing/unreadable — never throws.
  */
 export async function loadWorkpieceEnv(
-  siteDirectory: string | undefined,
+  siteDirectory: string | undefined, io: WorkspaceIO = createDefaultIO().io,
 ): Promise<ReadonlyMap<string, string>> {
   if (!siteDirectory) return EMPTY_WORKPIECE_ENV;
   try {
-    const raw = await readFile(join(siteDirectory, ".env"), "utf-8");
+    const raw = await io.readFile(join(siteDirectory, ".env"));
     return new Map(Object.entries(dotenvParse(raw)));
   } catch {
     return EMPTY_WORKPIECE_ENV;

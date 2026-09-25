@@ -7,6 +7,7 @@ import type {
   KernelCommandResult,
   KernelRuntimeContext,
 } from "@warpgogol/werkstatt-shared/kernel";
+import { createDefaultIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 const PASS_SPEC: StackCheckSpec = {
   name: "stack.alpha.validate",
@@ -34,13 +35,14 @@ const FAIL_SPEC: StackCheckSpec = {
 
 function makeCtx(projectRoot: string): PluginHookContext {
   return {
+    io: createDefaultIO().io,
     workspaceRoot: projectRoot,
     logger: { info: () => {}, warn: () => {}, error: () => {} },
   } as unknown as PluginHookContext;
 }
 
 function makeRuntimeContext(projectRoot: string): KernelRuntimeContext {
-  return { workspaceRoot: projectRoot } as unknown as KernelRuntimeContext;
+  return { io: createDefaultIO().io, workspaceRoot: projectRoot } as unknown as KernelRuntimeContext;
 }
 
 const INPUT: KernelCommandInput = { argv: [], flags: {} };

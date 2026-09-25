@@ -24,8 +24,8 @@ Add guardTrackedOverwrite (json/yaml/text lost-key diff, warn-by-default, --stri
 </CHANGE_SUMMARY>
 */
 
-import { readFile } from "node:fs/promises";
 import { parse as yamlParse } from "yaml";
+import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 export interface DriftReport {
   file: string;
@@ -128,11 +128,11 @@ export async function guardTrackedOverwrite(
   filePath: string,
   newContent: string,
   options: DriftGuardOptions,
-  logger: DriftGuardLogger,
+  logger: DriftGuardLogger, io: WorkspaceIO = createDefaultIO().io,
 ): Promise<DriftReport> {
   let existing: string | null = null;
   try {
-    existing = await readFile(filePath, "utf-8");
+    existing = await io.readFile(filePath);
   } catch {
     // File absent — nothing to lose.
   }

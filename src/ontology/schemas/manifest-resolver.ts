@@ -21,11 +21,11 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
 </CHANGE_SUMMARY>
 */
 
-import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { sectionManifestSchema } from "../manifest.ts";
 import { composeManifestPropsSchema } from "../shared-section-props/index.ts";
+import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 /**
  * Reads the manifest YAML for the section assigned to `planetName` and returns
@@ -46,6 +46,7 @@ import { composeManifestPropsSchema } from "../shared-section-props/index.ts";
 export async function getSectionPropsSchema(
   cosmicName: string,
   packagesUiRoot: string,
+  io: WorkspaceIO = createDefaultIO().io,
 ): Promise<{
   propsSchema: Record<string, unknown>;
   semanticId: string;
@@ -58,8 +59,8 @@ export async function getSectionPropsSchema(
   for (const layer of ["sections", "components"] as const) {
     const layerDir = join(packagesUiRoot, layer);
     try {
-      const entries = await readdir(layerDir);
-      for (const e of entries) candidates.push({ dir: e, layer });
+      const entries = await io.readdir(layerDir);
+      for (const e of entries) candidates.push({ dir: e.name, layer });
     } catch (err) {
       console.debug(
         `[manifest-resolver] ${layerDir} not readable — skipping (${err instanceof Error ? err.message : String(err)})`,
@@ -75,10 +76,10 @@ export async function getSectionPropsSchema(
 
     let raw: string | null = null;
     try {
-      raw = await readFile(manifestPath, "utf8");
+      raw = await io.readFile(manifestPath);
     } catch {
       try {
-        raw = await readFile(manifestPathAlt, "utf8");
+        raw = await io.readFile(manifestPathAlt);
       } catch {
         // No manifest file found for this directory — expected for group
         // directories (effects, section-body, seo) that contain sub-components

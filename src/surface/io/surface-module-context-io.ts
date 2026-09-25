@@ -18,14 +18,14 @@
 */
 
 import { join } from "node:path";
-import { readFile, access } from "node:fs/promises";
 import { parse as parseYaml } from "yaml";
 import { normalizeSurfaceModules, type SurfaceModules } from "../index.ts";
+import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
-async function loadSystemManifestRaw(contentDirectory: string): Promise<Record<string, unknown>> {
+async function loadSystemManifestRaw(contentDirectory: string, io: WorkspaceIO = createDefaultIO().io): Promise<Record<string, unknown>> {
   const systemMdPath = join(contentDirectory, "system.md");
-  await access(systemMdPath);
-  const content = await readFile(systemMdPath, "utf8");
+  await io.exists(systemMdPath);
+  const content = await io.readFile(systemMdPath);
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
   if (!match) return {};
   return parseYaml(match[1]) as Record<string, unknown>;

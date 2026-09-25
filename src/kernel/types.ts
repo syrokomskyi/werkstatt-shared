@@ -204,6 +204,7 @@ import type {
   DiagnosticEvidence as _DiagnosticEvidence,
   Diagnostic as _Diagnostic,
 } from "./diagnostic.ts";
+import { createDefaultIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 export type {
   DiagnosticSeverity,

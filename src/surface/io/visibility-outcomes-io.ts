@@ -15,11 +15,10 @@
 </CHANGE_SUMMARY>
 */
 
-import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse as yamlParse } from "yaml";
 import type { ClusterOutcome } from "../visibility.ts";
+import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 export interface OutcomesPayload {
   generatedAt: string | null;
@@ -39,8 +38,8 @@ export interface OutcomesPayload {
 
 const OUTCOMES_FILE = "src/surface/visibility/outcomes.generated.yaml";
 
-export async function readVisibilityOutcomes(appDir: string): Promise<OutcomesPayload | null> {
+export async function readVisibilityOutcomes(appDir: string, io: WorkspaceIO = createDefaultIO().io): Promise<OutcomesPayload | null> {
   const path = join(appDir, OUTCOMES_FILE);
-  if (!existsSync(path)) return null;
-  return yamlParse(await readFile(path, "utf8")) as OutcomesPayload;
+  if (!await io.exists(path)) return null;
+  return yamlParse(await io.readFile(path)) as OutcomesPayload;
 }

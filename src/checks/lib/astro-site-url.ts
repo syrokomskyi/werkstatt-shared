@@ -15,18 +15,18 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
 </CHANGE_SUMMARY>
 */
 
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 /**
  * Read canonical site URL from astro.config.mjs.
  * Best-effort regex — no AST parsing needed.
  * Handles JS expressions like `site: process.env.X || "https://example.com"`.
  */
-export async function readAstroSiteUrl(appDir: string): Promise<string | undefined> {
+export async function readAstroSiteUrl(appDir: string, io: WorkspaceIO = createDefaultIO().io): Promise<string | undefined> {
   const configPath = join(appDir, "astro.config.mjs");
   try {
-    const text = await readFile(configPath, "utf-8");
+    const text = await io.readFile(configPath);
     const match = text.match(/site:.*?["'](https?:\/\/[^"']+)["']/);
     return match?.[1];
   } catch {
