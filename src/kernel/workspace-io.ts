@@ -231,6 +231,8 @@ export interface WriteIntent {
   kind: "write" | "mkdir" | "rm";
   path: string;
   bytes?: number;
+  /** RFC-1149 follow-up: full text content recorded under --dry-run so the executor can surface `renderedFiles` for generated.drift.validate (DRIFT-02). Absent for binary writes and path-only intents. */
+  content?: string;
 }
 
 /**
@@ -240,6 +242,9 @@ export interface WriteIntent {
  */
 export function createRecordingIO(base: WorkspaceIO): { io: WorkspaceIO; intents: WriteIntent[] } {
   const intents: WriteIntent[] = [];
+  // RFC-1149 follow-up: accumulate rendered text content per path so the last
+  // write intent for a path carries the full file — powers renderedFiles.
+  const contents = new Map<string, string>();
   const io: WorkspaceIO = {
     readFile: base.readFile.bind(base),
     readFileBytes: base.readFileBytes.bind(base),
@@ -251,23 +256,36 @@ export function createRecordingIO(base: WorkspaceIO): { io: WorkspaceIO; intents
     async writeFile(path, content) {
       const bytes =
         typeof content === "string" ? Buffer.byteLength(content, "utf8") : content.byteLength;
-      intents.push({ kind: "write", path, bytes });
+      const text = typeof content === "string" ? content : undefined;
+      if (text === undefined) contents.delete(path);
+      else contents.set(path, text);
+      intents.push({ kind: "write", path, bytes, content: text });
     },
     async appendFile(path, content) {
       const bytes =
         typeof content === "string" ? Buffer.byteLength(content, "utf8") : content.byteLength;
-      intents.push({ kind: "write", path, bytes });
+      // Append accumulates onto content recorded earlier this run; appending
+      // to a path never written stays unverifiable — same as before.
+      const prior = contents.get(path);
+      const combined =
+        prior !== undefined && typeof content === "string" ? prior + content : undefined;
+      if (combined === undefined) contents.delete(path);
+      else contents.set(path, combined);
+      intents.push({ kind: "write", path, bytes, content: combined });
     },
     async mkdir(path) {
       intents.push({ kind: "mkdir", path });
     },
     async rm(path) {
+      contents.delete(path);
       intents.push({ kind: "rm", path });
     },
     async rename(_src, dst) {
+      contents.delete(dst);
       intents.push({ kind: "write", path: dst });
     },
     async copyFile(_src, dst) {
+      contents.delete(dst);
       intents.push({ kind: "write", path: dst });
     },
     async mkdtemp(prefix) {
