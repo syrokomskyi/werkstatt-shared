@@ -14,11 +14,12 @@ in @warpgogol/site-kernel-handoff and by contract tests in @warpgogol/werkstatt-
   <item>RFC-0480: initial external-surfaces contracts (url-schema, jsonld-types, sitemap-shape).</item>
   <item>RFC-0498: add surfacePolicy to jsonldTypesContract — per-depth required/prohibited JSON-LD types for surface pages.</item>
   <item>RFC-0499: add mediaLeakagePolicy to jsonldTypesContract — prohibited strings, matching strategies, required labels for surface pages.</item>
+  <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
 </CHANGE_SUMMARY>
 */
 
-import { readFileSync } from "node:fs";
 import path from "node:path";
+import { createDefaultIO } from "../../kernel/workspace-io.ts";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { parse as parseYaml } from "yaml";
@@ -107,9 +108,9 @@ const sitemapShapeContract = z.object({
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-function loadYaml<T>(filename: string): T {
+async function loadYaml<T>(filename: string): Promise<T> {
   const filePath = path.join(__dirname, filename);
-  const raw = readFileSync(filePath, "utf-8");
+  const raw = await createDefaultIO().io.readFile(filePath);
   return parseYaml(raw) as T;
 }
 
@@ -122,16 +123,18 @@ export type MediaLeakageRequiredLabel = z.infer<typeof mediaLeakageRequiredLabel
 export type MediaLeakagePolicy = z.infer<typeof mediaLeakagePolicySchema>;
 
 /** Parsed and validated URL schema contract. */
-export const urlSchema: UrlSchemaContract = urlSchemaContract.parse(loadYaml("url-schema.yaml"));
+export const urlSchema: UrlSchemaContract = urlSchemaContract.parse(
+  await loadYaml("url-schema.yaml"),
+);
 
 /** Parsed and validated JSON-LD types contract. */
 export const jsonldTypes: JsonldTypesContract = jsonldTypesContract.parse(
-  loadYaml("jsonld-types.yaml"),
+  await loadYaml("jsonld-types.yaml"),
 );
 
 /** Parsed and validated sitemap shape contract. */
 export const sitemapShape: SitemapShapeContract = sitemapShapeContract.parse(
-  loadYaml("sitemap-shape.yaml"),
+  await loadYaml("sitemap-shape.yaml"),
 );
 
 // ---------------------------------------------------------------------------

@@ -18,10 +18,11 @@ and resolves braceless collection.file.field references without astro:content (R
   <item>RFC-0731: Add SourceRef type and sourceRef optional parameter for this. self-reference syntax.
         this. is expanded to collection.file. before pattern matching. REF-12 for missing sourceRef,
         REF-13 for unresolvable field after expansion.</item>
+  <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
 </CHANGE_SUMMARY>
 */
 
-import { readFileSync } from "node:fs";
+import { createDefaultIO, type WorkspaceIO } from "../kernel/workspace-io.ts";
 import { parse } from "yaml";
 import { substituteRefsDeep } from "./substitute-deep.ts";
 import { resolveFieldPath } from "./resolve-field-path.ts";
@@ -72,9 +73,12 @@ export const EMPTY_CONTENT_REF_INDEX: ContentRefIndex = {
 
 let cachedIndex: ContentRefIndex | null | undefined;
 
-export function loadContentRefIndex(indexPath: string): ContentRefIndex | null {
+export async function loadContentRefIndex(
+  indexPath: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<ContentRefIndex | null> {
   try {
-    const raw = readFileSync(indexPath, "utf8");
+    const raw = await io.readFile(indexPath);
     const parsed = parse(raw) as ContentRefIndex;
     if (parsed && parsed.version === 1 && parsed.entries) {
       return parsed;
@@ -91,9 +95,12 @@ export function loadContentRefIndex(indexPath: string): ContentRefIndex | null {
   }
 }
 
-export function getContentRefIndex(indexPath?: string): ContentRefIndex | null {
+export async function getContentRefIndex(
+  indexPath?: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<ContentRefIndex | null> {
   if (cachedIndex === undefined) {
-    cachedIndex = loadContentRefIndex(indexPath ?? DEFAULT_INDEX_PATH);
+    cachedIndex = await loadContentRefIndex(indexPath ?? DEFAULT_INDEX_PATH, io);
   }
   return cachedIndex;
 }

@@ -7,6 +7,7 @@
   <item>RFC-1106: step 3 — sole SystemManifest definition, loaders parse()
 
 Delete the hand-written SystemManifest interface; content/system-manifest.ts re-exports the schema-inferred type. Both loaders switch from 'as unknown as' to systemManifestSchema.parse() — the schema now executes at load. system.manifest.validate catches ZodError and maps issues into structured diagnostics; the post-load safeParse was dead code. Zero consumer breaks: all growth/release/tagline readers were already optional-safe. New adjacent test pins parse-at-load (AC-7).</item>
+  <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
 </CHANGE_SUMMARY>
 */
 
@@ -15,7 +16,7 @@ import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { ZodError } from "zod";
-import { loadSystemManifest, loadSystemManifestSync } from "./system-manifest.ts";
+import { loadSystemManifest } from "./system-manifest.ts";
 
 const VALID_SYSTEM_MD = `---
 app: test-app
@@ -79,7 +80,7 @@ describe("loadSystemManifest", () => {
   });
 });
 
-describe("loadSystemManifestSync", () => {
+describe("loadSystemManifest (former Sync variant)", () => {
   let contentDir: string;
 
   beforeEach(async () => {
@@ -93,7 +94,7 @@ describe("loadSystemManifestSync", () => {
   it("parses a valid manifest synchronously", async () => {
     await writeFile(join(contentDir, "system.md"), VALID_SYSTEM_MD);
 
-    const result = loadSystemManifestSync(contentDir);
+    const result = await loadSystemManifest(contentDir);
 
     expect(result.manifest.app).toBe("test-app");
     expect(result.manifest.pages).toEqual([]);
@@ -102,6 +103,6 @@ describe("loadSystemManifestSync", () => {
   it("throws ZodError on an invalid manifest", async () => {
     await writeFile(join(contentDir, "system.md"), INVALID_SYSTEM_MD);
 
-    expect(() => loadSystemManifestSync(contentDir)).toThrow(ZodError);
+    await expect(loadSystemManifest(contentDir)).rejects.toBeInstanceOf(ZodError);
   });
 });

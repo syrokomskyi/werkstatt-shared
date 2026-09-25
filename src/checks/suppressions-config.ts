@@ -10,11 +10,12 @@
 <CHANGE_SUMMARY>
   <item>RFC-0684: initial implementation of suppression config schema, loaders, merger, and applySuppressions post-filter.</item>
   <item>RFC-0688: add titlePattern field to match against finding.title (always populated). messagePattern/descriptionPattern kept for forward compatibility but match against non-existent Finding fields.</item>
+  <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
 </CHANGE_SUMMARY>
 */
 
-import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { createDefaultIO, type WorkspaceIO } from "../kernel/workspace-io.ts";
 import { z } from "zod";
 import { parse as parseYaml } from "yaml";
 
@@ -84,17 +85,23 @@ export function parseSuppressionsConfig(content: string): SuppressionsConfig {
   return suppressionsConfigSchema.parse(raw);
 }
 
-export function loadWorkshopSuppressions(workspaceRoot: string): SuppressionsConfig | undefined {
+export async function loadWorkshopSuppressions(
+  workspaceRoot: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<SuppressionsConfig | undefined> {
   const absPath = join(workspaceRoot, WORKSHOP_SUPPRESSIONS_PATH);
-  if (!existsSync(absPath)) return undefined;
-  const content = readFileSync(absPath, "utf-8");
+  if (!(await io.exists(absPath))) return undefined;
+  const content = await io.readFile(absPath);
   return parseSuppressionsConfig(content);
 }
 
-export function loadWorkpieceSuppressions(missionDir: string): SuppressionsConfig | undefined {
+export async function loadWorkpieceSuppressions(
+  missionDir: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<SuppressionsConfig | undefined> {
   const absPath = join(missionDir, "workpiece", WORKPIECE_SUPPRESSIONS_PATH);
-  if (!existsSync(absPath)) return undefined;
-  const content = readFileSync(absPath, "utf-8");
+  if (!(await io.exists(absPath))) return undefined;
+  const content = await io.readFile(absPath);
   return parseSuppressionsConfig(content);
 }
 

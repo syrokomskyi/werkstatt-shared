@@ -16,12 +16,12 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten â
   <item>RFC-1097: sweep â€” werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
 </CHANGE_SUMMARY>
 */
 
-import fs from "node:fs/promises";
-import { existsSync } from "node:fs";
 import path from "node:path";
+import { createDefaultIO, type WorkspaceIO } from "../kernel/workspace-io.ts";
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import * as ed from "@noble/ed25519";
 import type { KeyEncoding, SigningKeyPair } from "./types.ts";
@@ -38,6 +38,7 @@ export async function getPublicKey(privateKey: Uint8Array): Promise<Uint8Array> 
 
 export async function loadPrivateKey(
   source: { pem: string } | { hex: string } | { filePath: string; encoding: KeyEncoding },
+  io: WorkspaceIO = createDefaultIO().io,
 ): Promise<Uint8Array> {
   if ("pem" in source) {
     return fromPem(source.pem);
@@ -45,7 +46,7 @@ export async function loadPrivateKey(
   if ("hex" in source) {
     return fromHex(source.hex);
   }
-  const raw = (await fs.readFile(source.filePath, "utf8")).trim();
+  const raw = (await io.readFile(source.filePath)).trim();
   if (source.encoding === "pem") {
     return fromPem(raw);
   }
@@ -54,6 +55,7 @@ export async function loadPrivateKey(
 
 export async function loadPublicKey(
   source: { pem: string } | { hex: string } | { filePath: string; encoding: KeyEncoding },
+  io: WorkspaceIO = createDefaultIO().io,
 ): Promise<Uint8Array> {
   if ("pem" in source) {
     return fromPem(source.pem);
@@ -61,7 +63,7 @@ export async function loadPublicKey(
   if ("hex" in source) {
     return fromHex(source.hex);
   }
-  const raw = (await fs.readFile(source.filePath, "utf8")).trim();
+  const raw = (await io.readFile(source.filePath)).trim();
   if (source.encoding === "pem") {
     return fromPem(raw);
   }
@@ -72,18 +74,19 @@ export async function saveKeyPair(
   keyPair: SigningKeyPair,
   outputDir: string,
   encoding: KeyEncoding,
+  io: WorkspaceIO = createDefaultIO().io,
 ): Promise<{ privateKeyPath: string; publicKeyPath: string }> {
-  await fs.mkdir(outputDir, { recursive: true });
+  await io.mkdir(outputDir);
 
   const privateKeyPath = path.join(outputDir, `signing.key${encoding === "pem" ? ".pem" : ""}`);
   const publicKeyPath = path.join(outputDir, `signing.key.pub${encoding === "pem" ? ".pem" : ""}`);
 
   if (encoding === "pem") {
-    await fs.writeFile(privateKeyPath, toPem(keyPair.privateKey, "private"), "utf8");
-    await fs.writeFile(publicKeyPath, toPem(keyPair.publicKey, "public"), "utf8");
+    await io.writeFile(privateKeyPath, toPem(keyPair.privateKey, "private"));
+    await io.writeFile(publicKeyPath, toPem(keyPair.publicKey, "public"));
   } else {
-    await fs.writeFile(privateKeyPath, toHex(keyPair.privateKey), "utf8");
-    await fs.writeFile(publicKeyPath, toHex(keyPair.publicKey), "utf8");
+    await io.writeFile(privateKeyPath, toHex(keyPair.privateKey));
+    await io.writeFile(publicKeyPath, toHex(keyPair.publicKey));
   }
 
   return { privateKeyPath, publicKeyPath };
@@ -134,6 +137,9 @@ export function publicKeyPemToBytes(pem: string): Uint8Array {
   return new Uint8Array(Buffer.from(jwk.x, "base64url"));
 }
 
-export function keyExists(filePath: string): boolean {
-  return existsSync(filePath);
+export async function keyExists(
+  filePath: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<boolean> {
+  return io.exists(filePath);
 }

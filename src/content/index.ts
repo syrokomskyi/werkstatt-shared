@@ -8,6 +8,7 @@ markdown frontmatter utilities and system manifest loading (RFC-0868).</purpose>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0868: extracted from werkstatt-site/src/content/index.ts.</item>
+  <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
 </CHANGE_SUMMARY>
 */
 
@@ -18,8 +19,6 @@ export * from "./merge.ts";
 export * from "./resolve-field-path.ts";
 export {
   loadSystemManifest,
-  loadSystemManifestSync,
   isUsingSystemMd,
-  isUsingSystemMdSync,
 } from "./system-manifest.ts";
 export type { SystemManifest, SystemManifestLoadResult } from "./system-manifest.ts";

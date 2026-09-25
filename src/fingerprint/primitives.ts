@@ -15,11 +15,12 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten â
   <item>RFC-1097: sweep â€” werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
 </CHANGE_SUMMARY>
 */
 
-import { createReadStream } from "node:fs";
 import { createHash } from "node:crypto";
+import { createDefaultIO, type WorkspaceIO } from "../kernel/workspace-io.ts";
 
 declare const sha256DigestBrand: unique symbol;
 
@@ -38,17 +39,12 @@ export function byteHash(bytes: Uint8Array | string): Sha256Digest {
   return `sha256:${createHash("sha256").update(input).digest("hex")}` as Sha256Digest;
 }
 
-export async function byteHashFile(absPath: string): Promise<Sha256Digest> {
-  return new Promise((resolve, reject) => {
-    const stream = createReadStream(absPath);
-    const chunks: Buffer[] = [];
-    stream.on("data", (chunk) => chunks.push(chunk as Buffer));
-    stream.on("error", reject);
-    stream.on("end", () => {
-      const buf = Buffer.concat(chunks);
-      resolve(byteHash(buf));
-    });
-  });
+export async function byteHashFile(
+  absPath: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<Sha256Digest> {
+  const bytes = await io.readFileBytes(absPath);
+  return byteHash(bytes);
 }
 
 function sortForJson(value: unknown): unknown {

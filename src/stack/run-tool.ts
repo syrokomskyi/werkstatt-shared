@@ -15,14 +15,14 @@ test mocks node:child_process.</purpose>
 <CHANGE_SUMMARY>
   <item>RFC-1100: initial subprocess seam — runTool + ToolSpec/ToolResult/ToolExecutor; replaces per-call-site execFileSync prologues in stack plugins.</item>
   <item>RFC-1100: step 1 — shared tool/fs/check seams (walkFiles, runTool, defineStackChecks)</item>
+  <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
 </CHANGE_SUMMARY>
 */
 
 // Server-only. Do not import from browser/client scripts.
 
-import { execFileSync } from "node:child_process";
-import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { createDefaultIO, type WorkspaceIO } from "../kernel/workspace-io.ts";
 
 export interface ToolSpec {
   /** Binary to execute, e.g. "npx". */
@@ -53,30 +53,42 @@ export interface ToolResult {
  * Executes a ToolSpec. Injectable so tests record specs instead of spawning
  * processes — pass a fake that captures the spec and returns a canned ToolResult.
  */
-export type ToolExecutor = (spec: ToolSpec) => ToolResult;
+export type ToolExecutor = (spec: ToolSpec) => ToolResult | Promise<ToolResult>;
 
 const DEFAULT_TIMEOUT_MS = 120_000;
 
-const execFileExecutor: ToolExecutor = (spec) => {
+const execFileExecutor: ToolExecutor = async (spec) => {
   try {
-    const stdout = execFileSync(spec.bin, spec.args, {
+    const env: Record<string, string> = {};
+    for (const [k, v] of Object.entries(process.env)) if (v !== undefined) env[k] = v;
+    Object.assign(env, spec.env);
+    const result = await createDefaultIO().io.exec(spec.bin, spec.args, {
       cwd: spec.cwd,
-      encoding: "utf-8",
-      timeout: spec.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-      stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, ...spec.env },
+      timeoutMs: spec.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      env,
     });
-    return { success: true, stdout };
+    if (result.exitCode === 0) {
+      return { success: true, stdout: result.stdout };
+    }
+    return {
+      success: false,
+      errors: [result.stderr || `exit code ${result.exitCode}`],
+      failedAt: "exec",
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { success: false, errors: [message], failedAt: "exec" };
   }
 };
 
-export function runTool(spec: ToolSpec, executor: ToolExecutor = execFileExecutor): ToolResult {
+export async function runTool(
+  spec: ToolSpec,
+  executor: ToolExecutor = execFileExecutor,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<ToolResult> {
   if (spec.requireDist) {
     const distDir = join(spec.cwd, "dist");
-    if (!existsSync(distDir)) {
+    if (!(await io.exists(distDir))) {
       return {
         success: false,
         errors: [`dist/ directory not found at ${distDir} — run build first`],
@@ -98,7 +110,7 @@ export function runTool(spec: ToolSpec, executor: ToolExecutor = execFileExecuto
   }
 
   try {
-    return executor(spec);
+    return await executor(spec);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return { success: false, errors: [message], failedAt: "exec" };

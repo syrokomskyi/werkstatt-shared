@@ -26,9 +26,9 @@ describe("runTool", () => {
     await rm(cwd, { recursive: true, force: true });
   });
 
-  it("passes the spec to the executor and returns its result", () => {
+  it("passes the spec to the executor and returns its result", async () => {
     const calls: ToolSpec[] = [];
-    const result = runTool(
+    const result = await runTool(
       { bin: "npx", args: ["vite", "build"], cwd, timeoutMs: 5_000 },
       recordingExecutor(calls),
     );
@@ -42,9 +42,9 @@ describe("runTool", () => {
     expect(calls[0]!.timeoutMs).toBe(5_000);
   });
 
-  it("fails preflight when requireDist and dist/ is missing", () => {
+  it("fails preflight when requireDist and dist/ is missing", async () => {
     const calls: ToolSpec[] = [];
-    const result = runTool(
+    const result = await runTool(
       { bin: "npx", args: ["deploy"], cwd, requireDist: true },
       recordingExecutor(calls),
     );
@@ -58,7 +58,7 @@ describe("runTool", () => {
   it("passes preflight when requireDist and dist/ exists", async () => {
     await mkdir(join(cwd, "dist"), { recursive: true });
     const calls: ToolSpec[] = [];
-    const result = runTool(
+    const result = await runTool(
       { bin: "npx", args: ["deploy"], cwd, requireDist: true },
       recordingExecutor(calls),
     );
@@ -67,9 +67,9 @@ describe("runTool", () => {
     expect(calls).toHaveLength(1);
   });
 
-  it("fails preflight when a required env var is missing", () => {
+  it("fails preflight when a required env var is missing", async () => {
     const calls: ToolSpec[] = [];
-    const result = runTool(
+    const result = await runTool(
       { bin: "npx", args: ["x"], cwd, requireEnv: ["DEFINITELY_MISSING_ENV_VAR"] },
       recordingExecutor(calls),
     );
@@ -80,9 +80,9 @@ describe("runTool", () => {
     expect(calls).toHaveLength(0);
   });
 
-  it("passes preflight when a required env var comes from spec.env", () => {
+  it("passes preflight when a required env var comes from spec.env", async () => {
     const calls: ToolSpec[] = [];
-    const result = runTool(
+    const result = await runTool(
       {
         bin: "npx",
         args: ["x"],
@@ -97,9 +97,9 @@ describe("runTool", () => {
     expect(calls[0]!.env?.MY_TOKEN).toBe("secret");
   });
 
-  it("fails preflight when a required env var is empty after merge", () => {
+  it("fails preflight when a required env var is empty after merge", async () => {
     const calls: ToolSpec[] = [];
-    const result = runTool(
+    const result = await runTool(
       {
         bin: "npx",
         args: ["x"],
@@ -114,20 +114,20 @@ describe("runTool", () => {
     expect(result.failedAt).toBe("preflight");
   });
 
-  it("maps an executor throw to an exec failure", () => {
+  it("maps an executor throw to an exec failure", async () => {
     const throwing: ToolExecutor = () => {
       throw new Error("spawn npx ENOENT");
     };
-    const result = runTool({ bin: "npx", args: ["x"], cwd }, throwing);
+    const result = await runTool({ bin: "npx", args: ["x"], cwd }, throwing);
 
     expect(result.success).toBe(false);
     expect(result.failedAt).toBe("exec");
     expect(result.errors?.[0]).toContain("spawn npx ENOENT");
   });
 
-  it("propagates executor failure results unchanged", () => {
+  it("propagates executor failure results unchanged", async () => {
     const calls: ToolSpec[] = [];
-    const result = runTool(
+    const result = await runTool(
       { bin: "npx", args: ["x"], cwd },
       recordingExecutor(calls, { success: false, errors: ["exit 1"], failedAt: "exec" }),
     );
