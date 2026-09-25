@@ -238,6 +238,13 @@ export interface GeneratedArtifactSpec {
    * everything else → "embedded". Set explicitly only for edge cases (e.g. .cache/pdf/**).
    */
   markerPolicy?: "embedded" | "registry-only";
+  /**
+   * Committed bytes contain non-deterministic fields (Ed25519 proofs, real-time
+   * created/generatedAt timestamps, build durations) — byte-compare against a
+   * dryRun render can never pass. generated.drift.validate skips volatile
+   * artifacts; existence/staleness/signature checks still apply elsewhere.
+   */
+  volatile?: boolean;
 }
 
 /**
