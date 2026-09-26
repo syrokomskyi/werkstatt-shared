@@ -25,8 +25,14 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
  * No private keys are ever written to disk by this module.
  *
  * SECURITY CONTRACT:
- * - Private keys arrive exclusively as environment variable `PASSPORT_SIGNING_KEY`
- *   (hex-encoded, 32 bytes) or as a runtime parameter in key-rotate.ts.
+ * - Private keys arrive as hex-encoded (32 bytes) parameters supplied by callers.
+ *   Scope-split env convention: site-scoped signing (site passport, agent
+ *   surface) reads `PASSPORT_SIGNING_KEY` from the site `.env`
+ *   (`readEnvFileValue` first — ambient env may carry a different identity);
+ *   operator-scoped signing (DHT, swim, identity credentials, mission commits)
+ *   reads `WERKSTATT_OPERATOR_SIGNING_KEY` from the workshop root `.env`.
+ *   The two names MUST NOT be conflated — shadowing produces AGS-09-style
+ *   invalid proofs.
  * - This module never logs, writes, or returns private key material.
  */
 

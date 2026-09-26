@@ -326,3 +326,29 @@ test("RFC-0731: regression — existing absolute references still resolve withou
   const out = resolveReferencesInString(TEST_INDEX, "business.offer.price.monthly", "de", "de");
   expect(out).toBe("70 €/Monat");
 });
+
+// DIST-REF-03 regression (warpgogol-m000159): collection frontmatter fields that
+// render as user-visible text must pass through resolveReferencesDeep before
+// rendering — the page handler's block-prop substitution never reaches them.
+// This test pins the contract resolveEntryData (share/astro/content.ts) relies on.
+test("DIST-REF-03: entry frontmatter data resolves formulas + braceless + this. refs deep", async () => {
+  // Mirrors a faq/business-profile entry.data payload.
+  const entryData = {
+    question: "Was kostet die Einrichtung?",
+    answer:
+      "Die Einrichtung kostet business.offer.price.setup — Gesamtkosten: =(business.offer.price.setup + business.offer.price.monthly * 12) €.",
+    meta: { sourceNote: "Referenz: this.price.monthly" },
+    tags: ["pricing", "business.offer.price.yearly"],
+  };
+  const sourceRef: SourceRef = { collection: "business", file: "offer" };
+
+  const out = (await resolveReferencesDeep(TEST_INDEX, entryData, "de", "de", sourceRef)) as
+    typeof entryData;
+
+  expect(out.question).toBe("Was kostet die Einrichtung?");
+  expect(out.answer).toBe(
+    "Die Einrichtung kostet 200 € Einrichtung — Gesamtkosten: 1040 €.",
+  );
+  expect(out.meta.sourceNote).toBe("Referenz: 70 €/Monat");
+  expect(out.tags).toEqual(["pricing", "700 €/Jahr"]);
+});
