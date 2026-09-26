@@ -11,6 +11,7 @@ and manages the modal lifecycle (open, close, focus trap, body scroll lock).</pu
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0932: initial implementation — QR modal lifecycle, dynamic qrcode import, focus trap, body scroll lock.</item>
+  <item>Fix: honor the data-external-link-qr="off" opt-out in the delegated click/keydown handlers — opted-out external links (footer review QR, nachweis links) navigate directly instead of opening the QR modal.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -114,9 +115,16 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
     return !modal.hidden;
   }
 
+  // Anchors marked data-external-link-qr="off" opt out of the QR modal entirely
+  // (e.g. the footer review QR code, which is already a QR — it must navigate
+  // directly). external-links.ts honors the same flag for trigger injection.
+  function isQrOptedOut(anchor: Element): boolean {
+    return anchor.getAttribute("data-external-link-qr") === "off";
+  }
+
   function handleDelegatedClick(e: Event): void {
     const anchor = (e.target as HTMLElement)?.closest?.("a[data-external-link]");
-    if (!anchor) return;
+    if (!anchor || isQrOptedOut(anchor)) return;
 
     const href = anchor.getAttribute("href");
     if (!href) return;
@@ -128,7 +136,7 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
   function handleDelegatedKeydown(e: KeyboardEvent): void {
     if (e.key !== "Enter" && e.key !== " ") return;
     const anchor = (e.target as HTMLElement)?.closest?.("a[data-external-link]");
-    if (!anchor) return;
+    if (!anchor || isQrOptedOut(anchor)) return;
 
     const href = anchor.getAttribute("href");
     if (!href) return;
