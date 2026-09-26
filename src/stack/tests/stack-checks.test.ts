@@ -42,7 +42,10 @@ function makeCtx(projectRoot: string): PluginHookContext {
 }
 
 function makeRuntimeContext(projectRoot: string): KernelRuntimeContext {
-  return { io: createDefaultIO().io, workspaceRoot: projectRoot } as unknown as KernelRuntimeContext;
+  return {
+    io: createDefaultIO().io,
+    workspaceRoot: projectRoot,
+  } as unknown as KernelRuntimeContext;
 }
 
 const INPUT: KernelCommandInput = { argv: [], flags: {} };

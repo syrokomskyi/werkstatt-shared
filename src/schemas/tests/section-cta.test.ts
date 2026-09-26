@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  ctaVariantSchema,
-  ctaSizeSchema,
-  ctaIconPositionSchema,
-} from "../section-cta.ts";
+import { ctaVariantSchema, ctaSizeSchema, ctaIconPositionSchema } from "../section-cta.ts";
 
 describe("ctaVariantSchema", () => {
   it("accepts valid variants", () => {

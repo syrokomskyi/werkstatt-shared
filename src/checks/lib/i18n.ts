@@ -23,7 +23,10 @@ function parseFrontmatter(source: string): { data: Record<string, unknown> } {
   return { data };
 }
 
-export async function readDefaultLanguageCode(contentRoot: string, io: WorkspaceIO = createDefaultIO().io): Promise<string> {
+export async function readDefaultLanguageCode(
+  contentRoot: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<string> {
   const systemPath = join(contentRoot, "system.md");
   const raw = await io.readFile(systemPath);
   const { data } = parseFrontmatter(raw);

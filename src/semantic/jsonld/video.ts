@@ -44,9 +44,7 @@ export function buildVideoObjectNodes(context: JsonLdContext): JsonLdNode[] {
       uploadDate: seo.uploadDate,
       thumbnailUrl: manifest.posterUrl,
       contentUrl: manifest.contentUrl,
-      ...(manifest.durationSec != null
-        ? { duration: formatDuration(manifest.durationSec) }
-        : {}),
+      ...(manifest.durationSec != null ? { duration: formatDuration(manifest.durationSec) } : {}),
     };
 
     nodes.push(node);

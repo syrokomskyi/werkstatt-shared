@@ -75,15 +75,19 @@ export interface WerkstattPluginHooks {
   /** Build the workpiece (replaces the hardcoded astro/pnpm build call). */
   build?: (ctx: PluginHookContext) => Promise<HookResult>;
   /** Quality gate after build (site: Axiom; game: engine-specific checks; video: render verify). */
-  checkGate?: (ctx: PluginHookContext & {
-    baseUrl?: string;
-  }) => Promise<HookResult>;
+  checkGate?: (
+    ctx: PluginHookContext & {
+      baseUrl?: string;
+    },
+  ) => Promise<HookResult>;
   /** release.prepare: produce behavior snapshots / stack-specific release evidence. */
   releaseEvidence?: (ctx: PluginHookContext) => Promise<HookResult>;
   /** onboarding.scaffold: create a new project workspace of this stack. */
-  scaffoldProject?: (ctx: PluginHookContext & {
-    projectId: string;
-  }) => Promise<HookResult>;
+  scaffoldProject?: (
+    ctx: PluginHookContext & {
+      projectId: string;
+    },
+  ) => Promise<HookResult>;
 }
 
 /**

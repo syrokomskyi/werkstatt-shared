@@ -31,7 +31,11 @@ describe("projectClaims — property-based (AC-4)", () => {
         fc.array(
           fc.record({
             id: fc.string({ minLength: 1 }),
-            status: fc.oneof(fc.constant("published"), fc.constant("draft"), fc.constant("archived")),
+            status: fc.oneof(
+              fc.constant("published"),
+              fc.constant("draft"),
+              fc.constant("archived"),
+            ),
             statement: fc.string(),
             claimClass: fc.string(),
             claimKind: fc.string(),
@@ -42,7 +46,9 @@ describe("projectClaims — property-based (AC-4)", () => {
           for (const c of result) {
             expect(c.id).toBeTruthy();
           }
-          const publishedIds = claims.filter((c) => c.status === "published" && c.id).map((c) => c.id);
+          const publishedIds = claims
+            .filter((c) => c.status === "published" && c.id)
+            .map((c) => c.id);
           expect(result.map((c) => c.id).sort()).toEqual(publishedIds.sort());
         },
       ),

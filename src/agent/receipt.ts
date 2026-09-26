@@ -103,9 +103,7 @@ export function buildAgentProblem(
     ...(init?.detail !== undefined ? { detail: init.detail } : {}),
     ...(init?.errors !== undefined ? { errors: init.errors } : {}),
     ...(init?.schemaRef !== undefined ? { schemaRef: init.schemaRef } : {}),
-    ...(init?.retryAfterSeconds !== undefined
-      ? { retryAfterSeconds: init.retryAfterSeconds }
-      : {}),
+    ...(init?.retryAfterSeconds !== undefined ? { retryAfterSeconds: init.retryAfterSeconds } : {}),
   };
 }
 

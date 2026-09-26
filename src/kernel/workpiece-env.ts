@@ -36,7 +36,8 @@ export const EMPTY_WORKPIECE_ENV: ReadonlyMap<string, string> = new Map();
  * the site is undefined or the file is missing/unreadable — never throws.
  */
 export async function loadWorkpieceEnv(
-  siteDirectory: string | undefined, io: WorkspaceIO = createDefaultIO().io,
+  siteDirectory: string | undefined,
+  io: WorkspaceIO = createDefaultIO().io,
 ): Promise<ReadonlyMap<string, string>> {
   if (!siteDirectory) return EMPTY_WORKPIECE_ENV;
   try {

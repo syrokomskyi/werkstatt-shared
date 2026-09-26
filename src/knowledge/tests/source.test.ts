@@ -8,12 +8,7 @@
 */
 
 import { test, expect } from "vitest";
-import {
-  sourceDescriptorSchema,
-  extractJsonPath,
-  compareValues,
-  coerceNumber,
-} from "../source.ts";
+import { sourceDescriptorSchema, extractJsonPath, compareValues, coerceNumber } from "../source.ts";
 
 test("descriptor: valid http-json passes", () => {
   const r = sourceDescriptorSchema.safeParse({

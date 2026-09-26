@@ -25,7 +25,11 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
 */
 
 import type { RuntimeContext } from "../runtime/runtime-context.ts";
-import { evalVisibility, type ResolvedFeatureGraph, EMPTY_FEATURE_GRAPH } from "../policy/visibility.ts";
+import {
+  evalVisibility,
+  type ResolvedFeatureGraph,
+  EMPTY_FEATURE_GRAPH,
+} from "../policy/visibility.ts";
 import {
   planetImportPaths as registryPlanetImportPaths,
   blockTypeToCosmicName as registryBlockTypeToCosmicName,

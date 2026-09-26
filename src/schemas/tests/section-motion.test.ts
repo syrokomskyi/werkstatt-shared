@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  revealVariantSchema,
-  parallaxVariantSchema,
-} from "../section-motion.ts";
+import { revealVariantSchema, parallaxVariantSchema } from "../section-motion.ts";
 
 describe("revealVariantSchema", () => {
   it("accepts valid variants", () => {

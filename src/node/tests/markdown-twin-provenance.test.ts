@@ -58,10 +58,7 @@ describe("buildMarkdownTwinFrontmatter", () => {
   });
 
   it("includes pageId when provided", () => {
-    const fm = buildMarkdownTwinFrontmatter(
-      { ...baseProvenance, pageId: "about" },
-      "sha256:abc",
-    );
+    const fm = buildMarkdownTwinFrontmatter({ ...baseProvenance, pageId: "about" }, "sha256:abc");
     expect(fm).toContain('pageId: "about"');
   });
 
@@ -70,7 +67,7 @@ describe("buildMarkdownTwinFrontmatter", () => {
       { ...baseProvenance, sourceInputs: ["file1.md", "file2.md"] },
       "sha256:abc",
     );
-    expect(fm).toContain('sourceInputs:');
+    expect(fm).toContain("sourceInputs:");
     expect(fm).toContain('"file1.md"');
   });
 

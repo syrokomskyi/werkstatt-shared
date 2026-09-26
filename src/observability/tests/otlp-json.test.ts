@@ -24,7 +24,12 @@ describe("encodeOtlpMetrics", () => {
         ],
       },
     ];
-    const env = encodeOtlpMetrics(resourceAttrs, points, "@warpgogol/werkstatt-shared/observability", "1");
+    const env = encodeOtlpMetrics(
+      resourceAttrs,
+      points,
+      "@warpgogol/werkstatt-shared/observability",
+      "1",
+    );
     expect(env.resourceMetrics).toHaveLength(1);
     expect(env.resourceMetrics[0]!.resource.attributes).toEqual(resourceAttrs);
     const scope = env.resourceMetrics[0]!.scopeMetrics[0]!;
@@ -58,7 +63,12 @@ describe("encodeOtlpMetrics", () => {
         ],
       },
     ];
-    const env = encodeOtlpMetrics(resourceAttrs, points, "@warpgogol/werkstatt-shared/observability", "1");
+    const env = encodeOtlpMetrics(
+      resourceAttrs,
+      points,
+      "@warpgogol/werkstatt-shared/observability",
+      "1",
+    );
     const metric = env.resourceMetrics[0]!.scopeMetrics[0]!.metrics[0] as Record<string, unknown>;
     expect(metric["name"]).toBe("warpgogol_probe_http_status_class_total");
     expect(metric["unit"]).toBe("1");
@@ -93,7 +103,12 @@ describe("encodeOtlpMetrics", () => {
         ],
       },
     ];
-    const env = encodeOtlpMetrics(resourceAttrs, points, "@warpgogol/werkstatt-shared/observability", "1");
+    const env = encodeOtlpMetrics(
+      resourceAttrs,
+      points,
+      "@warpgogol/werkstatt-shared/observability",
+      "1",
+    );
     const metric = env.resourceMetrics[0]!.scopeMetrics[0]!.metrics[0] as Record<string, unknown>;
     expect(metric["name"]).toBe("warpgogol_factory_command_duration_seconds");
     expect(metric["unit"]).toBe("s");

@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  headingToneSchema,
-  sectionHeaderLevelSchema,
-} from "../section-header.ts";
+import { headingToneSchema, sectionHeaderLevelSchema } from "../section-header.ts";
 
 describe("headingToneSchema", () => {
   it("accepts valid tones", () => {

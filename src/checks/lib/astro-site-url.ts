@@ -23,7 +23,10 @@ import { createDefaultIO, type WorkspaceIO } from "@warpgogol/werkstatt-shared/k
  * Best-effort regex — no AST parsing needed.
  * Handles JS expressions like `site: process.env.X || "https://example.com"`.
  */
-export async function readAstroSiteUrl(appDir: string, io: WorkspaceIO = createDefaultIO().io): Promise<string | undefined> {
+export async function readAstroSiteUrl(
+  appDir: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<string | undefined> {
   const configPath = join(appDir, "astro.config.mjs");
   try {
     const text = await io.readFile(configPath);

@@ -29,7 +29,10 @@ describe("buildMarkdownPageSemantic", () => {
     });
     expect(result.breadcrumbs).toHaveLength(2);
     expect(result.breadcrumbs[0]).toEqual({ name: "Start", url: "https://example.com/de/" });
-    expect(result.breadcrumbs[1]).toEqual({ name: "Test Heading", url: "https://example.com/de/page/" });
+    expect(result.breadcrumbs[1]).toEqual({
+      name: "Test Heading",
+      url: "https://example.com/de/page/",
+    });
   });
 
   it("uses provided breadcrumbs when available", () => {
@@ -42,7 +45,10 @@ describe("buildMarkdownPageSemantic", () => {
       ],
     });
     expect(result.breadcrumbs).toHaveLength(3);
-    expect(result.breadcrumbs[1]).toEqual({ name: "Section", url: "https://example.com/de/section/" });
+    expect(result.breadcrumbs[1]).toEqual({
+      name: "Section",
+      url: "https://example.com/de/section/",
+    });
   });
 
   it("passes through blocks", () => {

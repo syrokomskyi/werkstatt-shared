@@ -201,7 +201,9 @@ test("formatAgentOpenApi: agentGuidance renders into the operation description (
   expect(op).toBeTruthy();
   expect(op!.description).toContain("Reicht eine Kontaktanfrage ein.");
   expect(op!.description).toContain("Use this when ein Besucher das Gewerbe kontaktieren will.");
-  expect(op!.description).toContain("Do not use this when die Antwort bereits auf der Seite steht.");
+  expect(op!.description).toContain(
+    "Do not use this when die Antwort bereits auf der Seite steht.",
+  );
   expect(op!.description).toContain("side effects");
   expect(op!.description).toContain(
     "Retry semantics: mit demselben Idempotency-Key sicher wiederholbar.",

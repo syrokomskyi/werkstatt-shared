@@ -46,7 +46,13 @@ describe("buildOrganizationProfile", () => {
   it("builds address from primitives", () => {
     const result = buildOrganizationProfile({
       ...baseInput,
-      address: { street: "Test St", streetNumber: "1", zip: "12345", city: "Berlin", country: "DE" },
+      address: {
+        street: "Test St",
+        streetNumber: "1",
+        zip: "12345",
+        city: "Berlin",
+        country: "DE",
+      },
     });
     expect(result.organization.address).toEqual({
       streetAddress: "Test St 1",
@@ -70,7 +76,14 @@ describe("buildOrganizationProfile", () => {
   it("emits donationAccount from bank primitives", () => {
     const result = buildOrganizationProfile({
       ...baseInput,
-      bank: { accountHolder: "Org", iban: "DE00", bic: "BIC", bankName: "Bank", konto: "1", blz: "2" },
+      bank: {
+        accountHolder: "Org",
+        iban: "DE00",
+        bic: "BIC",
+        bankName: "Bank",
+        konto: "1",
+        blz: "2",
+      },
     });
     expect(result.organization.donationAccount).toEqual({
       accountHolder: "Org",

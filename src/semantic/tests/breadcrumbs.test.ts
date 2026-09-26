@@ -64,9 +64,7 @@ describe("buildBreadcrumbTrail", () => {
 
   it("inserts ancestors between Home and self", async () => {
     const resolver: BreadcrumbAncestorResolver = {
-      resolveAncestors: async () => [
-        { name: "Section", url: "https://example.com/de/section/" },
-      ],
+      resolveAncestors: async () => [{ name: "Section", url: "https://example.com/de/section/" }],
     };
     const trail = await buildBreadcrumbTrail({
       pageId: "page",

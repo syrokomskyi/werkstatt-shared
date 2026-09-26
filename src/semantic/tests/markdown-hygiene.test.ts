@@ -43,10 +43,13 @@ describe("normalizeGeneratedMarkdownText", () => {
 
 describe("canonicalizeGeneratedMarkdownText", () => {
   it("strips default language prefix from URLs", () => {
-    const result = canonicalizeGeneratedMarkdownText("Link to [page](https://example.com/de/page)", {
-      baseUrl: "https://example.com",
-      defaultLanguage: "de",
-    });
+    const result = canonicalizeGeneratedMarkdownText(
+      "Link to [page](https://example.com/de/page)",
+      {
+        baseUrl: "https://example.com",
+        defaultLanguage: "de",
+      },
+    );
     expect(result).toBe("Link to [page](https://example.com/page)");
   });
 

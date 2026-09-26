@@ -106,9 +106,7 @@ describe("createSemanticIds", () => {
   });
 
   it("generates faq id from page URL", () => {
-    expect(ids.faq("https://example.com/de/page")).toBe(
-      "https://example.com/de/page#/schema/faq",
-    );
+    expect(ids.faq("https://example.com/de/page")).toBe("https://example.com/de/page#/schema/faq");
   });
 
   it("strips trailing slash from baseUrl", () => {

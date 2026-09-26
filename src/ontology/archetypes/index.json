@@ -8,9 +8,7 @@
       "semanticRole": "approach",
       "version": "1.2.0",
       "layoutHint": "card-grid",
-      "acceptedCosmicNames": [
-        "Titan"
-      ],
+      "acceptedCosmicNames": ["Titan"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/approach.yaml",
       "layer": "section"
     },
@@ -20,9 +18,7 @@
       "semanticRole": "article-index",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Io"
-      ],
+      "acceptedCosmicNames": ["Io"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/article-list.yaml",
       "layer": "section"
     },
@@ -32,9 +28,7 @@
       "semanticRole": "audience-self-identification",
       "version": "1.2.0",
       "layoutHint": "card-grid",
-      "acceptedCosmicNames": [
-        "Epimetheus"
-      ],
+      "acceptedCosmicNames": ["Epimetheus"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/audience-cards.yaml",
       "layer": "section"
     },
@@ -44,9 +38,7 @@
       "semanticRole": "component-brand-label",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Proteus"
-      ],
+      "acceptedCosmicNames": ["Proteus"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/brand-label.yaml",
       "layer": "component"
     },
@@ -56,9 +48,7 @@
       "semanticRole": "breadcrumbs",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Thebe"
-      ],
+      "acceptedCosmicNames": ["Thebe"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/breadcrumbs.yaml",
       "layer": "section"
     },
@@ -68,9 +58,7 @@
       "semanticRole": "consent-gated-chat-launcher",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Amalthea"
-      ],
+      "acceptedCosmicNames": ["Amalthea"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/chat-widget.yaml",
       "layer": "section"
     },
@@ -80,9 +68,7 @@
       "semanticRole": "side-by-side-comparison",
       "version": "1.2.0",
       "layoutHint": "card-grid",
-      "acceptedCosmicNames": [
-        "Janus"
-      ],
+      "acceptedCosmicNames": ["Janus"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/comparison-cards.yaml",
       "layer": "section"
     },
@@ -92,9 +78,7 @@
       "semanticRole": "scope-of-responsibility-disclosure",
       "version": "1.2.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Calypso"
-      ],
+      "acceptedCosmicNames": ["Calypso"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/controlled-responsibility-block.yaml",
       "layer": "section"
     },
@@ -104,9 +88,7 @@
       "semanticRole": "component-copyright",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Charon"
-      ],
+      "acceptedCosmicNames": ["Charon"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/copyright.yaml",
       "layer": "component"
     },
@@ -116,9 +98,7 @@
       "semanticRole": "credits-gallery",
       "version": "1.0.0",
       "layoutHint": "card-grid",
-      "acceptedCosmicNames": [
-        "Makemake"
-      ],
+      "acceptedCosmicNames": ["Makemake"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/credits.yaml",
       "layer": "section"
     },
@@ -128,9 +108,7 @@
       "semanticRole": "component-currency-aware-price-display",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Rosalind"
-      ],
+      "acceptedCosmicNames": ["Rosalind"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/currency-aware-price-display.yaml",
       "layer": "component"
     },
@@ -140,9 +118,7 @@
       "semanticRole": "component-cycle-toggle",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Cupid"
-      ],
+      "acceptedCosmicNames": ["Cupid"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/cycle-toggle.yaml",
       "layer": "component"
     },
@@ -152,9 +128,7 @@
       "semanticRole": "donation-card",
       "version": "1.1.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Pandora"
-      ],
+      "acceptedCosmicNames": ["Pandora"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/donation-card.yaml",
       "layer": "section"
     },
@@ -164,9 +138,7 @@
       "semanticRole": "donation-use",
       "version": "1.2.0",
       "layoutHint": "card-grid",
-      "acceptedCosmicNames": [
-        "Rhea"
-      ],
+      "acceptedCosmicNames": ["Rhea"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/donation-use.yaml",
       "layer": "section"
     },
@@ -176,9 +148,7 @@
       "semanticRole": "data-driven-status-indicator",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Elara"
-      ],
+      "acceptedCosmicNames": ["Elara"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/dynamic-status-block.yaml",
       "layer": "section"
     },
@@ -188,9 +158,7 @@
       "semanticRole": "entity-composition-grid",
       "version": "1.0.0",
       "layoutHint": "card-grid",
-      "acceptedCosmicNames": [
-        "Ixion"
-      ],
+      "acceptedCosmicNames": ["Ixion"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/entity-grid.yaml",
       "layer": "section"
     },
@@ -200,9 +168,7 @@
       "semanticRole": "exit-flow-visualization",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Haumea"
-      ],
+      "acceptedCosmicNames": ["Haumea"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/exit-diagram.yaml",
       "layer": "section"
     },
@@ -212,9 +178,7 @@
       "semanticRole": "faq-list",
       "version": "1.1.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Atlas"
-      ],
+      "acceptedCosmicNames": ["Atlas"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/faq-list.yaml",
       "layer": "section"
     },
@@ -224,9 +188,7 @@
       "semanticRole": "final-cta",
       "version": "1.3.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Dione"
-      ],
+      "acceptedCosmicNames": ["Dione"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/final-cta.yaml",
       "layer": "section"
     },
@@ -236,9 +198,7 @@
       "semanticRole": "component-footer-promo",
       "version": "1.0.0",
       "layoutHint": "horizontal-row",
-      "acceptedCosmicNames": [
-        "Nereid"
-      ],
+      "acceptedCosmicNames": ["Nereid"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/footer-promo.yaml",
       "layer": "component"
     },
@@ -248,9 +208,7 @@
       "semanticRole": "client-gratitude",
       "version": "1.0.0",
       "layoutHint": "card-grid",
-      "acceptedCosmicNames": [
-        "Gonggong"
-      ],
+      "acceptedCosmicNames": ["Gonggong"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/gratitude.yaml",
       "layer": "section"
     },
@@ -260,9 +218,7 @@
       "semanticRole": "hero",
       "version": "1.1.0",
       "layoutHint": "decision-card",
-      "acceptedCosmicNames": [
-        "Europa"
-      ],
+      "acceptedCosmicNames": ["Europa"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/hero.yaml",
       "layer": "section"
     },
@@ -272,9 +228,7 @@
       "semanticRole": "hero-with-decision-card",
       "version": "1.1.0",
       "layoutHint": "decision-card",
-      "acceptedCosmicNames": [
-        "Phobos"
-      ],
+      "acceptedCosmicNames": ["Phobos"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/hero-decision-card.yaml",
       "layer": "section"
     },
@@ -284,9 +238,7 @@
       "semanticRole": "impact",
       "version": "1.2.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Ganymede"
-      ],
+      "acceptedCosmicNames": ["Ganymede"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/impact.yaml",
       "layer": "section"
     },
@@ -296,9 +248,7 @@
       "semanticRole": "component-lang-switcher",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Ophelia"
-      ],
+      "acceptedCosmicNames": ["Ophelia"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/lang-switcher.yaml",
       "layer": "component"
     },
@@ -308,9 +258,7 @@
       "semanticRole": "component-layout",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Umbriel"
-      ],
+      "acceptedCosmicNames": ["Umbriel"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/layout.yaml",
       "layer": "component"
     },
@@ -320,9 +268,7 @@
       "semanticRole": "component-layout.not-found",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Cressida"
-      ],
+      "acceptedCosmicNames": ["Cressida"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/not-found.yaml",
       "layer": "component"
     },
@@ -332,9 +278,7 @@
       "semanticRole": "component-live-photo",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Aegaeon"
-      ],
+      "acceptedCosmicNames": ["Aegaeon"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/live-photo.yaml",
       "layer": "component"
     },
@@ -344,9 +288,7 @@
       "semanticRole": "markdown",
       "version": "1.2.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Hyperion"
-      ],
+      "acceptedCosmicNames": ["Hyperion"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/markdown.yaml",
       "layer": "section"
     },
@@ -356,9 +298,7 @@
       "semanticRole": "component-material-credit",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Cordelia"
-      ],
+      "acceptedCosmicNames": ["Cordelia"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/material-credit.yaml",
       "layer": "component"
     },
@@ -368,9 +308,7 @@
       "semanticRole": "component-media",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Sycorax"
-      ],
+      "acceptedCosmicNames": ["Sycorax"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/media.yaml",
       "layer": "component"
     },
@@ -380,9 +318,7 @@
       "semanticRole": "maturity-visualization",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Eris"
-      ],
+      "acceptedCosmicNames": ["Eris"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/mountain-journey.yaml",
       "layer": "section"
     },
@@ -392,9 +328,7 @@
       "semanticRole": "trust-card",
       "version": "1.0.0",
       "layoutHint": "card-grid",
-      "acceptedCosmicNames": [
-        "Nix"
-      ],
+      "acceptedCosmicNames": ["Nix"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/nachweis-card.yaml",
       "layer": "component"
     },
@@ -404,9 +338,7 @@
       "semanticRole": "trust-detail",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Kerberos"
-      ],
+      "acceptedCosmicNames": ["Kerberos"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/nachweis-detail.yaml",
       "layer": "component"
     },
@@ -416,9 +348,7 @@
       "semanticRole": "trust-list",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Hydra"
-      ],
+      "acceptedCosmicNames": ["Hydra"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/nachweis-list.yaml",
       "layer": "component"
     },
@@ -428,9 +358,7 @@
       "semanticRole": "trust-verify",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Styx"
-      ],
+      "acceptedCosmicNames": ["Styx"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/nachweis-verify.yaml",
       "layer": "component"
     },
@@ -440,9 +368,7 @@
       "semanticRole": "navigation",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Phoebe"
-      ],
+      "acceptedCosmicNames": ["Phoebe"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/navigation.yaml",
       "layer": "section"
     },
@@ -452,9 +378,7 @@
       "semanticRole": "exit-clause-disclosure",
       "version": "1.2.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Telesto"
-      ],
+      "acceptedCosmicNames": ["Telesto"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/notausgang-block.yaml",
       "layer": "section"
     },
@@ -464,9 +388,7 @@
       "semanticRole": "open-source-registry",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Orcus"
-      ],
+      "acceptedCosmicNames": ["Orcus"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/open-source-registry.yaml",
       "layer": "section"
     },
@@ -476,9 +398,7 @@
       "semanticRole": "client-ownership-disclosure",
       "version": "1.2.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Helene"
-      ],
+      "acceptedCosmicNames": ["Helene"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/ownership-block.yaml",
       "layer": "section"
     },
@@ -488,9 +408,7 @@
       "semanticRole": "component-passport-header",
       "version": "1.0.0",
       "layoutHint": "horizontal-row",
-      "acceptedCosmicNames": [
-        "Methone"
-      ],
+      "acceptedCosmicNames": ["Methone"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/passport-header.yaml",
       "layer": "component"
     },
@@ -500,9 +418,7 @@
       "semanticRole": "component-passport-provenance",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Bianca"
-      ],
+      "acceptedCosmicNames": ["Bianca"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/passport-provenance.yaml",
       "layer": "component"
     },
@@ -512,9 +428,7 @@
       "semanticRole": "component-passport-score-grid",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Klarissa"
-      ],
+      "acceptedCosmicNames": ["Klarissa"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/passport-score-grid.yaml",
       "layer": "component"
     },
@@ -524,9 +438,7 @@
       "semanticRole": "component-passport-star-map",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Adrastea"
-      ],
+      "acceptedCosmicNames": ["Adrastea"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/passport-star-map.yaml",
       "layer": "component"
     },
@@ -536,9 +448,7 @@
       "semanticRole": "people",
       "version": "2.0.0",
       "layoutHint": "card-grid",
-      "acceptedCosmicNames": [
-        "Mimas"
-      ],
+      "acceptedCosmicNames": ["Mimas"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/people.yaml",
       "layer": "section"
     },
@@ -548,9 +458,7 @@
       "semanticRole": "component-person-profile",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Miranda"
-      ],
+      "acceptedCosmicNames": ["Miranda"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/person-profile.yaml",
       "layer": "component"
     },
@@ -560,9 +468,7 @@
       "semanticRole": "pricing-disclosure",
       "version": "1.1.0",
       "layoutHint": "decision-card",
-      "acceptedCosmicNames": [
-        "Pan"
-      ],
+      "acceptedCosmicNames": ["Pan"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/price-card.yaml",
       "layer": "section"
     },
@@ -572,9 +478,7 @@
       "semanticRole": "problem",
       "version": "1.2.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Callisto"
-      ],
+      "acceptedCosmicNames": ["Callisto"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/problem.yaml",
       "layer": "section"
     },
@@ -584,9 +488,7 @@
       "semanticRole": "component-pulsar",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Despina"
-      ],
+      "acceptedCosmicNames": ["Despina"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/pulsar.yaml",
       "layer": "component"
     },
@@ -596,9 +498,7 @@
       "semanticRole": "component-responsive-image",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Belinda"
-      ],
+      "acceptedCosmicNames": ["Belinda"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/responsive-image.yaml",
       "layer": "component"
     },
@@ -608,9 +508,7 @@
       "semanticRole": "component-scroll-to-top",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Daphnis"
-      ],
+      "acceptedCosmicNames": ["Daphnis"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/scroll-to-top.yaml",
       "layer": "component"
     },
@@ -620,9 +518,7 @@
       "semanticRole": "component-section-body.offer-capacity",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Thalassa"
-      ],
+      "acceptedCosmicNames": ["Thalassa"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/offer-capacity.yaml",
       "layer": "component"
     },
@@ -632,9 +528,7 @@
       "semanticRole": "lead-message-capture",
       "version": "1.3.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Ceres"
-      ],
+      "acceptedCosmicNames": ["Ceres"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/send-message.yaml",
       "layer": "section"
     },
@@ -644,9 +538,7 @@
       "semanticRole": "page-metadata-footer",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Sedna"
-      ],
+      "acceptedCosmicNames": ["Sedna"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/service-metadata-block.yaml",
       "layer": "section"
     },
@@ -656,9 +548,7 @@
       "semanticRole": "component-social-meta",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Naiad"
-      ],
+      "acceptedCosmicNames": ["Naiad"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/social-meta.yaml",
       "layer": "component"
     },
@@ -668,9 +558,7 @@
       "semanticRole": "social-proof",
       "version": "1.2.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Enceladus"
-      ],
+      "acceptedCosmicNames": ["Enceladus"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/social-proof.yaml",
       "layer": "section"
     },
@@ -680,9 +568,7 @@
       "semanticRole": "component-structured-data",
       "version": "1.0.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Triton"
-      ],
+      "acceptedCosmicNames": ["Triton"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/structured-data.yaml",
       "layer": "component"
     },
@@ -692,9 +578,7 @@
       "semanticRole": "transparency",
       "version": "1.3.0",
       "layoutHint": "horizontal-row",
-      "acceptedCosmicNames": [
-        "Tethys"
-      ],
+      "acceptedCosmicNames": ["Tethys"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/transparency.yaml",
       "layer": "section"
     },
@@ -704,9 +588,7 @@
       "semanticRole": "trust-evidence-row",
       "version": "1.2.0",
       "layoutHint": "horizontal-row",
-      "acceptedCosmicNames": [
-        "Deimos"
-      ],
+      "acceptedCosmicNames": ["Deimos"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/trust-strip.yaml",
       "layer": "section"
     },
@@ -716,9 +598,7 @@
       "semanticRole": "video-feature",
       "version": "1.0.0",
       "layoutHint": "single-column",
-      "acceptedCosmicNames": [
-        "Quaoar"
-      ],
+      "acceptedCosmicNames": ["Quaoar"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/video-section.yaml",
       "layer": "section"
     },
@@ -728,9 +608,7 @@
       "semanticRole": "women",
       "version": "1.2.0",
       "layoutHint": "split",
-      "acceptedCosmicNames": [
-        "Iapetus"
-      ],
+      "acceptedCosmicNames": ["Iapetus"],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/women.yaml",
       "layer": "section"
     }

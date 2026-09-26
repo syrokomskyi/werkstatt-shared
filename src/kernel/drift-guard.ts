@@ -128,7 +128,8 @@ export async function guardTrackedOverwrite(
   filePath: string,
   newContent: string,
   options: DriftGuardOptions,
-  logger: DriftGuardLogger, io: WorkspaceIO = createDefaultIO().io,
+  logger: DriftGuardLogger,
+  io: WorkspaceIO = createDefaultIO().io,
 ): Promise<DriftReport> {
   let existing: string | null = null;
   try {

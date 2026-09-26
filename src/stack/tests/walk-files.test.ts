@@ -2,12 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import {
-  walkFiles,
-  readTextFile,
-  readTextFiles,
-  readBinaryFiles,
-} from "../walk-files.ts";
+import { walkFiles, readTextFile, readTextFiles, readBinaryFiles } from "../walk-files.ts";
 
 describe("walkFiles", () => {
   let root: string;

@@ -17,8 +17,5 @@ export type { ParsedFrontmatter } from "./markdown-frontmatter.ts";
 export * from "./entity-id.ts";
 export * from "./merge.ts";
 export * from "./resolve-field-path.ts";
-export {
-  loadSystemManifest,
-  isUsingSystemMd,
-} from "./system-manifest.ts";
+export { loadSystemManifest, isUsingSystemMd } from "./system-manifest.ts";
 export type { SystemManifest, SystemManifestLoadResult } from "./system-manifest.ts";

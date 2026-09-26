@@ -74,7 +74,14 @@ export function restRedisReceiptStore(
       ttlSeconds: number,
     ): Promise<void> {
       const record: ReceiptStoreRecord = { receipt, bodyHash };
-      const command = ["SET", `${prefix}:${key}`, JSON.stringify(record), "NX", "EX", String(ttlSeconds)];
+      const command = [
+        "SET",
+        `${prefix}:${key}`,
+        JSON.stringify(record),
+        "NX",
+        "EX",
+        String(ttlSeconds),
+      ];
       const response = await fetchImpl(config.url, {
         method: "POST",
         headers,

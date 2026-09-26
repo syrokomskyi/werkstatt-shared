@@ -78,7 +78,10 @@ export interface KeyRotateResult {
  *   - Paste the returned privateKeyHex into GitHub Actions secret PASSPORT_SIGNING_KEY
  *   - Commit the updated public key file
  */
-export async function rotateKey(options: KeyRotateOptions, io: WorkspaceIO = createDefaultIO().io): Promise<KeyRotateResult> {
+export async function rotateKey(
+  options: KeyRotateOptions,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<KeyRotateResult> {
   const { appDirectory, appId, initial = false } = options;
   const publicKeyFilePath = join(appDirectory, "public", ".well-known", "cosmic-passport-key.json");
 

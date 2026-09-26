@@ -10,15 +10,25 @@ const channel = {
 };
 
 const items = [
-  { title: "Item 1", url: "https://example.com/1", summary: "Summary 1", publishedAt: "2024-01-01" },
-  { title: "Item 2", url: "https://example.com/2", summary: "Summary 2", publishedAt: "2024-06-01" },
+  {
+    title: "Item 1",
+    url: "https://example.com/1",
+    summary: "Summary 1",
+    publishedAt: "2024-01-01",
+  },
+  {
+    title: "Item 2",
+    url: "https://example.com/2",
+    summary: "Summary 2",
+    publishedAt: "2024-06-01",
+  },
 ];
 
 describe("buildRssFeed", () => {
   it("produces valid RSS XML", () => {
     const result = buildRssFeed(channel, items);
     expect(result).toContain('<?xml version="1.0"');
-    expect(result).toContain("<rss version=\"2.0\"");
+    expect(result).toContain('<rss version="2.0"');
     expect(result).toContain("<channel>");
     expect(result).toContain("<title>Test Feed</title>");
     expect(result).toContain("<language>de</language>");
@@ -92,7 +102,15 @@ describe("buildJsonFeed", () => {
       feed_url: "https://example.com/feed.json",
       description: "",
       language: "de",
-      items: [{ title: "T", url: "https://example.com/1", summary: "S", publishedAt: "2024-01-01", updatedAt: "2024-06-01" }],
+      items: [
+        {
+          title: "T",
+          url: "https://example.com/1",
+          summary: "S",
+          publishedAt: "2024-01-01",
+          updatedAt: "2024-06-01",
+        },
+      ],
     });
     const parsed = JSON.parse(result);
     expect(parsed.items[0].date_modified).toBe("2024-06-01");

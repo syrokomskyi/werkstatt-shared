@@ -38,8 +38,11 @@ export interface OutcomesPayload {
 
 const OUTCOMES_FILE = "src/surface/visibility/outcomes.generated.yaml";
 
-export async function readVisibilityOutcomes(appDir: string, io: WorkspaceIO = createDefaultIO().io): Promise<OutcomesPayload | null> {
+export async function readVisibilityOutcomes(
+  appDir: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<OutcomesPayload | null> {
   const path = join(appDir, OUTCOMES_FILE);
-  if (!await io.exists(path)) return null;
+  if (!(await io.exists(path))) return null;
   return yamlParse(await io.readFile(path)) as OutcomesPayload;
 }
