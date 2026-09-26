@@ -7,7 +7,7 @@ plugin-registration formatter registry, and money formatter built on Intl.Number
 <non-goals>
   <item>Do not resolve content references directly — use resolveReference from @warpgogol/werkstatt-shared/content/content-reference.</item>
   <item>Do not support non-arithmetic expressions (string concatenation, conditionals, date math).</item>
-  <item>Do not add formatters other than money — date, percent, unit formatters are follow-up RFCs.</item>
+  <item>Do not add formatters other than money and duration — date, percent, unit formatters are follow-up RFCs.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
@@ -15,12 +15,14 @@ plugin-registration formatter registry, and money formatter built on Intl.Number
   <item>RFC-0729: Add pipe syntax for post-evaluation formatting, formatter registry, and money formatter.</item>
   <item>RFC-0730: Add formatRecurrence utility for ISO 8601 duration → locale-specific suffix mapping.</item>
   <item>RFC-0731: Add sourceRef optional parameter for this. self-reference expansion in formulas.</item>
+  <item>RFC-1156: Add duration pipe formatter (ISO 8601 → locale prose via Intl.DurationFormat) with raw-input single-ref passthrough.</item>
 </CHANGE_SUMMARY>
 */
 
 import { Parser } from "expr-eval";
 import type { ContentRefIndex, SourceRef } from "../content/content-reference.ts";
 import { resolveReference } from "../content/content-reference.ts";
+import { formatBusinessDays, formatDuration, parseIsoDuration } from "./duration.ts";
 
 export interface FormulaResolution {
   value: string;
@@ -35,7 +37,7 @@ export interface FormulaMatch {
 }
 
 export type PipeFormatter = (
-  value: number,
+  value: number | string,
   params: Record<string, string>,
   context: PipeFormatterContext,
 ) => string;
@@ -45,14 +47,28 @@ export interface PipeFormatterContext {
   defaultLang: string;
 }
 
-const pipeFormatterRegistry = new Map<string, PipeFormatter>();
+interface PipeFormatterEntry {
+  formatter: PipeFormatter;
+  /** "raw" formatters (RFC-1156 duration) receive the resolved value untouched;
+   *  "numeric" formatters receive the evaluated number (extractNumeric path). */
+  input: "raw" | "numeric";
+}
 
-export function registerPipeFormatter(name: string, formatter: PipeFormatter): void {
-  pipeFormatterRegistry.set(name, formatter);
+const pipeFormatterRegistry = new Map<string, PipeFormatterEntry>();
+
+export function registerPipeFormatter(
+  name: string,
+  formatter: PipeFormatter,
+  options?: { input?: "raw" | "numeric" },
+): void {
+  pipeFormatterRegistry.set(name, {
+    formatter,
+    input: options?.input ?? "numeric",
+  });
 }
 
 export function getPipeFormatter(name: string): PipeFormatter | undefined {
-  return pipeFormatterRegistry.get(name);
+  return pipeFormatterRegistry.get(name)?.formatter;
 }
 
 registerPipeFormatter("money", (value, params, context) => {
@@ -61,10 +77,10 @@ registerPipeFormatter("money", (value, params, context) => {
   const targetCurrency = params.targetCurrency;
   const rate = params.rate ? Number(params.rate) : undefined;
 
-  let amount = value;
+  let amount = typeof value === "number" ? value : Number(value);
   let code = currency;
   if (targetCurrency && rate !== undefined && Number.isFinite(rate)) {
-    amount = value * rate;
+    amount = amount * rate;
     code = targetCurrency;
   }
 
@@ -76,6 +92,42 @@ registerPipeFormatter("money", (value, params, context) => {
     maximumFractionDigits: 2,
   }).format(amount);
 });
+
+// RFC-1156: `=(ref | duration)` — ISO 8601 duration → locale-aware prose.
+// input:"raw" passes the resolved string through untouched (see resolveFormula).
+registerPipeFormatter(
+  "duration",
+  (value, params, context) => {
+    const ALLOWED_PARAMS = new Set(["locale", "style", "dayType"]);
+    for (const key of Object.keys(params)) {
+      if (!ALLOWED_PARAMS.has(key)) {
+        throw new Error(`duration: unknown param "${key}"`);
+      }
+    }
+    const locale = params.locale || context.lang || context.defaultLang || "de";
+    const style = params.style ?? "long";
+    if (style !== "long" && style !== "short") {
+      throw new Error(`duration: invalid style "${style}" (expected long|short)`);
+    }
+    const dayType = params.dayType;
+    if (dayType !== undefined && dayType !== "business") {
+      throw new Error(`duration: invalid dayType "${dayType}" (expected business)`);
+    }
+    const parts = parseIsoDuration(value);
+    if (!parts) {
+      throw new Error(`duration: value "${String(value)}" is not an ISO 8601 duration`);
+    }
+    if (dayType === "business") {
+      const nonDay = { ...parts, days: 0 };
+      if (parts.days === 0 || Object.values(nonDay).some((v) => v > 0)) {
+        throw new Error("duration: dayType=business requires a pure-days duration");
+      }
+      return formatBusinessDays(parts.days, locale);
+    }
+    return formatDuration(parts, locale, style);
+  },
+  { input: "raw" },
+);
 
 const parser = new Parser();
 
@@ -207,6 +259,16 @@ export function resolveFormula(
   const arithmeticExpr = hasPipe ? expression.slice(0, pipeIndex) : expression;
   const formatterSpec = hasPipe ? expression.slice(pipeIndex + 1) : "";
 
+  // Parsed early (RFC-1156): raw-input formatters must be identified BEFORE the
+  // reference loop, because extractNumeric would mangle ISO strings ("P30D"→30).
+  const specTokens = formatterSpec
+    .trim()
+    .split(/\s+/)
+    .filter((t) => t.length > 0);
+  const formatterName = specTokens[0] ?? "";
+  const formatterWantsRaw =
+    formatterName !== "" && pipeFormatterRegistry.get(formatterName)?.input === "raw";
+
   // RFC-0731: Expand this. references before REF_IN_FORMULA_PATTERN matching
   let expandedArithmeticExpr = arithmeticExpr;
   if (sourceRef && arithmeticExpr.includes(THIS_PREFIX)) {
@@ -239,6 +301,7 @@ export function resolveFormula(
 
   // Resolve each reference and extract numeric value
   let substitutedExpression = expandedArithmeticExpr;
+  let rawPipeValue: string | undefined;
 
   for (const ref of refs) {
     const result = resolveReference(index, ref, lang, defaultLang);
@@ -261,6 +324,13 @@ export function resolveFormula(
       };
     }
 
+    // RFC-1156: single-ref + raw-input pipe → pass the resolved string through
+    // untouched; ISO durations like "P30D" must reach the formatter intact.
+    if (formatterWantsRaw && refs.length === 1 && expandedArithmeticExpr.trim() === ref) {
+      rawPipeValue = String(result.value);
+      continue;
+    }
+
     const numeric = extractNumeric(result.value);
     if (numeric === null) {
       return {
@@ -273,80 +343,87 @@ export function resolveFormula(
     substitutedExpression = substitutedExpression.replaceAll(ref, String(numeric));
   }
 
-  // Evaluate the arithmetic expression
-  try {
-    const expr = parser.parse(substitutedExpression);
-    const result = expr.evaluate();
+  // Evaluate the arithmetic expression — skipped when a raw-input formatter
+  // captured the single reference above (RFC-1156).
+  let result: number | string | undefined = rawPipeValue;
+  if (rawPipeValue === undefined) {
+    try {
+      const expr = parser.parse(substitutedExpression);
+      const evaluated = expr.evaluate();
 
-    if (typeof result !== "number" || !Number.isFinite(result)) {
-      // Check for division by zero (expr-eval returns Infinity, not an error)
-      if (typeof result === "number" && !Number.isFinite(result)) {
+      if (typeof evaluated !== "number" || !Number.isFinite(evaluated)) {
+        // Check for division by zero (expr-eval returns Infinity, not an error)
+        if (typeof evaluated === "number" && !Number.isFinite(evaluated)) {
+          return {
+            value: "",
+            resolved: false,
+            error: `REF-09: Formula division by zero: ${expression}`,
+          };
+        }
+        return {
+          value: "",
+          resolved: false,
+          error: `REF-08: Formula produced non-numeric result: ${expression}`,
+        };
+      }
+
+      // No pipe — return numeric string as before (RFC-0570, RFC-0723)
+      if (!hasPipe) {
+        return {
+          value: String(evaluated),
+          resolved: true,
+        };
+      }
+      result = evaluated;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+
+      if (message.includes("divide") && message.includes("zero")) {
         return {
           value: "",
           resolved: false,
           error: `REF-09: Formula division by zero: ${expression}`,
         };
       }
+
       return {
         value: "",
         resolved: false,
-        error: `REF-08: Formula produced non-numeric result: ${expression}`,
+        error: `REF-08: Formula syntax error: ${message}`,
       };
     }
+  }
 
-    // No pipe — return numeric string as before (RFC-0570, RFC-0723)
-    if (!hasPipe) {
-      return {
-        value: String(result),
-        resolved: true,
-      };
-    }
-
-    // RFC-0729: Apply pipe formatter
-    const specTokens = formatterSpec
-      .trim()
-      .split(/\s+/)
-      .filter((t) => t.length > 0);
-    const formatterName = specTokens[0] ?? "";
-    const formatter = getPipeFormatter(formatterName);
-    if (!formatter) {
-      return {
-        value: "",
-        resolved: false,
-        error: `REF-10: Unknown pipe formatter: ${formatterName}`,
-      };
-    }
-
-    const params: Record<string, string> = {};
-    for (const token of specTokens.slice(1)) {
-      const eqIndex = token.indexOf("=");
-      if (eqIndex > 0) {
-        params[token.slice(0, eqIndex)] = token.slice(eqIndex + 1);
-      }
-    }
-
-    const context: PipeFormatterContext = { lang, defaultLang };
-    const formatted = formatter(result, params, context);
-
+  // RFC-0729/1156: Apply pipe formatter (numeric result or raw single-ref value).
+  const formatter = getPipeFormatter(formatterName);
+  if (!formatter) {
     return {
-      value: formatted,
+      value: "",
+      resolved: false,
+      error: `REF-10: Unknown pipe formatter: ${formatterName}`,
+    };
+  }
+
+  const params: Record<string, string> = {};
+  for (const token of specTokens.slice(1)) {
+    const eqIndex = token.indexOf("=");
+    if (eqIndex > 0) {
+      params[token.slice(0, eqIndex)] = token.slice(eqIndex + 1);
+    }
+  }
+
+  const context: PipeFormatterContext = { lang, defaultLang };
+  try {
+    return {
+      value: formatter(result!, params, context),
       resolved: true,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-
-    if (message.includes("divide") && message.includes("zero")) {
-      return {
-        value: "",
-        resolved: false,
-        error: `REF-09: Formula division by zero: ${expression}`,
-      };
-    }
-
     return {
       value: "",
       resolved: false,
-      error: `REF-08: Formula syntax error: ${message}`,
+      error: `REF-08: Formula pipe error: ${message}`,
     };
   }
 }
