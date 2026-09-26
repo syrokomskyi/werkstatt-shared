@@ -345,7 +345,7 @@ export function resolveFormula(
 
   // Evaluate the arithmetic expression — skipped when a raw-input formatter
   // captured the single reference above (RFC-1156).
-  let result: number | string | undefined = rawPipeValue;
+  let evaluatedValue: number | string | undefined = rawPipeValue;
   if (rawPipeValue === undefined) {
     try {
       const expr = parser.parse(substitutedExpression);
@@ -374,7 +374,7 @@ export function resolveFormula(
           resolved: true,
         };
       }
-      result = evaluated;
+      evaluatedValue = evaluated;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
 
@@ -415,7 +415,7 @@ export function resolveFormula(
   const context: PipeFormatterContext = { lang, defaultLang };
   try {
     return {
-      value: formatter(result!, params, context),
+      value: formatter(evaluatedValue!, params, context),
       resolved: true,
     };
   } catch (err) {

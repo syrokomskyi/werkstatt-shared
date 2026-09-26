@@ -49,6 +49,15 @@ export function parseIsoDuration(value: unknown): DurationParts | null {
 
 export type DurationStyle = "long" | "short";
 
+// Only de/uk are in scope (site languages). Any other locale falls back to de —
+// applied uniformly on the Intl path and the PluralRules fallback so both
+// backends render identically.
+const SUPPORTED_BASE_LOCALES = new Set(["de", "uk"]);
+export function resolveSupportedLocale(locale: string): string {
+  const base = locale.split("-")[0] ?? "";
+  return SUPPORTED_BASE_LOCALES.has(base) ? base : "de";
+}
+
 // RFC-1156 output table normalizations applied to Intl.DurationFormat output:
 // list separators and locale-specific abbreviations that diverge from the
 // documented contract rows (e.g. Intl renders de short days as "14 Tg.", the
@@ -57,11 +66,7 @@ const SHORT_OVERRIDES: Record<string, ReadonlyArray<[RegExp, string]>> = {
   de: [[/\bTg\./g, "T."]],
 };
 
-export function formatDuration(
-  parts: DurationParts,
-  locale: string,
-  style: DurationStyle,
-): string {
+export function formatDuration(parts: DurationParts, locale: string, style: DurationStyle): string {
   const input: Record<string, number> = {};
   for (const [key, v] of Object.entries(parts)) {
     if (v > 0) input[key] = v;
@@ -74,13 +79,14 @@ export function formatDuration(
       ) => { format(value: Record<string, number>): string };
     }
   ).DurationFormat;
+  const effective = resolveSupportedLocale(locale);
   let out = DurationFormatCtor
-    ? new DurationFormatCtor(locale, { style }).format(input)
-    : formatDurationFallback(parts, locale);
+    ? new DurationFormatCtor(effective, { style }).format(input)
+    : formatDurationFallback(parts, effective);
   // "1 Jahr, 6 Monate" → "1 Jahr 6 Monate" (RFC-1156 output table, compound form).
   out = out.replace(/,\s*/g, " ");
   if (style === "short") {
-    const base = locale.split("-")[0] ?? "";
+    const base = effective;
     for (const [pattern, replacement] of SHORT_OVERRIDES[base] ?? []) {
       out = out.replace(pattern, replacement);
     }
@@ -128,9 +134,7 @@ function formatDurationFallback(parts: DurationParts, locale: string): string {
   const base = locale.split("-")[0] ?? "de";
   const pluralRules = new Intl.PluralRules(locale);
   const segments: string[] = [];
-  for (const [key, v] of Object.entries(parts) as Array<
-    [keyof DurationParts, number]
-  >) {
+  for (const [key, v] of Object.entries(parts) as Array<[keyof DurationParts, number]>) {
     if (v <= 0) continue;
     const words = UNIT_WORDS[key][base] ?? UNIT_WORDS[key]["de"]!;
     segments.push(`${v} ${words[pluralRules.select(v)] ?? words["other"]}`);
@@ -139,10 +143,7 @@ function formatDurationFallback(parts: DurationParts, locale: string): string {
 }
 
 // dayType=business: business-day word forms per locale (Werktage semantics).
-const BUSINESS_DAY_WORDS: Record<
-  string,
-  Partial<Record<Intl.LDMLPluralRule, string>>
-> = {
+const BUSINESS_DAY_WORDS: Record<string, Partial<Record<Intl.LDMLPluralRule, string>>> = {
   de: { one: "Werktag", other: "Werktage" },
   uk: {
     one: "робочий день",
@@ -153,8 +154,8 @@ const BUSINESS_DAY_WORDS: Record<
 };
 
 export function formatBusinessDays(days: number, locale: string): string {
-  const base = locale.split("-")[0] ?? "de";
+  const base = resolveSupportedLocale(locale);
   const words = BUSINESS_DAY_WORDS[base] ?? BUSINESS_DAY_WORDS["de"]!;
-  const category = new Intl.PluralRules(locale).select(days);
+  const category = new Intl.PluralRules(base).select(days);
   return `${days} ${words[category] ?? words["other"]}`;
 }
