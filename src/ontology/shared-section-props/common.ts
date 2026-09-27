@@ -166,6 +166,19 @@ export const EFFECT_STACK_ITEM_SCHEMA = {
         color: EFFECT_COLOR_SCHEMA,
       },
     },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["kind", "enabled"],
+      properties: {
+        kind: { const: "fade" },
+        enabled: { type: "boolean" },
+        edge: { enum: ["top", "bottom", "left", "right"] },
+        color: EFFECT_COLOR_SCHEMA,
+        opacity: { type: "number", minimum: 0, maximum: 1 },
+        extent: { type: "number", minimum: 0, maximum: 0.5 },
+      },
+    },
   ],
 };
 

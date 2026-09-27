@@ -124,6 +124,22 @@ export const lightenEffectSchema = z
   .strict();
 export type LightenEffect = z.infer<typeof lightenEffectSchema>;
 
+export const fadeEffectSchema = z
+  .object({
+    kind: z.literal("fade"),
+    enabled: z.boolean(),
+    /** Edge the fade rises from. Default: "bottom". */
+    edge: z.enum(["top", "bottom", "left", "right"]).optional(),
+    /** Color alias or raw value for the fade color. Defaults to --ds-color-bg. */
+    color: effectColorSchema.optional(),
+    /** 0..1; opacity of the fade color at the edge. Default 1. */
+    opacity: z.number().min(0).max(1).optional(),
+    /** 0..0.5; fade band width as a fraction of the element. Default 0.35. */
+    extent: z.number().min(0).max(0.5).optional(),
+  })
+  .strict();
+export type FadeEffect = z.infer<typeof fadeEffectSchema>;
+
 export const effectSchema = z.discriminatedUnion("kind", [
   glassEffectSchema,
   shadowEffectSchema,
@@ -131,6 +147,7 @@ export const effectSchema = z.discriminatedUnion("kind", [
   bulgeEffectSchema,
   tiltEffectSchema,
   lightenEffectSchema,
+  fadeEffectSchema,
 ]);
 export type Effect = z.infer<typeof effectSchema>;
 
@@ -148,6 +165,7 @@ export const EFFECT_KIND_META = {
   bulge: { strategy: "text", maxPerStack: 1 },
   tilt: { strategy: "text", maxPerStack: 1 },
   lighten: { strategy: "surface", maxPerStack: 1 },
+  fade: { strategy: "surface", maxPerStack: 1 },
 } as const satisfies Record<EffectKind, { strategy: EffectRenderStrategy; maxPerStack: number }>;
 
 /**
@@ -158,7 +176,7 @@ export const EFFECT_KIND_META = {
 export const TARGET_ALLOWED_KINDS: Record<string, readonly EffectKind[]> = {
   heading: ["shadow", "glow", "bulge", "tilt"],
   subheading: ["shadow", "glow", "bulge", "tilt"],
-  background: ["lighten"],
+  background: ["lighten", "fade"],
 };
 
 const DEFAULT_ALLOWED_KINDS: readonly EffectKind[] = ["glass"];

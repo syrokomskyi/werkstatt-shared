@@ -4,6 +4,7 @@ import {
   effectTargetSchema,
   glassEffectSchema,
   effectSchema,
+  effectAssignmentSchema,
   EFFECT_KIND_META,
   allowedKindsForTarget,
   resolveEffectsForTarget,
@@ -61,8 +62,37 @@ describe("effectSchema (discriminated union)", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts fade effect", () => {
+    const result = effectSchema.safeParse({ kind: "fade", enabled: true });
+    expect(result.success).toBe(true);
+  });
+
   it("rejects unknown kind", () => {
     expect(() => effectSchema.parse({ kind: "unknown", enabled: true })).toThrow();
+  });
+});
+
+describe("fadeEffectSchema", () => {
+  it("accepts a bottom edge fade with all fields", () => {
+    const result = effectSchema.safeParse({
+      kind: "fade",
+      enabled: true,
+      edge: "bottom",
+      color: "surface",
+      opacity: 0.9,
+      extent: 0.4,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects extent above 0.5", () => {
+    const result = effectSchema.safeParse({ kind: "fade", enabled: true, extent: 0.6 });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid edge", () => {
+    const result = effectSchema.safeParse({ kind: "fade", enabled: true, edge: "diagonal" });
+    expect(result.success).toBe(false);
   });
 });
 
@@ -83,6 +113,20 @@ describe("allowedKindsForTarget", () => {
   it("returns glass-only default for body", () => {
     const kinds = allowedKindsForTarget("body");
     expect(kinds).toEqual(["glass"]);
+  });
+
+  it("accepts lighten and fade on background", () => {
+    const kinds = allowedKindsForTarget("background");
+    expect(kinds).toContain("lighten");
+    expect(kinds).toContain("fade");
+  });
+
+  it("rejects fade on heading via effectAssignmentSchema", () => {
+    const result = effectAssignmentSchema.safeParse({
+      target: "heading",
+      stack: [{ kind: "fade", enabled: true }],
+    });
+    expect(result.success).toBe(false);
   });
 });
 
