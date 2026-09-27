@@ -10,7 +10,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1156: add duration.ts — parseIsoDuration, formatDuration (Intl.DurationFormat + comma/short-abbrev normalization), formatBusinessDays via Intl.PluralRules.</item>
-  <item>Duration-case extension: `case=` param (nominative|accusative|genitive|dative) with vendored CLDR-grammar unit forms for de/uk — "nach 5 Werktagen", "bis zu 30 Tagen", "за 24 години".</item>
+  <item>RFC-1156: duration-case extension — `case=` param (nominative|accusative|genitive|dative) with vendored CLDR-grammar unit forms for de/uk — "nach 5 Werktagen", "bis zu 30 Tagen", "за 24 години".</item>
 </CHANGE_SUMMARY>
 */
 

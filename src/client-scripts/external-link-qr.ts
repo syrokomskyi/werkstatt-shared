@@ -11,7 +11,7 @@ and manages the modal lifecycle (open, close, focus trap, body scroll lock).</pu
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0932: initial implementation — QR modal lifecycle, dynamic qrcode import, focus trap, body scroll lock.</item>
-  <item>Fix: honor the data-external-link-qr="off" opt-out in the delegated click/keydown handlers — opted-out external links (footer review QR, nachweis links) navigate directly instead of opening the QR modal.</item>
+  <item>RFC-0932: honor the data-external-link-qr="off" opt-out in the delegated click/keydown handlers — opted-out external links (footer review QR, nachweis links) navigate directly instead of opening the QR modal.</item>
 </CHANGE_SUMMARY>
 */
 

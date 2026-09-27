@@ -11,12 +11,12 @@ plugin-registration formatter registry, and money formatter built on Intl.Number
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0570: Initial implementation of formula evaluation for content references.</item>
   <item>RFC-0729: Add pipe syntax for post-evaluation formatting, formatter registry, and money formatter.</item>
   <item>RFC-0730: Add formatRecurrence utility for ISO 8601 duration → locale-specific suffix mapping.</item>
   <item>RFC-0731: Add sourceRef optional parameter for this. self-reference expansion in formulas.</item>
   <item>RFC-1156: Add duration pipe formatter (ISO 8601 → locale prose via Intl.DurationFormat) with raw-input single-ref passthrough.</item>
-  <item>Duration-case extension: `case=` param (nominative|accusative|genitive|dative) on the duration pipe — CLDR word-table backend for non-nominative long forms.</item>
+  <item>RFC-1156: duration-case extension — `case=` param (nominative|accusative|genitive|dative) on the duration pipe, CLDR word-table backend for non-nominative long forms.</item>
+  <history>RFC-0570</history>
 </CHANGE_SUMMARY>
 */
 
