@@ -99,7 +99,9 @@ describe("fadeEffectSchema", () => {
 describe("EFFECT_KIND_META", () => {
   it("has metadata for all effect kinds", () => {
     expect(EFFECT_KIND_META.glass.strategy).toBe("surface");
-    expect(EFFECT_KIND_META.shadow.strategy).toBe("text");
+    // shadow renders as text-shadow on text targets and as box-shadow on
+    // surface targets (e.g. a cast shadow under `section`).
+    expect(EFFECT_KIND_META.shadow.strategy).toBe("both");
   });
 });
 
@@ -119,6 +121,28 @@ describe("allowedKindsForTarget", () => {
     const kinds = allowedKindsForTarget("background");
     expect(kinds).toContain("lighten");
     expect(kinds).toContain("fade");
+  });
+
+  it("accepts glass and shadow on section", () => {
+    const kinds = allowedKindsForTarget("section");
+    expect(kinds).toContain("glass");
+    expect(kinds).toContain("shadow");
+  });
+
+  it("accepts a shadow assignment on section via effectAssignmentSchema", () => {
+    const result = effectAssignmentSchema.safeParse({
+      target: "section",
+      stack: [{ kind: "shadow", enabled: true, offsetY: 24, blur: 48, spread: -16 }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects shadow on background via effectAssignmentSchema", () => {
+    const result = effectAssignmentSchema.safeParse({
+      target: "background",
+      stack: [{ kind: "shadow", enabled: true }],
+    });
+    expect(result.success).toBe(false);
   });
 
   it("rejects fade on heading via effectAssignmentSchema", () => {

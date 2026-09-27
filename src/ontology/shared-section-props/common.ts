@@ -116,6 +116,7 @@ export const EFFECT_STACK_ITEM_SCHEMA = {
         offsetX: { type: "number", minimum: -64, maximum: 64 },
         offsetY: { type: "number", minimum: -64, maximum: 64 },
         blur: { type: "number", minimum: 0, maximum: 64 },
+        spread: { type: "number", minimum: -64, maximum: 64 },
         color: EFFECT_COLOR_SCHEMA,
         opacity: { type: "number", minimum: 0, maximum: 1 },
       },

@@ -72,6 +72,8 @@ export const shadowEffectSchema = z
     offsetX: z.number().min(-64).max(64).optional(),
     offsetY: z.number().min(-64).max(64).optional(),
     blur: z.number().min(0).max(64).optional(),
+    /** Box-shadow spread — only meaningful for the surface (section) render. */
+    spread: z.number().min(-64).max(64).optional(),
     color: effectColorSchema.optional(),
     opacity: z.number().min(0).max(1).optional(),
   })
@@ -153,6 +155,8 @@ export type Effect = z.infer<typeof effectSchema>;
 
 export type EffectKind = Effect["kind"];
 export type EffectRenderStrategy = "surface" | "text";
+/** Kinds that render under both strategies (text-shadow vs box-shadow) declare "both". */
+type EffectKindStrategy = EffectRenderStrategy | "both";
 
 /**
  * RFC-0151 — per-kind metadata. Single source of truth shared by the stack
@@ -160,13 +164,13 @@ export type EffectRenderStrategy = "surface" | "text";
  */
 export const EFFECT_KIND_META = {
   glass: { strategy: "surface", maxPerStack: 1 },
-  shadow: { strategy: "text", maxPerStack: 1 },
+  shadow: { strategy: "both", maxPerStack: 1 },
   glow: { strategy: "text", maxPerStack: 1 },
   bulge: { strategy: "text", maxPerStack: 1 },
   tilt: { strategy: "text", maxPerStack: 1 },
   lighten: { strategy: "surface", maxPerStack: 1 },
   fade: { strategy: "surface", maxPerStack: 1 },
-} as const satisfies Record<EffectKind, { strategy: EffectRenderStrategy; maxPerStack: number }>;
+} as const satisfies Record<EffectKind, { strategy: EffectKindStrategy; maxPerStack: number }>;
 
 /**
  * RFC-0151 — which effect kinds each target accepts. Targets absent from this
@@ -177,6 +181,8 @@ export const TARGET_ALLOWED_KINDS: Record<string, readonly EffectKind[]> = {
   heading: ["shadow", "glow", "bulge", "tilt"],
   subheading: ["shadow", "glow", "bulge", "tilt"],
   background: ["lighten", "fade"],
+  /** Cast shadow below the section boundary (box-shadow), plus surface glass. */
+  section: ["glass", "shadow"],
 };
 
 const DEFAULT_ALLOWED_KINDS: readonly EffectKind[] = ["glass"];
