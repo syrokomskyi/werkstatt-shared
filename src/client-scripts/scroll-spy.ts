@@ -1,6 +1,6 @@
 /*
 <MODULE_CONTRACT>
-<purpose>scroll-spy — watches section elements via IntersectionObserver and updates the URL hash via history.replaceState as the user scrolls (RFC-1061).</purpose>
+<purpose>scroll-spy — watches section elements via IntersectionObserver and updates the URL hash via history.replaceState as the user scrolls (RFC-1061). The first section in document order is exempt: while it is topmost, the URL stays hash-free.</purpose>
 <singleton-state>
   <item>Module-level `activeObserver` and `activeCleanup` enforce single-instance idempotency (AC-9). Calling `initScrollSpy` twice disconnects the previous observer before creating a new one.</item>
 </singleton-state>
@@ -25,7 +25,7 @@ export interface ScrollSpyOptions {
   rootMargin?: string;
   /** IntersectionObserver threshold. Default: 0 */
   threshold?: number;
-  /** Whether to clear the hash when scrolled above the first section. Default: true */
+  /** Whether to keep a clean (hash-free) URL while the first section — or the area above it — is in view. Default: true */
   clearAtTop?: boolean;
 }
 
@@ -83,9 +83,9 @@ export function initScrollSpy(options?: ScrollSpyOptions): () => void {
         }
       }
 
-      if (topmostVisible) {
+      if (topmostVisible && topmostVisible !== sections[0]) {
         updateHash(topmostVisible.id);
-      } else if (clearAtTop) {
+      } else {
         updateHash(null);
       }
     },

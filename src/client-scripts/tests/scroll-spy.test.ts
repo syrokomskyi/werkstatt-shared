@@ -107,7 +107,8 @@ describe("initScrollSpy", () => {
   });
 
   it("AC-1: updates URL hash via history.replaceState when a section is in view", () => {
-    mockDocument.body.innerHTML = '<section id="approach">Content</section>';
+    mockDocument.body.innerHTML =
+      '<section id="hero">Hero</section><section id="approach">Content</section>';
     const cleanup = initScrollSpy();
     const section = sectionCache.get("approach")!;
 
@@ -124,27 +125,71 @@ describe("initScrollSpy", () => {
   });
 
   it("AC-2: clears URL hash when scrolled above the first section", () => {
-    mockDocument.body.innerHTML = '<section id="hero">Hero</section>';
+    mockDocument.body.innerHTML =
+      '<section id="hero">Hero</section><section id="details">Details</section>';
     const cleanup = initScrollSpy();
-    const section = sectionCache.get("hero")!;
+    const details = sectionCache.get("details")!;
 
     observerCallbacks[0]([
       {
-        target: section,
+        target: details,
         isIntersecting: true,
         boundingClientRect: { top: 100 },
       },
     ]);
-    expect(mockHistory.replaceState).toHaveBeenCalledWith(null, "", "#hero");
+    expect(mockHistory.replaceState).toHaveBeenCalledWith(null, "", "#details");
 
     observerCallbacks[0]([
       {
-        target: section,
+        target: details,
         isIntersecting: false,
         boundingClientRect: { top: 500 },
       },
     ]);
     expect(mockHistory.replaceState).toHaveBeenCalledWith(null, "", "/page");
+
+    cleanup();
+  });
+
+  it("keeps a clean URL while the first section is in view", () => {
+    mockDocument.body.innerHTML =
+      '<section id="hero">Hero</section><section id="details">Details</section>';
+    const cleanup = initScrollSpy();
+    const hero = sectionCache.get("hero")!;
+    const details = sectionCache.get("details")!;
+
+    observerCallbacks[0]([
+      {
+        target: hero,
+        isIntersecting: true,
+        boundingClientRect: { top: 0 },
+      },
+    ]);
+    expect(mockHistory.replaceState).not.toHaveBeenCalled();
+
+    observerCallbacks[0]([
+      {
+        target: details,
+        isIntersecting: true,
+        boundingClientRect: { top: 50 },
+      },
+    ]);
+    expect(mockHistory.replaceState).toHaveBeenCalledWith(null, "", "#details");
+
+    observerCallbacks[0]([
+      {
+        target: hero,
+        isIntersecting: true,
+        boundingClientRect: { top: 0 },
+      },
+      {
+        target: details,
+        isIntersecting: false,
+        boundingClientRect: { top: 800 },
+      },
+    ]);
+    expect(mockHistory.replaceState).toHaveBeenLastCalledWith(null, "", "/page");
+    expect(mockHistory.replaceState).not.toHaveBeenCalledWith(null, "", "#hero");
 
     cleanup();
   });
