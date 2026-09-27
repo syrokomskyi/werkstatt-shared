@@ -24,7 +24,6 @@ capture intents, just from different adapters.
   <item>WorkspaceIO is the single filesystem seam — kernel commands never touch fs directly.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-0267: initial implementation.</item>
   <item>RFC-0267 follow-up: add readdir(path): Promise&lt;DirEntry[]&gt; to complete the port so directory-listing commands (e.g. sitemap.generate) migrate mechanically without importing node:fs for Dirent.</item>
   <item>RFC-0326: createDefaultIO returns { io, intents } — writes touch real disk AND record WriteIntent[] for filesModified reporting.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
@@ -33,6 +32,8 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1159: step 1 — execOrThrow helper in workspace-io</item>
+  <history>RFC-0267</history>
 </CHANGE_SUMMARY>
 */
 
@@ -298,6 +299,31 @@ export function createRecordingIO(base: WorkspaceIO): { io: WorkspaceIO; intents
     },
   };
   return { io, intents };
+}
+
+/**
+ * RFC-1159: canonical exit-code check on `io.exec`. `execImpl` resolves
+ * non-zero exits as data (the `ExecResult` contract) — commands must not let
+ * a failed side effect masquerade as success (DNA-106). Use this for
+ * failure-semantics calls (git commit/add/reset, mv, exiftool, …); pass
+ * `allowExitCodes` for signal-semantics calls where a non-zero exit is the
+ * answer, not a failure (`git diff --quiet`, `git rev-parse --verify`).
+ */
+export async function execOrThrow(
+  io: WorkspaceIO,
+  command: string,
+  args: string[],
+  opts?: ExecOptions & { allowExitCodes?: number[] },
+): Promise<ExecResult> {
+  const { allowExitCodes, ...execOpts } = opts ?? {};
+  const result = await io.exec(command, args, execOpts);
+  const code = result.exitCode;
+  if (code !== 0 && !(code !== null && allowExitCodes?.includes(code))) {
+    const sub = args[0] ? ` ${args[0]}` : "";
+    const detail = result.stderr.trim() || result.stdout.trim() || "(no output)";
+    throw new Error(`${command}${sub} failed (exit ${code ?? "null"}): ${detail}`);
+  }
+  return result;
 }
 
 export class KernelMetaError extends Error {
