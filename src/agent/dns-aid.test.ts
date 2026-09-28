@@ -8,6 +8,7 @@ Verifies determinism, domain extraction, and content URL construction.
 <CHANGE_SUMMARY>
   <item>RFC-0786: initial unit tests for buildDnsAidRecord.</item>
   <item>RFC-1162: DNS-AID _mcp record + live-zone drift validation (AGD-05/06)</item>
+  <item>RFC-1162: resolve relative interfaces.mcp.url against baseUrl (pilot crash)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -100,6 +101,16 @@ describe("buildDnsAidRecords (RFC-0786, RFC-1162)", () => {
     const records = buildDnsAidRecords(manifest);
     expect(records[1].name).toBe("_mcp._agents.warpgogol.com");
     expect(records[1].content).toBe("1 mcp.example.net alpn=h2 port=443");
+  });
+
+  // RFC-1162: relative mcp.url (same-origin MCP route, e.g. /api/agent/mcp)
+  // resolves against baseUrl — the record advertises the site host.
+  it("resolves relative mcp.url against baseUrl hostname", () => {
+    const manifest = makeManifest("https://warpgogol.com");
+    manifest.interfaces.mcp = { url: "/api/agent/mcp", protocolVersion: "2025-06-18" };
+    const records = buildDnsAidRecords(manifest);
+    expect(records).toHaveLength(2);
+    expect(records[1].content).toBe("1 warpgogol.com alpn=h2 port=443");
   });
 
   // RFC-1162 AC-1: deterministic for the same input.

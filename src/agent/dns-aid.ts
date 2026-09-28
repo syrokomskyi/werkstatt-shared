@@ -15,6 +15,7 @@
   <item>RFC-0786: initial DNS-AID record builder — TXT record at _agent.<domain>.</item>
   <item>RFC-0786: updated to SVCB record at _index._agents.<domain> per DNS-AID spec.</item>
   <item>RFC-1162: DNS-AID _mcp record + live-zone drift validation (AGD-05/06)</item>
+  <item>RFC-1162: resolve relative interfaces.mcp.url against baseUrl (pilot crash)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -62,7 +63,10 @@ export function buildDnsAidRecords(manifest: AgentSurfaceManifest): DnsAidRecord
 
   const mcp = manifest.interfaces?.mcp;
   if (mcp?.url) {
-    const mcpHost = new URL(mcp.url).hostname;
+    // mcp.url may be relative ("/api/agent/mcp" on same-origin deployments) —
+    // resolve against baseUrl: relative resolves to the site origin, absolute
+    // keeps its own host for hosted endpoints.
+    const mcpHost = new URL(mcp.url, manifest.baseUrl).hostname;
     records.push({
       name: `_mcp._agents.${domain}`,
       type: "SVCB",
