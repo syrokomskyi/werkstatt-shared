@@ -47,6 +47,8 @@ test("buildAgentSurfaceManifest: safe default — empty knowledge/actions, null 
   expect(m.interfaces.a2a).toBe(null);
   expect(m.interfaces.twins).toBe(null);
   expect(m.interfaces.search).toBe(null);
+  // RFC-1164: schemamap is unconditional — same precedent as interfaces.llms.
+  expect(m.interfaces.schemamap).toBe("/schemamap.xml");
   expect(m.proof).toBe(null);
   expect(m.surfaceVersion).toBe(AGENT_SURFACE_VERSION);
 });
@@ -165,7 +167,14 @@ test("buildAgentSurfaceManifest: emits $schema, generatedAt, supportedProtocols"
   expect(m.$schema).toBe(AGENT_SURFACE_SCHEMA_ID);
   expect(m.generatedAt).toBe("2026-01-01T00:00:00.000Z");
   // Unconditional discovery artifacts only — no interfaces were provided.
-  expect(m.supportedProtocols).toEqual(["agent-skills", "ard", "dns-aid", "linkset", "llms"]);
+  expect(m.supportedProtocols).toEqual([
+    "agent-skills",
+    "ard",
+    "dns-aid",
+    "linkset",
+    "llms",
+    "schemamap",
+  ]);
 });
 
 test("buildAgentSurfaceManifest: supportedProtocols follows emitted interfaces", () => {
@@ -184,6 +193,7 @@ test("buildAgentSurfaceManifest: supportedProtocols follows emitted interfaces",
     "llms",
     "mcp",
     "openapi",
+    "schemamap",
     "search",
     "twins",
   ]);

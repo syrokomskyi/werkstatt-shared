@@ -63,6 +63,18 @@ describe("buildRobotsTxt", () => {
     expect(result).toContain("Sitemap: https://example.com/sitemap.xml");
   });
 
+  it("emits Schemamap directive after Sitemap when policy.schemamap is set (RFC-1164)", () => {
+    const result = buildRobotsTxt({ schemamap: "https://example.com/schemamap.xml" });
+    expect(result).toContain("Sitemap: /sitemap.xml");
+    expect(result).toContain("Schemamap: https://example.com/schemamap.xml");
+    expect(result.indexOf("Sitemap:")).toBeLessThan(result.indexOf("Schemamap:"));
+  });
+
+  it("omits the Schemamap directive when policy.schemamap is unset", () => {
+    const result = buildRobotsTxt({});
+    expect(result).not.toContain("Schemamap:");
+  });
+
   it("always allows auxiliary discovery files", () => {
     const result = buildRobotsTxt({ defaultPolicy: "disallow" });
     expect(result).toContain("Allow: /robots.txt");

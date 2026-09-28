@@ -39,6 +39,9 @@ export interface RobotsPolicy {
   crawlerBlocklist?: string[];
   crawlerAllowlist?: string[];
   sitemap?: string;
+  /** RFC-1164: absolute URL of the site's schemamap.xml — emitted as a
+   *  `Schemamap:` directive following the `Sitemap:` pattern. */
+  schemamap?: string;
   customRules?: RobotsRule[];
   /** RFC-0784: Content-Signal directive — AI usage preferences (ai-train, search, ai-input). */
   contentSignal?: string[];
@@ -216,6 +219,11 @@ export function buildRobotsTxt(policy: RobotsPolicy): string {
   const sitemap = policy.sitemap ?? "/sitemap.xml";
   lines.push("");
   lines.push(`Sitemap: ${sitemap}`);
+
+  // RFC-1164: Schemamap reference (JSON-LD mirror index)
+  if (policy.schemamap) {
+    lines.push(`Schemamap: ${policy.schemamap}`);
+  }
 
   return lines.join("\n") + "\n";
 }

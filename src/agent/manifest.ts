@@ -47,6 +47,7 @@ export type AgentProtocol =
   | "ard"
   | "dns-aid"
   | "agent-skills"
+  | "schemamap"
   | "search";
 
 export interface AgentKnowledgeRef {
@@ -93,6 +94,10 @@ export interface AgentSurfaceManifest {
   claims: AgentClaimRef[];
   interfaces: {
     llms: string;
+    /** RFC-1164: the per-page JSON-LD mirror index — unconditional on an enabled
+     *  surface (same precedent as `llms`: the surface pipeline always emits
+     *  schemamap.xml; SMAP-03 verifies the artifact shipped). */
+    schemamap: string;
     twins: { pattern: string } | null;
     openapi: string | null;
     mcp: { url: string; protocolVersion: string } | null;
@@ -189,6 +194,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       "dns-aid",
       "linkset",
       "llms",
+      "schemamap",
       ...(input.mcp ? ["mcp"] : []),
       ...(input.a2a ? ["a2a"] : []),
       ...(input.openapiUrl ? ["openapi"] : []),
@@ -212,6 +218,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
     claims: [...(input.claims ?? [])].sort((a, b) => a.id.localeCompare(b.id)),
     interfaces: {
       llms: "/llms.txt",
+      schemamap: "/schemamap.xml",
       twins: input.hasTwins ? { pattern: "/**.md" } : null,
       openapi: input.openapiUrl ?? null,
       mcp: input.mcp ?? null,
