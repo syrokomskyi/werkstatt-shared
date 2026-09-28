@@ -14,6 +14,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0786: initial DNS-AID record builder — TXT record at _agent.<domain>.</item>
   <item>RFC-0786: updated to SVCB record at _index._agents.<domain> per DNS-AID spec.</item>
+  <item>RFC-1162: DNS-AID _mcp record + live-zone drift validation (AGD-05/06)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -28,26 +29,48 @@ export interface DnsAidRecord {
 }
 
 /**
- * Build the DNS-AID SVCB record declaration from the agent surface manifest.
+ * Build the DNS-AID SVCB record declarations from the agent surface manifest.
  * Pure function — no I/O, no side effects (DNA-58).
  *
- * The record name is `_index._agents.<domain>` (per DNS-AID spec).
- * The record is an SVCB service record (RFC 9460) with:
+ * Always emits `_index._agents.<domain>` — the agent-surface index record
+ * (per DNS-AID spec) whose target is the host serving agent.json.
+ *
+ * RFC-1162: when `manifest.interfaces.mcp` is declared (RFC-1114), also emits
+ * `_mcp._agents.<domain>` — the per-service record advertising the MCP
+ * endpoint. Its targetName derives from `interfaces.mcp.url`'s hostname, not
+ * baseUrl's: the record advertises where MCP is actually served, which can
+ * differ for hosted endpoints.
+ *
+ * Each record is an SVCB service record (RFC 9460) with:
  *   priority: 1 (service mode)
- *   target: <domain> (the host serving agent.json)
+ *   target: <hostname>
  *   alpn: h2 (HTTP/2)
  *   port: 443 (HTTPS)
- * The client resolves the target host, connects via alpn/port, and fetches
- * /.well-known/agent.json — the path is implied by the DNS-AID spec.
  * TTL is 3600 seconds (1 hour).
  */
-export function buildDnsAidRecord(manifest: AgentSurfaceManifest): DnsAidRecord {
+export function buildDnsAidRecords(manifest: AgentSurfaceManifest): DnsAidRecord[] {
   const domain = new URL(manifest.baseUrl).hostname;
-  return {
-    name: `_index._agents.${domain}`,
-    type: "SVCB",
-    content: `1 ${domain} alpn=h2 port=443`,
-    ttl: 3600,
-    proxied: false,
-  };
+  const records: DnsAidRecord[] = [
+    {
+      name: `_index._agents.${domain}`,
+      type: "SVCB",
+      content: `1 ${domain} alpn=h2 port=443`,
+      ttl: 3600,
+      proxied: false,
+    },
+  ];
+
+  const mcp = manifest.interfaces?.mcp;
+  if (mcp?.url) {
+    const mcpHost = new URL(mcp.url).hostname;
+    records.push({
+      name: `_mcp._agents.${domain}`,
+      type: "SVCB",
+      content: `1 ${mcpHost} alpn=h2 port=443`,
+      ttl: 3600,
+      proxied: false,
+    });
+  }
+
+  return records;
 }
