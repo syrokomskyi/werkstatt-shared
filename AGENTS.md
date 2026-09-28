@@ -294,6 +294,15 @@ Location: `packages/werkstatt-shared/src/agent/search.ts` — exported via `@war
 | `NON_KNOWLEDGE_FILES` | Files in the knowledge directory that are not knowledge envelopes (exclusion list) |
 | `isNonKnowledgeFile(filename)` | Returns true if the filename is a non-knowledge file (e.g. `search-manifest.json`) |
 
+### Schemamap surface contracts (RFC-1164)
+
+This package owns the shared Schemamap contracts; the kernel commands (`jsonld.mirror.generate`, `jsonld.schemamap.validate`) and pure mirror helpers (`share/astro/jsonld-mirror.ts`) live in `packages/werkstatt-site`.
+
+| Surface | Location | Contract |
+| --- | --- | --- |
+| RobotsPolicy | `src/semantic/robots.ts` | `schemamap?: string` — when set, `buildRobotsTxt` emits `Schemamap: <url>` after the `Sitemap:` line; `robots.generate` defaults it to `https://<identity.domain>/schemamap.xml` (skipped on domainless sites) |
+| Agent manifest | `src/agent/manifest.ts` | `"schemamap"` in `AgentProtocol`; `AgentSurfaceManifest.interfaces.schemamap: "/schemamap.xml"` is unconditional — the `supportedProtocols` list carries it always (llms precedent: manifest generation precedes dist) |
+
 ### Placeholder route filtering (RFC-0917)
 
 Location: `packages/werkstatt-shared/src/routes/template-filter.ts` — exported via `@warpgogol/werkstatt-shared/routes/template-filter`.
