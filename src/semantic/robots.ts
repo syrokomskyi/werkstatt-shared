@@ -12,6 +12,16 @@
 <CHANGE_SUMMARY>
   <item>RFC-0052: Initial implementation.</item>
   <item>RFC-0784: Add contentSignal field and Content-Signal directive output.</item>
+  <item>RFC-1161: derive named AI-training bot blocks in robots.txt from Content-Signal
+
+AI_TRAINING_CRAWLER_REGISTRY (14 train tokens) + derived User-agent
+group in buildRobotsTxt when contentSignal declares ai-train=no, deduped
+against crawlerBlocklist/customRules. ROBOTS-AITRAIN-01 (missing derived
+group) and ROBOTS-AITRAIN-02 (policy self-contradiction) in
+robots.validate; rule registry entries; robots.validate registered in
+build-prepare after robots.generate (first pipeline placement). Fix
+upstream dead config: robots block now declared in systemManifestSchema
+(manifest.robots was stripped by strict parse).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -31,6 +41,77 @@ export interface RobotsPolicy {
   customRules?: RobotsRule[];
   /** RFC-0784: Content-Signal directive — AI usage preferences (ai-train, search, ai-input). */
   contentSignal?: string[];
+}
+
+/** Product-token categories for AI crawlers (RFC-1161). */
+export type AiCrawlerCategory = "train" | "search" | "input";
+
+export interface AiCrawlerRegistryEntry {
+  /** Exact robots.txt User-agent product token. */
+  userAgent: string;
+  category: AiCrawlerCategory;
+}
+
+/** Workshop-owned registry of known AI crawler product tokens (RFC-1161).
+ *  Only "train" entries participate in the derived Disallow group.
+ *  Registry changes are platform commits; sites inherit via regeneration. */
+export const AI_TRAINING_CRAWLER_REGISTRY: readonly AiCrawlerRegistryEntry[] = [
+  { userAgent: "GPTBot", category: "train" },
+  { userAgent: "Bytespider", category: "train" },
+  { userAgent: "CCBot", category: "train" },
+  { userAgent: "Google-Extended", category: "train" },
+  { userAgent: "Applebot-Extended", category: "train" },
+  { userAgent: "ClaudeBot", category: "train" },
+  { userAgent: "anthropic-ai", category: "train" },
+  { userAgent: "cohere-ai", category: "train" },
+  { userAgent: "Meta-ExternalAgent", category: "train" },
+  { userAgent: "AI2Bot", category: "train" },
+  { userAgent: "Diffbot", category: "train" },
+  { userAgent: "Webzio-Extended", category: "train" },
+  { userAgent: "Timpibot", category: "train" },
+  { userAgent: "VelenPublicWebCrawler", category: "train" },
+];
+
+/** Marker comment line identifying the derived AI-training group (RFC-1161). */
+export const AI_TRAINING_GROUP_MARKER =
+  "# AI-training crawlers — derived from Content-Signal ai-train=no (RFC-1161)";
+
+/** RFC-1161: true when the policy's Content-Signal declares ai-train=no.
+ *  Entries are matched whitespace-tolerant at the edges and case-insensitively
+ *  (Content-Signal tokens are canonically lowercase, but hand-edited manifests
+ *  must not defeat the derivation). One-directional: ai-train=yes or absence
+ *  emits nothing. */
+export function declaresAiTrainNo(policy: RobotsPolicy): boolean {
+  return (policy.contentSignal ?? []).some((entry) => entry.trim().toLowerCase() === "ai-train=no");
+}
+
+/** RFC-1161: train-category registry tokens covered by the derived group for
+ *  this policy. Tokens already covered by crawlerBlocklist or a
+ *  customRules[].userAgent entry are excluded — the site's explicit per-bot
+ *  configuration wins, and duplicate User-agent groups for the same product
+ *  token are never emitted (RFC 9309 leaves multi-group merging to crawlers). */
+export function deriveAiTrainingUserAgents(policy: RobotsPolicy): string[] {
+  if (!declaresAiTrainNo(policy)) {
+    return [];
+  }
+  const explicitTokens = new Set([
+    ...(policy.crawlerBlocklist ?? []),
+    ...(policy.customRules ?? []).map((rule) => rule.userAgent),
+  ]);
+  return AI_TRAINING_CRAWLER_REGISTRY.filter(
+    (entry) => entry.category === "train" && !explicitTokens.has(entry.userAgent),
+  ).map((entry) => entry.userAgent);
+}
+
+/** RFC-1161: canonical rendered lines of the derived AI-training crawler group.
+ *  Shared by the generator and robots.validate (AITRAIN-01) so the presence
+ *  check can never drift from what the generator emits. */
+export function aiTrainingCrawlerGroupLines(userAgents: readonly string[]): string[] {
+  return [
+    AI_TRAINING_GROUP_MARKER,
+    ...userAgents.map((userAgent) => `User-agent: ${userAgent}`),
+    "Disallow: /",
+  ];
 }
 
 export function buildRobotsTxt(policy: RobotsPolicy): string {
@@ -85,6 +166,16 @@ export function buildRobotsTxt(policy: RobotsPolicy): string {
   lines.push("Allow: /llms-full.txt");
   lines.push("Allow: /sitemap.xml");
   lines.push("Allow: /sitemap-content.xml");
+
+  // RFC-1161: derived AI-training crawler group — emitted when the policy
+  // declares ai-train=no. Placed after the complete default group (the
+  // auxiliary Allow lines above belong to User-agent: *) and before the
+  // allowlist/blocklist groups.
+  const aiTrainingTokens = deriveAiTrainingUserAgents(policy);
+  if (aiTrainingTokens.length > 0) {
+    lines.push("");
+    lines.push(...aiTrainingCrawlerGroupLines(aiTrainingTokens));
+  }
 
   // Crawler allowlist (friendly AI / search crawlers)
   if (allowlist.length > 0) {

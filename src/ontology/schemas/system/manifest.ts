@@ -12,6 +12,16 @@
   <item>RFC-1106: step 2 — extend systemManifestSchema
 
 Add identity.legal (RFC-0096) and seo.anchorText.extraStopPhrases (RFC-0911) to systemManifestSchema — the two interface-only fields with living consumers. No dead fields found: all other interface fields already exist in the schema.</item>
+  <item>RFC-1161: derive named AI-training bot blocks in robots.txt from Content-Signal
+
+AI_TRAINING_CRAWLER_REGISTRY (14 train tokens) + derived User-agent
+group in buildRobotsTxt when contentSignal declares ai-train=no, deduped
+against crawlerBlocklist/customRules. ROBOTS-AITRAIN-01 (missing derived
+group) and ROBOTS-AITRAIN-02 (policy self-contradiction) in
+robots.validate; rule registry entries; robots.validate registered in
+build-prepare after robots.generate (first pipeline placement). Fix
+upstream dead config: robots block now declared in systemManifestSchema
+(manifest.robots was stripped by strict parse).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -37,6 +47,32 @@ import { semanticPageTypeSchema, articleMetadataSchema, pageOutputSchema } from 
  *   - identity.biome must match an existing biome YAML id
  *   - constellations[] entries must resolve to existing constellation YAMLs
  */
+/**
+ * RFC-0052 crawl policy block (`robots:`) consumed by robots.generate and
+ * robots.validate. RFC-0784 adds contentSignal; RFC-1161 derives the named
+ * AI-training bot group from it (ai-train=no → Disallow group for
+ * AI_TRAINING_CRAWLER_REGISTRY train tokens).
+ */
+export const systemRobotsSchema = z.object({
+  defaultPolicy: z.enum(["allow", "disallow"]).optional(),
+  disallowedPaths: z.array(z.string()).optional(),
+  allowedPaths: z.array(z.string()).optional(),
+  crawlerBlocklist: z.array(z.string()).optional(),
+  crawlerAllowlist: z.array(z.string()).optional(),
+  sitemap: z.string().optional(),
+  customRules: z
+    .array(
+      z.object({
+        userAgent: z.string().min(1),
+        disallow: z.array(z.string()).optional().default([]),
+        allow: z.array(z.string()).optional().default([]),
+      }),
+    )
+    .optional(),
+  /** RFC-0784 Content-Signal tokens (e.g. "ai-train=no", "search=yes"). */
+  contentSignal: z.array(z.string()).optional(),
+});
+
 export const systemManifestSchema = z.object({
   /**
    * Stable kebab-case slug for this app — matches the apps/<slug>/ directory name.
@@ -301,6 +337,13 @@ export const systemManifestSchema = z.object({
    * When absent, passport page is not rendered but passport.json is still emitted.
    */
   release: systemReleaseSchema.optional(),
+
+  /**
+   * RFC-0052 crawl policy (`robots:`) for robots.generate/robots.validate.
+   * RFC-1161: contentSignal ai-train=no derives the named AI-training
+   * Disallow group in robots.txt.
+   */
+  robots: systemRobotsSchema.optional(),
 
   /**
    * RFC-0235: egress text normalization. Strips AI-authorship typographic
