@@ -184,7 +184,9 @@ test("buildAgentSurfaceManifest: supportedProtocols follows emitted interfaces",
     openapiUrl: "/.well-known/agent.openapi.json",
     mcp: { url: "/api/agent/mcp", protocolVersion: "2026-07-28" },
     search: { url: "/api/agent/search", model: "@cf/baai/bge-m3", dimensions: 1024 },
+    nlweb: "/ask",
   });
+  expect(m.interfaces.nlweb).toBe("/ask");
   expect(m.supportedProtocols).toEqual([
     "agent-skills",
     "ard",
@@ -192,11 +194,18 @@ test("buildAgentSurfaceManifest: supportedProtocols follows emitted interfaces",
     "linkset",
     "llms",
     "mcp",
+    "nlweb",
     "openapi",
     "schemamap",
     "search",
     "twins",
   ]);
+});
+
+test("buildAgentSurfaceManifest: interfaces.nlweb is null when unset (RFC-1165)", () => {
+  const m = buildAgentSurfaceManifest(baseInput);
+  expect(m.interfaces.nlweb).toBeNull();
+  expect(m.supportedProtocols).not.toContain("nlweb");
 });
 
 // ---------------------------------------------------------------------------

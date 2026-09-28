@@ -18,6 +18,7 @@ two runs on unchanged input are byte-identical (AS-7).
   <item>RFC-1114: add "a2a" to AgentProtocol and interfaces.a2a (url + protocolVersion).</item>
   <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
   <item>RFC-1115: search results flattened to citation shape (title, canonicalUrl, updatedAt, lang, type, score, text) under the existing 2.0.0 surface; capability agentGuidance rendered into tool/operation descriptions.</item>
+  <item>RFC-1165: add "nlweb" to AgentProtocol and conditional interfaces.nlweb (populated iff the SSR/search interface chain serves — static sites never advertise it).</item>
   <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112</history>
 </CHANGE_SUMMARY>
 */
@@ -48,6 +49,7 @@ export type AgentProtocol =
   | "dns-aid"
   | "agent-skills"
   | "schemamap"
+  | "nlweb"
   | "search";
 
 export interface AgentKnowledgeRef {
@@ -104,6 +106,9 @@ export interface AgentSurfaceManifest {
     /** RFC-1114: the A2A endpoint — null when the surface ships no A2A route. */
     a2a: { url: string; protocolVersion: string } | null;
     search: { url: string; model: string; dimensions: number } | null;
+    /** RFC-1165: the NLWeb /ask endpoint — populated iff `search` is (the SSR
+     *  adapter + search-manifest chain gates both; static sites ship no /ask). */
+    nlweb: string | null;
   };
   /** Null until agent.surface.sign signs it (RFC-0308) or when no key material exists. */
   proof: AgentSurfaceProof | null;
@@ -125,6 +130,8 @@ export interface AgentSurfaceManifestInput {
   /** RFC-1114: the A2A endpoint descriptor — omit/null when no A2A route exists. */
   a2a?: { url: string; protocolVersion: string } | null;
   search?: { url: string; model: string; dimensions: number } | null;
+  /** RFC-1165: NLWeb /ask path — set when the search interface chain serves. */
+  nlweb?: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -199,6 +206,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       ...(input.a2a ? ["a2a"] : []),
       ...(input.openapiUrl ? ["openapi"] : []),
       ...(input.search ? ["search"] : []),
+      ...(input.nlweb ? ["nlweb"] : []),
       ...(input.hasTwins ? ["twins"] : []),
     ] as AgentProtocol[]
   ).sort();
@@ -224,6 +232,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       mcp: input.mcp ?? null,
       a2a: input.a2a ?? null,
       search: input.search ?? null,
+      nlweb: input.nlweb ?? null,
     },
     proof: null,
   };
