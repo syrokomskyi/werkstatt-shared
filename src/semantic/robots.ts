@@ -22,6 +22,7 @@ robots.validate; rule registry entries; robots.validate registered in
 build-prepare after robots.generate (first pipeline placement). Fix
 upstream dead config: robots block now declared in systemManifestSchema
 (manifest.robots was stripped by strict parse).</item>
+  <item>RFC-1161: fo-review — unexport AI_TRAINING_GROUP_MARKER (no external consumer)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -72,8 +73,10 @@ export const AI_TRAINING_CRAWLER_REGISTRY: readonly AiCrawlerRegistryEntry[] = [
   { userAgent: "VelenPublicWebCrawler", category: "train" },
 ];
 
-/** Marker comment line identifying the derived AI-training group (RFC-1161). */
-export const AI_TRAINING_GROUP_MARKER =
+/** Marker comment line identifying the derived AI-training group (RFC-1161).
+ *  Module-private: the canonical rendered group is exposed via
+ *  aiTrainingCrawlerGroupLines — no external consumer reads the marker alone. */
+const AI_TRAINING_GROUP_MARKER =
   "# AI-training crawlers — derived from Content-Signal ai-train=no (RFC-1161)";
 
 /** RFC-1161: true when the policy's Content-Signal declares ai-train=no.
