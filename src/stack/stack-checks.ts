@@ -14,6 +14,7 @@ KernelCommandResult or register commands themselves.</purpose>
 <CHANGE_SUMMARY>
   <item>RFC-1100: initial spec-driven check harness — StackCheckSpec, StackCheckViolation, StackCheckData, defineStackChecks returning commands + runCheckGate + invariantRows.</item>
   <item>RFC-1100: step 1 — shared tool/fs/check seams (walkFiles, runTool, defineStackChecks)</item>
+  <item>RFC-1173: declare mutatesState on all kernel commands — collectDeclarationDiagnostics emits error-severity MUTATES-STATE-DECLARED, command.manifest.validate is the blocking consumer in packages.check, sweep declares the flag on every command definition (factories hardcode false for read-only check specs)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -68,6 +69,9 @@ export interface StackCheckDeclarations {
 function toCommand(spec: StackCheckSpec): KernelCommandDefinition<StackCheckData> {
   return {
     name: spec.name,
+    // RFC-1173: stack checks are structurally read-only — StackCheckSpec has
+    // no writes field and check() only returns violations.
+    mutatesState: false,
     description: spec.description,
     contract: spec.contract,
     rules: spec.rules,
