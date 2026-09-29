@@ -10,12 +10,12 @@ here (knowledge, capability, openapi, proof) and re-export them from this barrel
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0292: re-export fleet-catalog module.</item>
   <item>RFC-0783: re-export api-catalog and mcp-card modules.</item>
   <item>RFC-0786: re-export dns-aid module.</item>
   <item>RFC-0954: re-export search module.</item>
   <item>RFC-1112: re-export receipt module (ActionReceipt, AgentProblemDetails, deriveActionEventId).</item>
-  <history>RFC-0286</history>
+  <item>RFC-1172: closed agent.traffic telemetry — ports.telemetry sink, TrafficRecorder + boundary emit via withTrafficEmit</item>
+  <history>RFC-0286, RFC-0292</history>
 </CHANGE_SUMMARY>
 */
 
@@ -25,6 +25,7 @@ export * from "./capability.ts";
 export * from "./openapi.ts";
 export * from "./omit-empty.ts";
 export * from "./proof.ts";
+export * from "./telemetry.ts";
 export * from "./fleet-catalog.ts";
 export * from "./api-catalog.ts";
 export * from "./mcp-card.ts";
