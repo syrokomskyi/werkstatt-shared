@@ -522,6 +522,19 @@ BLOCK_EXTRACTORS.register<Record<string, unknown>>({
   },
 });
 
+// ---------------------------------------------------------------------------
+// agent-surface-overview (RFC-1170) — extracts authored heading + intro voice.
+// Projected manifest facts are not authored props, so extraction stays shallow.
+// ---------------------------------------------------------------------------
+BLOCK_EXTRACTORS.register<Record<string, unknown>>({
+  blockType: "agent-surface-overview",
+  extract(props) {
+    const heading = safeString(safeGet(props, "header.heading"));
+    const lead = safeString(safeGet(props, "intro"));
+    return { heading, lead };
+  },
+});
+
 const SITE_NOOP_TYPES = [
   "nachweis-list",
   "nachweis-detail",
