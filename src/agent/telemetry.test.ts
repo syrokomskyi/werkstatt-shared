@@ -1,3 +1,20 @@
+/*
+<MODULE_CONTRACT>
+<purpose>
+RFC-1172: closed-schema coverage for agentTrafficEventSchema — canonical
+acceptance, unknown-field rejection (AC-2 payload creep), unknown enum
+rejection (DNA-19), and durationMs bounds.
+</purpose>
+<non-goals>
+  <item>Do not test emission — the boundary emit + recorder live in werkstatt-engine.</item>
+</non-goals>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1172: initial schema test.</item>
+  <item>RFC-1172: fo-review — extractAgentIdentity on all routes, honest mcpProtocolVersion, top-level import, test header</item>
+</CHANGE_SUMMARY>
+*/
+
 import { describe, expect, test } from "vitest";
 
 import { agentTrafficEventSchema, type AgentTrafficEvent } from "./telemetry.ts";
