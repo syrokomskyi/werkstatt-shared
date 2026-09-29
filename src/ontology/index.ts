@@ -125,8 +125,17 @@ export type { PageEntry, BlockEntry } from "./schemas/index.ts";
 // ---------------------------------------------------------------------------
 // Schemas — Capability catalog (RFC-0288)
 // ---------------------------------------------------------------------------
-export { capabilityInputOutputSchema, capabilityRecordSchema } from "./schemas/index.ts";
-export type { CapabilityInputOutputSchema, CapabilityRecord } from "./schemas/index.ts";
+export {
+  capabilityInputOutputSchema,
+  capabilityOutputSchema,
+  capabilityRecordSchema,
+} from "./schemas/index.ts";
+export type {
+  CapabilityInputOutputSchema,
+  CapabilityNestedProperty,
+  CapabilityOutputSchema,
+  CapabilityRecord,
+} from "./schemas/index.ts";
 
 // ---------------------------------------------------------------------------
 // Shared section props fragments (RFC-0101, RFC-0102, RFC-0103)

@@ -2,9 +2,12 @@
 <MODULE_CONTRACT>
 <purpose>
 RFC-0288: the closed capability catalog record schema — one YAML file per
-AI-agent-invocable action (packages/werkstatt-site/src/domain/ontology/capabilities/*.yaml). The
-input/output shape is a deliberately closed JSON-Schema subset chosen for
+AI-agent-invocable action (packages/werkstatt-shared/src/ontology/capabilities/*.yaml).
+The input/output shape is a deliberately closed JSON-Schema subset chosen for
 lossless projection to both OpenAPI (RFC-0289) and MCP tool schemas (RFC-0290).
+RFC-1169 widened the OUTPUT subset with nested `object`/`array` properties
+(preview envelopes); the INPUT subset stays flat — the runtime validator
+interprets flat shapes only.
 </purpose>
 <non-goals>
   <item>Do not resolve entitlements or active-capability logic here — that is
@@ -17,6 +20,7 @@ lossless projection to both OpenAPI (RFC-0289) and MCP tool schemas (RFC-0290).
   <item>RFC-0288: initial capability record schema.</item>
   <item>RFC-1112: add sideEffect ("write"|"none"); integration + humanEquivalent become optional and are required unless sideEffect is "none".</item>
   <item>RFC-1115: add optional agentGuidance block (sideEffect, whenToUse, whenNotToUse, retrySemantics) rendered into MCP tool descriptions and OpenAPI operation docs.</item>
+  <item>RFC-1169: add optional nextAction object (capability + sideEffect consequence prose) and widen output properties with nested object/array shapes via capabilityNestedPropertySchema. Input stays flat.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -54,6 +58,80 @@ export const capabilityInputOutputSchema = z
   });
 
 export type CapabilityInputOutputSchema = z.infer<typeof capabilityInputOutputSchema>;
+
+/**
+ * RFC-1169: nested property schema for OUTPUT shapes only. The flat
+ * `capabilityPropertySchema` above stays the input contract — the runtime
+ * validator (`validateAgainstCapabilitySchema`) interprets flat shapes only.
+ * Output schemas may nest one level via `object`/`array` so preview envelopes
+ * (missing[], problems[], summary{}) are declarable while staying verbatim-
+ * projectable to OpenAPI 3.1 and MCP tool schemas.
+ */
+export const capabilityNestedPropertySchema: z.ZodType<CapabilityNestedProperty> = z.lazy(() =>
+  z
+    .object({
+      type: z.enum(["string", "boolean", "integer", "array", "object"]),
+      format: z.enum(["email", "uuid", "uri", "date"]).optional(),
+      minLength: z.number().int().nonnegative().optional(),
+      maxLength: z.number().int().positive().optional(),
+      items: capabilityNestedPropertySchema.optional(),
+      properties: z.record(z.string().min(1), capabilityNestedPropertySchema).optional(),
+      required: z.array(z.string().min(1)).optional(),
+      additionalProperties: z.boolean().optional(),
+      description: z.string().min(1).optional(),
+    })
+    .strict(),
+);
+
+/** Recursive output property shape — the TS mirror of capabilityNestedPropertySchema. */
+export interface CapabilityNestedProperty {
+  type: "string" | "boolean" | "integer" | "array" | "object";
+  format?: "email" | "uuid" | "uri" | "date";
+  minLength?: number;
+  maxLength?: number;
+  items?: CapabilityNestedProperty;
+  properties?: Record<string, CapabilityNestedProperty>;
+  required?: string[];
+  additionalProperties?: boolean;
+  description?: string;
+}
+
+/**
+ * RFC-1169: output schema subset — same object wrapper as the input subset,
+ * but `properties` accepts nested shapes. Conditional presence (e.g. `draftId`
+ * present only when `ready: true`) is NOT expressible — outputs declare only
+ * flat `required` sets; conditional invariants are enforced by
+ * `agent.surface.contract.check`, not by this schema.
+ */
+export const capabilityOutputSchema = z
+  .object({
+    type: z.literal("object"),
+    required: z.array(z.string().min(1)).optional(),
+    additionalProperties: z.literal(false),
+    properties: z.record(z.string().min(1), capabilityNestedPropertySchema),
+  })
+  .strict()
+  .refine((schema) => (schema.required ?? []).every((key) => key in schema.properties), {
+    message: "required[] entries must all exist in properties",
+  });
+
+export type CapabilityOutputSchema = z.infer<typeof capabilityOutputSchema>;
+
+/**
+ * RFC-1169: the submit-sibling linkage declared on `sideEffect: "none"`
+ * capabilities. `capability` must resolve against the closed catalog
+ * (enforced by agent.capability.validate, AGC-06 — the record schema cannot
+ * see sibling records); `sideEffect` is a human+model readable consequence
+ * statement of that next action, not the record-level effect class.
+ */
+const capabilityNextActionSchema = z
+  .object({
+    capability: z
+      .string()
+      .regex(/^[a-z][a-z0-9]*(\.[a-z][a-z0-9]*)+$/, "capability must be a dot-separated id"),
+    sideEffect: z.string().min(1),
+  })
+  .strict();
 
 const capabilityIntegrationSchema = z
   .object({
@@ -117,7 +195,9 @@ export const capabilityRecordSchema = z
     title: localizedStringSchema,
     description: localizedStringSchema,
     input: capabilityInputOutputSchema,
-    output: capabilityInputOutputSchema,
+    output: capabilityOutputSchema,
+    /** RFC-1169: preview → submit sibling linkage; meaningful only on sideEffect "none" records (AGC-06 enforces). */
+    nextAction: capabilityNextActionSchema.optional(),
     integration: capabilityIntegrationSchema.optional(),
     requires: capabilityRequiresSchema,
     humanEquivalent: capabilityHumanEquivalentSchema.optional(),

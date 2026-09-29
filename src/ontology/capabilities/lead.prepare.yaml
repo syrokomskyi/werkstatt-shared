@@ -1,5 +1,5 @@
 id: lead.prepare
-version: 1
+version: 2
 kind: action
 sideEffect: none
 title:
@@ -27,15 +27,52 @@ input:
       maxLength: 5000
 output:
   type: object
-  required: [valid, draftId]
+  # RFC-1169: only `ready` is unconditionally required — the closed subset cannot
+  # express conditional presence; the contract check enforces the rest.
+  required: [ready]
   additionalProperties: false
   properties:
-    valid:
+    ready:
       type: boolean
+      description: "true when the input validated and the preview draft is usable; false when fields are missing or invalid — never a 422 on this path"
     draftId:
       type: string
       minLength: 71
       maxLength: 71
+      description: "Present when ready — deterministic canonical hash of the validated input, usable as the Idempotency-Key of a later lead.submit"
+    missing:
+      type: array
+      items:
+        type: string
+      description: "Present when ready is false — names of absent required input fields"
+    problems:
+      type: array
+      items:
+        type: object
+        properties:
+          field:
+            type: string
+          code:
+            type: string
+          detail:
+            type: string
+        required: [field, code, detail]
+        additionalProperties: false
+      description: "Present when ready is false — non-missing-field violations (format, length) with a closed code vocabulary"
+    summary:
+      type: object
+      additionalProperties: true
+      description: "Present when ready — the validated input echoed back so the caller can show the user what would be sent. Contains the caller's own PII — do not log beyond request scope"
+    nextAction:
+      type: string
+      description: "Present when ready — the submit-sibling capability id to call once the user confirms"
+    sideEffect:
+      type: string
+      description: "Present when ready — human+model readable consequence of nextAction"
+nextAction:
+  capability: lead.submit
+  sideEffect: >
+    Creates a project inquiry and dispatches it to the site owner.
 requires:
   entitlements: [agent.actions]
   sections: [send-message]

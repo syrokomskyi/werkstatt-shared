@@ -16,6 +16,7 @@
 import { test, expect } from "vitest";
 import { formatAgentOpenApi } from "../openapi.ts";
 import { buildAgentSurfaceManifest } from "../manifest.ts";
+import type { CapabilityOutputSchema } from "@warpgogol/werkstatt-shared/ontology";
 
 test("formatAgentOpenApi: empty manifest yields a valid document with no paths", () => {
   const manifest = buildAgentSurfaceManifest({
@@ -104,6 +105,58 @@ test("formatAgentOpenApi: one action ref → one POST path with verbatim input/o
   }
 });
 
+test('formatAgentOpenApi: sideEffect "none" action exposes the readiness envelope and no 422 (RFC-1169 AC-4)', () => {
+  const inputSchema = {
+    type: "object" as const,
+    additionalProperties: false as const,
+    required: ["message"],
+    properties: { message: { type: "string" as const } },
+  };
+  const outputSchema: CapabilityOutputSchema = {
+    type: "object",
+    additionalProperties: false,
+    required: ["ready"],
+    properties: {
+      ready: { type: "boolean" },
+      draftId: { type: "string" },
+      missing: { type: "array", items: { type: "string" } },
+      problems: { type: "array" },
+      summary: { type: "object" },
+      nextAction: { type: "string" },
+      sideEffect: { type: "string" },
+    },
+  };
+  const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    site: "s",
+    baseUrl: "https://s.example",
+    languages: { default: "de", supported: ["de"] },
+    actions: [
+      {
+        id: "lead.prepare",
+        url: "/api/agent/actions/lead.prepare",
+        title: { de: "Anfrage prüfen" },
+        inputSchemaRef: "#/components/schemas/lead.prepare-input",
+        entitlement: "agent.actions",
+        sideEffect: "none",
+      },
+    ],
+  });
+  const doc = formatAgentOpenApi(manifest, [
+    { id: "lead.prepare", input: inputSchema, output: outputSchema, sideEffect: "none" },
+  ]);
+  const op = doc.paths["/api/agent/actions/lead.prepare"]?.post;
+  expect(op).toBeTruthy();
+  const out = doc.components.schemas["lead.prepare-output"] as typeof outputSchema;
+  for (const field of ["ready", "draftId", "missing", "summary", "nextAction", "sideEffect"]) {
+    expect(out.properties[field as keyof typeof out.properties], `missing ${field}`).toBeTruthy();
+  }
+  // RFC-1169: preview validation failures answer 200 ready:false — the 422 must
+  // not be declared (agents would otherwise treat it as the failure contract).
+  expect(op!.responses["422"]).toBe(undefined);
+  expect(op!.responses["400"]).toBeTruthy(); // invalid JSON still applies
+});
+
 test("formatAgentOpenApi: an action ref without a matching capability schema is skipped defensively", () => {
   const manifest = buildAgentSurfaceManifest({
     generatedAt: "2026-01-01T00:00:00.000Z",
@@ -187,7 +240,7 @@ test("formatAgentOpenApi: agentGuidance renders into the operation description (
     {
       id: "lead.submit",
       input: { type: "object" },
-      output: { type: "object" },
+      output: { type: "object" as const, additionalProperties: false as const, properties: {} },
       description: { de: "Reicht eine Kontaktanfrage ein." },
       agentGuidance: {
         sideEffect: "write",
@@ -230,7 +283,7 @@ test("formatAgentOpenApi: absent agentGuidance falls back to the base descriptio
     {
       id: "lead.submit",
       input: { type: "object" },
-      output: { type: "object" },
+      output: { type: "object" as const, additionalProperties: false as const, properties: {} },
       description: { de: "Reicht eine Kontaktanfrage ein." },
     },
   ]);

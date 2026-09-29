@@ -88,8 +88,17 @@ export type { PageEntry, BlockEntry } from "./page-entry.ts";
 // @warpgogol/werkstatt-shared/ontology/schemas/manifest-resolver directly.
 
 // RFC-0288: Agent Surface closed capability catalog record.
-export { capabilityInputOutputSchema, capabilityRecordSchema } from "./capability.ts";
-export type { CapabilityInputOutputSchema, CapabilityRecord } from "./capability.ts";
+export {
+  capabilityInputOutputSchema,
+  capabilityOutputSchema,
+  capabilityRecordSchema,
+} from "./capability.ts";
+export type {
+  CapabilityInputOutputSchema,
+  CapabilityNestedProperty,
+  CapabilityOutputSchema,
+  CapabilityRecord,
+} from "./capability.ts";
 
 // RFC-0753: DNS record declaration file schema
 export {

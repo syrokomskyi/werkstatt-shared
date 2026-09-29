@@ -17,12 +17,16 @@ copied verbatim (AGO-04 enforces this).
   <item>RFC-0289: initial OpenAPI projection.</item>
   <item>RFC-0954: add /api/agent/search path with dynamic lang enum from manifest.languages.supported.</item>
   <item>RFC-1112: Idempotency-Key header param + application/problem+json error responses on action paths.</item>
-  <item>RFC-1115: agentGuidance rendered into operation descriptions; search-response schema matches the flattened citation shape.</item>
+  <item>RFC-1115: agentGuidance renders into operation descriptions — model-oriented guidance for when/when-not/retry.</item>
+  <item>RFC-1169: CapabilitySchemaInput gains sideEffect + widened output type; sideEffect "none" actions omit the declared 422 (violations answer 200 ready:false).</item>
 </CHANGE_SUMMARY>
 */
 
 import type { AgentSurfaceManifest } from "./manifest.ts";
-import type { CapabilityInputOutputSchema } from "@warpgogol/werkstatt-shared/ontology";
+import type {
+  CapabilityInputOutputSchema,
+  CapabilityOutputSchema,
+} from "@warpgogol/werkstatt-shared/ontology";
 import { renderAgentGuidanceDescription, type CapabilityAgentGuidance } from "./guidance.ts";
 
 export interface OpenApiSchemaObject {
@@ -75,7 +79,9 @@ export interface OpenApiDocument {
 export interface CapabilitySchemaInput {
   id: string;
   input: CapabilityInputOutputSchema;
-  output: CapabilityInputOutputSchema;
+  output: CapabilityOutputSchema;
+  /** RFC-1169: preview capabilities ("none") drop the 422 — violations answer 200. */
+  sideEffect?: "write" | "none";
   /** RFC-1115: localized base description for operation docs. */
   description?: Record<string, string>;
   /** RFC-1115: model-oriented guidance rendered into the operation description. */
@@ -118,24 +124,35 @@ function problemDetailsSchema(): Record<string, unknown> {
   };
 }
 
-/** RFC-1112: the standard error responses every action path declares. */
-function actionErrorResponses(): OpenApiOperation["responses"] {
+/**
+ * RFC-1112: the standard error responses every action path declares.
+ * RFC-1169: `sideEffect: "none"` actions omit the 422 — schema violations on
+ * the preview path answer 200 with the readiness envelope, so declaring the
+ * response would lie to agents.
+ */
+function actionErrorResponses(sideEffect?: "write" | "none"): OpenApiOperation["responses"] {
   const problem = {
     "application/problem+json": {
       schema: { $ref: "#/components/schemas/problem-details" },
     },
   };
-  return {
+  const responses: OpenApiOperation["responses"] = {
     "400": { description: "Request body is not valid JSON", content: problem },
     "409": {
       description: "Idempotency-Key was used with a different payload",
       content: problem,
     },
     "413": { description: "Payload exceeds the capability limit", content: problem },
-    "422": { description: "Input failed schema validation", content: problem },
     "429": { description: "Rate limit exceeded", content: problem },
     "502": { description: "Delivery substrate rejected the event", content: problem },
   };
+  if (sideEffect !== "none") {
+    responses["422"] = {
+      description: "Input failed schema validation",
+      content: problem,
+    };
+  }
+  return responses;
 }
 
 /** Generic envelope schema — every knowledge domain shares this wrapper shape (RFC-0287); only `data`'s inner shape varies by domain and is intentionally left untyped here. */
@@ -225,7 +242,7 @@ export function formatAgentOpenApi(
             description: `${ref.id} accepted`,
             content: { "application/json": { schema: schemas.output } },
           },
-          ...actionErrorResponses(),
+          ...actionErrorResponses(schemas.sideEffect),
         },
       },
     };

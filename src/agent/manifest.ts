@@ -67,6 +67,12 @@ export interface AgentActionRef {
   title: Record<string, string>;
   inputSchemaRef: string;
   entitlement: "agent.actions";
+  /**
+   * RFC-1169: "none" marks a preview capability (validation failures answer
+   * 200 ready:false, no dispatch). Optional — manifests deployed before
+   * RFC-1169 lack it; absent reads as "write".
+   */
+  sideEffect?: "write" | "none";
 }
 
 export interface AgentClaimRef {

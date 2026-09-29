@@ -16,6 +16,7 @@ operations and MCP tools.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0288: initial capability resolution.</item>
+  <item>RFC-1169: capabilityToActionRef projects sideEffect into AgentActionRef — preview vs write is readable off agent.json.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -64,5 +65,7 @@ export function capabilityToActionRef(cap: CapabilityRecord): AgentActionRef {
     title: cap.title,
     inputSchemaRef: `#/components/schemas/${cap.id}-input`,
     entitlement: "agent.actions",
+    // RFC-1169: consumers must distinguish preview ("none") from write actions.
+    sideEffect: cap.sideEffect ?? "write",
   };
 }

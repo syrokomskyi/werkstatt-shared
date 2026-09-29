@@ -16,6 +16,7 @@ full golden-journey list.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1116: initial contracts — AgentHealth, AgentContractCheckResult, AgentContractProbeId.</item>
+  <item>RFC-1169: AgentPreviewCheckId + previewChecks on the check result — readiness evidence fails closed on old-shape (422) surfaces.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -59,10 +60,28 @@ export interface AgentContractProbe {
   detail?: string;
 }
 
+/**
+ * RFC-1169: closed readiness-check vocabulary. Two entries per check run —
+ * the complete-input path (ready:true + summary + nextAction linkage) and the
+ * incomplete-input path (200 ready:false + missing, never a 422). Kept out of
+ * AgentContractProbeId so the golden-journey union stays untouched.
+ */
+export type AgentPreviewCheckId = "preview.ready" | "preview.incomplete";
+
+export interface AgentPreviewCheck {
+  id: AgentPreviewCheckId;
+  ok: boolean;
+  /** lead.prepare absent from the deployed manifest, or agent.enabled: false. */
+  skipped?: boolean;
+  detail?: string;
+}
+
 /** Diagnostics payload of agent.surface.contract.check (RFC-1116, DNA-82). */
 export interface AgentContractCheckResult {
   command: "agent.surface.contract.check";
   status: "pass" | "fail";
   url: string;
   probes: AgentContractProbe[];
+  /** RFC-1169: preview readiness evidence — fails closed on old-shape surfaces. */
+  previewChecks: AgentPreviewCheck[];
 }
