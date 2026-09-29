@@ -1,0 +1,35 @@
+id: agent-surface-overview
+displayName: Agent surface overview
+version: 1.0.0
+semanticRole: entity-composition-grid
+description: |
+  Human-facing projection of the Agent Surface Manifest (RFC-1170).
+  Interfaces, capabilities with side-effect labels, limits, and knowledge
+  domains render from generated bridges (agent-surface.generated.json +
+  agent-capabilities.generated.json) via resolveAgentSurfaceOverviewData —
+  authored props carry voice only, so rendered facts cannot drift.
+expectedIntents:
+  - trust
+  - legal-clarity
+  - de-risk
+expectedIndustryFit:
+  - trades-and-construction
+  - consulting-and-coaching
+  - legal-services
+layoutHint: card-grid
+bodyKind: composite
+propsSchema:
+  $shape: zod
+  compose:
+    - section-visual
+    - section-header
+  shape: |
+    z.object({
+      intro: z.string().min(1),
+      policyLinks: z.array(z.string().min(1)).optional(),
+      showLimits: z.boolean(),
+      showKnowledgeDomains: z.boolean(),
+    }).strict()
+acceptedCosmicNames:
+  - Varuna
+constraints: {}

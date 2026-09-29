@@ -1,6 +1,15 @@
 schemaVersion: 1.0.0
-totalCount: 61
+totalCount: 62
 entries:
+  - id: agent-surface-overview
+    displayName: Agent surface overview
+    semanticRole: entity-composition-grid
+    version: 1.0.0
+    layoutHint: card-grid
+    acceptedCosmicNames:
+      - Varuna
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/agent-surface-overview.yaml
+    layer: section
   - id: approach
     displayName: Approach
     semanticRole: approach
@@ -614,6 +623,7 @@ componentRoles:
   - trust-list
   - trust-verify
 planetImportPaths:
+  Varuna: "@warpgogol/werkstatt-site/ui/sections/agent-surface-overview"
   Titan: "@warpgogol/werkstatt-site/ui/sections/approach"
   Himalia: "@warpgogol/werkstatt-site/ui/sections/article-header"
   Io: "@warpgogol/werkstatt-site/ui/sections/article-list"
@@ -694,6 +704,7 @@ planetImportPaths:
   Naiad: "@warpgogol/werkstatt-site/ui/components/social-meta"
   Triton: "@warpgogol/werkstatt-site/ui/components/structured-data"
 blockTypeToCosmicName:
+  agent-surface-overview: Varuna
   approach: Titan
   article-header: Himalia
   article-list: Io
@@ -772,11 +783,15 @@ blockTypeToCosmicName:
   social-meta: Naiad
   structured-data: Triton
 moonImportPaths:
+  Desdemona: "@warpgogol/werkstatt-site/ui/components/agent-webmcp"
   Ariel: "@warpgogol/werkstatt-site/ui/components/breadcrumbs"
   Titania: "@warpgogol/werkstatt-site/ui/components/footer"
   Oberon: "@warpgogol/werkstatt-site/ui/components/header"
+  Caliban: "@warpgogol/werkstatt-site/ui/components/page-renderer"
+  Ferdinand: "@warpgogol/werkstatt-site/ui/components/portal-view"
   Hermippe: "@warpgogol/werkstatt-site/ui/components/site-background"
 roleByCosmicName:
+  Varuna: entity-composition-grid
   Titan: approach
   Himalia: article-metadata-header
   Io: approach
@@ -815,6 +830,7 @@ roleByCosmicName:
   Deimos: trust-evidence-row
   Quaoar: video-feature
   Iapetus: women
+  Desdemona: layout-shell
   Proteus: brand-label
   Ariel: breadcrumbs
   Charon: copyright
@@ -836,11 +852,13 @@ roleByCosmicName:
   Hydra: section-body
   Styx: section-body
   Cressida: layout-shell
+  Caliban: layout-shell
   Methone: header
   Bianca: footer-promo
   Klarissa: person-profile
   Adrastea: footer
   Miranda: person-profile
+  Ferdinand: layout-shell
   Despina: lang-switcher
   Belinda: section-image
   Daphnis: scroll-to-top
@@ -860,3 +878,4 @@ roleByCosmicName:
   Naiad: header
   Triton: header
   Hermippe: site-background
+
