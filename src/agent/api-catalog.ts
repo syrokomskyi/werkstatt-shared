@@ -15,6 +15,7 @@ No I/O — the kernel command loads the manifest and passes it here.
   <item>RFC-0954: add search endpoint link when interfaces.search is non-null.</item>
   <item>RFC-1114: link agent-card.json (service-desc) + a2a endpoint (service) when interfaces.a2a is non-null.</item>
   <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
+  <item>RFC-1171: successor-version link entries per manifest deprecations[] — deprecated aliases anchored, pointing at canonical successors.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -91,5 +92,19 @@ export function buildApiCatalog(manifest: AgentSurfaceManifest): ApiCatalog {
 
   entry["service-doc"] = [{ href: manifest.interfaces.llms, type: "text/plain" }];
 
-  return { linkset: [entry] };
+  // RFC-1171: deprecated alias paths appear as successor-version links —
+  // one entry per covered action, anchored at the deprecated concrete path.
+  const deprecationEntries: ApiCatalogEntry[] = [];
+  for (const dep of manifest.deprecations ?? []) {
+    for (const ref of manifest.actions) {
+      const successorUrl = dep.successor.replaceAll("{id}", ref.id);
+      if (successorUrl !== ref.url) continue;
+      deprecationEntries.push({
+        anchor: anchor.replace(/\/+$/, "") + dep.path.replaceAll("{id}", ref.id),
+        "successor-version": [{ href: successorUrl, type: "application/json", title: dep.reason }],
+      });
+    }
+  }
+
+  return { linkset: [entry, ...deprecationEntries] };
 }

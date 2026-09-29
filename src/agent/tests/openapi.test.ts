@@ -72,7 +72,7 @@ test("formatAgentOpenApi: one action ref → one POST path with verbatim input/o
     actions: [
       {
         id: "lead.submit",
-        url: "/api/agent/actions/lead.submit",
+        url: "/api/agent/v1/actions/lead.submit",
         title: { de: "Anfrage senden" },
         inputSchemaRef: "#/components/schemas/lead.submit-input",
         entitlement: "agent.actions",
@@ -82,7 +82,7 @@ test("formatAgentOpenApi: one action ref → one POST path with verbatim input/o
   const doc = formatAgentOpenApi(manifest, [
     { id: "lead.submit", input: inputSchema, output: outputSchema },
   ]);
-  const op = doc.paths["/api/agent/actions/lead.submit"]?.post;
+  const op = doc.paths["/api/agent/v1/actions/lead.submit"]?.post;
   expect(op).toBeTruthy();
   expect(op!.operationId).toBe("action.lead.submit");
   expect(op!.summary).toBe("Anfrage senden");
@@ -134,7 +134,7 @@ test('formatAgentOpenApi: sideEffect "none" action exposes the readiness envelop
     actions: [
       {
         id: "lead.prepare",
-        url: "/api/agent/actions/lead.prepare",
+        url: "/api/agent/v1/actions/lead.prepare",
         title: { de: "Anfrage prüfen" },
         inputSchemaRef: "#/components/schemas/lead.prepare-input",
         entitlement: "agent.actions",
@@ -145,7 +145,7 @@ test('formatAgentOpenApi: sideEffect "none" action exposes the readiness envelop
   const doc = formatAgentOpenApi(manifest, [
     { id: "lead.prepare", input: inputSchema, output: outputSchema, sideEffect: "none" },
   ]);
-  const op = doc.paths["/api/agent/actions/lead.prepare"]?.post;
+  const op = doc.paths["/api/agent/v1/actions/lead.prepare"]?.post;
   expect(op).toBeTruthy();
   const out = doc.components.schemas["lead.prepare-output"] as typeof outputSchema;
   for (const field of ["ready", "draftId", "missing", "summary", "nextAction", "sideEffect"]) {
@@ -166,7 +166,7 @@ test("formatAgentOpenApi: an action ref without a matching capability schema is 
     actions: [
       {
         id: "lead.submit",
-        url: "/api/agent/actions/lead.submit",
+        url: "/api/agent/v1/actions/lead.submit",
         title: { de: "x" },
         inputSchemaRef: "#/components/schemas/lead.submit-input",
         entitlement: "agent.actions",
@@ -174,7 +174,7 @@ test("formatAgentOpenApi: an action ref without a matching capability schema is 
     ],
   });
   const doc = formatAgentOpenApi(manifest, []);
-  expect(doc.paths["/api/agent/actions/lead.submit"]).toBe(undefined);
+  expect(doc.paths["/api/agent/v1/actions/lead.submit"]).toBe(undefined);
 });
 
 test("formatAgentOpenApi: mcp interface present → x-gogol-mcp is set", () => {
@@ -229,7 +229,7 @@ test("formatAgentOpenApi: agentGuidance renders into the operation description (
     actions: [
       {
         id: "lead.submit",
-        url: "/api/agent/actions/lead.submit",
+        url: "/api/agent/v1/actions/lead.submit",
         title: { de: "Anfrage senden" },
         inputSchemaRef: "#/components/schemas/lead.submit-input",
         entitlement: "agent.actions",
@@ -250,7 +250,7 @@ test("formatAgentOpenApi: agentGuidance renders into the operation description (
       },
     },
   ]);
-  const op = doc.paths["/api/agent/actions/lead.submit"]?.post;
+  const op = doc.paths["/api/agent/v1/actions/lead.submit"]?.post;
   expect(op).toBeTruthy();
   expect(op!.description).toContain("Reicht eine Kontaktanfrage ein.");
   expect(op!.description).toContain("Use this when ein Besucher das Gewerbe kontaktieren will.");
@@ -272,7 +272,7 @@ test("formatAgentOpenApi: absent agentGuidance falls back to the base descriptio
     actions: [
       {
         id: "lead.submit",
-        url: "/api/agent/actions/lead.submit",
+        url: "/api/agent/v1/actions/lead.submit",
         title: { de: "Anfrage senden" },
         inputSchemaRef: "#/components/schemas/lead.submit-input",
         entitlement: "agent.actions",
@@ -287,7 +287,7 @@ test("formatAgentOpenApi: absent agentGuidance falls back to the base descriptio
       description: { de: "Reicht eine Kontaktanfrage ein." },
     },
   ]);
-  const op = doc.paths["/api/agent/actions/lead.submit"]?.post;
+  const op = doc.paths["/api/agent/v1/actions/lead.submit"]?.post;
   expect(op!.description).toBe("Reicht eine Kontaktanfrage ein.");
 });
 
@@ -315,4 +315,42 @@ test("formatAgentOpenApi: search-response schema matches the flattened citation 
   ]);
   expect(item.properties.canonicalUrl).toEqual({ type: "string" });
   expect(item.properties.chunk).toBeUndefined();
+});
+
+// ---------------------------------------------------------------------------
+// RFC-1171: deprecated alias operations (AC-5)
+// ---------------------------------------------------------------------------
+
+test("formatAgentOpenApi: deprecations[] project deprecated alias ops with successor pointer (AC-5)", () => {
+  const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    site: "s",
+    baseUrl: "https://s.example",
+    languages: { default: "de", supported: ["de"] },
+    actions: [
+      {
+        id: "lead.submit",
+        url: "/api/agent/v1/actions/lead.submit",
+        title: { de: "Anfrage senden" },
+        inputSchemaRef: "#/components/schemas/lead.submit-input",
+        entitlement: "agent.actions",
+      },
+    ],
+  });
+  const doc = formatAgentOpenApi(manifest, [
+    {
+      id: "lead.submit",
+      input: { type: "object" as const, properties: {} },
+      output: { type: "object" as const, properties: {} },
+    },
+  ]);
+  // Canonical operation stays untouched.
+  const canonical = doc.paths["/api/agent/v1/actions/lead.submit"]?.post;
+  expect(canonical?.deprecated).toBeUndefined();
+  expect(canonical?.operationId).toBe("action.lead.submit");
+  // Alias operation exists, is deprecated, and names its successor.
+  const alias = doc.paths["/api/agent/actions/lead.submit"]?.post;
+  expect(alias?.deprecated).toBe(true);
+  expect(alias?.operationId).toBe("action.lead.submit.deprecated");
+  expect(alias?.description).toContain("/api/agent/v1/actions/lead.submit");
 });

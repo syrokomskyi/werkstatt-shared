@@ -61,7 +61,10 @@ export function resolveActiveCapabilities(
 export function capabilityToActionRef(cap: CapabilityRecord): AgentActionRef {
   return {
     id: cap.id,
-    url: `/api/agent/actions/${cap.id}`,
+    // RFC-1171: canonical action urls live under the versioned namespace; the
+    // unversioned path stays alive only as a deprecated alias (manifest
+    // deprecations[] + gate-stamped headers).
+    url: `/api/agent/v1/actions/${cap.id}`,
     title: cap.title,
     inputSchemaRef: `#/components/schemas/${cap.id}-input`,
     entitlement: "agent.actions",

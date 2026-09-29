@@ -17,6 +17,7 @@ full golden-journey list.
 <CHANGE_SUMMARY>
   <item>RFC-1116: initial contracts — AgentHealth, AgentContractCheckResult, AgentContractProbeId.</item>
   <item>RFC-1169: AgentPreviewCheckId + previewChecks on the check result — readiness evidence fails closed on old-shape (422) surfaces.</item>
+  <item>RFC-1171: AgentDeprecationCheck + deprecationChecks on the check result — per-deprecation alias header/successor evidence.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -76,6 +77,24 @@ export interface AgentPreviewCheck {
   detail?: string;
 }
 
+/**
+ * RFC-1171: closed deprecation-check vocabulary. One entry per manifest
+ * deprecations[] item: alias must carry Deprecation/Sunset/Link headers and
+ * the successor must resolve; an alias still declared past sunsetAt fails.
+ */
+export type AgentDeprecationCheckId =
+  "deprecation.headers" | "deprecation.successor" | "deprecation.sunset";
+
+export interface AgentDeprecationCheck {
+  id: AgentDeprecationCheckId;
+  /** The deprecations[].path this entry covers. */
+  path: string;
+  ok: boolean;
+  /** No deprecations[] in the deployed manifest, or agent.enabled: false. */
+  skipped?: boolean;
+  detail?: string;
+}
+
 /** Diagnostics payload of agent.surface.contract.check (RFC-1116, DNA-82). */
 export interface AgentContractCheckResult {
   command: "agent.surface.contract.check";
@@ -84,4 +103,6 @@ export interface AgentContractCheckResult {
   probes: AgentContractProbe[];
   /** RFC-1169: preview readiness evidence — fails closed on old-shape surfaces. */
   previewChecks: AgentPreviewCheck[];
+  /** RFC-1171: per-deprecation alias/successor evidence — fails closed when a declared alias lacks headers or the successor is dead. */
+  deprecationChecks: AgentDeprecationCheck[];
 }

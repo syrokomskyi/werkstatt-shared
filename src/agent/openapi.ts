@@ -41,6 +41,8 @@ export interface OpenApiOperation {
   operationId: string;
   summary?: string;
   description?: string;
+  /** RFC-1171: OpenAPI 3.1 deprecation flag — set on alias operations. */
+  deprecated?: boolean;
   tags: string[];
   parameters?: Array<{
     name: string;
@@ -246,6 +248,26 @@ export function formatAgentOpenApi(
         },
       },
     };
+  }
+
+  // RFC-1171: deprecated alias paths are projected as deprecated operations —
+  // every agent reading the document sees the successor pointer on the alias.
+  for (const dep of manifest.deprecations ?? []) {
+    for (const ref of manifest.actions) {
+      const successorUrl = dep.successor.replaceAll("{id}", ref.id);
+      if (successorUrl !== ref.url) continue;
+      const canonical = paths[ref.url]?.post;
+      if (!canonical) continue;
+      const aliasPath = dep.path.replaceAll("{id}", ref.id);
+      paths[aliasPath] = {
+        post: {
+          ...canonical,
+          operationId: `action.${ref.id}.deprecated`,
+          deprecated: true,
+          description: `Deprecated since ${dep.deprecateAt} — use ${successorUrl} instead (sunset ${dep.sunsetAt}). ${dep.reason}`,
+        },
+      };
+    }
   }
 
   if (manifest.interfaces.search) {

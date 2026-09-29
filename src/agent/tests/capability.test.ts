@@ -101,7 +101,7 @@ test("resolveActiveCapabilities: actionsDisabled withholds an otherwise-active c
 test("capabilityToActionRef: projects id/url/title/entitlement", () => {
   const ref = capabilityToActionRef(makeCap());
   expect(ref.id).toBe("lead.submit");
-  expect(ref.url).toBe("/api/agent/actions/lead.submit");
+  expect(ref.url).toBe("/api/agent/v1/actions/lead.submit");
   expect(ref.entitlement).toBe("agent.actions");
   expect(ref.title).toEqual({ de: "x", en: "x" });
 });

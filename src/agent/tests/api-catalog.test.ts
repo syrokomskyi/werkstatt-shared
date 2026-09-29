@@ -101,3 +101,33 @@ test("buildApiCatalog: links are sorted by href within each relation", () => {
   const sorted = [...itemHrefs].sort();
   expect(itemHrefs).toEqual(sorted);
 });
+
+// ---------------------------------------------------------------------------
+// RFC-1171: successor-version links (AC-7)
+// ---------------------------------------------------------------------------
+
+test("buildApiCatalog: deprecations[] project successor-version link entries (AC-7)", () => {
+  const manifest = buildAgentSurfaceManifest({
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    site: "s",
+    baseUrl: "https://s.example",
+    languages: { default: "de", supported: ["de"] },
+    actions: [
+      {
+        id: "lead.submit",
+        url: "/api/agent/v1/actions/lead.submit",
+        title: { de: "Anfrage senden" },
+        inputSchemaRef: "#/x",
+        entitlement: "agent.actions",
+      },
+    ],
+  });
+  const catalog = buildApiCatalog(manifest);
+  const depEntries = catalog.linkset.filter(
+    (e) => Array.isArray(e["successor-version"]),
+  );
+  expect(depEntries).toHaveLength(1);
+  expect(depEntries[0].anchor).toBe("https://s.example/api/agent/actions/lead.submit");
+  const links = depEntries[0]["successor-version"] as { href: string }[];
+  expect(links[0].href).toBe("/api/agent/v1/actions/lead.submit");
+});

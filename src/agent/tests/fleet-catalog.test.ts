@@ -29,7 +29,7 @@ const sampleDoc = {
   actions: [
     {
       id: "lead.submit",
-      url: "/api/agent/actions/lead.submit",
+      url: "/api/agent/v1/actions/lead.submit",
       title: { de: "Anfrage" },
       inputSchemaRef: "#/x",
       entitlement: "agent.actions",

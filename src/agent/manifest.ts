@@ -19,6 +19,7 @@ two runs on unchanged input are byte-identical (AS-7).
   <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
   <item>RFC-1115: search results flattened to citation shape (title, canonicalUrl, updatedAt, lang, type, score, text) under the existing 2.0.0 surface; capability agentGuidance rendered into tool/operation descriptions.</item>
   <item>RFC-1165: add "nlweb" to AgentProtocol and conditional interfaces.nlweb (populated iff the SSR/search interface chain serves — static sites never advertise it).</item>
+  <item>RFC-1171: ManifestDeprecation + platform-injected unversioned→v1 deprecations[] with fixed date constants (determinism), validateManifestDeprecations enforcing successor resolution and the 90-day sunset window.</item>
   <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112</history>
 </CHANGE_SUMMARY>
 */
@@ -83,6 +84,112 @@ export interface AgentClaimRef {
   evidenceCount: number;
 }
 
+/**
+ * RFC-1171: closed deprecation declaration — every deprecated machine path
+ * carries a successor, a human/model-readable reason, and a calendar window.
+ * The schema is closed; extending it requires an RFC (DNA-19 principle).
+ */
+export interface ManifestDeprecation {
+  /** Deprecated path pattern, e.g. "/api/agent/actions/{id}". */
+  path: string;
+  /** Successor path pattern, e.g. "/api/agent/v1/actions/{id}". */
+  successor: string;
+  /** Human + model readable migration note. */
+  reason: string;
+  /** ISO date (YYYY-MM-DD) — Deprecation header appears from this date on. */
+  deprecateAt: string;
+  /** ISO date (YYYY-MM-DD) — the alias is removed no earlier than this. */
+  sunsetAt: string;
+}
+
+/** RFC-1171: canonical versioned action path pattern. */
+export const AGENT_ACTION_V1_PATH = "/api/agent/v1/actions/{id}";
+/** RFC-1171: the deprecated unversioned alias path pattern. */
+export const AGENT_ACTION_ALIAS_PATH = "/api/agent/actions/{id}";
+
+/**
+ * RFC-1171: the platform-injected deprecation entry for the unversioned action
+ * namespace. Dates are FIXED constants — never derive them from build time;
+ * generatedAt is excluded from contentHash, but a changing deprecateAt would
+ * poison the deterministic hash (AS-7, DNA-58). 90-day minimum window honored.
+ */
+export const AGENT_ACTION_DEPRECATION: ManifestDeprecation = {
+  path: AGENT_ACTION_ALIAS_PATH,
+  successor: AGENT_ACTION_V1_PATH,
+  reason: "Actions moved into the versioned namespace (RFC-1171).",
+  deprecateAt: "2026-10-01",
+  sunsetAt: "2027-04-01",
+};
+
+/** RFC-1171: minimum sunset window in milliseconds (90 days). */
+export const DEPRECATION_MIN_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * RFC-1171: validate `deprecations[]` entries against the emitted action set.
+ * Returns a list of violations (empty = valid). Pure — callers decide whether
+ * to throw (builder, fail-closed at generation) or report (surface validator).
+ *
+ * Rules: ISO dates; successor must resolve — every emitted action url must
+ * equal the successor pattern with `{id}` substituted; the deprecated path
+ * must not itself be a live canonical url; sunsetAt - deprecateAt >= 90 days.
+ */
+export function validateManifestDeprecations(
+  deprecations: ManifestDeprecation[],
+  actions: AgentActionRef[],
+): string[] {
+  const errors: string[] = [];
+  for (const dep of deprecations) {
+    if (!ISO_DATE_RE.test(dep.deprecateAt) || Number.isNaN(Date.parse(dep.deprecateAt))) {
+      errors.push(
+        `deprecation '${dep.path}': deprecateAt '${dep.deprecateAt}' is not a valid YYYY-MM-DD date`,
+      );
+    }
+    if (!ISO_DATE_RE.test(dep.sunsetAt) || Number.isNaN(Date.parse(dep.sunsetAt))) {
+      errors.push(
+        `deprecation '${dep.path}': sunsetAt '${dep.sunsetAt}' is not a valid YYYY-MM-DD date`,
+      );
+    }
+    if (!dep.path.startsWith("/api/agent/") || !dep.successor.startsWith("/api/agent/")) {
+      errors.push(`deprecation '${dep.path}': path and successor must live under /api/agent/`);
+    }
+    if (dep.path === dep.successor) {
+      errors.push(`deprecation '${dep.path}': successor equals the deprecated path`);
+    }
+    if (
+      !Number.isNaN(Date.parse(dep.deprecateAt)) &&
+      !Number.isNaN(Date.parse(dep.sunsetAt)) &&
+      Date.parse(dep.sunsetAt) - Date.parse(dep.deprecateAt) < DEPRECATION_MIN_WINDOW_MS
+    ) {
+      errors.push(
+        `deprecation '${dep.path}': sunsetAt is less than 90 days after deprecateAt (window: ${dep.deprecateAt} → ${dep.sunsetAt})`,
+      );
+    }
+    if (actions.length === 0) {
+      errors.push(
+        `deprecation '${dep.path}': no emitted actions to resolve successor '${dep.successor}'`,
+      );
+      continue;
+    }
+    for (const action of actions) {
+      const resolved = dep.successor.replaceAll("{id}", action.id);
+      if (resolved !== action.url) {
+        errors.push(
+          `deprecation '${dep.path}': successor '${dep.successor}' does not resolve emitted action '${action.id}' ('${resolved}' != '${action.url}')`,
+        );
+      }
+      const deprecatedResolved = dep.path.replaceAll("{id}", action.id);
+      if (deprecatedResolved === action.url) {
+        errors.push(
+          `deprecation '${dep.path}': deprecated path resolves to the canonical url of '${action.id}' — a live path cannot be deprecated`,
+        );
+      }
+    }
+  }
+  return errors;
+}
+
 export interface AgentSurfaceManifest {
   /** RFC-1113: schema identifier — "gogol.agent.surface/2". */
   $schema: string;
@@ -98,6 +205,12 @@ export interface AgentSurfaceManifest {
   contentHash: string;
   knowledge: AgentKnowledgeRef[];
   actions: AgentActionRef[];
+  /**
+   * RFC-1171: declarative deprecation — closed declaration projected into
+   * agent.json, OpenAPI, api-catalog, and gate-stamped response headers.
+   * Platform-injected; sites never author it.
+   */
+  deprecations: ManifestDeprecation[];
   /** RFC-1076: claim provenance chain — claims with their evidence references. */
   claims: AgentClaimRef[];
   interfaces: {
@@ -130,6 +243,12 @@ export interface AgentSurfaceManifestInput {
   actions?: AgentActionRef[];
   /** RFC-1076: claim provenance summaries for the manifest. */
   claims?: AgentClaimRef[];
+  /**
+   * RFC-1171: extra deprecation declarations (platform code only — never
+   * site-authored). The unversioned→v1 action entry is injected automatically
+   * when actions exist; do not repeat it here.
+   */
+  deprecations?: ManifestDeprecation[];
   hasTwins?: boolean;
   openapiUrl?: string | null;
   mcp?: { url: string; protocolVersion: string } | null;
@@ -229,6 +348,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
     },
     knowledge: [...(input.knowledge ?? [])].sort((a, b) => a.domain.localeCompare(b.domain)),
     actions: [...(input.actions ?? [])].sort((a, b) => a.id.localeCompare(b.id)),
+    deprecations: mergeDeprecations(input),
     claims: [...(input.claims ?? [])].sort((a, b) => a.id.localeCompare(b.id)),
     interfaces: {
       llms: "/llms.txt",
@@ -242,6 +362,27 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
     },
     proof: null,
   };
+  // RFC-1171: fail-closed at generation — an unresolving successor or a
+  // sub-90-day window must never reach a deployed agent.json (AC-3, AC-4).
+  const deprecationErrors = validateManifestDeprecations(base.deprecations, base.actions);
+  if (deprecationErrors.length > 0) {
+    throw new Error(
+      `agent surface manifest: invalid deprecations[] — ${deprecationErrors.join("; ")}`,
+    );
+  }
   const contentHash = computeAgentManifestContentHash(base as unknown as Record<string, unknown>);
   return { ...base, contentHash };
+}
+
+/**
+ * RFC-1171: platform injection — the unversioned→v1 action deprecation is
+ * declared automatically when the surface emits actions; caller-provided
+ * entries (platform code only) merge on top, deduplicated by path.
+ */
+function mergeDeprecations(input: AgentSurfaceManifestInput): ManifestDeprecation[] {
+  const list = [...(input.deprecations ?? [])];
+  if ((input.actions?.length ?? 0) > 0 && !list.some((d) => d.path === AGENT_ACTION_ALIAS_PATH)) {
+    list.push(AGENT_ACTION_DEPRECATION);
+  }
+  return list.sort((a, b) => a.path.localeCompare(b.path));
 }

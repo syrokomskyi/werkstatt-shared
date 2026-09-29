@@ -17,12 +17,14 @@
 
 import { test, expect } from "vitest";
 import {
+  AGENT_ACTION_DEPRECATION,
   AGENT_SURFACE_SCHEMA_ID,
   AGENT_SURFACE_VERSION,
   buildAgentSurfaceManifest,
   computeAgentManifestContentHash,
   computeSignedContentHash,
   canonicalJson,
+  validateManifestDeprecations,
 } from "../manifest.ts";
 
 const baseInput = {
@@ -74,14 +76,14 @@ test("buildAgentSurfaceManifest: sorts knowledge refs by domain and actions by i
     actions: [
       {
         id: "lead.submit",
-        url: "/api/agent/actions/lead.submit",
+        url: "/api/agent/v1/actions/lead.submit",
         title: { de: "Anfrage senden" },
         inputSchemaRef: "#/components/schemas/lead.submit-input",
         entitlement: "agent.actions",
       },
       {
         id: "appointment.request",
-        url: "/api/agent/actions/appointment.request",
+        url: "/api/agent/v1/actions/appointment.request",
         title: { de: "Termin anfragen" },
         inputSchemaRef: "#/components/schemas/appointment.request-input",
         entitlement: "agent.actions",
