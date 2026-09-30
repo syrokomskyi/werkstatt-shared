@@ -294,6 +294,28 @@ Location: `packages/werkstatt-shared/src/agent/search.ts` — exported via `@war
 | `NON_KNOWLEDGE_FILES` | Files in the knowledge directory that are not knowledge envelopes (exclusion list) |
 | `isNonKnowledgeFile(filename)` | Returns true if the filename is a non-knowledge file (e.g. `search-manifest.json`) |
 
+### Agent Surface ARD catalog + Agent Skills documents (RFC-1090, RFC-1113)
+
+Location: `packages/werkstatt-shared/src/agent/ard-catalog.ts` (catalog projection) and `src/agent/skill-md.ts` (SKILL.md builder) — exported via `@warpgogol/werkstatt-shared/agent/ard-catalog` and `.../agent/skill-md`. Generators: `agent.ard-catalog.generate`, `agent.discovery-endpoints.generate` (werkstatt-site).
+
+| Export | Purpose |
+| --- | --- |
+| `ArdCatalog` | Schema for the ARD v0.91 catalog (`specVersion`, `generatedFrom`, `entries`) |
+| `buildArdCatalog(manifest)` | Build the catalog projection — absolute entry URLs, whitelisted media types only |
+| `assertArdCatalogManifestBijection(manifest, catalog)` | ARD-02/03 bijection check (A2A card, MCP card, knowledge domains) |
+| `ARD_BASE_CONTEXT` | `@context` URI carried by every catalog entry |
+| `MEDIA_AI_CATALOG` | `application/ai-catalog+json` — content type for both catalog paths |
+| `MEDIA_A2A_AGENT_CARD` | `application/a2a-agent-card+json` — whitelisted A2A type |
+| `MEDIA_MCP_SERVER_CARD` | `application/mcp-server-card+json` — whitelisted MCP type |
+| `MEDIA_AGENT_SKILLS_MARKDOWN` | `text/markdown; profile="urn:air:agent-skills"` — knowledge-domain type |
+| `buildKnowledgeSkillMarkdown(input)` | agentskills-conformant `SKILL.md` body for a knowledge domain (YAML-safe frontmatter) |
+
+Conventions:
+
+- Catalog is emitted identically to `/.well-known/ard.json` (canonical) and `/.well-known/ai-catalog.json` (legacy alias); entries advertise only whitelisted ARD media types — OpenAPI/search/manifest stay discoverable via api-catalog linkset, Link headers, and `auth.md`.
+- Every catalog `url` is absolute (`toAbsoluteUrl(manifest.baseUrl, path)`); entries are sorted by `identifier` (DNA-58).
+- Each knowledge domain gets a generated `/.well-known/agent-skills/<domain>/SKILL.md`; the catalog entry points at it. `agent.discovery-endpoints.generate` sweeps stale skill dirs and hashes the exact SKILL.md bytes into `agent-skills/index.json` digests (SHA-256).
+
 ### Schemamap surface contracts (RFC-1164)
 
 This package owns the shared Schemamap contracts; the kernel commands (`jsonld.mirror.generate`, `jsonld.schemamap.validate`) and pure mirror helpers (`share/astro/jsonld-mirror.ts`) live in `packages/werkstatt-site`.
