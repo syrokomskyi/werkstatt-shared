@@ -134,22 +134,54 @@ test("createRecordingIO: reads pass through to the base adapter", async () => {
 
 test("createReadOnlyIO: throws KERNEL-META-01 naming the command and path on writeFile", async () => {
   const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command");
+  const target = join(process.cwd(), "readonly-guard-should-not-write.txt");
   try {
-    await io.writeFile("/tmp/should-not-write.txt", "x");
+    await io.writeFile(target, "x");
     expect.fail("should have thrown");
   } catch (error) {
     expect(error).toBeInstanceOf(KernelMetaError);
     expect((error as Error).message).toMatch(/KERNEL-META-01/);
     expect((error as Error).message).toMatch(/fixture\.readonly\.command/);
-    expect((error as Error).message).toMatch(/should-not-write\.txt/);
+    expect((error as Error).message).toMatch(/readonly-guard-should-not-write\.txt/);
   }
 });
 
 test("createReadOnlyIO: throws on mkdir, rm, and exec too", async () => {
   const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command");
-  await expect(() => io.mkdir("/tmp/nope")).rejects.toThrow(KernelMetaError);
-  await expect(() => io.rm("/tmp/nope")).rejects.toThrow(KernelMetaError);
-  await expect(() => io.exec("rm", ["-rf", "/tmp/nope"])).rejects.toThrow(KernelMetaError);
+  const target = join(process.cwd(), "readonly-guard-nope");
+  await expect(() => io.mkdir(target)).rejects.toThrow(KernelMetaError);
+  await expect(() => io.rm(target)).rejects.toThrow(KernelMetaError);
+  await expect(() => io.exec("rm", ["-rf", target])).rejects.toThrow(KernelMetaError);
+});
+
+test("createReadOnlyIO: reports readonly and passes tmpdir-scoped mutations through", async () => {
+  const root = await mkdtemp(join(tmpdir(), "workspace-io-readonly-tmp-"));
+  try {
+    const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command");
+    expect(io.readonly).toBe(true);
+    // RFC-1176: scratch space under os.tmpdir() is not workspace state —
+    // mutations there pass through instead of throwing.
+    const target = join(root, "scratch.txt");
+    await io.writeFile(target, "scratch");
+    expect(await io.readFile(target)).toBe("scratch");
+    const tmpDir = await io.mkdtemp(join(tmpdir(), "workspace-io-mkdtemp-"));
+    await io.rm(tmpDir, { recursive: true });
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("createReadOnlyIO: allowExec binds subprocess calls through to the base adapter", async () => {
+  const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command", {
+    allowExec: true,
+  });
+  const result = await io.exec("echo", ["hello"]);
+  expect(result.exitCode).toBe(0);
+  expect(result.stdout.trim()).toBe("hello");
+  // Filesystem mutations still throw even with allowExec.
+  await expect(() =>
+    io.writeFile(join(process.cwd(), "readonly-guard-no.txt"), "x"),
+  ).rejects.toThrow(KernelMetaError);
 });
 
 test("createReadOnlyIO: reads still work", async () => {

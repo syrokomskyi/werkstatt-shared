@@ -84,6 +84,28 @@ export interface KernelCommandMetadata {
   description: string;
   scope: KernelCommandScope;
   mutatesState?: boolean;
+  /**
+   * RFC-1176: permits `io.exec` on the read-only adapter — the command
+   * declares `mutatesState: false` but legitimately shells out for
+   * read-only probes (git log/ls-files/diff, `which`, binary `-ver`).
+   * Subprocesses bypass filesystem interception by nature; the flag makes
+   * the declaration honest. All direct WorkspaceIO mutations still throw
+   * KERNEL-META-01. Direct child_process/fs usage is flagged by the
+   * registry-integrity gate regardless. Meaningful only with
+   * `mutatesState: false`.
+   */
+  execOnReadOnly?: boolean;
+  /**
+   * RFC-1176: flag names whose truthy presence upgrades this invocation to
+   * a real (or `--dry-run` recording) adapter even though the command
+   * declares `mutatesState: false` — flag-gated mutating modes such as
+   * `--write-baseline` or `--auto-accept`. The declaration stays `false`
+   * so pipeline scheduling (collectErrors read-only continuation) treats
+   * the step as read-only; the mutation capability is exercised only when
+   * the flag is explicitly passed. Meaningful only with
+   * `mutatesState: false`.
+   */
+  mutatingFlags?: string[];
   requiresNetwork?: boolean;
   supportsAllSites?: boolean;
   timeoutMs?: number;

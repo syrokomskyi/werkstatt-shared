@@ -51,7 +51,8 @@ import {
 } from "node:fs/promises";
 import { glob as fsGlob } from "node:fs/promises";
 import { spawn } from "node:child_process";
-import { dirname } from "node:path";
+import { tmpdir as osTmpdir } from "node:os";
+import { dirname, resolve as pathResolve, sep } from "node:path";
 import { writeFileAtomic } from "./fs-atomic.ts";
 
 export interface ExecOptions {
@@ -108,6 +109,14 @@ export interface WorkspaceIO {
   /** Create a unique temporary directory under `prefix`; returns its path. */
   mkdtemp(prefix: string): Promise<string>;
   exec(command: string, args: string[], opts?: ExecOptions): Promise<ExecResult>;
+  /**
+   * RFC-1176: `true` only on the read-only adapter (`mutatesState: false`
+   * commands). Best-effort bookkeeping writes must be skipped with
+   * `if (!io.readonly)` instead of attempting a mutation that throws
+   * KERNEL-META-01 — the throw stays as the enforcement floor for
+   * undeclared mutations. Undefined on real and recording adapters.
+   */
+  readonly readonly?: boolean;
 }
 
 async function execImpl(command: string, args: string[], opts?: ExecOptions): Promise<ExecResult> {
@@ -339,12 +348,48 @@ export class KernelMetaError extends Error {
   }
 }
 
+export interface ReadOnlyIOOptions {
+  /**
+   * RFC-1176: pass `command.execOnReadOnly === true` — the command declared
+   * subprocess use, so `exec` is bound through instead of throwing. All
+   * filesystem mutations still throw KERNEL-META-01.
+   */
+  allowExec?: boolean;
+  /**
+   * RFC-1176: the workspace root — the tmpdir carve-out below must NOT apply
+   * to paths inside it (a workshop itself may live under $TMPDIR, e.g. test
+   * fixtures and CI smoke workspaces). When absent, any tmpdir path passes.
+   */
+  workspaceRoot?: string;
+}
+
 /**
  * Wraps a base adapter so every mutation throws KERNEL-META-01 naming the
  * command and the attempted path. Used for every `mutatesState: false`
  * command (proves the metadata trustworthy) and by the test harness.
+ *
+ * RFC-1176 carve-outs: mutations targeting paths under `os.tmpdir()` pass
+ * through — scratch space is not workspace state — unless the path is
+ * inside `opts.workspaceRoot` (workshops can live under $TMPDIR). `exec`
+ * passes through when `opts.allowExec` (the command declared
+ * `execOnReadOnly`). `io.readonly` reports `true` so commands can skip
+ * best-effort writes instead of relying on the throw.
  */
-export function createReadOnlyIO(base: WorkspaceIO, commandName: string): WorkspaceIO {
+export function createReadOnlyIO(
+  base: WorkspaceIO,
+  commandName: string,
+  opts?: ReadOnlyIOOptions,
+): WorkspaceIO {
+  const tmpRoots = [osTmpdir(), pathResolve(osTmpdir())].map((r) =>
+    r.endsWith(sep) ? r : r + sep,
+  );
+  const workspaceRoot = opts?.workspaceRoot ? pathResolve(opts.workspaceRoot) : undefined;
+  const isTmpPath = (p: string) => {
+    const abs = pathResolve(p);
+    if (workspaceRoot && (abs === workspaceRoot || abs.startsWith(workspaceRoot + sep)))
+      return false;
+    return tmpRoots.some((root) => abs.startsWith(root));
+  };
   return {
     readFile: base.readFile.bind(base),
     readFileBytes: base.readFileBytes.bind(base),
@@ -353,29 +398,39 @@ export function createReadOnlyIO(base: WorkspaceIO, commandName: string): Worksp
     readdir: base.readdir.bind(base),
     stat: base.stat.bind(base),
     realpath: base.realpath.bind(base),
-    async writeFile(path) {
+    readonly: true,
+    async writeFile(path, content) {
+      if (isTmpPath(path)) return base.writeFile(path, content);
       throw new KernelMetaError(commandName, path);
     },
-    async appendFile(path) {
+    async appendFile(path, content) {
+      if (isTmpPath(path)) return base.appendFile(path, content);
       throw new KernelMetaError(commandName, path);
     },
     async mkdir(path) {
+      if (isTmpPath(path)) return base.mkdir(path);
       throw new KernelMetaError(commandName, path);
     },
-    async rm(path) {
+    async rm(path, rmOpts) {
+      if (isTmpPath(path)) return base.rm(path, rmOpts);
       throw new KernelMetaError(commandName, path);
     },
-    async rename(_src, dst) {
+    async rename(src, dst) {
+      if (isTmpPath(dst)) return base.rename(src, dst);
       throw new KernelMetaError(commandName, dst);
     },
-    async copyFile(_src, dst) {
+    async copyFile(src, dst) {
+      if (isTmpPath(dst)) return base.copyFile(src, dst);
       throw new KernelMetaError(commandName, dst);
     },
     async mkdtemp(prefix) {
+      if (isTmpPath(prefix)) return base.mkdtemp(prefix);
       throw new KernelMetaError(commandName, prefix);
     },
-    async exec(command, args) {
-      throw new KernelMetaError(commandName, `${command} ${args.join(" ")}`);
-    },
+    exec: opts?.allowExec
+      ? base.exec.bind(base)
+      : async (command, args) => {
+          throw new KernelMetaError(commandName, `${command} ${args.join(" ")}`);
+        },
   };
 }
