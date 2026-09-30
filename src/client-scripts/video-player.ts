@@ -18,10 +18,13 @@
   <item>RFC-0950: added viewport play/pause observer, conditional Plyr controls, and HLS+autoplay timing.</item>
   <item>RFC-1175: autoplay capability gate — prefers-reduced-motion / navigator.connection.saveData suppress data-autoplay playback (poster stays; manual play unaffected).</item>
   <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
+  <item>RFC-1175 AC-5: plyr.css moved from top-level import into the Plyr branch — keeps the stylesheet lazy so the orchestrator single-chunk import carries no feature-player CSS.</item>
 </CHANGE_SUMMARY>
 */
 
-import "plyr/dist/plyr.css";
+// RFC-1175: plyr.css is imported inside the Plyr branch below so the
+// orchestrator chunk stays free of feature-player styles until a
+// [data-video-player] element actually mounts.
 
 export interface VideoPlayersOptions {
   prefersReducedMotion?: boolean;
@@ -85,6 +88,7 @@ async function upgrade(video: HTMLVideoElement, options: VideoPlayersOptions = {
 
   // Brand the UI with Plyr (the native controls remain the fallback if this fails).
   try {
+    await import("plyr/dist/plyr.css");
     const { default: Plyr } = await import("plyr");
     const plyrControls = controlsDisabled
       ? ["mute"]

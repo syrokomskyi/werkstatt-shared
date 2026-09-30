@@ -21,6 +21,7 @@ interface MockVideo {
 interface MockDocument {
   querySelectorAll: ReturnType<typeof vi.fn>;
   addEventListener: ReturnType<typeof vi.fn>;
+  documentElement: { setAttribute: ReturnType<typeof vi.fn> };
   hidden: boolean;
 }
 
@@ -68,6 +69,8 @@ beforeEach(() => {
     addEventListener: vi.fn((event: string, cb: () => void) => {
       listeners[event] = cb;
     }),
+    // RFC-1175: SMOKE-INIT-01 marker writes data-bg-video-initialized here.
+    documentElement: { setAttribute: vi.fn() },
     hidden: false,
   };
   vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);

@@ -78,4 +78,8 @@ export function initBackgroundVideos(options: BackgroundVideosOptions = {}): voi
     if (!document.hidden) return;
     for (const video of videos) pause(video);
   });
+
+  // RFC-1175: smoke-test init marker (SMOKE-INIT-01) — set after the last
+  // addEventListener so component-smoke can synchronize on init completion.
+  document.documentElement.setAttribute("data-bg-video-initialized", "true");
 }
