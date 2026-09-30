@@ -15,6 +15,7 @@ loads the manifest and passes refs here.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>Initial SKILL.md projection — per-domain agent-skill documents backing ARD whitelist-typed catalog entries.</item>
+  <item>fo-review fix: YAML-quote free-text frontmatter scalars (description, metadata.schema, metadata.endpoint) via JSON.stringify so punctuation in siteName/schema can't break the block; `name` stays plain — an invalid domain must fail visibly.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -46,12 +47,16 @@ export function buildKnowledgeSkillMd(
 ): string {
   const endpoint = toAbsoluteUrl(input.baseUrl, ref.url);
   const title = `${ref.domain.charAt(0).toUpperCase()}${ref.domain.slice(1)}`;
+  // Free-text frontmatter values are quoted — JSON string escaping is a valid
+  // YAML double-quoted scalar, so punctuation in siteName/schema can't break
+  // the frontmatter block. `name` stays plain: ref.domain is the skill name —
+  // an invalid value must fail visibly rather than be masked by quoting.
   return `---
 name: ${ref.domain}
-description: Canonical ${ref.domain}-domain knowledge for ${input.siteName} — fetch the JSON endpoint for the current structured document.
+description: ${JSON.stringify(`Canonical ${ref.domain}-domain knowledge for ${input.siteName} — fetch the JSON endpoint for the current structured document.`)}
 metadata:
-  schema: ${ref.schema}
-  endpoint: ${endpoint}
+  schema: ${JSON.stringify(ref.schema)}
+  endpoint: ${JSON.stringify(endpoint)}
 ---
 
 # ${title} knowledge
