@@ -362,15 +362,14 @@ Location: `packages/werkstatt-shared/src/client-scripts/scroll-spy.ts` — expor
 Rules:
 
 - Always-on — no opt-in flag in `OrchestrationOptions`. The orchestrator calls `initScrollSpy()` unconditionally as step 12.
-
-### Orchestrator chunk topology (RFC-1175 AC-5)
-
-`runStandardLayoutOrchestration` is emitted as a **single chunk** — all self-gating feature modules (`scheduler`, `gsap-*`, `inline-number-animation`, `live-photos`, `video-player`, `background-video`, `external-link-qr`, `lordicon`, `lenis`, `scroll-spy`, `external-links`) are **statically** imported so the generated entry script's one `await import("@warpgogol/werkstatt-shared/client-scripts")` resolves the whole dispatch graph in a single hop. Heavy third-party deps (`gsap`, `plyr`, `hls.js`, `@lordicon/element`, `qrcode`, `lenis`) stay lazy **inside each init function** — never hoist them to module top-level, and never add a top-level `import "*.css"` (see `video-player.ts`: `plyr.css` loads inside the Plyr branch). New feature modules follow the same rule: static import in `orchestrator.ts`, lazy heavy deps inside. Structural coverage: `client-scripts/tests/orchestrator-chunks.test.ts`.
-
 - Uses `history.replaceState` (not `pushState`) to avoid polluting browser history.
 - Excludes sections inside `.wl-modal` elements.
 - Graceful degradation: returns no-op cleanup if `IntersectionObserver` is unsupported or no `section[id]` elements exist.
 - Idempotent: calling twice disconnects the previous observer before creating a new one.
+
+### Orchestrator chunk topology (RFC-1175 AC-5)
+
+`runStandardLayoutOrchestration` is emitted as a **single chunk** — all self-gating feature modules (`scheduler`, `gsap-*`, `inline-number-animation`, `live-photos`, `video-player`, `background-video`, `external-link-qr`, `lordicon`, `lenis`, `scroll-spy`, `external-links`) are **statically** imported so the generated entry script's one `await import("@warpgogol/werkstatt-shared/client-scripts")` resolves the whole dispatch graph in a single hop. Heavy third-party deps (`gsap`, `plyr`, `hls.js`, `@lordicon/element`, `qrcode`, `lenis`) stay lazy **inside each init function** — never hoist them to module top-level, and never add a top-level `import "*.css"` (see `video-player.ts`: `plyr.css` loads inside the Plyr branch). New feature modules follow the same rule: static import in `orchestrator.ts`, lazy heavy deps inside. Structural coverage: `client-scripts/tests/orchestrator-chunks.test.ts`.
 
 ## Test coverage
 
