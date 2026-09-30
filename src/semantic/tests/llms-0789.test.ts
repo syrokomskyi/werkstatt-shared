@@ -8,6 +8,7 @@
 </MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0789: initial tests for conditional agent discovery links in buildLlmsIndex.</item>
+  <item>Assert the fifth link — .well-known/ard.json (ARD v0.91 catalog) — present when enabled, absent when disabled.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -29,18 +30,20 @@ function makeSite(overrides: Partial<SemanticSiteModel> = {}): SemanticSiteModel
   };
 }
 
-test("buildLlmsIndex: agent absent → all 4 agent discovery links present", () => {
+test("buildLlmsIndex: agent absent → all 5 agent discovery links present", () => {
   const output = buildLlmsIndex(makeSite());
   expect(output).toContain("agent.json");
   expect(output).toContain("api-catalog");
+  expect(output).toContain(".well-known/ard.json");
   expect(output).toContain("mcp/server-card.json");
   expect(output).toContain("agent.openapi.json");
 });
 
-test("buildLlmsIndex: agent.enabled true → all 4 agent discovery links present", () => {
+test("buildLlmsIndex: agent.enabled true → all 5 agent discovery links present", () => {
   const output = buildLlmsIndex(makeSite({ agent: { enabled: true } }));
   expect(output).toContain("agent.json");
   expect(output).toContain("api-catalog");
+  expect(output).toContain(".well-known/ard.json");
   expect(output).toContain("mcp/server-card.json");
   expect(output).toContain("agent.openapi.json");
 });
@@ -49,6 +52,7 @@ test("buildLlmsIndex: agent.enabled false → zero agent discovery links", () =>
   const output = buildLlmsIndex(makeSite({ agent: { enabled: false } }));
   expect(output).not.toContain("agent.json");
   expect(output).not.toContain("api-catalog");
+  expect(output).not.toContain(".well-known/ard.json");
   expect(output).not.toContain("server-card.json");
   expect(output).not.toContain("agent.openapi.json");
   expect(output).toContain("llms-full.txt");
@@ -58,6 +62,7 @@ test("buildLlmsIndex: agent links use absolute https URLs", () => {
   const output = buildLlmsIndex(makeSite());
   expect(output).toContain("https://example.com/.well-known/agent.json");
   expect(output).toContain("https://example.com/.well-known/api-catalog");
+  expect(output).toContain("https://example.com/.well-known/ard.json");
   expect(output).toContain("https://example.com/.well-known/mcp/server-card.json");
   expect(output).toContain("https://example.com/.well-known/agent.openapi.json");
 });

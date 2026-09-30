@@ -16,6 +16,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>Add ARD catalog discovery line — /.well-known/ard.json (v0.91 canonical path) joins the agentLinks blockquote set in buildLlmsIndex.</item>
   <history>RFC-0184</history>
 </CHANGE_SUMMARY>
 */
@@ -361,6 +362,7 @@ export function buildLlmsIndex(site: SemanticSiteModel, opts?: { servesSsr?: boo
     ? [
         `> Machine-readable Agent Surface (structured knowledge + capabilities): [agent.json](${canonicalStaticUrl("/.well-known/agent.json", { baseUrl: site.baseUrl })}).`,
         `> API discovery catalog (RFC 9727): [api-catalog](${canonicalStaticUrl("/.well-known/api-catalog", { baseUrl: site.baseUrl })}).`,
+        `> ARD agent resource catalog (v0.91): [ard.json](${canonicalStaticUrl("/.well-known/ard.json", { baseUrl: site.baseUrl })}).`,
         ...(servesSsr
           ? [
               `> MCP Server Card (SEP-1649): [server-card.json](${canonicalStaticUrl("/.well-known/mcp/server-card.json", { baseUrl: site.baseUrl })}).`,

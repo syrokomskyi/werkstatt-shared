@@ -20,6 +20,7 @@ two runs on unchanged input are byte-identical (AS-7).
   <item>RFC-1115: search results flattened to citation shape (title, canonicalUrl, updatedAt, lang, type, score, text) under the existing 2.0.0 surface; capability agentGuidance rendered into tool/operation descriptions.</item>
   <item>RFC-1165: add "nlweb" to AgentProtocol and conditional interfaces.nlweb (populated iff the SSR/search interface chain serves — static sites never advertise it).</item>
   <item>RFC-1171: ManifestDeprecation + platform-injected unversioned→v1 deprecations[] with fixed date constants (determinism), validateManifestDeprecations enforcing successor resolution and the 90-day sunset window.</item>
+  <item>supportedProtocols comment update — unconditional ARD emission now spans ard.json + ai-catalog.json, agent-skills spans index + per-domain SKILL.md.</item>
   <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112</history>
 </CHANGE_SUMMARY>
 */
@@ -317,8 +318,9 @@ export function computeAgentManifestContentHash(doc: Record<string, unknown>): s
 export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): AgentSurfaceManifest {
   // RFC-1113: honesty invariant — supportedProtocols lists only what the surface
   // emits. The unconditional entries are the artifacts every enabled agent
-  // surface generates (llms.txt, api-catalog linkset, ai-catalog ARD document,
-  // DNS-AID record, agent-skills index); the conditional ones follow interfaces.
+  // surface generates (llms.txt, api-catalog linkset, ARD catalog documents
+  // at .well-known/ard.json + ai-catalog.json, DNS-AID record, agent-skills
+  // index + per-domain SKILL.md); the conditional ones follow interfaces.
   const supportedProtocols: AgentProtocol[] = (
     [
       "agent-skills",

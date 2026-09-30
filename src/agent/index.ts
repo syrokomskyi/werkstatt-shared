@@ -15,6 +15,7 @@ here (knowledge, capability, openapi, proof) and re-export them from this barrel
   <item>RFC-0954: re-export search module.</item>
   <item>RFC-1112: re-export receipt module (ActionReceipt, AgentProblemDetails, deriveActionEventId).</item>
   <item>RFC-1172: closed agent.traffic telemetry — ports.telemetry sink, TrafficRecorder + boundary emit via withTrafficEmit</item>
+  <item>Re-export skill-md module (per-domain SKILL.md projection for ARD agent-skills entries).</item>
   <history>RFC-0286, RFC-0292</history>
 </CHANGE_SUMMARY>
 */
@@ -31,6 +32,7 @@ export * from "./api-catalog.ts";
 export * from "./mcp-card.ts";
 export * from "./dns-aid.ts";
 export * from "./ard-catalog.ts";
+export * from "./skill-md.ts";
 export * from "./search.ts";
 export * from "./receipt.ts";
 export * from "./guidance.ts";

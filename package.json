@@ -662,6 +662,10 @@
       "types": "./src/agent/search.ts",
       "default": "./src/agent/search.ts"
     },
+    "./agent/skill-md": {
+      "types": "./src/agent/skill-md.ts",
+      "default": "./src/agent/skill-md.ts"
+    },
     "./content/entity-id": {
       "types": "./src/content/entity-id.ts",
       "default": "./src/content/entity-id.ts"
