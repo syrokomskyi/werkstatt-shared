@@ -10,6 +10,8 @@ block, independent of section-level SectionBackground.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
+  <item>RFC-1175: image layer gains explicit fetchpriority — loading no longer implies priority, so an eager decorative background stops competing with the LCP image.</item>
+  <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
 </CHANGE_SUMMARY>
 */
 
@@ -29,6 +31,9 @@ const imageLayer = z
     fit: z.enum(["cover", "tile", "stretch-width", "stretch-height"]).optional(),
     quality: z.enum(["low", "mid", "high", "max"]).optional(),
     loading: z.enum(["eager", "lazy"]).optional(),
+    /** RFC-1175: explicit fetch priority — decoupled from `loading` so an eager
+     *  decorative layer no longer auto-promotes to fetchpriority="high". */
+    fetchpriority: z.enum(["high", "low", "auto"]).optional(),
     tint: z
       .object({
         color: z.string().min(1).optional(),

@@ -12,6 +12,8 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1175: initBackgroundVideos for video[data-bg-video] — capability-gated background autoplay (always-on step; the marker replaces the native autoplay attribute in media.astro).</item>
+  <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
 </CHANGE_SUMMARY>
 */
 
@@ -149,6 +151,17 @@ export async function runStandardLayoutOrchestration(
     scheduleTask(async () => {
       const { initVideoPlayers } = await import("./video-player.ts");
       await initVideoPlayers({ prefersReducedMotion });
+    });
+  }
+
+  // 10b. RFC-1175: background <video> loops — autoplay is capability-gated here
+  // instead of via the HTML attribute, so bytes never fetch on saveData /
+  // reduced-motion. Always-on: without this step the element can never play.
+  if (has("video[data-bg-video]")) {
+    const { scheduleTask } = await import("./scheduler.ts");
+    scheduleTask(async () => {
+      const { initBackgroundVideos } = await import("./background-video.ts");
+      initBackgroundVideos({ prefersReducedMotion });
     });
   }
 

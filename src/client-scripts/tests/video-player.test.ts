@@ -3,7 +3,11 @@
 <purpose>RFC-0950: tests for video-player runtime — conditional Plyr controls, viewport play/pause, HLS+autoplay timing.</purpose>
 <keywords>RFC-0950, video-player, test</keywords>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-0950: initial video-player tests.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0950: initial video-player tests.</item>
+  <item>RFC-1175: reduced-motion autoplay suppression test.</item>
+  <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect, vi, beforeEach, afterEach, type Mock } from "vitest";
@@ -227,4 +231,17 @@ test("upgrade: viewport observer pauses video when scrolled out", async () => {
     unobserve: vi.fn(),
   });
   expect(video.pause).toHaveBeenCalled();
+});
+
+test("upgrade: data-autoplay='true' never plays under prefers-reduced-motion (RFC-1175)", async () => {
+  const video = createMockVideo({ autoplay: "true" });
+  mockDocument.querySelectorAll.mockReturnValue([video]);
+  const { initVideoPlayers } = await import("../video-player.ts");
+  await initVideoPlayers({ prefersReducedMotion: true });
+
+  observerCallbacks[0]!([{ isIntersecting: true, target: video }], { unobserve: vi.fn() });
+  await new Promise((r) => setTimeout(r, 100));
+
+  expect(video.play).not.toHaveBeenCalled();
+  expect(observerOptions.some((o) => o.threshold === 0.5)).toBe(false);
 });

@@ -3,6 +3,7 @@ import {
   AI_TRAINING_CRAWLER_REGISTRY,
   buildRobotsTxt,
   deriveAiTrainingUserAgents,
+  ROBOTS_DIRECTIVE_ALLOWLIST,
 } from "../robots.ts";
 
 describe("buildRobotsTxt", () => {
@@ -63,16 +64,34 @@ describe("buildRobotsTxt", () => {
     expect(result).toContain("Sitemap: https://example.com/sitemap.xml");
   });
 
-  it("emits Schemamap directive after Sitemap when policy.schemamap is set (RFC-1164)", () => {
-    const result = buildRobotsTxt({ schemamap: "https://example.com/schemamap.xml" });
-    expect(result).toContain("Sitemap: /sitemap.xml");
-    expect(result).toContain("Schemamap: https://example.com/schemamap.xml");
-    expect(result.indexOf("Sitemap:")).toBeLessThan(result.indexOf("Schemamap:"));
+  it("never emits a Schemamap directive — head links own that discovery surface (RFC-1175)", () => {
+    const result = buildRobotsTxt({
+      sitemap: "https://example.com/sitemap.xml",
+      contentSignal: ["ai-train=no"],
+      crawlerAllowlist: ["FriendlyBot"],
+      crawlerBlocklist: ["BadBot"],
+      customRules: [{ userAgent: "GoogleBot", disallow: ["/no"], allow: ["/yes"] }],
+    });
+    expect(result).toContain("Sitemap: https://example.com/sitemap.xml");
+    expect(result).not.toContain("Schemamap");
   });
 
-  it("omits the Schemamap directive when policy.schemamap is unset", () => {
-    const result = buildRobotsTxt({});
-    expect(result).not.toContain("Schemamap:");
+  it("emits only directives inside the recognized surface allowlist (RFC-1175)", () => {
+    const allowlist = new Set(ROBOTS_DIRECTIVE_ALLOWLIST);
+    const result = buildRobotsTxt({
+      contentSignal: ["ai-train=no", "search=yes", "ai-input=yes"],
+      crawlerAllowlist: ["FriendlyBot"],
+      crawlerBlocklist: ["BadBot"],
+      customRules: [{ userAgent: "GoogleBot", disallow: ["/no"], allow: ["/yes"] }],
+    });
+    const emitted = result
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith("#"))
+      .map((line) => line.split(":", 1)[0]!.trim().toLowerCase());
+    for (const directive of emitted) {
+      expect(allowlist.has(directive)).toBe(true);
+    }
   });
 
   it("always allows auxiliary discovery files", () => {

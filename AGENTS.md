@@ -322,7 +322,7 @@ This package owns the shared Schemamap contracts; the kernel commands (`jsonld.m
 
 | Surface | Location | Contract |
 | --- | --- | --- |
-| RobotsPolicy | `src/semantic/robots.ts` | `schemamap?: string` — when set, `buildRobotsTxt` emits `Schemamap: <url>` after the `Sitemap:` line; `robots.generate` defaults it to `https://<identity.domain>/schemamap.xml` (skipped on domainless sites) |
+| RobotsPolicy | `src/semantic/robots.ts` | `RobotsPolicy` has no `schemamap` field (RFC-1175: the `Schemamap:` robots directive was retired — Lighthouse flags it as unknown). Discovery is the head `<link rel="schemamap">` + `interfaces.schemamap`; `ROBOTS_DIRECTIVE_ALLOWLIST` bounds the directive names `robots.validate` accepts (ROBOTS-SURFACE-01, warning) |
 | Agent manifest | `src/agent/manifest.ts` | `"schemamap"` in `AgentProtocol`; `AgentSurfaceManifest.interfaces.schemamap: "/schemamap.xml"` is unconditional — the `supportedProtocols` list carries it always (llms precedent: manifest generation precedes dist) |
 
 ### Placeholder route filtering (RFC-0917)

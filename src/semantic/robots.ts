@@ -10,7 +10,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0052: Initial implementation.</item>
   <item>RFC-0784: Add contentSignal field and Content-Signal directive output.</item>
   <item>RFC-1161: derive named AI-training bot blocks in robots.txt from Content-Signal
 
@@ -23,6 +22,11 @@ build-prepare after robots.generate (first pipeline placement). Fix
 upstream dead config: robots block now declared in systemManifestSchema
 (manifest.robots was stripped by strict parse).</item>
   <item>RFC-1161: fo-review — unexport AI_TRAINING_GROUP_MARKER (no external consumer)</item>
+  <item>RFC-1175: retire the non-standard Schemamap directive — Lighthouse flags it
+  as an invalid robots.txt line (discovery stays covered by the head link). Adds
+  ROBOTS_DIRECTIVE_ALLOWLIST so robots.validate can flag unknown directives.</item>
+  <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
+  <history>RFC-0052</history>
 </CHANGE_SUMMARY>
 */
 
@@ -39,13 +43,28 @@ export interface RobotsPolicy {
   crawlerBlocklist?: string[];
   crawlerAllowlist?: string[];
   sitemap?: string;
-  /** RFC-1164: absolute URL of the site's schemamap.xml — emitted as a
-   *  `Schemamap:` directive following the `Sitemap:` pattern. */
-  schemamap?: string;
   customRules?: RobotsRule[];
   /** RFC-0784: Content-Signal directive — AI usage preferences (ai-train, search, ai-input). */
   contentSignal?: string[];
 }
+
+/** RFC-1175: directive names the shared robots.txt surface is allowed to emit —
+ *  RFC 9309 group/non-group fields plus the crawler-recognized extensions that
+ *  Lighthouse's robots parser accepts. Case-insensitive matching: robots.txt
+ *  directive names are case-insensitive per RFC 9309 §2.2.2. `robots.validate`
+ *  warns (ROBOTS-SURFACE-01) on any `Name:` line outside this list. */
+export const ROBOTS_DIRECTIVE_ALLOWLIST: readonly string[] = [
+  "user-agent",
+  "disallow",
+  "allow",
+  "sitemap",
+  // RFC-0784: Google-documented (Sept 2025) AI-usage preference directive.
+  "content-signal",
+  // Widely supported crawler extensions (Google/Yandex-era compatibility).
+  "crawl-delay",
+  "host",
+  "clean-param",
+];
 
 /** Product-token categories for AI crawlers (RFC-1161). */
 export type AiCrawlerCategory = "train" | "search" | "input";
@@ -220,10 +239,9 @@ export function buildRobotsTxt(policy: RobotsPolicy): string {
   lines.push("");
   lines.push(`Sitemap: ${sitemap}`);
 
-  // RFC-1164: Schemamap reference (JSON-LD mirror index)
-  if (policy.schemamap) {
-    lines.push(`Schemamap: ${policy.schemamap}`);
-  }
+  // RFC-1175: no Schemamap: directive — Lighthouse's robots parser flags it as
+  // an unknown directive ("robots.txt is not valid"). Schemamap discovery is
+  // already covered by <link rel="schemamap"> in every page head (RFC-1164).
 
   return lines.join("\n") + "\n";
 }

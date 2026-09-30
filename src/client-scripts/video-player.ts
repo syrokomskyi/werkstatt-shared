@@ -16,6 +16,8 @@
 <CHANGE_SUMMARY>
   <item>RFC-0210: introduced the lazy feature-video player runtime.</item>
   <item>RFC-0950: added viewport play/pause observer, conditional Plyr controls, and HLS+autoplay timing.</item>
+  <item>RFC-1175: autoplay capability gate — prefers-reduced-motion / navigator.connection.saveData suppress data-autoplay playback (poster stays; manual play unaffected).</item>
+  <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
 </CHANGE_SUMMARY>
 */
 
@@ -29,12 +31,23 @@ function nativeHlsSupported(video: HTMLVideoElement): boolean {
   return video.canPlayType("application/vnd.apple.mpegurl") !== "";
 }
 
-async function upgrade(video: HTMLVideoElement): Promise<void> {
+// RFC-1175: the same capability contract as background-video.ts — an authored
+// data-autoplay must not fetch/play stream bytes on constrained devices.
+function mayAutoplay(prefersReducedMotion: boolean | undefined): boolean {
+  if (prefersReducedMotion) return false;
+  const connection =
+    typeof navigator === "undefined"
+      ? undefined
+      : (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  return !connection?.saveData;
+}
+
+async function upgrade(video: HTMLVideoElement, options: VideoPlayersOptions = {}): Promise<void> {
   if (video.dataset.videoPlayerReady === "true") return;
   video.dataset.videoPlayerReady = "true";
 
   const hlsUrl = video.dataset.hls;
-  const autoplay = video.dataset.autoplay === "true";
+  const autoplay = video.dataset.autoplay === "true" && mayAutoplay(options.prefersReducedMotion);
   const controlsDisabled = video.dataset.controls === "false";
   let mode: "file" | "stream" = "file";
   let impl: "native" | "hlsjs" | "progressive" = "progressive";
@@ -150,14 +163,14 @@ function setupViewportObserver(video: HTMLVideoElement): void {
   observer.observe(video);
 }
 
-export async function initVideoPlayers(_options: VideoPlayersOptions = {}): Promise<void> {
+export async function initVideoPlayers(options: VideoPlayersOptions = {}): Promise<void> {
   const videos = Array.from(
     document.querySelectorAll<HTMLVideoElement>("video[data-video-player]"),
   );
   if (videos.length === 0) return;
 
   if (!("IntersectionObserver" in window)) {
-    for (const v of videos) await upgrade(v);
+    for (const v of videos) await upgrade(v, options);
     return;
   }
 
@@ -167,7 +180,7 @@ export async function initVideoPlayers(_options: VideoPlayersOptions = {}): Prom
         if (!entry.isIntersecting) continue;
         const video = entry.target as HTMLVideoElement;
         obs.unobserve(video);
-        void upgrade(video);
+        void upgrade(video, options);
       }
     },
     { rootMargin: "200px" },
