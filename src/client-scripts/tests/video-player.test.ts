@@ -39,6 +39,7 @@ interface MockObserver {
 interface MockDocument {
   querySelectorAll: ReturnType<typeof vi.fn>;
   createElement: ReturnType<typeof vi.fn>;
+  head: { appendChild: ReturnType<typeof vi.fn> };
 }
 
 // ── Mocks ───────────────────────────────────────────────────────────────────
@@ -46,6 +47,8 @@ interface MockDocument {
 vi.mock("plyr", () => ({
   default: vi.fn(() => ({ destroy: vi.fn() })),
 }));
+
+vi.mock("plyr/dist/plyr.css?inline", () => ({ default: "/* plyr css */" }));
 
 vi.mock("hls.js/light", () => {
   const hlsRef = { current: null as MockHlsInstance | null };
@@ -107,6 +110,7 @@ beforeEach(() => {
   mockDocument = {
     querySelectorAll: vi.fn(() => []),
     createElement: vi.fn((tag: string) => ({ tagName: tag.toUpperCase() })),
+    head: { appendChild: vi.fn() },
   };
   vi.stubGlobal("IntersectionObserver", MockIntersectionObserver);
   vi.stubGlobal("window", globalThis);

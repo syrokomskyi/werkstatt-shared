@@ -64,7 +64,10 @@ describe("orchestrator chunk topology (RFC-1175 AC-5)", () => {
       .filter((line) => line.startsWith("import "))
       .join("\n");
     expect(topLevel).not.toContain("plyr/dist/plyr.css");
-    expect(source).toContain('await import("plyr/dist/plyr.css")');
+    // m000170: ?inline keeps the stylesheet a string inside the lazy JS chunk —
+    // a plain css import emits a preload to a standalone asset that
+    // inlineStylesheets:"always" never writes (404 on prod).
+    expect(source).toContain('await import("plyr/dist/plyr.css?inline")');
   });
 
   it("orchestrator.ts statically imports ./trusted-types.ts so the werkstatt policy ships in the entry chunk (RFC-1178 AC-5)", () => {

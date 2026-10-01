@@ -15,6 +15,7 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
   <item>RFC-1175: initBackgroundVideos for video[data-bg-video] — capability-gated background autoplay (always-on step; the marker replaces the native autoplay attribute in media.astro).</item>
   <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
   <item>RFC-1175 AC-5: single-chunk orchestrator — all self-gating feature modules statically imported (scheduler, gsap-*, inline-number, live-photos, video-player, background-video, external-link-qr), so the entry script's one dynamic import resolves the whole dispatch graph; heavy deps stay lazy inside each init.</item>
+  <item>m000170: initLenis moved behind scheduleTask — it was the only awaited feature init, pulling the lenis chunk into the critical request chain Lighthouse reported.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -100,10 +101,14 @@ export async function runStandardLayoutOrchestration(
   }
 
   // 3. Lenis smooth scroll (opt-in via smoothScroll: true)
+  // m000170: scheduled at idle like the other feature inits — awaiting it here
+  // put the lenis chunk fetch inside the critical request chain.
   if (options.smoothScroll) {
-    await initLenis({
-      prefersReducedMotion,
-      headerOffset: options.headerOffset ?? 80,
+    scheduleTask(async () => {
+      await initLenis({
+        prefersReducedMotion,
+        headerOffset: options.headerOffset ?? 80,
+      });
     });
   }
 
