@@ -38,19 +38,30 @@ interface WerkstattTrustedTypesFactory {
 const tt = (globalThis as { trustedTypes?: WerkstattTrustedTypesFactory }).trustedTypes;
 
 /**
- * Provenance brand — only values wrapped by {@link ttHTML}/{@link ttScriptURL}
+ * Provenance registry — only values minted by {@link ttHTML}/{@link ttScriptURL}
  * inside this module can pass the creators; arbitrary strings throw. This is
  * what keeps the `werkstatt` policy from degenerating into a pass-through.
+ *
+ * The registry is a side channel because `TrustedTypePolicy.create*(input)`
+ * declares `input` as DOMString in WebIDL — the browser stringifies the
+ * argument before invoking our callback, so an object brand would arrive as
+ * "[object Object]" and can never survive the call. Entries are single-use:
+ * the creator deletes the minted value while unwrapping.
  */
-const BRAND: unique symbol = Symbol("werkstatt-tt");
-type Branded<T extends string> = { [BRAND]: true; value: T };
+const mintedHTML = new Map<string, number>();
+const mintedScriptURL = new Map<string, number>();
 
-function brand<T extends string>(value: T): Branded<T> {
-  return { [BRAND]: true, value };
+function mint<T extends string>(value: T, registry: Map<string, number>): T {
+  registry.set(value, (registry.get(value) ?? 0) + 1);
+  return value;
 }
-function unbranded<T extends string>(input: Branded<T> | unknown): T {
-  if (typeof input === "object" && input !== null && (input as Branded<T>)[BRAND] === true) {
-    return (input as Branded<T>).value;
+
+function unbranded<T extends string>(input: unknown, registry: Map<string, number>): T {
+  if (typeof input === "string") {
+    const count = registry.get(input) ?? 0;
+    if (count > 1) registry.set(input, count - 1);
+    else if (count === 1) registry.delete(input);
+    if (count > 0) return input as T;
   }
   throw new TypeError(
     "werkstatt Trusted Types policy: refusing unbranded input — mint it via ttHTML()/ttScriptURL() so the call site is auditable.",
@@ -65,8 +76,8 @@ function unbranded<T extends string>(input: Branded<T> | unknown): T {
 function createWerkstattPolicy(): WerkstattTrustedTypePolicy | undefined {
   try {
     return tt?.createPolicy("werkstatt", {
-      createHTML: (input) => unbranded<string>(input),
-      createScriptURL: (input) => unbranded<string>(input),
+      createHTML: (input) => unbranded<string>(input, mintedHTML),
+      createScriptURL: (input) => unbranded<string>(input, mintedScriptURL),
     });
   } catch (err) {
     // A `trusted-types` CSP directive that does not name `werkstatt` makes
@@ -87,11 +98,11 @@ export const werkstattPolicy: WerkstattTrustedTypePolicy | undefined = createWer
  */
 export function ttHTML(html: string): unknown {
   if (!werkstattPolicy) return html;
-  return werkstattPolicy.createHTML(brand(html));
+  return werkstattPolicy.createHTML(mint(html, mintedHTML));
 }
 
 /** Mint a trusted script URL for a sanctioned sink. */
 export function ttScriptURL(url: string): unknown {
   if (!werkstattPolicy) return url;
-  return werkstattPolicy.createScriptURL(brand(url));
+  return werkstattPolicy.createScriptURL(mint(url, mintedScriptURL));
 }
