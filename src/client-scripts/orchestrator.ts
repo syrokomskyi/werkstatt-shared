@@ -6,16 +6,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1175: initBackgroundVideos for video[data-bg-video] — capability-gated background autoplay (always-on step; the marker replaces the native autoplay attribute in media.astro).</item>
   <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
   <item>RFC-1175 AC-5: single-chunk orchestrator — all self-gating feature modules statically imported (scheduler, gsap-*, inline-number, live-photos, video-player, background-video, external-link-qr), so the entry script's one dynamic import resolves the whole dispatch graph; heavy deps stay lazy inside each init.</item>
-  <item>m000170: initLenis moved behind scheduleTask — it was the only awaited feature init, pulling the lenis chunk into the critical request chain Lighthouse reported.</item>
+  <item>warpgogol-m000170: initLenis moved behind scheduleTask — it was the only awaited feature init, pulling the lenis chunk into the critical request chain Lighthouse reported.</item>
+  <history>RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 

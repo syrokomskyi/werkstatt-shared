@@ -6,7 +6,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>m000170: added — plyr.css loads via ?inline because inlineStylesheets:'always' drops the standalone .css asset the dynamic-import preload referenced (404 → branded player never mounted).</item>
+  <item>warpgogol-m000170: added — plyr.css loads via ?inline because inlineStylesheets:'always' drops the standalone .css asset the dynamic-import preload referenced (404 → branded player never mounted).</item>
 </CHANGE_SUMMARY>
 */
 
