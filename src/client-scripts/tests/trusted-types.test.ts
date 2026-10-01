@@ -41,7 +41,9 @@ describe("werkstatt trusted-types policy", () => {
   it("ttScriptURL returns a minted trusted URL that round-trips the policy", async () => {
     installTrustedTypes();
     const { ttScriptURL } = await importModule();
-    expect(ttScriptURL("https://matomo-proxy.example/m.js")).toBe("https://matomo-proxy.example/m.js");
+    expect(ttScriptURL("https://matomo-proxy.example/m.js")).toBe(
+      "https://matomo-proxy.example/m.js",
+    );
   });
 
   it("rejects unbranded input passed straight to the policy", async () => {
@@ -83,5 +85,16 @@ describe("werkstatt trusted-types policy", () => {
     expect(mod.werkstattPolicy).toBeUndefined();
     expect(mod.ttScriptURL("https://a.example/x.js")).toBe("https://a.example/x.js");
     expect(mod.ttHTML("<i>y</i>")).toBe("<i>y</i>");
+  });
+
+  it("ttMaybeHTML mints strings and passes non-strings through untouched", async () => {
+    installTrustedTypes();
+    const mod = await importModule();
+    const el = { tag: "div" } as const;
+    expect(mod.ttMaybeHTML(el)).toBe(el);
+    expect(mod.ttMaybeHTML("<b>minted</b>")).toBe("<b>minted</b>");
+    expect(() => mod.werkstattPolicy?.createHTML("<b>minted</b>")).toThrow(
+      /refusing unbranded input/,
+    );
   });
 });

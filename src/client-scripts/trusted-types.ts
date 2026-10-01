@@ -106,3 +106,16 @@ export function ttScriptURL(url: string): unknown {
   if (!werkstattPolicy) return url;
   return werkstattPolicy.createScriptURL(mint(url, mintedScriptURL));
 }
+
+/**
+ * Type-preserving mint for ambiguous sink arguments. Some third-party call
+ * sites pick the sink method at runtime (`el[cond ? "insertAdjacentElement" :
+ * "insertAdjacentHTML"](pos, arg)`) where `arg` is an Element on one path and
+ * an HTML string on the other — a plain ttHTML() wrap would stringify the
+ * Element into "[object HTML…]" and break both paths. Non-strings (including
+ * already-trusted values) pass through untouched.
+ */
+export function ttMaybeHTML<T>(value: T): T | unknown {
+  if (typeof value !== "string") return value;
+  return ttHTML(value);
+}
