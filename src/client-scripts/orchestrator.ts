@@ -20,6 +20,10 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
 
 // @ai-invariant: This is a high-risk module. Preserve its core logic and minimize external side effects during modification.
 
+// RFC-1178: the werkstatt Trusted Types policy is a static side-effect
+// import — it must evaluate before any feature module so the policy exists
+// before the first sink write; never move it behind a dynamic import.
+import "./trusted-types.ts";
 // RFC-1175: self-gating modules are statically imported so the orchestrator
 // is emitted as a single chunk — the only dynamic import after the entry
 // script. Heavy third-party deps (gsap, plyr, hls.js, @lordicon/element,

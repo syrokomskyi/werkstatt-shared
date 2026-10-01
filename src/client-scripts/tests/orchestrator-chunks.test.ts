@@ -5,6 +5,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1175: initial orchestrator chunk-topology tests.</item>
+  <item>RFC-1178 AC-5: pin ./trusted-types.ts as the first static import of orchestrator.ts and forbid a default Trusted Types policy.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -64,5 +65,22 @@ describe("orchestrator chunk topology (RFC-1175 AC-5)", () => {
       .join("\n");
     expect(topLevel).not.toContain("plyr/dist/plyr.css");
     expect(source).toContain('await import("plyr/dist/plyr.css")');
+  });
+
+  it("orchestrator.ts statically imports ./trusted-types.ts so the werkstatt policy ships in the entry chunk (RFC-1178 AC-5)", () => {
+    const source = readSource("orchestrator.ts");
+    expect(source).toContain('import "./trusted-types.ts"');
+    // The policy import must precede every feature-module import — policy
+    // creation has to eval before the first sink write can occur.
+    const policyIdx = source.indexOf('import "./trusted-types.ts"');
+    const firstFeatureIdx = source.indexOf('from "./external-links.ts"');
+    expect(policyIdx).toBeGreaterThanOrEqual(0);
+    expect(firstFeatureIdx).toBeGreaterThan(policyIdx);
+  });
+
+  it("trusted-types.ts registers only the named werkstatt policy — never a default policy (RFC-1178)", () => {
+    const source = readSource("trusted-types.ts");
+    expect(source).toContain('createPolicy("werkstatt"');
+    expect(source).not.toMatch(/createPolicy\(\s*["']default["']/);
   });
 });
