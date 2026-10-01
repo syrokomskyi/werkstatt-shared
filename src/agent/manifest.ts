@@ -13,15 +13,11 @@ two runs on unchanged input are byte-identical (AS-7).
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1113: add $schema, generatedAt (excluded from contentHash), supportedProtocols; AgentProtocol closed vocabulary.</item>
-  <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
-  <item>RFC-1114: add "a2a" to AgentProtocol and interfaces.a2a (url + protocolVersion).</item>
-  <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
   <item>RFC-1115: search results flattened to citation shape (title, canonicalUrl, updatedAt, lang, type, score, text) under the existing 2.0.0 surface; capability agentGuidance rendered into tool/operation descriptions.</item>
   <item>RFC-1165: add "nlweb" to AgentProtocol and conditional interfaces.nlweb (populated iff the SSR/search interface chain serves — static sites never advertise it).</item>
   <item>RFC-1171: ManifestDeprecation + platform-injected unversioned→v1 deprecations[] with fixed date constants (determinism), validateManifestDeprecations enforcing successor resolution and the 90-day sunset window.</item>
-  <item>supportedProtocols comment update — unconditional ARD emission now spans ard.json + ai-catalog.json, agent-skills spans index + per-domain SKILL.md.</item>
-  <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112</history>
+  <item>RFC-1113: supportedProtocols comment update — unconditional ARD emission now spans ard.json + ai-catalog.json, agent-skills spans index + per-domain SKILL.md.</item>
+  <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112, RFC-1113, RFC-1114</history>
 </CHANGE_SUMMARY>
 */
 

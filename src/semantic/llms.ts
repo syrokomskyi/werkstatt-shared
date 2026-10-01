@@ -7,7 +7,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0372: formatBlocks reads from unified page.blocks instead of answerBlocks + contentBlocks.</item>
   <item>RFC-1075: emit canonicalUri for organization and offer in llms-full.txt.</item>
   <item>RFC-1076: add formatClaims section in buildLlmsFull for claim provenance.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
@@ -16,8 +15,8 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
-  <item>Add ARD catalog discovery line — /.well-known/ard.json (v0.91 canonical path) joins the agentLinks blockquote set in buildLlmsIndex.</item>
-  <history>RFC-0184</history>
+  <item>RFC-1113: add ARD catalog discovery line — /.well-known/ard.json (v0.91 canonical path) joins the agentLinks blockquote set in buildLlmsIndex.</item>
+  <history>RFC-0184, RFC-0372</history>
 </CHANGE_SUMMARY>
 */
 

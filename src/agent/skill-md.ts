@@ -14,8 +14,8 @@ loads the manifest and passes refs here.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Initial SKILL.md projection — per-domain agent-skill documents backing ARD whitelist-typed catalog entries.</item>
-  <item>fo-review fix: YAML-quote free-text frontmatter scalars (description, metadata.schema, metadata.endpoint) via JSON.stringify so punctuation in siteName/schema can't break the block; `name` stays plain — an invalid domain must fail visibly.</item>
+  <item>RFC-1113: initial SKILL.md projection — per-domain agent-skill documents backing ARD whitelist-typed catalog entries.</item>
+  <item>RFC-1113: fo-review fix — YAML-quote free-text frontmatter scalars (description, metadata.schema, metadata.endpoint) via JSON.stringify so punctuation in siteName/schema can't break the block; `name` stays plain — an invalid domain must fail visibly.</item>
 </CHANGE_SUMMARY>
 */
 

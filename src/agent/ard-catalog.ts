@@ -18,7 +18,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
-  <item>Schema-conformant catalog: absolute-URI url fields (ai-catalog schema format "uri"), ARD-whitelisted types only (a2a-agent-card+json, mcp-server-card+json, agent-skills markdown profile for knowledge SKILL.md docs), per-entry @context + description; non-whitelisted support docs (openapi, search, agent.json) stay advertised via api-catalog/agent.json/Link headers instead of catalog entries.</item>
+  <item>RFC-1113: schema-conformant catalog — absolute-URI url fields (ai-catalog schema format "uri"), ARD-whitelisted types only (a2a-agent-card+json, mcp-server-card+json, agent-skills markdown profile for knowledge SKILL.md docs), per-entry @context + description; non-whitelisted support docs (openapi, search, agent.json) stay advertised via api-catalog/agent.json/Link headers instead of catalog entries.</item>
 </CHANGE_SUMMARY>
 */
 
