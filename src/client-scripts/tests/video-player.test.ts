@@ -44,9 +44,8 @@ interface MockDocument {
 
 // ── Mocks ───────────────────────────────────────────────────────────────────
 
-vi.mock("plyr", () => ({
-  default: vi.fn(() => ({ destroy: vi.fn() })),
-}));
+const mockPlyr = vi.hoisted(() => vi.fn(() => ({ destroy: vi.fn() })));
+vi.mock("plyr", () => ({ default: mockPlyr }));
 
 vi.mock("plyr/dist/plyr.css?inline", () => ({ default: "/* plyr css */" }));
 
@@ -145,16 +144,14 @@ test("upgrade: data-controls='false' configures Plyr with only ['mute']", async 
   const video = createMockVideo({ controls: "false" });
   await triggerUpgrade(video);
 
-  const Plyr = (await import("plyr")).default;
-  expect(Plyr).toHaveBeenCalledWith(video, expect.objectContaining({ controls: ["mute"] }));
+  expect(mockPlyr).toHaveBeenCalledWith(video, expect.objectContaining({ controls: ["mute"] }));
 });
 
 test("upgrade: without data-controls uses full Plyr controls list", async () => {
   const video = createMockVideo({});
   await triggerUpgrade(video);
 
-  const Plyr = (await import("plyr")).default;
-  expect(Plyr).toHaveBeenCalledWith(
+  expect(mockPlyr).toHaveBeenCalledWith(
     video,
     expect.objectContaining({
       controls: expect.arrayContaining([
@@ -220,8 +217,7 @@ test("upgrade: skip already-upgraded videos (data-video-player-ready='true')", a
   const video = createMockVideo({ videoPlayerReady: "true" });
   await triggerUpgrade(video);
 
-  const Plyr = (await import("plyr")).default;
-  expect(Plyr).not.toHaveBeenCalled();
+  expect(mockPlyr).not.toHaveBeenCalled();
 });
 
 test("upgrade: viewport observer pauses video when scrolled out", async () => {
