@@ -842,6 +842,10 @@
       "types": "./src/client-scripts/scheduler.ts",
       "default": "./src/client-scripts/scheduler.ts"
     },
+    "./client-scripts/trusted-types": {
+      "types": "./src/client-scripts/trusted-types.ts",
+      "default": "./src/client-scripts/trusted-types.ts"
+    },
     "./client-scripts/video-player": {
       "types": "./src/client-scripts/video-player.ts",
       "default": "./src/client-scripts/video-player.ts"
