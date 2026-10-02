@@ -226,7 +226,6 @@ import type {
   DiagnosticEvidence as _DiagnosticEvidence,
   Diagnostic as _Diagnostic,
 } from "./diagnostic.ts";
-import { createDefaultIO } from "@warpgogol/werkstatt-shared/kernel/workspace-io";
 
 export type {
   DiagnosticSeverity,
@@ -384,6 +383,13 @@ export interface KernelPipelineStep {
    * When empty ([]), the step has no dependencies and may start immediately.
    */
   dependsOn?: string[];
+  /**
+   * RFC-1184: warn-only rollout mode — a failing step is recorded with
+   * `warned: true` on its report but does not fail the pipeline nor skip or
+   * taint its dependents. Explicit opt-in per step for staged rollout of
+   * newly blocking gates; blocking remains the default.
+   */
+  warnOnly?: boolean;
 }
 
 /**
@@ -443,6 +449,12 @@ export interface KernelExecutionReport<TData = unknown> {
    * may be a cascaded secondary failure.
    */
   ranAfterFailedDependency?: boolean;
+  /**
+   * RFC-1184: step was declared `warnOnly` and failed — the failure is
+   * preserved (exitCode, summary, diagnostics) but `ok` is true so the
+   * pipeline continues. Distinguishable from cached/skipped/pass.
+   */
+  warned?: boolean;
 }
 
 /**
