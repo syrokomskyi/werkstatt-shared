@@ -13,9 +13,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-1027: Create REMEDIATION_CATALOG with 30+ patterns for the most common ruleIds.</item>
   <item>RFC-1185: remediation entries for SHARED-CONTEXT-COLLISION-UNDECLARED and the SHARED-CONTEXT-INHERIT-* rule family.</item>
-  <item>RFC-1185: review-fix: RFC-1185 — Compass CHANGE_SUMMARY coverage, codemod polish, migrate test arg cleanup
-
-fo-review REVIEW-CODE-2026-10-02-04 findings: five contract-changing files were missing an RFC-1185 CHANGE_SUMMARY entry; codemod had a duplicated doc.get lookup, a comma-skip bucket iteration, and a silent PageEntrySchema skip (now warns); migrate test no longer passes the removed currentPageId argument.</item>
+  <item>RFC-1185: review fix — Compass CHANGE_SUMMARY coverage only, no behavior change.</item>
 </CHANGE_SUMMARY>
 */
 
