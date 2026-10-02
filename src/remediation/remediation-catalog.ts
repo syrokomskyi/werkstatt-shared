@@ -305,6 +305,41 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "docs/rfcs/rfc-1071-extend-typography-validate-with-tier-3-advisory-rules-for-unicode-hygiene-link-text-and-sentence-length.md",
     targetFiles: ["src/content/**/*.md"],
   },
+  {
+    ruleId: "SHARED-CONTEXT-COLLISION-UNDECLARED",
+    action:
+      "Declare `inherit: <pageId>` on the consuming block to subscribe to the source block's authored props, or `inherit: false` to opt out of the collision group. Run `shared.context.migrate` inside a mission to materialize edges automatically.",
+    docRef: "docs/authoring/site-composition.md",
+    targetFiles: ["src/content/pages/**/*.md"],
+  },
+  {
+    ruleId: "SHARED-CONTEXT-INHERIT-TARGET-MISSING",
+    action:
+      "Point `inherit` at a pageId declared in system.md pages[] whose same-language entry has a block with the same id+type — or remove the edge.",
+    docRef: "docs/authoring/site-composition.md",
+    targetFiles: ["src/content/pages/**/*.md"],
+  },
+  {
+    ruleId: "SHARED-CONTEXT-INHERIT-SELF",
+    action:
+      "Remove the `inherit` edge — a block cannot inherit from its own page; authored props already apply.",
+    docRef: "docs/authoring/site-composition.md",
+    targetFiles: ["src/content/pages/**/*.md"],
+  },
+  {
+    ruleId: "SHARED-CONTEXT-INHERIT-LANG-MISSING",
+    action:
+      "Create the named page's content entry for this language, or remove the inherit edge from this language's file — otherwise default-language props would silently leak into the translated page.",
+    docRef: "docs/authoring/site-composition.md",
+    targetFiles: ["src/content/pages/**/*.md"],
+  },
+  {
+    ruleId: "SHARED-CONTEXT-REQUIRED-PAGE-MISSING",
+    action:
+      "Add the pageId to system.md pages[] and create its content entry, or remove it from sharedContext.requiredPageIds.",
+    docRef: "docs/authoring/site-composition.md",
+    targetFiles: ["src/content/system.md", "src/content/pages/**/*.md"],
+  },
 ];
 
 export const REMEDIATION_CATALOG: ReadonlyMap<string, RemediationPattern> = new Map(
