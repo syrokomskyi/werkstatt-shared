@@ -1,43 +1,45 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-Implements RFC-0099 page-driven shared component context resolution.
-Provides app-agnostic helpers that merge block props from other pages using
-priority order derived from system.md.
+Implements RFC-1185 explicit per-block shared-context inheritance.
+A block opts into cross-page prop inheritance by declaring `inherit: <pageId>`.
+The resolver performs a single-hop shallow merge — the source block's authored
+top-level props first, the consuming block's own top-level keys second (an
+authored key replaces the source key wholesale; nested objects are never
+recursively merged across pages). Blocks without `inherit` — or with
+`inherit: false` — keep only their authored props.
 </purpose>
 <non-goals>
   <item>Do not read files or Astro collections directly.</item>
-  <item>Do not validate propsSchema correctness.</item>
+  <item>Do not validate propsSchema correctness — that is page.block.validate's job.</item>
+  <item>Do not detect collisions or validate inherit targets — that is shared.context.validate's job.</item>
+  <item>Do not follow the source block's own `inherit` edge — resolution is a single hop.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0099: Added shared page-driven context fallback helpers.</item>
+  <item>RFC-1185: explicit per-block inherit edge replaces the RFC-0099 implicit
+  priority-order fallback. `collectSharedContextCandidatesByLevel` and
+  `buildSharedContextPageOrder` are removed from the public runtime API — the
+  migration codemod (`shared.context.migrate` in werkstatt-site) hosts the
+  legacy ordering it needs to name effective sources.</item>
 </CHANGE_SUMMARY>
 */
-
-import { deepMergeEntryData } from "../content/merge.ts";
 
 export interface SharedContextBlockLike {
   id?: string;
   type?: string;
   use?: string;
   props?: Record<string, unknown>;
+  /**
+   * Explicit inheritance edge (RFC-1185): a pageId to inherit the matching
+   * block's authored props from, or `false` to opt out of a collision group.
+   */
+  inherit?: string | false;
 }
 
 export interface SharedContextPageLike {
   pageId: string;
   blocks: SharedContextBlockLike[];
-}
-
-export interface SharedContextCandidate {
-  pageId: string;
-  block: SharedContextBlockLike;
-}
-
-export interface SharedContextCandidatesByLevel {
-  home: SharedContextCandidate[];
-  required: SharedContextCandidate[];
-  other: SharedContextCandidate[];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -48,7 +50,12 @@ function getBlockSelector(block: SharedContextBlockLike): string | null {
   return block.type ?? block.use ?? null;
 }
 
-function matchesSharedBlock(
+/**
+ * Canonical shared-context block identity: same `id` and, when both sides
+ * declare a selector, the same `type`/`use`. Exported so validators and the
+ * migration codemod share one matching rule instead of duplicating it.
+ */
+export function matchesSharedBlock(
   source: SharedContextBlockLike,
   target: SharedContextBlockLike,
 ): boolean {
@@ -66,112 +73,38 @@ function matchesSharedBlock(
   return true;
 }
 
-export function buildSharedContextPageOrder(options: {
-  currentPageId: string;
-  allPageIds: string[];
-  requiredPageIds?: string[];
-  homePageId?: string;
-}): string[] {
-  const { currentPageId, allPageIds, requiredPageIds = [], homePageId = "home" } = options;
-
-  const remaining = allPageIds.filter((pageId) => pageId !== currentPageId);
-  const ordered: string[] = [];
-
-  if (remaining.includes(homePageId)) {
-    ordered.push(homePageId);
-  }
-
-  for (const pageId of requiredPageIds) {
-    if (pageId !== currentPageId && pageId !== homePageId && remaining.includes(pageId)) {
-      ordered.push(pageId);
-    }
-  }
-
-  for (const pageId of remaining) {
-    if (!ordered.includes(pageId)) {
-      ordered.push(pageId);
-    }
-  }
-
-  return ordered;
-}
-
-export function collectSharedContextCandidatesByLevel(options: {
-  currentPageId: string;
-  block: SharedContextBlockLike;
-  pages: Map<string, SharedContextPageLike>;
-  requiredPageIds?: string[];
-  homePageId?: string;
-}): SharedContextCandidatesByLevel {
-  const { currentPageId, block, pages, requiredPageIds = [], homePageId = "home" } = options;
-
-  const result: SharedContextCandidatesByLevel = {
-    home: [],
-    required: [],
-    other: [],
-  };
-
-  if (!block.id) {
-    return result;
-  }
-
-  const allPageIds = [...pages.keys()];
-  const ordered = buildSharedContextPageOrder({
-    currentPageId,
-    allPageIds,
-    requiredPageIds,
-    homePageId,
-  });
-
-  for (const pageId of ordered) {
-    const page = pages.get(pageId);
-    if (!page) continue;
-
-    const candidateBlock = page.blocks.find((sourceBlock) =>
-      matchesSharedBlock(sourceBlock, block),
-    );
-    if (!candidateBlock) continue;
-
-    const candidate = { pageId, block: candidateBlock };
-
-    if (pageId === homePageId) {
-      result.home.push(candidate);
-    } else if (requiredPageIds.includes(pageId)) {
-      result.required.push(candidate);
-    } else {
-      result.other.push(candidate);
-    }
-  }
-
-  return result;
-}
-
+/**
+ * Resolve the effective props for `block` within one language bucket of pages.
+ *
+ * RFC-1185: inheritance happens only through an explicit `inherit: <pageId>`
+ * edge. The source is the matching (`id` + selector) block on the named page —
+ * its `inherit` edge is intentionally not followed. The merge is shallow over
+ * top-level keys: `{ ...sourceAuthoredProps, ...ownProps }`.
+ *
+ * Missing source pages, missing matching blocks, and self-edges resolve to the
+ * authored props unchanged; those conditions are flagged by
+ * `shared.context.validate` (SHARED-CONTEXT-INHERIT-*), not by the resolver.
+ */
 export function resolveSharedContextProps(options: {
-  currentPageId: string;
   block: SharedContextBlockLike;
   pages: Map<string, SharedContextPageLike>;
-  requiredPageIds?: string[];
-  homePageId?: string;
 }): Record<string, unknown> {
-  const { currentPageId, block, pages, requiredPageIds = [], homePageId = "home" } = options;
+  const { block, pages } = options;
 
-  const explicitProps = isRecord(block.props) ? block.props : {};
-  if (!block.id) {
-    return explicitProps;
+  const ownProps = isRecord(block.props) ? block.props : {};
+  if (typeof block.inherit !== "string" || block.inherit.length === 0 || !block.id) {
+    return ownProps;
   }
 
-  const candidates = collectSharedContextCandidatesByLevel({
-    currentPageId,
-    block,
-    pages,
-    requiredPageIds,
-    homePageId,
-  });
-
-  const source = candidates.home[0] ?? candidates.required[0] ?? candidates.other[0];
-  if (!source || !isRecord(source.block.props)) {
-    return explicitProps;
+  const sourcePage = pages.get(block.inherit);
+  if (!sourcePage) {
+    return ownProps;
   }
 
-  return deepMergeEntryData(source.block.props, explicitProps);
+  const sourceBlock = sourcePage.blocks.find((candidate) => matchesSharedBlock(candidate, block));
+  if (!sourceBlock || !isRecord(sourceBlock.props)) {
+    return ownProps;
+  }
+
+  return { ...sourceBlock.props, ...ownProps };
 }

@@ -56,6 +56,8 @@ export interface BlockEntry {
   type?: string; // CMS-facing archetype slug — validated by page.block.validate
   use?: string; // PlanetName or MoonName — normalized from type for internal resolution
   props: Record<string, unknown>;
+  /** Explicit shared-context inheritance edge — pageId or opt-out `false` (RFC-1185). */
+  inherit?: string | false;
   visibility?: import("../policy/visibility.ts").VisibilityExpr;
   /** Block layer — shell blocks render before content blocks (RFC-0036). */
   layer?: "shell" | "section";

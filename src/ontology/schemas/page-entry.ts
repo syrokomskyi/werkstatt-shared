@@ -105,6 +105,16 @@ export const BlockEntrySchema = z
     props: z.record(z.string(), z.unknown()).default({}),
 
     /**
+     * Explicit shared-context inheritance edge (RFC-1185).
+     * A pageId string subscribes this block to the same id+type block's
+     * authored props on the named page (shallow top-level merge, authored
+     * keys win). `false` opts the block out of a same-id collision group.
+     * Absent means no inheritance — undeclared collisions are flagged by
+     * shared.context.validate.
+     */
+    inherit: z.union([z.string().min(1), z.literal(false)]).optional(),
+
+    /**
      * Optional visibility expression. When absent the block is unconditionally visible.
      * Evaluated at build time by evalVisibility against the RuntimeContext.
      */
