@@ -19,6 +19,7 @@ operations and MCP tools.
   <item>RFC-1169: capabilityToActionRef projects sideEffect into AgentActionRef — preview vs write is readable off agent.json.</item>
   <item>RFC-1186: boundCapabilityIds input — requires.formBinding records activate only where a bound send-message block exists; preview records resolve through their nextAction sibling id.</item>
   <item>RFC-1186: steps 1-2 — capability contracts, catalog records, resolver, propsSchema</item>
+  <item>RFC-1186: AGC-FORM-06 missing formId, strict FORM-04 preview binding, shared bound-set helpers (RFC-1186)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -26,6 +27,17 @@ import type { CapabilityRecord } from "@warpgogol/werkstatt-shared/ontology";
 import type { AgentActionRef } from "./manifest.ts";
 
 export type { CapabilityRecord } from "@warpgogol/werkstatt-shared/ontology";
+
+/**
+ * Capability record as serialized into `agent-capabilities.generated.{json,yaml}`
+ * by `agent.routes.generate` — RFC-1186 stamps `formBinding.formId` onto bound
+ * capabilities so the runtime gate can tag `IntegrationEvent.payload.formId`
+ * with the same discriminator the web form path sends (RFC-0827). The catalog
+ * schema itself stays strict; this is the site-serialized shape only.
+ */
+export interface SiteBoundCapabilityRecord extends CapabilityRecord {
+  formBinding?: { formId?: string };
+}
 
 export interface ResolveActiveCapabilitiesInput {
   catalog: CapabilityRecord[];
