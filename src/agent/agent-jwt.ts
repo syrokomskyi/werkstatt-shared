@@ -17,6 +17,7 @@ the public key. Hand-rolled over @noble/ed25519 primitives — no JWT dependency
   <item>RFC-1187: initial EdDSA JWT primitives for the agent authorization server.</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
   <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
+  <item>RFC-1187: fo-review — kid lands in the JWT header (AC-2), sourced from the active passport key version</item>
 </CHANGE_SUMMARY>
 */
 
@@ -40,7 +41,12 @@ export interface AgentTokenClaims {
 
 export const AGENT_TOKEN_MAX_TTL_SECONDS = 3600;
 
-const JWT_HEADER = { alg: "EdDSA", typ: "JWT" } as const;
+/** JWS header shape — `kid` identifies the passport key version that signed. */
+interface AgentJwtHeader {
+  alg: "EdDSA";
+  typ: "JWT";
+  kid: string;
+}
 
 /** base64url encode (no padding) — UTF-8 for strings. */
 export function b64uEncode(input: Uint8Array | string): string {
@@ -59,15 +65,22 @@ export function b64uDecode(input: string): Uint8Array | null {
   return new Uint8Array(Buffer.from(padded.replaceAll("-", "+").replaceAll("_", "/"), "base64"));
 }
 
-/** Sign claims into a compact EdDSA JWT. `exp - iat` MUST NOT exceed 3600s. */
+/**
+ * Sign claims into a compact EdDSA JWT. `exp - iat` MUST NOT exceed 3600s.
+ * `keyVersion` lands in the header `kid` (AC-2) — the same value the JWKS
+ * directory advertises, so verifiers can select the right key across
+ * `passport.key.rotate` transitions.
+ */
 export async function signAgentToken(
   claims: AgentTokenClaims,
   privateKey: Uint8Array,
+  keyVersion: string,
 ): Promise<string> {
   if (claims.exp - claims.iat > AGENT_TOKEN_MAX_TTL_SECONDS) {
     throw new Error(`AGENT-TOKEN-TTL: exp - iat exceeds ${AGENT_TOKEN_MAX_TTL_SECONDS}s`);
   }
-  const signingInput = `${b64uEncode(JSON.stringify(JWT_HEADER))}.${b64uEncode(
+  const header: AgentJwtHeader = { alg: "EdDSA", typ: "JWT", kid: keyVersion };
+  const signingInput = `${b64uEncode(JSON.stringify(header))}.${b64uEncode(
     JSON.stringify(claims),
   )}`;
   const signature = await signBytes(privateKey, new TextEncoder().encode(signingInput));
@@ -82,9 +95,12 @@ export type AgentTokenVerifyResult =
 
 /**
  * Verify a compact EdDSA JWT: signature over the signing input, fixed
- * `alg: "EdDSA"` header (no "none" downgrade), `exp` not elapsed, `iss` equals
- * the expected issuer. Returns a discriminated failure — callers map every
- * failure to the same 401; the reason is for logs only.
+ * `alg: "EdDSA"`/`typ: "JWT"` header with a non-empty `kid` (no "none"
+ * downgrade, no header smuggling), `exp` not elapsed, `iss` equals the
+ * expected issuer. The `kid` check is structural — key selection across
+ * rotation is the JWKS directory's job, and with a single active key the
+ * signature is the binding check. Returns a discriminated failure — callers
+ * map every failure to the same 401; the reason is for logs only.
  */
 export async function verifyAgentToken(
   token: string,
@@ -99,8 +115,16 @@ export async function verifyAgentToken(
   const headerBytes = b64uDecode(headerB64);
   if (!headerBytes) return { ok: false, reason: "header" };
   try {
-    const header = JSON.parse(new TextDecoder().decode(headerBytes)) as { alg?: unknown };
+    const header = JSON.parse(new TextDecoder().decode(headerBytes)) as {
+      alg?: unknown;
+      typ?: unknown;
+      kid?: unknown;
+    };
     if (header.alg !== "EdDSA") return { ok: false, reason: "header" };
+    if (header.typ !== "JWT") return { ok: false, reason: "header" };
+    if (typeof header.kid !== "string" || header.kid.length === 0) {
+      return { ok: false, reason: "header" };
+    }
   } catch {
     return { ok: false, reason: "header" };
   }

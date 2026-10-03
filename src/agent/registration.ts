@@ -17,6 +17,7 @@ no fetch, no Redis client, no key material here.
   <item>RFC-1187: initial agent registration contracts (registry, verifier, verified identity).</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
   <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
+  <item>RFC-1187: fo-review — VerifiedAgent carries the registration record (no second registry fetch)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -95,6 +96,11 @@ export interface AgentRegistrationVerifier {
 export interface VerifiedAgent {
   agentId: string;
   scopes: string[];
+  /**
+   * The registration record fetched during Bearer resolution — callers
+   * (whoami/rotate) reuse it instead of a second registry roundtrip.
+   */
+  registration: AgentRegistration;
 }
 
 /** Scopes the site issues — closed vocabulary, extended only by RFC. */

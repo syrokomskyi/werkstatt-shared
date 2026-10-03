@@ -16,6 +16,7 @@ machine `code` so agents can branch without parsing prose.
 <CHANGE_SUMMARY>
   <item>RFC-1112: initial receipt/problem-details contracts + deterministic eventId derivation.</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
+  <item>RFC-1187: fo-review — auth-backend-unavailable code (503 retryable) for registry outages on AS endpoints</item>
 </CHANGE_SUMMARY>
 */
 
@@ -47,7 +48,8 @@ export type AgentErrorCode =
   | "invalid-challenge"
   | "invalid-proof"
   | "already-registered"
-  | "oauth-unavailable";
+  | "oauth-unavailable"
+  | "auth-backend-unavailable";
 
 /** RFC 9457 problem details with platform extension members (`code`, `retryable`, …). */
 export interface AgentProblemDetails {
@@ -78,6 +80,7 @@ export const AGENT_ERROR_STATUS: Record<AgentErrorCode, number> = {
   "invalid-proof": 400,
   "already-registered": 409,
   "oauth-unavailable": 404,
+  "auth-backend-unavailable": 503,
 };
 
 export const AGENT_ERROR_RETRYABLE: Record<AgentErrorCode, boolean> = {
@@ -93,6 +96,7 @@ export const AGENT_ERROR_RETRYABLE: Record<AgentErrorCode, boolean> = {
   "invalid-proof": false,
   "already-registered": false,
   "oauth-unavailable": false,
+  "auth-backend-unavailable": true,
 };
 
 const AGENT_ERROR_TITLE: Record<AgentErrorCode, string> = {
@@ -108,6 +112,7 @@ const AGENT_ERROR_TITLE: Record<AgentErrorCode, string> = {
   "invalid-proof": "Key proof signature did not verify",
   "already-registered": "Agent is already registered",
   "oauth-unavailable": "Authorization server is not configured on this site",
+  "auth-backend-unavailable": "Authorization backend temporarily unavailable",
 };
 
 /** Build a problem-details object for `code`; status/title/retryable derive from the closed tables. */

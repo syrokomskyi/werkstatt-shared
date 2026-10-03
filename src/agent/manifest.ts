@@ -18,6 +18,7 @@ two runs on unchanged input are byte-identical (AS-7).
   <item>RFC-1171: ManifestDeprecation + platform-injected unversioned→v1 deprecations[] with fixed date constants (determinism), validateManifestDeprecations enforcing successor resolution and the 90-day sunset window.</item>
   <item>RFC-1113: supportedProtocols comment update — unconditional ARD emission now spans ard.json + ai-catalog.json, agent-skills spans index + per-domain SKILL.md.</item>
   <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
+  <item>RFC-1187: fo-review — interfaces.oauth carries keyVersion (JWT/JWKS kid follows passport rotation)</item>
   <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112, RFC-1113, RFC-1114</history>
 </CHANGE_SUMMARY>
 */
@@ -231,9 +232,15 @@ export interface AgentSurfaceManifest {
      * RFC-1187: OAuth discovery for the worker-hosted authorization server —
      * populated iff `agent.auth.enabled` AND the signing key was configured at
      * generation time; null preserves the anonymous contract (ADR-0099 until
-     * superseded).
+     * superseded). `keyVersion` is the active passport key version stamped at
+     * generation — JWT `kid` and the JWKS `kid` both source it so
+     * `passport.key.rotate` transitions stay honest.
      */
-    oauth: { authorizationServer: string; protectedResource: string } | null;
+    oauth: {
+      authorizationServer: string;
+      protectedResource: string;
+      keyVersion: string;
+    } | null;
   };
   /** Null until agent.surface.sign signs it (RFC-0308) or when no key material exists. */
   proof: AgentSurfaceProof | null;
@@ -266,9 +273,14 @@ export interface AgentSurfaceManifestInput {
   /**
    * RFC-1187: OAuth discovery pair — the well-known document paths this site
    * emits (`/.well-known/oauth-authorization-server` +
-   * `/.well-known/oauth-protected-resource`). Set only when the AS is live.
+   * `/.well-known/oauth-protected-resource`) plus the active passport
+   * `keyVersion` stamped at generation. Set only when the AS is live.
    */
-  oauth?: { authorizationServer: string; protectedResource: string } | null;
+  oauth?: {
+    authorizationServer: string;
+    protectedResource: string;
+    keyVersion: string;
+  } | null;
 }
 
 // ---------------------------------------------------------------------------

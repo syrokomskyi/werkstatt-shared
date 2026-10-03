@@ -14,8 +14,8 @@ No I/O — the kernel command loads the manifest and passes it here.
   <item>RFC-1114: link agent-card.json (service-desc) + a2a endpoint (service) when interfaces.a2a is non-null.</item>
   <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
   <item>RFC-1171: successor-version link entries per manifest deprecations[] — deprecated aliases anchored, pointing at canonical successors.</item>
-  <item>RFC-1187: link oauth-authorization-server (RFC 8415 relation) when interfaces.oauth is non-null.</item>
   <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
+  <item>RFC-1187: fo-review — oauth metadata links fold into registered service-meta (no oauth-* relation exists; RFC 8415 reference was wrong — relations live in RFC 8288's registry)</item>
   <history>RFC-0783, RFC-0954</history>
 </CHANGE_SUMMARY>
 */
@@ -58,7 +58,19 @@ export function buildApiCatalog(manifest: AgentSurfaceManifest): ApiCatalog {
     entry["item"] = item;
   }
 
-  entry["service-meta"] = [{ href: "/.well-known/agent.json", type: "application/json" }];
+  // RFC-1187: the AS + protected-resource metadata documents ride the
+  // registered service-meta relation (RFC 8288) — there is no registered
+  // oauth-* link relation, and RFC 8288 requires extension relations be URIs.
+  const serviceMeta: ApiCatalogLink[] = [
+    { href: "/.well-known/agent.json", type: "application/json" },
+  ];
+  if (manifest.interfaces.oauth) {
+    serviceMeta.push(
+      { href: manifest.interfaces.oauth.authorizationServer, type: "application/json" },
+      { href: manifest.interfaces.oauth.protectedResource, type: "application/json" },
+    );
+  }
+  entry["service-meta"] = serviceMeta;
 
   const serviceDesc: ApiCatalogLink[] = [];
   if (manifest.interfaces.openapi) {
@@ -89,13 +101,6 @@ export function buildApiCatalog(manifest: AgentSurfaceManifest): ApiCatalog {
 
   if (manifest.interfaces.search) {
     entry["search"] = [{ href: manifest.interfaces.search.url, type: "application/json" }];
-  }
-
-  // RFC-1187: RFC 8415 registered relation — the AS metadata document.
-  if (manifest.interfaces.oauth) {
-    entry["oauth-authorization-server"] = [
-      { href: manifest.interfaces.oauth.authorizationServer, type: "application/json" },
-    ];
   }
 
   entry["service-doc"] = [{ href: manifest.interfaces.llms, type: "text/plain" }];
