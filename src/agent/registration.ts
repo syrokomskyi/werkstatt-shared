@@ -16,6 +16,7 @@ no fetch, no Redis client, no key material here.
 <CHANGE_SUMMARY>
   <item>RFC-1187: initial agent registration contracts (registry, verifier, verified identity).</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
+  <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
 </CHANGE_SUMMARY>
 */
 
@@ -31,7 +32,7 @@ export interface AgentRegistration {
   signatureAgent: string;
   /** sha256 hex of the current credential secret. */
   credentialSecretHash: string;
-  /** Granted scopes (e.g. ["actions:elevated","registration:self"]). */
+  /** Granted scopes (e.g. ["agent.actions.elevated","agent.registration"]). */
   scopes: string[];
   /** ISO 8601 first-registration timestamp. */
   registeredAt: string;
@@ -39,6 +40,8 @@ export interface AgentRegistration {
   credentialVersion: number;
   /** ISO 8601 revocation timestamp — present only while the registration is dead. */
   revokedAt?: string;
+  /** Optional operator note recorded by `agent.registration.revoke --reason`. */
+  revocationReason?: string;
 }
 
 /**
@@ -95,8 +98,8 @@ export interface VerifiedAgent {
 }
 
 /** Scopes the site issues — closed vocabulary, extended only by RFC. */
-export const AGENT_SCOPE_ACTIONS_ELEVATED = "actions:elevated" as const;
-export const AGENT_SCOPE_REGISTRATION_SELF = "registration:self" as const;
+export const AGENT_SCOPE_ACTIONS_ELEVATED = "agent.actions.elevated" as const;
+export const AGENT_SCOPE_REGISTRATION_SELF = "agent.registration" as const;
 
 /** Derive the stable agentId from the registration's identity key material. */
 export function deriveAgentId(

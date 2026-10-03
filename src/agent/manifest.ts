@@ -17,6 +17,7 @@ two runs on unchanged input are byte-identical (AS-7).
   <item>RFC-1165: add "nlweb" to AgentProtocol and conditional interfaces.nlweb (populated iff the SSR/search interface chain serves — static sites never advertise it).</item>
   <item>RFC-1171: ManifestDeprecation + platform-injected unversioned→v1 deprecations[] with fixed date constants (determinism), validateManifestDeprecations enforcing successor resolution and the 90-day sunset window.</item>
   <item>RFC-1113: supportedProtocols comment update — unconditional ARD emission now spans ard.json + ai-catalog.json, agent-skills spans index + per-domain SKILL.md.</item>
+  <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
   <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112, RFC-1113, RFC-1114</history>
 </CHANGE_SUMMARY>
 */
@@ -48,6 +49,7 @@ export type AgentProtocol =
   | "agent-skills"
   | "schemamap"
   | "nlweb"
+  | "oauth"
   | "search";
 
 export interface AgentKnowledgeRef {
@@ -225,6 +227,13 @@ export interface AgentSurfaceManifest {
     /** RFC-1165: the NLWeb /ask endpoint — populated iff `search` is (the SSR
      *  adapter + search-manifest chain gates both; static sites ship no /ask). */
     nlweb: string | null;
+    /**
+     * RFC-1187: OAuth discovery for the worker-hosted authorization server —
+     * populated iff `agent.auth.enabled` AND the signing key was configured at
+     * generation time; null preserves the anonymous contract (ADR-0099 until
+     * superseded).
+     */
+    oauth: { authorizationServer: string; protectedResource: string } | null;
   };
   /** Null until agent.surface.sign signs it (RFC-0308) or when no key material exists. */
   proof: AgentSurfaceProof | null;
@@ -254,6 +263,12 @@ export interface AgentSurfaceManifestInput {
   search?: { url: string; model: string; dimensions: number } | null;
   /** RFC-1165: NLWeb /ask path — set when the search interface chain serves. */
   nlweb?: string | null;
+  /**
+   * RFC-1187: OAuth discovery pair — the well-known document paths this site
+   * emits (`/.well-known/oauth-authorization-server` +
+   * `/.well-known/oauth-protected-resource`). Set only when the AS is live.
+   */
+  oauth?: { authorizationServer: string; protectedResource: string } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -330,6 +345,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       ...(input.openapiUrl ? ["openapi"] : []),
       ...(input.search ? ["search"] : []),
       ...(input.nlweb ? ["nlweb"] : []),
+      ...(input.oauth ? ["oauth"] : []),
       ...(input.hasTwins ? ["twins"] : []),
     ] as AgentProtocol[]
   ).sort();
@@ -357,6 +373,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       a2a: input.a2a ?? null,
       search: input.search ?? null,
       nlweb: input.nlweb ?? null,
+      oauth: input.oauth ?? null,
     },
     proof: null,
   };

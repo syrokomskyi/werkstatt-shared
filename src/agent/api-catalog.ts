@@ -11,11 +11,12 @@ No I/O — the kernel command loads the manifest and passes it here.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0783: initial API Catalog linkset+json projection.</item>
-  <item>RFC-0954: add search endpoint link when interfaces.search is non-null.</item>
   <item>RFC-1114: link agent-card.json (service-desc) + a2a endpoint (service) when interfaces.a2a is non-null.</item>
   <item>RFC-1114: minimal real A2A endpoint + honest agent card</item>
   <item>RFC-1171: successor-version link entries per manifest deprecations[] — deprecated aliases anchored, pointing at canonical successors.</item>
+  <item>RFC-1187: link oauth-authorization-server (RFC 8415 relation) when interfaces.oauth is non-null.</item>
+  <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
+  <history>RFC-0783, RFC-0954</history>
 </CHANGE_SUMMARY>
 */
 
@@ -88,6 +89,13 @@ export function buildApiCatalog(manifest: AgentSurfaceManifest): ApiCatalog {
 
   if (manifest.interfaces.search) {
     entry["search"] = [{ href: manifest.interfaces.search.url, type: "application/json" }];
+  }
+
+  // RFC-1187: RFC 8415 registered relation — the AS metadata document.
+  if (manifest.interfaces.oauth) {
+    entry["oauth-authorization-server"] = [
+      { href: manifest.interfaces.oauth.authorizationServer, type: "application/json" },
+    ];
   }
 
   entry["service-doc"] = [{ href: manifest.interfaces.llms, type: "text/plain" }];

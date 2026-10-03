@@ -16,6 +16,7 @@ the public key. Hand-rolled over @noble/ed25519 primitives — no JWT dependency
 <CHANGE_SUMMARY>
   <item>RFC-1187: initial EdDSA JWT primitives for the agent authorization server.</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
+  <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
 </CHANGE_SUMMARY>
 */
 
@@ -31,7 +32,7 @@ export interface AgentTokenClaims {
   iat: number;
   /** Expiry, unix seconds — MUST be at most iat + 3600. */
   exp: number;
-  /** Space-delimited granted scopes (e.g. "actions:elevated registration:self"). */
+  /** Space-delimited granted scopes (e.g. "agent.actions.elevated agent.registration"). */
   scope?: string;
   /** Unique token id for audit/traceability. */
   jti?: string;
@@ -74,16 +75,10 @@ export async function signAgentToken(
 }
 
 export type AgentTokenVerifyFailure =
-  | "malformed"
-  | "header"
-  | "signature"
-  | "claims"
-  | "expired"
-  | "issuer";
+  "malformed" | "header" | "signature" | "claims" | "expired" | "issuer";
 
 export type AgentTokenVerifyResult =
-  | { ok: true; claims: AgentTokenClaims }
-  | { ok: false; reason: AgentTokenVerifyFailure };
+  { ok: true; claims: AgentTokenClaims } | { ok: false; reason: AgentTokenVerifyFailure };
 
 /**
  * Verify a compact EdDSA JWT: signature over the signing input, fixed
@@ -113,11 +108,7 @@ export async function verifyAgentToken(
   const signature = b64uDecode(signatureB64);
   if (!signature || signature.length !== 64) return { ok: false, reason: "signature" };
   const signingInput = `${headerB64}.${payloadB64}`;
-  const valid = await verifyBytes(
-    publicKey,
-    new TextEncoder().encode(signingInput),
-    signature,
-  );
+  const valid = await verifyBytes(publicKey, new TextEncoder().encode(signingInput), signature);
   if (!valid) return { ok: false, reason: "signature" };
 
   const payloadBytes = b64uDecode(payloadB64);
