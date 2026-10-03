@@ -17,6 +17,8 @@ operations and MCP tools.
 <CHANGE_SUMMARY>
   <item>RFC-0288: initial capability resolution.</item>
   <item>RFC-1169: capabilityToActionRef projects sideEffect into AgentActionRef — preview vs write is readable off agent.json.</item>
+  <item>RFC-1186: boundCapabilityIds input — requires.formBinding records activate only where a bound send-message block exists; preview records resolve through their nextAction sibling id.</item>
+  <item>RFC-1186: steps 1-2 — capability contracts, catalog records, resolver, propsSchema</item>
 </CHANGE_SUMMARY>
 */
 
@@ -33,6 +35,14 @@ export interface ResolveActiveCapabilitiesInput {
   renderedSectionTypes: string[];
   /** system.md agent.actionsDisabled — capability ids to withhold even if otherwise active. */
   actionsDisabled: string[];
+  /**
+   * RFC-1186: capability ids bound via `agentCapability` props on site
+   * `send-message` blocks. A `requires.formBinding: true` record activates
+   * only when its bound id is present — for `sideEffect: "none"` records the
+   * bound id is the `nextAction.capability` sibling, so one block prop
+   * activates the submit/apply capability and its preview pair.
+   */
+  boundCapabilityIds?: string[];
 }
 
 /** Pure: gate the closed catalog down to the capabilities active on this site. */
@@ -42,6 +52,7 @@ export function resolveActiveCapabilities(
   const entitlements = new Set(input.entitlements);
   const renderedSections = new Set(input.renderedSectionTypes);
   const disabled = new Set(input.actionsDisabled);
+  const bound = new Set(input.boundCapabilityIds ?? []);
 
   if (!entitlements.has("agent.actions")) return [];
 
@@ -52,6 +63,10 @@ export function resolveActiveCapabilities(
     }
     for (const section of cap.requires.sections) {
       if (!renderedSections.has(section)) return false;
+    }
+    if (cap.requires.formBinding === true) {
+      const boundId = cap.nextAction?.capability ?? cap.id;
+      if (!bound.has(boundId)) return false;
     }
     return true;
   });

@@ -8,6 +8,7 @@
 </MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0288: initial capability resolution tests.</item>
+  <item>RFC-1186: steps 1-2 — capability contracts, catalog records, resolver, propsSchema</item>
 </CHANGE_SUMMARY>
 */
 
@@ -96,6 +97,73 @@ test("resolveActiveCapabilities: actionsDisabled withholds an otherwise-active c
     actionsDisabled: ["lead.submit"],
   });
   expect(result).toEqual([]);
+});
+
+test("resolveActiveCapabilities: formBinding capability inactive without a bound block", () => {
+  const cap = makeCap({
+    id: "recommendation.submit",
+    requires: { entitlements: ["agent.actions"], sections: ["send-message"], formBinding: true },
+  });
+  const result = resolveActiveCapabilities({
+    catalog: [cap],
+    entitlements: ["agent.actions"],
+    renderedSectionTypes: ["send-message"],
+    actionsDisabled: [],
+    boundCapabilityIds: [],
+  });
+  expect(result).toEqual([]);
+});
+
+test("resolveActiveCapabilities: formBinding capability active when bound", () => {
+  const cap = makeCap({
+    id: "recommendation.submit",
+    requires: { entitlements: ["agent.actions"], sections: ["send-message"], formBinding: true },
+  });
+  const result = resolveActiveCapabilities({
+    catalog: [cap],
+    entitlements: ["agent.actions"],
+    renderedSectionTypes: ["send-message"],
+    actionsDisabled: [],
+    boundCapabilityIds: ["recommendation.submit"],
+  });
+  expect(result.length).toBe(1);
+});
+
+test("resolveActiveCapabilities: preview resolves binding through nextAction sibling", () => {
+  const preview = makeCap({
+    id: "recommendation.prepare",
+    sideEffect: "none",
+    integration: undefined,
+    humanEquivalent: undefined,
+    nextAction: { capability: "recommendation.submit", sideEffect: "Sends the recommendation." },
+    requires: { entitlements: ["agent.actions"], sections: ["send-message"], formBinding: true },
+  });
+  const bound = resolveActiveCapabilities({
+    catalog: [preview],
+    entitlements: ["agent.actions"],
+    renderedSectionTypes: ["send-message"],
+    actionsDisabled: [],
+    boundCapabilityIds: ["recommendation.submit"],
+  });
+  expect(bound.length).toBe(1);
+  const unbound = resolveActiveCapabilities({
+    catalog: [preview],
+    entitlements: ["agent.actions"],
+    renderedSectionTypes: ["send-message"],
+    actionsDisabled: [],
+    boundCapabilityIds: ["other.capability"],
+  });
+  expect(unbound).toEqual([]);
+});
+
+test("resolveActiveCapabilities: absent boundCapabilityIds leaves non-formBinding caps unaffected", () => {
+  const result = resolveActiveCapabilities({
+    catalog: [makeCap()],
+    entitlements: ["agent.actions"],
+    renderedSectionTypes: ["send-message"],
+    actionsDisabled: [],
+  });
+  expect(result.length).toBe(1);
 });
 
 test("capabilityToActionRef: projects id/url/title/entitlement", () => {

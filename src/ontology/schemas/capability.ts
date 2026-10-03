@@ -17,10 +17,12 @@ interprets flat shapes only.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0288: initial capability record schema.</item>
   <item>RFC-1112: add sideEffect ("write"|"none"); integration + humanEquivalent become optional and are required unless sideEffect is "none".</item>
   <item>RFC-1115: add optional agentGuidance block (sideEffect, whenToUse, whenNotToUse, retrySemantics) rendered into MCP tool descriptions and OpenAPI operation docs.</item>
   <item>RFC-1169: add optional nextAction object (capability + sideEffect consequence prose) and widen output properties with nested object/array shapes via capabilityNestedPropertySchema. Input stays flat.</item>
+  <item>RFC-1186: capabilityRequiresSchema gains optional formBinding flag (activate only where a bound send-message block exists); eventKind enum gains recommendation and referral-application.</item>
+  <item>RFC-1186: steps 1-2 — capability contracts, catalog records, resolver, propsSchema</item>
+  <history>RFC-0288</history>
 </CHANGE_SUMMARY>
 */
 
@@ -135,7 +137,7 @@ const capabilityNextActionSchema = z
 
 const capabilityIntegrationSchema = z
   .object({
-    eventKind: z.enum(["lead", "message", "appointment"]),
+    eventKind: z.enum(["lead", "message", "appointment", "recommendation", "referral-application"]),
     source: z.literal("agent"),
   })
   .strict();
@@ -144,6 +146,13 @@ const capabilityRequiresSchema = z
   .object({
     entitlements: z.array(z.string().min(1)).default([]),
     sections: z.array(z.string().min(1)).default([]),
+    /**
+     * RFC-1186: when true, the capability is active only where at least one
+     * `send-message` block declares `agentCapability: <id>` — in addition to
+     * the entitlement/section gates. Absent/false means binding does not
+     * affect activation.
+     */
+    formBinding: z.boolean().optional(),
   })
   .strict();
 
