@@ -17,12 +17,12 @@ interprets flat shapes only.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1115: add optional agentGuidance block (sideEffect, whenToUse, whenNotToUse, retrySemantics) rendered into MCP tool descriptions and OpenAPI operation docs.</item>
   <item>RFC-1169: add optional nextAction object (capability + sideEffect consequence prose) and widen output properties with nested object/array shapes via capabilityNestedPropertySchema. Input stays flat.</item>
   <item>RFC-1186: capabilityRequiresSchema gains optional formBinding flag (activate only where a bound send-message block exists); eventKind enum gains recommendation and referral-application.</item>
   <item>RFC-1186: steps 1-2 — capability contracts, catalog records, resolver, propsSchema</item>
   <item>RFC-1186: step 5a — IntegrationEvent kind union + delivery formId parity</item>
-  <history>RFC-0288, RFC-1112</history>
+  <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
+  <history>RFC-0288, RFC-1112, RFC-1115</history>
 </CHANGE_SUMMARY>
 */
 
@@ -169,6 +169,12 @@ const capabilityLimitsSchema = z
   .object({
     perMinutePerIp: z.number().int().positive(),
     maxPayloadBytes: z.number().int().positive(),
+    /**
+     * RFC-1187: elevated-tier limit for verified-Bearer callers, keyed
+     * `${capabilityId}:agent:${agentId}` instead of the anonymous `:ip:` bucket.
+     * Optional — when absent, authenticated callers keep the anonymous limit.
+     */
+    perMinutePerAgent: z.number().int().positive().optional(),
   })
   .strict();
 

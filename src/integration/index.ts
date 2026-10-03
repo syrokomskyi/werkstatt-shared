@@ -24,6 +24,7 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
   <item>RFC-1106: step 6 — delete integration port-barrel
 
 port-barrel.ts deleted; its explicit contract re-exports absorbed into integration/index.ts. The site domain/integration barrel rewires to explicit names from the shared barrel. ./integration/port-barrel export entry removed; ./integration/port (→ port.ts) stays — engine agent-gate consumers unaffected.</item>
+  <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
 </CHANGE_SUMMARY>
 */
 
@@ -119,6 +120,9 @@ export {
 // RFC-1112: agent-action receipt store (Upstash Redis EU).
 export type { ReceiptStoreRecord, ActionReceiptStore } from "./idempotency.ts";
 export { restRedisReceiptStore } from "./idempotency.ts";
+
+// RFC-1187: agent registration store (Upstash Redis EU — hash-only credentials).
+export { restRedisAgentRegistry } from "./agent-registry.ts";
 
 // Runtime modules — explicit re-exports to keep the public API surface clear.
 export type {

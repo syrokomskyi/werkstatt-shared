@@ -15,6 +15,7 @@ machine `code` so agents can branch without parsing prose.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1112: initial receipt/problem-details contracts + deterministic eventId derivation.</item>
+  <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
 </CHANGE_SUMMARY>
 */
 
@@ -41,7 +42,12 @@ export type AgentErrorCode =
   | "payload-too-large"
   | "rate-limited"
   | "dispatch-failed"
-  | "idempotency-key-reuse";
+  | "idempotency-key-reuse"
+  | "unauthorized"
+  | "invalid-challenge"
+  | "invalid-proof"
+  | "already-registered"
+  | "oauth-unavailable";
 
 /** RFC 9457 problem details with platform extension members (`code`, `retryable`, …). */
 export interface AgentProblemDetails {
@@ -67,6 +73,11 @@ export const AGENT_ERROR_STATUS: Record<AgentErrorCode, number> = {
   "rate-limited": 429,
   "dispatch-failed": 502,
   "idempotency-key-reuse": 409,
+  unauthorized: 401,
+  "invalid-challenge": 400,
+  "invalid-proof": 400,
+  "already-registered": 409,
+  "oauth-unavailable": 404,
 };
 
 export const AGENT_ERROR_RETRYABLE: Record<AgentErrorCode, boolean> = {
@@ -77,6 +88,11 @@ export const AGENT_ERROR_RETRYABLE: Record<AgentErrorCode, boolean> = {
   "rate-limited": true,
   "dispatch-failed": true,
   "idempotency-key-reuse": false,
+  unauthorized: false,
+  "invalid-challenge": false,
+  "invalid-proof": false,
+  "already-registered": false,
+  "oauth-unavailable": false,
 };
 
 const AGENT_ERROR_TITLE: Record<AgentErrorCode, string> = {
@@ -87,6 +103,11 @@ const AGENT_ERROR_TITLE: Record<AgentErrorCode, string> = {
   "rate-limited": "Rate limit exceeded",
   "dispatch-failed": "Delivery substrate rejected the event",
   "idempotency-key-reuse": "Idempotency-Key was used with a different payload",
+  unauthorized: "Bearer authentication required",
+  "invalid-challenge": "Registration challenge is unknown, expired, or already consumed",
+  "invalid-proof": "Key proof signature did not verify",
+  "already-registered": "Agent is already registered",
+  "oauth-unavailable": "Authorization server is not configured on this site",
 };
 
 /** Build a problem-details object for `code`; status/title/retryable derive from the closed tables. */

@@ -414,6 +414,10 @@
       "types": "./src/checks/index.ts",
       "default": "./src/checks/index.ts"
     },
+    "./integration/agent-registry": {
+      "types": "./src/integration/agent-registry.ts",
+      "default": "./src/integration/agent-registry.ts"
+    },
     "./integration/adapters": {
       "types": "./src/integration/adapters.ts",
       "default": "./src/integration/adapters.ts"
@@ -614,6 +618,10 @@
       "types": "./src/passport/index.ts",
       "default": "./src/passport/index.ts"
     },
+    "./agent/agent-jwt": {
+      "types": "./src/agent/agent-jwt.ts",
+      "default": "./src/agent/agent-jwt.ts"
+    },
     "./agent/api-catalog": {
       "types": "./src/agent/api-catalog.ts",
       "default": "./src/agent/api-catalog.ts"
@@ -657,6 +665,10 @@
     "./agent/proof": {
       "types": "./src/agent/proof.ts",
       "default": "./src/agent/proof.ts"
+    },
+    "./agent/registration": {
+      "types": "./src/agent/registration.ts",
+      "default": "./src/agent/registration.ts"
     },
     "./agent/search": {
       "types": "./src/agent/search.ts",

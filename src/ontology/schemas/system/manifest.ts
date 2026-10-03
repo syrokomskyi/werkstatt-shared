@@ -6,7 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0303 Phase 3: extracted from schemas/system.ts as part of the domain split.</item>
   <item>RFC-0377: added optional `audience` field to the per-page pin schema.</item>
   <item>ADR-0062: added `ctaTarget` to identity, `sectionNav` + `ctaTarget` to page pins, created `systemCollectionSchema` for content collection typing.</item>
   <item>RFC-1106: step 2 — extend systemManifestSchema
@@ -22,6 +21,8 @@ robots.validate; rule registry entries; robots.validate registered in
 build-prepare after robots.generate (first pipeline placement). Fix
 upstream dead config: robots block now declared in systemManifestSchema
 (manifest.robots was stripped by strict parse).</item>
+  <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
+  <history>RFC-0303</history>
 </CHANGE_SUMMARY>
 */
 
@@ -517,6 +518,19 @@ export const systemManifestSchema = z.object({
       knowledgeDisabled: z.array(z.string().min(1)).optional(),
       /** RFC-0288: capability ids to withhold from the action tier even if otherwise active. */
       actionsDisabled: z.array(z.string().min(1)).optional(),
+      /**
+       * RFC-1187: worker-hosted agent authorization server — opt-in. When
+       * `auth.enabled` is true AND a signing key is configured at generation
+       * time, the site emits OAuth discovery metadata (RFC 8414 + RFC 9728),
+       * registration/token/JWKS routes, and the auth.md key_proof flow.
+       * Absent/false preserves the anonymous baseline.
+       */
+      auth: z
+        .object({
+          enabled: z.boolean().optional(),
+        })
+        .strict()
+        .optional(),
     })
     .strict()
     .optional(),
