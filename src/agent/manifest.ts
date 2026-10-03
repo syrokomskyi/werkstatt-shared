@@ -13,13 +13,12 @@ two runs on unchanged input are byte-identical (AS-7).
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1115: search results flattened to citation shape (title, canonicalUrl, updatedAt, lang, type, score, text) under the existing 2.0.0 surface; capability agentGuidance rendered into tool/operation descriptions.</item>
-  <item>RFC-1165: add "nlweb" to AgentProtocol and conditional interfaces.nlweb (populated iff the SSR/search interface chain serves — static sites never advertise it).</item>
   <item>RFC-1171: ManifestDeprecation + platform-injected unversioned→v1 deprecations[] with fixed date constants (determinism), validateManifestDeprecations enforcing successor resolution and the 90-day sunset window.</item>
   <item>RFC-1113: supportedProtocols comment update — unconditional ARD emission now spans ard.json + ai-catalog.json, agent-skills spans index + per-domain SKILL.md.</item>
   <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
   <item>RFC-1187: fo-review — interfaces.oauth carries keyVersion (JWT/JWKS kid follows passport rotation)</item>
-  <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112, RFC-1113, RFC-1114</history>
+  <item>RFC-1188: Web Bot Auth outbound identity: wba-sign primitives, directory emit+sweep, AGS-WBA-01, leitstand signed fetches</item>
+  <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112, RFC-1113, RFC-1114, RFC-1115, RFC-1165</history>
 </CHANGE_SUMMARY>
 */
 
@@ -51,6 +50,7 @@ export type AgentProtocol =
   | "schemamap"
   | "nlweb"
   | "oauth"
+  | "webBotAuth"
   | "search";
 
 export interface AgentKnowledgeRef {
@@ -241,6 +241,12 @@ export interface AgentSurfaceManifest {
       protectedResource: string;
       keyVersion: string;
     } | null;
+    /**
+     * RFC-1188: the Web Bot Auth key directory — populated iff a passport
+     * signing key was configured at generation time; null means the site
+     * signs no outbound requests and advertises none.
+     */
+    webBotAuth: { directory: string } | null;
   };
   /** Null until agent.surface.sign signs it (RFC-0308) or when no key material exists. */
   proof: AgentSurfaceProof | null;
@@ -281,6 +287,12 @@ export interface AgentSurfaceManifestInput {
     protectedResource: string;
     keyVersion: string;
   } | null;
+  /**
+   * RFC-1188: WBA key directory advertisement — the well-known path the
+   * generator emits (`/.well-known/http-message-signatures-directory`).
+   * Set only when a passport signing key was configured at generation.
+   */
+  webBotAuth?: { directory: string } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -358,6 +370,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       ...(input.search ? ["search"] : []),
       ...(input.nlweb ? ["nlweb"] : []),
       ...(input.oauth ? ["oauth"] : []),
+      ...(input.webBotAuth ? ["webBotAuth"] : []),
       ...(input.hasTwins ? ["twins"] : []),
     ] as AgentProtocol[]
   ).sort();
@@ -386,6 +399,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       search: input.search ?? null,
       nlweb: input.nlweb ?? null,
       oauth: input.oauth ?? null,
+      webBotAuth: input.webBotAuth ?? null,
     },
     proof: null,
   };

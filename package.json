@@ -622,6 +622,10 @@
       "types": "./src/agent/agent-jwt.ts",
       "default": "./src/agent/agent-jwt.ts"
     },
+    "./agent/wba-sign": {
+      "types": "./src/agent/wba-sign.ts",
+      "default": "./src/agent/wba-sign.ts"
+    },
     "./agent/api-catalog": {
       "types": "./src/agent/api-catalog.ts",
       "default": "./src/agent/api-catalog.ts"

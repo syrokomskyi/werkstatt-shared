@@ -10,12 +10,12 @@ here (knowledge, capability, openapi, proof) and re-export them from this barrel
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0954: re-export search module.</item>
   <item>RFC-1112: re-export receipt module (ActionReceipt, AgentProblemDetails, deriveActionEventId).</item>
   <item>RFC-1172: closed agent.traffic telemetry — ports.telemetry sink, TrafficRecorder + boundary emit via withTrafficEmit</item>
   <item>RFC-1113: re-export skill-md module (per-domain SKILL.md projection for ARD agent-skills entries).</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
-  <history>RFC-0286, RFC-0292, RFC-0783, RFC-0786</history>
+  <item>RFC-1188: Web Bot Auth outbound identity: wba-sign primitives, directory emit+sweep, AGS-WBA-01, leitstand signed fetches</item>
+  <history>RFC-0286, RFC-0292, RFC-0783, RFC-0786, RFC-0954</history>
 </CHANGE_SUMMARY>
 */
 
@@ -38,3 +38,4 @@ export * from "./guidance.ts";
 export * from "./health.ts";
 export * from "./registration.ts";
 export * from "./agent-jwt.ts";
+export * from "./wba-sign.ts";
