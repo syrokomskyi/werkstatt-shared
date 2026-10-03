@@ -14,6 +14,7 @@
   <item>RFC-1027: Create REMEDIATION_CATALOG with 30+ patterns for the most common ruleIds.</item>
   <item>RFC-1185: remediation entries for SHARED-CONTEXT-COLLISION-UNDECLARED and the SHARED-CONTEXT-INHERIT-* rule family.</item>
   <item>RFC-1185: review fix — Compass CHANGE_SUMMARY coverage only, no behavior change.</item>
+  <item>ADR-0105: remediation entries for the DIST-LEAK-01..05 rule family (serialization-leak guard).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -341,6 +342,39 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "Add the pageId to system.md pages[] and create its content entry, or remove it from sharedContext.requiredPageIds.",
     docRef: "docs/authoring/site-composition.md",
     targetFiles: ["src/content/system.md", "src/content/pages/**/*.md"],
+  },
+  {
+    ruleId: "DIST-LEAK-01",
+    action:
+      "A non-serializable runtime value reached a string position in rendered output — check deep-walk helpers for plain-object guards (non-plain objects like Date must pass through).",
+    docRef:
+      "docs/adrs/adr-0105-deep-walks-preserve-non-plain-objects-and-dist-is-scanned-for-serialization-leaks.md",
+  },
+  {
+    ruleId: "DIST-LEAK-02",
+    action:
+      "An unparseable or corrupted date reached the page — normalize date-bearing values via toIsoDateString (Date → toISOString) before they reach components.",
+    docRef:
+      "docs/adrs/adr-0105-deep-walks-preserve-non-plain-objects-and-dist-is-scanned-for-serialization-leaks.md",
+  },
+  {
+    ruleId: "DIST-LEAK-03",
+    action:
+      "An attribute received undefined/null/NaN — guard the prop source and omit the attribute instead of serializing the sentinel.",
+    docRef:
+      "docs/adrs/adr-0105-deep-walks-preserve-non-plain-objects-and-dist-is-scanned-for-serialization-leaks.md",
+  },
+  {
+    ruleId: "DIST-LEAK-04",
+    action:
+      "A text node rendered a bare undefined/null/NaN — coerce or suppress the value before render.",
+    docRef:
+      "docs/adrs/adr-0105-deep-walks-preserve-non-plain-objects-and-dist-is-scanned-for-serialization-leaks.md",
+  },
+  {
+    ruleId: "DIST-LEAK-05",
+    action:
+      "A dist file could not be read and was skipped by the scan — fix permissions/encoding; a skipped file escapes a fail-closed guard.",
   },
 ];
 

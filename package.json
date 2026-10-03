@@ -674,6 +674,10 @@
       "types": "./src/content/index.ts",
       "default": "./src/content/index.ts"
     },
+    "./content/iso-date-string": {
+      "types": "./src/content/iso-date-string.ts",
+      "default": "./src/content/iso-date-string.ts"
+    },
     "./content/merge": {
       "types": "./src/content/merge.ts",
       "default": "./src/content/merge.ts"
