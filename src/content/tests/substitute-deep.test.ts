@@ -58,6 +58,52 @@ test("substituteRefsDeep passes non-string leaves through unchanged", async () =
   expect(resolved).toEqual(props);
 });
 
+// ADR-0105: YAML timestamps arrive as Date instances in collection data.
+// Object.entries(new Date()) yields [], so rebuilding non-plain objects
+// silently replaced them with {} — rendering "Invalid Date" downstream.
+test("substituteRefsDeep passes Date instances through unchanged", async () => {
+  const observedAt = new Date("2026-09-18T20:34:40.542Z");
+  const data = {
+    assessment: {
+      observedAt,
+      seriesId: "{business.offer.price.monthly}",
+      runs: [{ at: new Date("2026-09-18T21:16:58.750Z") }],
+    },
+  };
+
+  const resolved = (await substituteRefsDeep(data, fakeResolve)) as typeof data;
+
+  expect(resolved.assessment.observedAt).toBe(observedAt);
+  expect(resolved.assessment.observedAt instanceof Date).toBeTruthy();
+  expect(resolved.assessment.runs[0].at instanceof Date).toBeTruthy();
+  // String leaves inside the same structure are still substituted.
+  expect(resolved.assessment.seriesId).toBe("70 €/Monat");
+});
+
+test("substituteRefsDeep passes other class instances through unchanged", async () => {
+  class Token {
+    constructor(public value: string) {}
+  }
+  const token = new Token("{business.offer.price.setup}");
+  const data = { nested: { token, url: new URL("https://example.com/x") } };
+
+  const resolved = (await substituteRefsDeep(data, fakeResolve)) as typeof data;
+
+  expect(resolved.nested.token).toBe(token);
+  expect(resolved.nested.url).toBeInstanceOf(URL);
+});
+
+test("substituteRefsDeep still rebuilds plain objects including null-prototype ones", async () => {
+  const nullProto = Object.create(null) as Record<string, string>;
+  nullProto.field = "{business.offer.price.yearly}";
+  const data = { a: "{business.offer.price.monthly}", nullProto };
+
+  const resolved = (await substituteRefsDeep(data, fakeResolve)) as typeof data;
+
+  expect(resolved.a).toBe("70 €/Monat");
+  expect(resolved.nullProto.field).toBe("700 €/Jahr");
+});
+
 test("substituteRefsDeep does not mutate the input", async () => {
   const props = { price: { monthly: "{business.offer.price.monthly}" } };
   await substituteRefsDeep(props, fakeResolve);

@@ -373,6 +373,10 @@ Rules:
 
 `client-scripts/trusted-types.ts` (RFC-1178) defines the named `werkstatt` Trusted Types policy — it is the FIRST static import in `orchestrator.ts` (side-effect import) so the policy exists before any sink write can occur; it MUST never move behind a dynamic import or a lazy feature initializer, and it never creates a `default` policy. Creators accept only platform-branded values minted by the module's `ttHTML`/`ttScriptURL` wrappers — arbitrary strings throw, keeping the policy from degenerating into a pass-through.
 
+### Deep-walk plain-object boundary (ADR-0105)
+
+Any recursive walk that rebuilds objects (`substituteRefsDeep`, `deepMerge`, prop resolvers) MUST rebuild **plain objects only** — objects whose prototype is `Object.prototype` or `null`. Class instances (`Date`, `URL`, custom classes) pass through as leaf values. `Object.entries(new Date())` yields `[]`, so a record-style rebuild silently produces `{}` and the corrupted value flows downstream as `[object Object]` / `Invalid Date` in rendered output. Check the prototype (`Object.getPrototypeOf`), not `Object.prototype.toString` — class instances without `Symbol.toStringTag` still report `[object Object]`. YAML parsers legitimately produce `Date` for unquoted timestamps, so collection data reaching these walks is never plain-object-only. Discovered during warpgogol-m000175: `resolveEntryData` on evidence frontmatter turned `observedAt: Date` into `{}`, shipping `datetime="[object Object]"` to production.
+
 ## Test coverage
 
 RFC-1044 (Phase 2) ratcheted the package adjacency ratio from 29% to 62% by adding 70 adjacent test files across Groups A (share/schemas + ontology/schemas) and B (share/scripts + share/agent + share/knowledge). Groups C-E remain for follow-up sessions. The adjacency baseline is tracked via `.test-adjacency-baseline.json` and enforced by `test.adjacency.validate` (RFC-1040).

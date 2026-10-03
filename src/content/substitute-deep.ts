@@ -11,6 +11,9 @@ string leaf of an arbitrary data structure, leaving non-string values unchanged 
 <CHANGE_SUMMARY>
   <item>RFC-0138: extracted the recursive prop-walk so block-prop reference substitution is
         shared by the astro resolver and the page handler, and unit-testable without astro.</item>
+  <item>ADR-0105: pass non-plain objects through untouched — Object.entries() on a Date/class
+        instance yields [], so rebuilding silently replaced it with {} and shipped
+        datetime="[object Object]" + "Invalid Date" to production.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -35,7 +38,16 @@ export async function substituteRefsDeep(
     return Promise.all(data.map((item) => substituteRefsDeep(item, substituteString)));
   }
 
+  // Only plain objects are rebuilt. Class instances (Date, URL, custom classes)
+  // must pass through untouched: Object.entries() on a Date yields [], so
+  // rebuilding would silently replace it with {} (ADR-0105). A prototype check
+  // (not toString-tag) is required — class instances without Symbol.toStringTag
+  // still report "[object Object]".
   if (data !== null && typeof data === "object") {
+    const proto = Object.getPrototypeOf(data);
+    if (proto !== Object.prototype && proto !== null) {
+      return data;
+    }
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
       result[key] = await substituteRefsDeep(value, substituteString);
