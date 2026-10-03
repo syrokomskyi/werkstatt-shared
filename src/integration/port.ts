@@ -11,6 +11,8 @@ secrets as parameters; never imports astro:env (the section handler reads secret
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0168: initial implementation.</item>
+  <item>RFC-1186: INTEGRATION_EVENT_KINDS gains recommendation and referral-application (shared with the capability catalog enum); eventToLeadMessage prefers payload.formId over source so agent-bound events keep the real form discriminator.</item>
+  <item>RFC-1186: step 5a — IntegrationEvent kind union + delivery formId parity</item>
 </CHANGE_SUMMARY>
 */
 
@@ -75,6 +77,20 @@ export const EXECUTION_MODES = ["gogol-adapter", "vendor-native"] as const;
 export type ExecutionMode = (typeof EXECUTION_MODES)[number];
 
 /**
+ * RFC-1186: closed catalog of normalized event kinds — the same vocabulary the
+ * capability catalog's `integration.eventKind` enum validates against
+ * (`@warpgogol/werkstatt-shared/ontology` z.enum consumes this tuple).
+ */
+export const INTEGRATION_EVENT_KINDS = [
+  "lead",
+  "message",
+  "appointment",
+  "recommendation",
+  "referral-application",
+] as const;
+export type IntegrationEventKind = (typeof INTEGRATION_EVENT_KINDS)[number];
+
+/**
  * Normalized event produced by any IntegrationSource (the send-message form, the
  * chat widget, future sources). Generalizes LeadMessage/Lead. `eventId` is the
  * idempotency key the queue consumer dedups on (RFC-0176).
@@ -82,7 +98,7 @@ export type ExecutionMode = (typeof EXECUTION_MODES)[number];
 export interface IntegrationEvent {
   /** Idempotency key (source-provided) — dedup on redelivery. */
   eventId: string;
-  kind: "lead" | "message" | "appointment";
+  kind: IntegrationEventKind;
   /** Source id, e.g. "send-message" | "uchat" | "stripe". */
   source: string;
   locale: string;
@@ -118,7 +134,13 @@ export function eventToLeadMessage(event: IntegrationEvent): LeadMessage {
   const phone = event.contact?.phone;
   return {
     message,
-    formId: event.source,
+    // RFC-1186: agent-bound events carry the real form discriminator in
+    // payload.formId (source stays "agent"); the web path puts formId in
+    // source directly — prefer the payload when present.
+    formId:
+      typeof event.payload.formId === "string" && event.payload.formId.length > 0
+        ? event.payload.formId
+        : event.source,
     locale: event.locale,
     submittedAt: event.occurredAt,
     ...(email || phone

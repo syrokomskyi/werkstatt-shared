@@ -17,16 +17,17 @@ interprets flat shapes only.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1112: add sideEffect ("write"|"none"); integration + humanEquivalent become optional and are required unless sideEffect is "none".</item>
   <item>RFC-1115: add optional agentGuidance block (sideEffect, whenToUse, whenNotToUse, retrySemantics) rendered into MCP tool descriptions and OpenAPI operation docs.</item>
   <item>RFC-1169: add optional nextAction object (capability + sideEffect consequence prose) and widen output properties with nested object/array shapes via capabilityNestedPropertySchema. Input stays flat.</item>
   <item>RFC-1186: capabilityRequiresSchema gains optional formBinding flag (activate only where a bound send-message block exists); eventKind enum gains recommendation and referral-application.</item>
   <item>RFC-1186: steps 1-2 — capability contracts, catalog records, resolver, propsSchema</item>
-  <history>RFC-0288</history>
+  <item>RFC-1186: step 5a — IntegrationEvent kind union + delivery formId parity</item>
+  <history>RFC-0288, RFC-1112</history>
 </CHANGE_SUMMARY>
 */
 
 import { z } from "zod";
+import { INTEGRATION_EVENT_KINDS } from "../../integration/port.ts";
 
 /** Localized string map: language code → string. At least one entry required. */
 const localizedStringSchema = z
@@ -137,7 +138,9 @@ const capabilityNextActionSchema = z
 
 const capabilityIntegrationSchema = z
   .object({
-    eventKind: z.enum(["lead", "message", "appointment", "recommendation", "referral-application"]),
+    // Single vocabulary with IntegrationEvent.kind — the delivery substrate
+    // owns the closed kind catalog (RFC-1186).
+    eventKind: z.enum(INTEGRATION_EVENT_KINDS),
     source: z.literal("agent"),
   })
   .strict();
