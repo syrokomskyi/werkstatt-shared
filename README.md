@@ -99,7 +99,7 @@ The package has **no root barrel export** (RFC-1106) — all consumption is via 
 | `src/middleware/` | Access protection, language redirect, retired tombstones |
 | `src/routes/` | Route filtering, placeholder route detection |
 | `src/surface/` | Surface expand/bake helpers and labels |
-| `src/content/` | SystemManifest types and content schema |
+| `src/content/` | SystemManifest types, content helpers (`substituteRefsDeep`, `toIsoDateString`) |
 | `src/node/` | Node-only utilities (fs, import-scan) — never re-exported from browser barrels |
 | `src/client-scripts/` | Browser-only scripts (gsap, lenis, plyr, hls, lordicon) |
 
