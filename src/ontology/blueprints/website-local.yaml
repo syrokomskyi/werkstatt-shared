@@ -128,8 +128,8 @@ levels:
     geo: full
     titleTemplate:
       {
-        de: "Website für {industry.name} erstellen lassen",
-        uk: "Сайт для напрямку: {industry.name}",
+        de: "Website für {industry.name} erstellen lassen | Warpgogol",
+        uk: "Сайт для напрямку: {industry.name} | Warpgogol",
       }
     # RFC-0492: industry dossier configuration
     dossier:
@@ -158,8 +158,8 @@ levels:
     geo: full
     titleTemplate:
       {
-        de: "Website für {industry.name} in {country.name}",
-        uk: "{industry.name}: сайт у {country.name}",
+        de: "Website für {industry.name} in {country.name} | Warpgogol",
+        uk: "{industry.name}: сайт у {country.name} | Warpgogol",
       }
   - depth: 3
     slug: { de: "website/{industry}/{region}", uk: "sait/{industry}/{region}" }
@@ -167,8 +167,8 @@ levels:
     geo: full
     titleTemplate:
       {
-        de: "Website für {industry.name} in {region.name}",
-        uk: "{industry.name}: сайт у регіоні {region.name}",
+        de: "Website für {industry.name} in {region.name} | Warpgogol",
+        uk: "{industry.name}: сайт у регіоні {region.name} | Warpgogol",
       }
   - depth: 4
     slug: { de: "website/{industry}/{city}", uk: "sait/{industry}/{city}" }
@@ -176,8 +176,8 @@ levels:
     geo: full
     titleTemplate:
       {
-        de: "Website für {industry.name} in {city.name}",
-        uk: "{industry.name}: сайт у місті {city.name}",
+        de: "Website für {industry.name} in {city.name} | Warpgogol",
+        uk: "{industry.name}: сайт у місті {city.name} | Warpgogol",
       }
   - depth: 5
     slug: { de: "website/{industry}/{city}/{demand}", uk: "sait/{industry}/{city}/{demand}" }
@@ -185,8 +185,8 @@ levels:
     geo: full
     titleTemplate:
       {
-        de: "{demand.name} für {industry.name} in {city.name}",
-        uk: "{demand.name} для {industry.name} у {city.name}",
+        de: "{demand.name} für {industry.name} in {city.name} | Warpgogol",
+        uk: "{demand.name} для {industry.name} у {city.name} | Warpgogol",
       }
     # RFC-0497: intersection gate — depth-5 pages require explicit intersection records
     intersection:

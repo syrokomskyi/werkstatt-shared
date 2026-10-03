@@ -32,15 +32,18 @@ levels:
     constellation: website-service-industry
     geo: full
     titleTemplate:
-      { de: "Website-Services für {industry.name}", uk: "Сайт-сервіси для {industry.name}" }
+      {
+        de: "Website-Services für {industry.name} | Warpgogol",
+        uk: "Сайт-сервіси для {industry.name} | Warpgogol",
+      }
   - depth: 2
     slug: { de: "website/{industry}/{service}", uk: "sait/{industry}/{service}" }
     constellation: website-service
     geo: full
     titleTemplate:
       {
-        de: "{service.name} für {industry.name} — Website-Struktur",
-        uk: "{service.name} для {industry.name} — структура сайту",
+        de: "{service.name} für {industry.name} — Website-Struktur | Warpgogol",
+        uk: "{service.name} для {industry.name} — структура сайту | Warpgogol",
       }
     # RFC-0496: service dossier configuration
     service:

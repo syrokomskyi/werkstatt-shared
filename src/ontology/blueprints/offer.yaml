@@ -20,12 +20,12 @@ levels:
     redirectToPageId: services
     constellation: offer-root
     geo: full
-    titleTemplate: { de: Leistungen, uk: Послуги }
+    titleTemplate: { de: "Leistungen | Warpgogol", uk: "Послуги | Warpgogol" }
   - depth: 1
     slug: { de: "leistungen/{offer}", uk: "posluhy/{offer}" }
     constellation: offer-detail
     geo: full
-    titleTemplate: { de: "{offer.name}", uk: "{offer.name}" }
+    titleTemplate: { de: "{offer.name} | Warpgogol", uk: "{offer.name} | Warpgogol" }
 
 policy:
   minRecordsPerDepth: { 0: 0, 1: 1 }
