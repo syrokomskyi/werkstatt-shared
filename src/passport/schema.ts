@@ -17,6 +17,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1188: fo-review fix — selectActivePassportKey single-sources the "active key" pick shared by the site generator and the engine resolver</item>
 </CHANGE_SUMMARY> 
 *******************************************************************************/
 
@@ -193,6 +194,17 @@ export const WerkstattIdentityConfigSchema = z.object({
 export type PassportJson = z.infer<typeof PassportSchema>;
 export type PassportPublicKeyFile = z.infer<typeof PassportPublicKeyFileSchema>;
 export type PassportPublicKeyEntry = z.infer<typeof PassportPublicKeyEntrySchema>;
+
+/**
+ * RFC-1188: pick the active key entry from a parsed cosmic-passport-key.json —
+ * the single selector both the site generator (context.io) and the engine
+ * resolver (WorkspaceIO) use so "active key" is defined in exactly one place.
+ */
+export function selectActivePassportKey(
+  file: PassportPublicKeyFile,
+): PassportPublicKeyEntry | null {
+  return file.keys.find((k) => k.active) ?? null;
+}
 export type VCProof = z.infer<typeof VCProofSchema>;
 export type VerifiableCredential = z.infer<typeof VerifiableCredentialSchema>;
 export type SiteOwnershipCredentialSubject = z.infer<typeof SiteOwnershipCredentialSubjectSchema>;

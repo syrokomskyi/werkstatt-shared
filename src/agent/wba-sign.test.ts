@@ -181,6 +181,26 @@ describe("createOutboundAgentClient", () => {
     expect(captured!.headers.get("User-Agent")).toBe(USER_AGENT);
   });
 
+  it("propagates AbortSignal through the signed path — cancellation survives the wrap", async () => {
+    const controller = new AbortController();
+    let captured: Request | null = null;
+    const client = createOutboundAgentClient({
+      signer: signer(),
+      userAgent: USER_AGENT,
+      fetchImpl: async (input) => {
+        captured = input instanceof Request ? input : new Request(input);
+        return new Response("ok");
+      },
+    });
+    await client.fetch("https://forge-site.example/health", { signal: controller.signal });
+    expect(captured!.headers.get("Signature")).toBeTruthy();
+    // The re-wrapped Request follows the caller's signal — aborting the
+    // original must abort what transport received (fetchWithRetry timeouts
+    // depend on this).
+    controller.abort();
+    expect(captured!.signal.aborted).toBe(true);
+  });
+
   it("signing failure falls back to unsigned and reports — never breaks the call", async () => {
     const broken = {
       keyId: "v1",

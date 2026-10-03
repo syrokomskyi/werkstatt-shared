@@ -18,10 +18,14 @@ Workers-safe.
 <CHANGE_SUMMARY>
   <item>RFC-1188: initial WBA signer, OKP JWK derivation, and OutboundAgentClient wrapper.</item>
   <item>RFC-1188: Web Bot Auth outbound identity: wba-sign primitives, directory emit+sweep, AGS-WBA-01, leitstand signed fetches</item>
+  <item>RFC-1188: fo-review fix — direct ed.signAsync (no transitive node:crypto through signBytes), clone() scoped inside the body check, abort-signal regression + encoder PBT coverage</item>
 </CHANGE_SUMMARY>
 */
 
-import { signBytes } from "../signing/sign.ts";
+// noble is the only dependency — signBytes lives in ../signing/sign.ts, which
+// transitively imports canonical-json → primitives → node:crypto; importing it
+// would break this module's Workers-safe contract at module-eval time.
+import * as ed from "@noble/ed25519";
 
 /** Well-known path the published key directory is served at (IETF draft convention). */
 export const WBA_DIRECTORY_PATH = "/.well-known/http-message-signatures-directory";
@@ -171,8 +175,8 @@ export function createWbaSigner(opts: {
 
       // content-digest only when a body exists — clone before reading so the
       // caller's request keeps its single-read body stream intact.
-      const bodyRequest = request.clone();
       if (request.body !== null) {
+        const bodyRequest = request.clone();
         const digest = await crypto.subtle.digest("SHA-256", await bodyRequest.arrayBuffer());
         const contentDigest = `sha-256=:${b64EncodeBytes(new Uint8Array(digest))}:`;
         headers.set("Content-Digest", contentDigest);
@@ -185,7 +189,7 @@ export function createWbaSigner(opts: {
       lines.push(`"@signature-params": ${params}`);
 
       const signatureBase = new TextEncoder().encode(lines.join("\n"));
-      const signature = await signBytes(privateKey, signatureBase);
+      const signature = await ed.signAsync(signatureBase, privateKey);
 
       headers.set("Signature-Input", `${SIGNATURE_LABEL}=${params}`);
       headers.set("Signature", `${SIGNATURE_LABEL}=:${b64EncodeBytes(signature)}:`);
