@@ -67,17 +67,26 @@ export function decodeRefCookieValue(value: string): ReferralAttributionPayload 
 }
 
 /**
- * Reads a named cookie out of a raw `Cookie` request header — used by
- * server-side dispatch paths for the pure-HTML fallback (no client JS).
+ * Parses a `name=value` pair out of a cookie source string — the shared
+ * split/trim/decode used by both the server-side `Cookie` header reader and
+ * the client-side `document.cookie` reader (RFC-1192 write-gate).
  */
-export function readCookieHeader(cookieHeader: string | null, name: string): string | null {
-  if (!cookieHeader) return null;
-  for (const part of cookieHeader.split(";")) {
+export function parseCookiePair(source: string | null, name: string): string | null {
+  if (!source) return null;
+  for (const part of source.split(";")) {
     const eq = part.indexOf("=");
     if (eq <= 0) continue;
     if (part.slice(0, eq).trim() === name) return decodeURIComponent(part.slice(eq + 1).trim());
   }
   return null;
+}
+
+/**
+ * Reads a named cookie out of a raw `Cookie` request header — used by
+ * server-side dispatch paths for the pure-HTML fallback (no client JS).
+ */
+export function readCookieHeader(cookieHeader: string | null, name: string): string | null {
+  return parseCookiePair(cookieHeader, name);
 }
 
 /**

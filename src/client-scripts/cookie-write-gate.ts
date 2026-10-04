@@ -15,6 +15,8 @@ writer.</purpose>
 </CHANGE_SUMMARY>
 */
 
+import { parseCookiePair } from "../integration/referral.ts";
+
 /** localStorage key holding the cookie-consent record. */
 export const CONSENT_FLAG_KEY = "wg_consent";
 
@@ -82,14 +84,7 @@ export function cookieWriteAllowed(): boolean {
  */
 export function readCookie(name: string): string | null {
   try {
-    for (const part of document.cookie.split(";")) {
-      const eq = part.indexOf("=");
-      if (eq <= 0) continue;
-      if (part.slice(0, eq).trim() === name) {
-        return decodeURIComponent(part.slice(eq + 1).trim());
-      }
-    }
-    return null;
+    return parseCookiePair(document.cookie, name);
   } catch {
     return null;
   }

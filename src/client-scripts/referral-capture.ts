@@ -30,9 +30,11 @@ import {
 import { readCookie, writeCookie } from "./cookie-write-gate.ts";
 import { COOKIE_MODULES } from "../policy/cookies.ts";
 
-/** TTL bound from the closed COOKIE_MODULES catalog (fallback = the RFC bound). */
-const MAX_AGE_DAYS =
-  COOKIE_MODULES.find((m) => m.moduleId === "referral.attribution")?.cookies[0]?.maxAgeDays ?? 180;
+/**
+ * TTL bound from the closed COOKIE_MODULES catalog. Absent entry ⇒ capture
+ * stays in-memory only — a missing catalog row can never write a cookie.
+ */
+const COOKIE_SPEC = COOKIE_MODULES.find((m) => m.moduleId === "referral.attribution")?.cookies[0];
 
 let cached: ReferralAttributionPayload | null = null;
 let initialized = false;
@@ -69,13 +71,14 @@ export function initReferralCapture(): void {
   };
   cached = state;
   exposeToSiteConfig();
+  if (!COOKIE_SPEC) return;
   if (existing) {
     // Same-code repeat visit — refresh the TTL inside the policy bound.
     const epoch = Math.floor(new Date(state.firstTouchAt).getTime() / 1000);
-    writeCookie(WG_REF_COOKIE, encodeRefCookieValue(ref, epoch), MAX_AGE_DAYS);
+    writeCookie(WG_REF_COOKIE, encodeRefCookieValue(ref, epoch), COOKIE_SPEC.maxAgeDays);
     return;
   }
-  writeCookie(WG_REF_COOKIE, encodeRefCookieValue(ref, nowSeconds), MAX_AGE_DAYS);
+  writeCookie(WG_REF_COOKIE, encodeRefCookieValue(ref, nowSeconds), COOKIE_SPEC.maxAgeDays);
 }
 
 /**
