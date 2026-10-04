@@ -16,6 +16,9 @@ a repeat visit with the same code refreshes the cookie lifetime (180 days).</pur
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>Post-deploy E2E: persist the captured state on wg:cookie-consent — a suppressed
+        pre-consent write is retried when the visitor grants consent, otherwise
+        accepting the banner left wg_ref unwritten until the next ?ref= visit.</item>
   <item>RFC-1191: initial referral capture module (consent-gated, first-touch, 180d TTL).</item>
 </CHANGE_SUMMARY>
 */
@@ -28,6 +31,7 @@ import {
   type ReferralAttributionPayload,
 } from "../integration/referral.ts";
 import { readCookie, writeCookie } from "./cookie-write-gate.ts";
+import { COOKIE_CONSENT_EVENT } from "./cookie-consent.ts";
 import { COOKIE_MODULES } from "../policy/cookies.ts";
 
 /**
@@ -38,6 +42,16 @@ const COOKIE_SPEC = COOKIE_MODULES.find((m) => m.moduleId === "referral.attribut
 
 let cached: ReferralAttributionPayload | null = null;
 let initialized = false;
+
+function persistCached(): void {
+  if (!cached || !COOKIE_SPEC) return;
+  const epoch = Math.floor(new Date(cached.firstTouchAt).getTime() / 1000);
+  writeCookie(WG_REF_COOKIE, encodeRefCookieValue(cached.refCode, epoch), COOKIE_SPEC.maxAgeDays);
+}
+
+const onConsent = (event: Event): void => {
+  if ((event as CustomEvent<{ granted?: boolean }>).detail?.granted === true) persistCached();
+};
 
 function readPersisted(): ReferralAttributionPayload | null {
   const raw = readCookie(WG_REF_COOKIE);
@@ -55,6 +69,10 @@ export function initReferralCapture(): void {
   if (initialized) return;
   initialized = true;
 
+  // A suppressed write at init is retried once consent lands — the captured
+  // ?ref= state survives in `cached`, so granting consent persists it then.
+  globalThis.addEventListener?.(COOKIE_CONSENT_EVENT, onConsent);
+
   const params = new URLSearchParams(globalThis.location?.search ?? "");
   const ref = params.get("ref");
   const existing = readPersisted();
@@ -71,14 +89,9 @@ export function initReferralCapture(): void {
   };
   cached = state;
   exposeToSiteConfig();
-  if (!COOKIE_SPEC) return;
-  if (existing) {
-    // Same-code repeat visit — refresh the TTL inside the policy bound.
-    const epoch = Math.floor(new Date(state.firstTouchAt).getTime() / 1000);
-    writeCookie(WG_REF_COOKIE, encodeRefCookieValue(ref, epoch), COOKIE_SPEC.maxAgeDays);
-    return;
-  }
-  writeCookie(WG_REF_COOKIE, encodeRefCookieValue(ref, nowSeconds), COOKIE_SPEC.maxAgeDays);
+  // Same-code repeat visits refresh the TTL inside the policy bound; pre-consent
+  // the write is suppressed and retried by the consent listener above.
+  persistCached();
 }
 
 /**
@@ -106,4 +119,5 @@ export function getAttribution(): ReferralAttributionPayload | null {
 export function resetReferralCaptureForTests(): void {
   cached = null;
   initialized = false;
+  globalThis.removeEventListener?.(COOKIE_CONSENT_EVENT, onConsent);
 }

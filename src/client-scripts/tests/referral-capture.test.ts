@@ -13,9 +13,11 @@ import {
   resetReferralCaptureForTests,
 } from "../referral-capture.ts";
 import { writeConsentFlag } from "../cookie-write-gate.ts";
+import { COOKIE_CONSENT_EVENT } from "../cookie-consent.ts";
 import { WG_REF_COOKIE, decodeRefCookieValue } from "../../integration/referral.ts";
 
 let cookieStore = "";
+const domEvents = new EventTarget();
 
 function installDom(search: string): void {
   const store = new Map<string, string>();
@@ -26,6 +28,11 @@ function installDom(search: string): void {
       removeItem: (k: string) => store.delete(k),
     },
   };
+  (globalThis as Record<string, unknown>).addEventListener = (t: string, f: EventListener) =>
+    domEvents.addEventListener(t, f);
+  (globalThis as Record<string, unknown>).removeEventListener = (t: string, f: EventListener) =>
+    domEvents.removeEventListener(t, f);
+  (globalThis as Record<string, unknown>).dispatchEvent = (e: Event) => domEvents.dispatchEvent(e);
   (globalThis as Record<string, unknown>).location = { search };
   (globalThis as Record<string, unknown>).__SITE_CONFIG = {};
   Object.defineProperty(globalThis, "document", {
@@ -132,5 +139,29 @@ describe("referral-capture (RFC-1191)", () => {
       referral?: { refCode: string };
     };
     expect(cfg.referral?.refCode).toBe(VALID_CODE);
+  });
+
+  it("deferred consent: suppressed pre-consent capture persists when wg:cookie-consent grants", () => {
+    installDom(`?ref=${VALID_CODE}`);
+    initReferralCapture();
+    expect(cookieStore).toBe("");
+
+    writeConsentFlag(true);
+    const granted = new Event(COOKIE_CONSENT_EVENT) as Event & { detail?: unknown };
+    granted.detail = { granted: true };
+    globalThis.dispatchEvent(granted);
+    const decoded = decodeRefCookieValue(cookieStore.split("=")[1] ?? "");
+    expect(decoded?.refCode).toBe(VALID_CODE);
+  });
+
+  it("deferred decline: consent event with granted=false never writes", () => {
+    installDom(`?ref=${VALID_CODE}`);
+    initReferralCapture();
+
+    writeConsentFlag(false);
+    const declined = new Event(COOKIE_CONSENT_EVENT) as Event & { detail?: unknown };
+    declined.detail = { granted: false };
+    globalThis.dispatchEvent(declined);
+    expect(cookieStore).toBe("");
   });
 });
