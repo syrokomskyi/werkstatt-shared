@@ -11,9 +11,6 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1130: qa.independent.run cacheable + cacheBypassFlags
-
-Steps 1-4: cacheBypassFlags field on KernelCommandDefinition, executor bypass at both cache call sites (hasCacheBypassFlag), qa.independent.run flipped to cacheable with narrowed reads + modulePaths, 14 new contract tests.</item>
   <item>RFC-1133: cache direct executeKernelCommand executions with flag-keyed results</item>
   <item>ADR-0089: kernel and shared code must not depend on ambient process state
 
@@ -22,7 +19,8 @@ KernelRuntimeContext is the explicit-context carrier (workspaceRoot, site, workp
 
 Scheduler: collectErrors option on executeScheduledSteps — read-only steps (ScheduledStep.readOnly, executor-resolved from mutatesState === false) run after dependency failures with ranAfterFailedDependency annotation; ranTainted set propagates taint transitively so mutating dependents still skip. Executor: mergeCollectErrorsOption OR-merges PipelineDeclaration.collectErrors with the CLI flag at registry resolution; readOnly annotated post-buildSchedule; taint flag copied to step reports; tainted failures marked in pretty output. Contracts: PipelineDeclaration.collectErrors, KernelExecutionReport.ranAfterFailedDependency, pipelines maps store full declarations. Declarations: collectErrors on validation-gate registrations (build.post, check, build.check, compass, integrity.release in the workpiece template; packages.check in checks module). Tests: 10 new cases covering AC-1..AC-6 plus transitive taint.</item>
   <item>RFC-1147: KernelRegisteredCommandInfo.provider narrowed to workspace | site-module and siteName field removed — runtime site enumeration deleted, the canonical site module set (SITE_MODULE_MAP) is the only site provider.</item>
-  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126</history>
+  <item>RFC-1193: bound module hashing to src/os roots with constant fallbacks</item>
+  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130</history>
 </CHANGE_SUMMARY>
 */
 
@@ -190,12 +188,19 @@ export interface KernelRegisteredCommandInfo extends KernelCommandMetadata {
   /** RFC-0960: declared generated artifacts, propagated from KernelCommandDefinition. */
   generates?: GeneratedArtifactSpec[];
   /**
-   * RFC-1028: repo-relative path to the module's src/ directory (e.g.
-   * "packages/werkstatt-engine/src"). Derived from KernelCommandDefinition.modulePath
-   * (RFC-0960) by taking everything up to and including the src/ segment.
+   * RFC-1028: repo-relative path to the module's src/ or os/ directory (e.g.
+   * "packages/werkstatt-engine/src", "packages/forge/os"). Derived from
+   * KernelCommandDefinition.modulePath (RFC-0960) by taking everything up to
+   * and including the first /src/ or /os/ segment (RFC-1193).
    * Used by the pipeline executor to resolve moduleSrcDir for computeModuleHash.
    */
   moduleBasePath?: string;
+  /**
+   * RFC-1193: raw repo-relative module file path propagated from
+   * KernelCommandDefinition.modulePath. Validators need it to distinguish
+   * `unpatched` (absent) from `unrooted` (present but no /src/ or /os/ segment).
+   */
+  modulePath?: string;
 }
 
 export interface KernelNextStep {
