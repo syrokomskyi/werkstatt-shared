@@ -23,6 +23,8 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
 </CHANGE_SUMMARY>
 */
 
+import { parse as yamlParse } from "yaml";
+
 /** Closed catalog of paid features that can gate a site's compiled modules. */
 export const ENTITLED_FEATURES = [
   "blog",
@@ -198,4 +200,19 @@ export function isEntitled(
   feature: EntitledFeature,
 ): boolean {
   return !!resolved?.features.includes(feature);
+}
+
+/**
+ * RFC-1191: parse an `entitlements.generated.yaml` document into its feature list, or null when
+ * the document is absent or malformed. Runtime endpoints must inline the file at build time
+ * (`import.meta.glob` + `?raw`) — the worker bundle has no filesystem access to `src/`.
+ */
+export function parseEntitledFeatures(raw: string | null | undefined): string[] | null {
+  if (!raw) return null;
+  try {
+    const parsed = yamlParse(raw) as { features?: unknown } | null;
+    return parsed && Array.isArray(parsed.features) ? parsed.features.map(String) : null;
+  } catch {
+    return null;
+  }
 }
