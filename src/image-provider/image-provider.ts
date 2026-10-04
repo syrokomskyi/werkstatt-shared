@@ -19,6 +19,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0152: introduced the Image Provider Port and the cloudflare-runtime provider.</item>
   <item>RFC-0204: added ImageVariantManifest types and createBuildPortableProvider factory.</item>
+  <item>warpgogol-m000179: byBasename becomes Record&lt;string, string[]&gt; — every same-basename origin is a candidate; ImageRequest.lang picks the /&lt;lang&gt;/ mirror origin for Astro-hashed descriptors instead of last-write-wins.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -51,6 +52,14 @@ export interface ImageRequest {
   quality?: number | ImageQualityPreset;
   /** Output format; defaults to "webp". */
   format?: ImageFormat;
+  /**
+   * Content language of the page being rendered — disambiguates manifest
+   * `byBasename` candidates that share a bare basename across language mirrors
+   * (e.g. `pages/de/assets/x.webp` vs `pages/uk/assets/x.webp` with different
+   * localized bytes). The fallback prefers a candidate whose origin path
+   * contains the `/<lang>/` segment.
+   */
+  lang?: string;
 }
 
 export interface ImageSources {
@@ -229,11 +238,13 @@ export interface ImageVariantManifest {
   /** Map from origin src → entry (stable content-path key, e.g. /src/content/business-profile/de/assets/portrait.webp). */
   byOrigin: Record<string, ImageVariantEntry>;
   /**
-   * Secondary lookup: maps the bare image basename (no hash, no ext) to the entry origin key.
-   * Allows the provider to resolve Astro-hashed descriptor.src values like
-   * "/_astro/katrin-hennings.BIwCI837.webp" → entry via "katrin-hennings".
+   * Secondary lookup: maps the bare image basename (no hash, no ext) to every
+   * entry origin key sharing it. Allows the provider to resolve Astro-hashed
+   * descriptor.src values like "/_astro/katrin-hennings.BIwCI837.webp" → entry
+   * via "katrin-hennings". Multiple candidates occur for language-mirrored
+   * assets — `ImageRequest.lang` selects the matching origin.
    */
-  byBasename: Record<string, string>;
+  byBasename: Record<string, string[]>;
 }
 
 /**
@@ -278,7 +289,12 @@ export function createBuildPortableProvider(manifest: ImageVariantManifest): Ima
       // Secondary: match by stripped basename for Astro-hashed URLs (/_astro/<name>.<hash>.webp)
       if (!entry && manifest.byBasename) {
         const basename = extractBasename(descriptor.src);
-        const originKey = manifest.byBasename[basename];
+        const listed = manifest.byBasename[basename];
+        // Tolerate manifests written by older generators (single string value).
+        const candidates = Array.isArray(listed) ? listed : listed ? [listed] : [];
+        const originKey =
+          (request.lang ? candidates.find((k) => k.includes(`/${request.lang}/`)) : undefined) ??
+          candidates[0];
         if (originKey) entry = manifest.byOrigin[originKey];
       }
 
