@@ -91,4 +91,5 @@ export function initCookieConsent(moduleIds: readonly string[] = []): void {
   banner.appendChild(decline);
 
   host.appendChild(banner);
+  host.setAttribute("data-cookie-consent-initialized", "true");
 }
