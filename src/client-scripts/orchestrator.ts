@@ -41,6 +41,7 @@ import { initInlineNumberAnimation } from "./inline-number-animation.ts";
 import { initLivePhotos } from "./live-photos.ts";
 import { initVideoPlayers } from "./video-player.ts";
 import { initCookieConsent } from "./cookie-consent.ts";
+import { initReferralCapture } from "./referral-capture.ts";
 import { scheduleTask } from "./scheduler.ts";
 
 export interface OrchestrationOptions {
@@ -65,6 +66,8 @@ export interface OrchestrationOptions {
   externalLinkQrEntitled?: boolean;
   /** RFC-1192: entitled COOKIE_MODULES ids for this site — non-empty activates the consent surface. */
   cookieModules?: string[];
+  /** RFC-1191: referral.attribution entitlement flag — activates the ?ref= capture module. */
+  referralAttribution?: boolean;
 }
 
 const has = (selector: string) => document.querySelector(selector) instanceof Element;
@@ -184,6 +187,13 @@ export async function runStandardLayoutOrchestration(
   // only when a COOKIE_MODULES module is entitled on this site.
   if (options.cookieModules && options.cookieModules.length > 0) {
     initCookieConsent(options.cookieModules);
+  }
+
+  // 12b. RFC-1191: referral capture — reads ?ref= on every render while the
+  // entitlement is on; the write goes through the consent gate so pre-consent
+  // captures stay in-memory for same-request pass-through only.
+  if (options.referralAttribution) {
+    initReferralCapture();
   }
 
   // 13. RFC-1061: scroll-spy URL hash updates (always-on, zero-dependency).

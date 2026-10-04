@@ -46,6 +46,8 @@ export const ENTITLED_FEATURES = [
   "multi-currency",
   // RFC-0932: external-link QR code modal module
   "external-link-qr",
+  // RFC-1191: recommender-link attribution (consent-gated capture + CRM credit)
+  "referral.attribution",
 ] as const;
 
 /**
@@ -79,6 +81,8 @@ export const STRIPE_FEATURE_LOOKUP_MAP: Record<string, EntitledFeature> = {
   feature_multi_currency: "multi-currency",
   // RFC-0932
   feature_external_link_qr: "external-link-qr",
+  // RFC-1191
+  feature_referral_attribution: "referral.attribution",
 };
 
 /**

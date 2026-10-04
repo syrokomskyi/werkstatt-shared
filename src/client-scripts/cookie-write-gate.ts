@@ -75,3 +75,39 @@ export function writeConsentFlag(granted: boolean): boolean {
 export function cookieWriteAllowed(): boolean {
   return readConsentFlag()?.granted === true;
 }
+
+/**
+ * Reads a first-party cookie by name. Returns null when absent or
+ * `document.cookie` is unavailable — never throws.
+ */
+export function readCookie(name: string): string | null {
+  try {
+    for (const part of document.cookie.split(";")) {
+      const eq = part.indexOf("=");
+      if (eq <= 0) continue;
+      if (part.slice(0, eq).trim() === name) {
+        return decodeURIComponent(part.slice(eq + 1).trim());
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Consent-gated first-party cookie write — the only path catalog modules use
+ * to persist state. Returns false (and writes nothing) when the gate is
+ * closed; the caller keeps its captured state in-memory for same-request
+ * pass-through. Never throws.
+ */
+export function writeCookie(name: string, value: string, maxAgeDays: number): boolean {
+  if (!cookieWriteAllowed()) return false;
+  try {
+    const maxAge = Math.floor(maxAgeDays * 86400);
+    document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=Lax; Secure`;
+    return true;
+  } catch {
+    return false;
+  }
+}

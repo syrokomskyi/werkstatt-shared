@@ -75,6 +75,18 @@ export type {
   SyncOutboxOp,
 } from "./funnel.ts";
 
+// RFC-1191: referral.attribution contracts (paid module — opaque ref code,
+// consent-gated wg_ref cookie, payload.attribution block on PII events).
+export type { ReferralAttributionPayload } from "./referral.ts";
+export {
+  REF_CODE_PATTERN,
+  WG_REF_COOKIE,
+  ReferralAttributionPayloadSchema,
+  encodeRefCookieValue,
+  decodeRefCookieValue,
+  readCookieHeader,
+} from "./referral.ts";
+
 export type { LifecycleEventPayload } from "./lifecycle.ts";
 export {
   LIFECYCLE_EVENT_KINDS,

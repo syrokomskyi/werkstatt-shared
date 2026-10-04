@@ -31,6 +31,7 @@ import {
   type IdentityClaim,
   type IngressOrigin,
 } from "./lagebild-ingress.ts";
+import { ReferralAttributionPayloadSchema } from "./referral.ts";
 
 /**
  * Lagebild destination adapter (RFC-0176). Self-enables by secret presence:
@@ -79,6 +80,18 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
 
     const message = typeof event.payload.message === "string" ? event.payload.message : null;
 
+    // RFC-1191: referral attribution pass-through. The adapter never resolves
+    // codes (registry is Lagebild-internal) and never fails a dispatch on a
+    // malformed/unknown code — a valid block maps onto the ingress attribution
+    // field, anything else is simply omitted.
+    const attributionParsed = ReferralAttributionPayloadSchema.safeParse(event.payload.attribution);
+    const attribution = attributionParsed.success
+      ? {
+          referral_code: attributionParsed.data.refCode,
+          first_touch_at: attributionParsed.data.firstTouchAt,
+        }
+      : undefined;
+
     const result = await submitIngress(
       { apiUrl, apiKey, tenantId, sourceSystemId },
       {
@@ -96,6 +109,7 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
             statement_ref: "contact_form_consent",
           },
         ],
+        ...(attribution ? { attribution } : {}),
       },
     );
 

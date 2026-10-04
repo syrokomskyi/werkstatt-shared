@@ -48,6 +48,14 @@ export interface ExplicitPolicyAssertion {
   readonly statement_ref?: string | null;
 }
 
+/** RFC-1191: optional referral attribution block (extended ingress contract). */
+export interface IngressAttribution {
+  /** Opaque recommender code — resolved to a referrer contact inside Lagebild. */
+  readonly referral_code: string;
+  /** ISO-8601 first-touch time from the wg_ref cookie value. */
+  readonly first_touch_at: string;
+}
+
 export interface WebsiteIngressPayload {
   readonly contract_version: typeof LAGEBILD_INGRESS_CONTRACT_VERSION;
   readonly tenant_id: string;
@@ -61,6 +69,7 @@ export interface WebsiteIngressPayload {
   readonly origin?: IngressOrigin;
   readonly explicit_policy_assertions?: readonly ExplicitPolicyAssertion[];
   readonly correlation_id?: string | null;
+  readonly attribution?: IngressAttribution;
 }
 
 export interface IngressResult {
@@ -87,6 +96,7 @@ export interface IngressSubmitInput {
   readonly origin?: IngressOrigin;
   readonly explicitPolicyAssertions?: readonly ExplicitPolicyAssertion[];
   readonly correlationId?: string | null;
+  readonly attribution?: IngressAttribution;
 }
 
 /**
@@ -113,6 +123,7 @@ export async function submitIngress(
       ? { explicit_policy_assertions: input.explicitPolicyAssertions }
       : {}),
     ...(input.correlationId != null ? { correlation_id: input.correlationId } : {}),
+    ...(input.attribution != null ? { attribution: input.attribution } : {}),
   };
 
   const url = config.apiUrl.replace(/\/$/, "") + "/v1/ingress";
