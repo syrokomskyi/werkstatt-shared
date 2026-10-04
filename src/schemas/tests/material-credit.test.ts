@@ -4,6 +4,9 @@ import {
   materialSourceTypeSchema,
   creditPartyKindSchema,
   creditRoleSchema,
+  materialCreditStatusSchema,
+  usageBasisTypeSchema,
+  materialCreditLabelsSchema,
 } from "../material-credit.ts";
 
 describe("materialKindSchema", () => {
@@ -47,5 +50,74 @@ describe("creditRoleSchema", () => {
 
   it("rejects invalid role", () => {
     expect(() => creditRoleSchema.parse("owner")).toThrow();
+  });
+});
+
+// RFC-1189 AC-1: partyKindLabels is a required complete record over
+// creditPartyKindSchema — the schema itself is the completeness gate for the
+// public credits page's localized kind vocabulary.
+const baseLabels = {
+  summaryLabel: "Summary",
+  pageTitle: "Credits",
+  pageDescription: "Material credits",
+  emptyMessage: "No credits",
+  detailsLabel: "Details",
+  createdBy: "Created by",
+  createdWith: "Created with",
+  promptBy: "Prompt by",
+  reviewedBy: "Reviewed by",
+  license: "License",
+  copyrightLabel: "Copyright",
+  rightsHolder: "Rights holder",
+  sourceType: "Source type",
+  sourceTypeLabels: Object.fromEntries(
+    materialSourceTypeSchema.options.map((value) => [value, value]),
+  ),
+  statusLabels: Object.fromEntries(
+    materialCreditStatusSchema.options.map((value) => [value, value]),
+  ),
+  usageBasisLabels: Object.fromEntries(usageBasisTypeSchema.options.map((value) => [value, value])),
+  aiUsageLabels: {
+    aiGenerated: "AI-generated",
+    aiAssisted: "AI-assisted",
+    humanContribution: "Human contribution",
+    copyrightClaimed: "Copyright claimed",
+    copyrightNotClaimed: "No copyright claim",
+  },
+  usedOnLabel: "Used on",
+  verifiedAtLabel: "Verified at",
+  noPreviewLabel: "No preview",
+  copyrightExplanation: "Explanation",
+};
+
+describe("materialCreditLabelsSchema.partyKindLabels (RFC-1189)", () => {
+  const fullPartyKindLabels = Object.fromEntries(
+    creditPartyKindSchema.options.map((value) => [value, value]),
+  );
+
+  it("rejects a labels block missing partyKindLabels entirely", () => {
+    const result = materialCreditLabelsSchema.safeParse(baseLabels);
+    expect(
+      result.success,
+      "partyKindLabels is required — check labels.md materialCredits block",
+    ).toBe(false);
+  });
+
+  it("rejects a record missing one creditPartyKindSchema member", () => {
+    const labels = {
+      ...baseLabels,
+      partyKindLabels: { ...fullPartyKindLabels, AIPlatform: undefined },
+    };
+    delete (labels.partyKindLabels as Record<string, string>).AIPlatform;
+    const result = materialCreditLabelsSchema.safeParse(labels);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a complete partyKindLabels record", () => {
+    const result = materialCreditLabelsSchema.safeParse({
+      ...baseLabels,
+      partyKindLabels: fullPartyKindLabels,
+    });
+    expect(result.success).toBe(true);
   });
 });

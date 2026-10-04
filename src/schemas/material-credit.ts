@@ -11,11 +11,18 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0220: initial Material Credits schema and formatting helpers.</item>
-  <item>RFC-0223: acquireLicensePage, copyrightYear, CreditParty.version/generatedAt.</item>
   <item>RFC-0228: target.intent "editorial"|"decorative" optional marker.</item>
   <item>RFC-0231: optional per-asset `display` visibility override.</item>
   <item>RFC-0488: status, usageBasis, aiUsage fields; new sourceType/role values; label mapping helpers.</item>
+  <item>RFC-1189: required partyKindLabels record in materialCreditLabelsSchema + labelForMaterialCreditKind helper — party.kind no longer renders as a raw enum token on the public credits page.</item>
+  <item>RFC-1189: step 1 — partyKindLabels schema contract
+
+Add required partyKindLabels record (all seven creditPartyKindSchema
+members) to materialCreditLabelsSchema plus labelForMaterialCreditKind
+helper, so the public credits page renders localized kind labels instead
+of raw enum tokens. Seed the e2e cold-test labels fixture and cover the
+completeness gate with schema tests.</item>
+  <history>RFC-0220, RFC-0223</history>
 </CHANGE_SUMMARY>
 */
 
@@ -214,6 +221,8 @@ export const materialCreditLabelsSchema = z
     statusLabels: z.record(materialCreditStatusSchema, z.string().min(1)),
     /** RFC-0488: per-usageBasis.type localized labels. */
     usageBasisLabels: z.record(usageBasisTypeSchema, z.string().min(1)),
+    /** RFC-1189: per-party-kind localized labels for the public credits page. */
+    partyKindLabels: z.record(creditPartyKindSchema, z.string().min(1)),
     /** RFC-0488: AI-specific localized labels. */
     aiUsageLabels: z.object({
       aiGenerated: z.string().min(1),
@@ -245,6 +254,18 @@ export function labelForMaterialCreditRole(role: CreditRole, labels: MaterialCre
   if (role === "reviewer" || role === "approver") return labels.reviewedBy;
   if (role === "rightsHolder") return labels.rightsHolder;
   return role;
+}
+
+/**
+ * RFC-1189: localized label for a credit party kind on the public credits page.
+ * The caller applies the `Person` typographic rule (no parenthetical) — the
+ * label map itself stays complete for all kinds.
+ */
+export function labelForMaterialCreditKind(
+  kind: CreditPartyKind,
+  labels: MaterialCreditLabels,
+): string {
+  return labels.partyKindLabels[kind];
 }
 
 /** RFC-0488: map a sourceType enum value to a localized human-readable label. */
