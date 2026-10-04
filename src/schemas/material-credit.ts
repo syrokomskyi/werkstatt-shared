@@ -14,7 +14,6 @@
   <item>RFC-0228: target.intent "editorial"|"decorative" optional marker.</item>
   <item>RFC-0231: optional per-asset `display` visibility override.</item>
   <item>RFC-0488: status, usageBasis, aiUsage fields; new sourceType/role values; label mapping helpers.</item>
-  <item>RFC-1189: required partyKindLabels record in materialCreditLabelsSchema + labelForMaterialCreditKind helper — party.kind no longer renders as a raw enum token on the public credits page.</item>
   <item>RFC-1189: step 1 — partyKindLabels schema contract
 
 Add required partyKindLabels record (all seven creditPartyKindSchema
