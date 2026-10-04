@@ -92,7 +92,7 @@ export interface CommandDeclaration extends KernelCommandMetadata {
   reads?: string[];
   /** RFC-0266: workspace-root-relative path globs this command writes. */
   writes?: string[];
-  /** RFC-0637: paths relative to module src/ for cache hashing. */
+  /** RFC-0637 + RFC-1194: paths relative to dirname(modulePath) for cache hashing. */
   modulePaths?: string[];
   /** RFC-0687: command names whose outputs this validator checks. */
   validatesOutputs?: string[];

@@ -201,6 +201,12 @@ export interface KernelRegisteredCommandInfo extends KernelCommandMetadata {
    * `unpatched` (absent) from `unrooted` (present but no /src/ or /os/ segment).
    */
   modulePath?: string;
+  /**
+   * RFC-1194: declared allowlist of paths relative to dirname(modulePath),
+   * propagated from KernelCommandDefinition. Validators (CRC-05) gate that
+   * each entry resolves to an existing path under the module file's dir.
+   */
+  modulePaths?: string[];
 }
 
 export interface KernelNextStep {
