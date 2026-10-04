@@ -398,6 +398,10 @@
       "types": "./src/stack/walk-files.ts",
       "default": "./src/stack/walk-files.ts"
     },
+    "./text/task-list-a11y": {
+      "types": "./src/text/task-list-a11y.ts",
+      "default": "./src/text/task-list-a11y.ts"
+    },
     "./text/wrap-inline-numbers": {
       "types": "./src/text/wrap-inline-numbers.ts",
       "default": "./src/text/wrap-inline-numbers.ts"
