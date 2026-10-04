@@ -210,6 +210,10 @@
       "types": "./src/policy/entitlement.ts",
       "default": "./src/policy/entitlement.ts"
     },
+    "./policy/cookies": {
+      "types": "./src/policy/cookies.ts",
+      "default": "./src/policy/cookies.ts"
+    },
     "./policy/feature-policy": {
       "types": "./src/policy/feature-policy.ts",
       "default": "./src/policy/feature-policy.ts"

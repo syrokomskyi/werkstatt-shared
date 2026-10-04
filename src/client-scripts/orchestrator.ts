@@ -40,6 +40,7 @@ import { initGsapStagger } from "./gsap-stagger.ts";
 import { initInlineNumberAnimation } from "./inline-number-animation.ts";
 import { initLivePhotos } from "./live-photos.ts";
 import { initVideoPlayers } from "./video-player.ts";
+import { initCookieConsent } from "./cookie-consent.ts";
 import { scheduleTask } from "./scheduler.ts";
 
 export interface OrchestrationOptions {
@@ -62,6 +63,8 @@ export interface OrchestrationOptions {
   smoothScroll?: boolean;
   /** RFC-0932: entitlement state for external-link-qr module. Passed from layout. */
   externalLinkQrEntitled?: boolean;
+  /** RFC-1192: entitled COOKIE_MODULES ids for this site — non-empty activates the consent surface. */
+  cookieModules?: string[];
 }
 
 const has = (selector: string) => document.querySelector(selector) instanceof Element;
@@ -177,6 +180,12 @@ export async function runStandardLayoutOrchestration(
     initExternalLinkQr();
   }
 
-  // 12. RFC-1061: scroll-spy URL hash updates (always-on, zero-dependency).
+  // 12. RFC-1192: conditional cookie-consent surface — the host node exists
+  // only when a COOKIE_MODULES module is entitled on this site.
+  if (options.cookieModules && options.cookieModules.length > 0) {
+    initCookieConsent(options.cookieModules);
+  }
+
+  // 13. RFC-1061: scroll-spy URL hash updates (always-on, zero-dependency).
   initScrollSpy();
 }
