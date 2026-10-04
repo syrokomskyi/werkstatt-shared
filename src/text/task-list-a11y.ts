@@ -38,7 +38,8 @@ const TAG_END_RE = /\s*\/?>$/;
  * Enabled checkboxes, non-checkbox inputs, and already-hidden inputs pass
  * through unchanged. Idempotent.
  */
-export function applyTaskListA11y(html: string): string {
+export function applyTaskListA11y(html: string | undefined | null): string {
+  if (!html) return "";
   return html.replace(INPUT_TAG_RE, (tag) => {
     if (!CHECKBOX_TYPE_RE.test(tag) || !DISABLED_RE.test(tag) || ARIA_HIDDEN_RE.test(tag)) {
       return tag;
