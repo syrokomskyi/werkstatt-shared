@@ -79,6 +79,10 @@ export function initReferralCapture(): void {
   cached = existing;
   exposeToSiteConfig();
 
+  // SMOKE-INIT-01 (RFC-0974): marker after the last listener registration so
+  // smoke tests can synchronize on capture init completion.
+  document.documentElement?.setAttribute?.("data-referral-capture-initialized", "true");
+
   if (!ref || !REF_CODE_PATTERN.test(ref)) return;
 
   const nowSeconds = Math.floor(Date.now() / 1000);
