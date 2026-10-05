@@ -91,6 +91,19 @@ Rules:
 - The external packages `@sindresorhus/slugify`, `cyrillic-to-translit-js`, and `github-slugger` are dependencies of this package only — no other package may declare them as direct dependencies.
 - Enforcement: `utility.provenance.validate` (RFC-0916) scans for reimplementations outside the canonical path.
 
+### Section heading-id derivation (RFC-1196)
+
+Location: `packages/werkstatt-shared/src/sections/heading-id.ts` — exported via `@warpgogol/werkstatt-shared/sections/heading-id`.
+
+| Export | Purpose |
+| --- | --- |
+| `sectionHeadingId(typeId, sectionNumber, sectionId)` | Single resolver for section heading ids — `sectionNumber \|\| sectionId` falsy fallback, bare `typeId` when no prefix source exists |
+
+Rules:
+
+- Agents MUST import `sectionHeadingId` for any heading-id or `aria-labelledby` derivation and MUST NOT inline prefix expressions — `section-header` and `section-shell` consume it so the pair can never diverge.
+- The `sectionNumber` fallback is falsy (`||`), never `??` — `""` must behave like absent (leading-dash ids are invalid and non-unique).
+
 ### Semantic extraction (RFC-0901)
 
 Location: `packages/werkstatt-shared/src/semantic/` — exported via `@warpgogol/werkstatt-shared/semantic`.
