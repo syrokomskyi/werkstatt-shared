@@ -11,6 +11,16 @@
   <item>RFC-0144: initial extraction of the shared per-page builder from the two duplicated paths.</item>
   <item>RFC-0372: unified all page types through extractContentBlocks + extractPageHeading; removed home-specific branch and extractMarkdownProps; extractContentBlocks returns SemanticBlock[].</item>
   <item>RFC-0912: extract seo.videoObject opt-in from block props and attach VideoSeoData to SemanticBlock.video.</item>
+  <item>RFC-1197: resolveFaqEntries merges inline faq-list items[] (baked surfaces) with tag-filtered collection entries — empty tag-filter no longer suppresses the FAQPage when inline items exist.</item>
+  <item>RFC-1197: step 3 — faq-list inline items + featureFlag + orderTags ordering
+
+faq-list-section renders inline items[] through the same accordion markup
+(authored order preserved, no collection read) and skips featureFlag draft
+entries in collection mode; collection ordering now honors RFC-0567 orderTags
+per tag with order fallback (was alphabetical-by-slug). build-page
+resolveFaqEntries merges inline faq-list items with tag-filtered collection
+entries — empty tag-filter no longer suppresses the FAQPage when inline items
+exist. 3 new build-page tests + 8 existing green.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -105,9 +115,11 @@ const PAGE_INCLUDE_FAQ: ReadonlySet<SemanticPageType> = new Set<SemanticPageType
  * Resolve the FAQ entries a page should embed (drives the FAQPage JSON-LD node).
  * A page carries FAQ when its semanticType opts in (PAGE_INCLUDE_FAQ), it is the
  * canonical `faq` page, or it declares a visible `faq-list` block. When `faq-list`
- * blocks declare tags, entries are filtered to those tags (RFC-0208). Returns
- * undefined when the page should carry no FAQPage. Shared by the home and
- * markdown builder paths so a `faq-list` block on the home emits FAQPage too.
+ * blocks declare tags, entries are filtered to those tags (RFC-0208). RFC-1197:
+ * `faq-list` blocks carrying inline `items[]` (baked surfaces) merge their Q&A
+ * pairs into the FAQPage alongside collection entries — one derivation, one node.
+ * Returns undefined when the page should carry no FAQPage. Shared by the home
+ * and markdown builder paths so a `faq-list` block on the home emits FAQPage too.
  */
 async function resolveFaqEntries(
   reader: SemanticContentReader,
@@ -120,18 +132,33 @@ async function resolveFaqEntries(
   if (!(PAGE_INCLUDE_FAQ.has(semanticType) || pageId === "faq" || faqBlocks.length > 0)) {
     return undefined;
   }
+  const inlineItems: SemanticFaqEntry[] = faqBlocks.flatMap((b) => {
+    const props = (b["props"] ?? b) as Record<string, unknown>;
+    const blockId = typeof b["id"] === "string" ? b["id"] : "faq-inline";
+    const items = Array.isArray(props["items"])
+      ? (props["items"] as Array<{ question?: unknown; answer?: unknown }>)
+      : [];
+    return items.flatMap((item, i) => {
+      if (typeof item?.question !== "string" || typeof item?.answer !== "string") return [];
+      return [
+        {
+          id: `faq/${blockId}-${i}`,
+          question: item.question,
+          answer: item.answer,
+        },
+      ];
+    });
+  });
   const faqEntries = await reader.getFaqEntries(lang);
-  if (faqEntries.length === 0) return undefined;
   const tags = new Set(
     faqBlocks
       .map((b) => ((b["props"] ?? b) as Record<string, unknown>)["tag"] as string | undefined)
       .filter((t): t is string => typeof t === "string" && t.length > 0),
   );
-  if (tags.size > 0) {
-    const filtered = faqEntries.filter((e) => e.tags?.some((t) => tags.has(t)));
-    return filtered.length > 0 ? filtered : undefined;
-  }
-  return faqEntries;
+  const collectionEntries =
+    tags.size > 0 ? faqEntries.filter((e) => e.tags?.some((t) => tags.has(t))) : faqEntries;
+  const merged = [...collectionEntries, ...inlineItems];
+  return merged.length > 0 ? merged : undefined;
 }
 
 /** RFC-0912: extract video SEO data from block props when seo.videoObject opt-in is present. */

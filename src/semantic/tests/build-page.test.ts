@@ -94,6 +94,94 @@ describe("buildSemanticPageModelWith", () => {
     expect(result!.faqEntries).toEqual([{ id: "q1", question: "Q?", answer: "A." }]);
   });
 
+  it("RFC-1197: merges inline faq-list items with tag-filtered collection entries", async () => {
+    const reader = makeReader({
+      getPageFrontmatter: async () => ({
+        title: "Baked",
+        description: "baked page",
+        blocks: [
+          {
+            id: "city-qa",
+            type: "faq-list",
+            props: {
+              header: { heading: "Fragen" },
+              items: [
+                { question: "Inline Q?", answer: "Inline A." },
+                { question: "Inline Q2?", answer: "Inline A2." },
+              ],
+            },
+          },
+        ],
+      }),
+      getFaqEntries: async () => [
+        { id: "faq/c1", question: "C1?", answer: "C1.", tags: ["contact"] },
+        { id: "faq/c2", question: "C2?", answer: "C2.", tags: ["pricing"] },
+      ],
+    });
+    const result = await buildSemanticPageModelWith(reader, baseArgs);
+    expect(
+      result!.faqEntries,
+      "no tag on the block -> all collection entries + inline items after",
+    ).toEqual([
+      { id: "faq/c1", question: "C1?", answer: "C1.", tags: ["contact"] },
+      { id: "faq/c2", question: "C2?", answer: "C2.", tags: ["pricing"] },
+      { id: "faq/city-qa-0", question: "Inline Q?", answer: "Inline A." },
+      { id: "faq/city-qa-1", question: "Inline Q2?", answer: "Inline A2." },
+    ]);
+  });
+
+  it("RFC-1197: emits FAQPage from inline items alone when the collection is empty", async () => {
+    const reader = makeReader({
+      getPageFrontmatter: async () => ({
+        title: "Baked",
+        description: "baked page",
+        blocks: [
+          {
+            id: "city-qa",
+            type: "faq-list",
+            props: {
+              header: { heading: "Fragen" },
+              items: [{ question: "Inline Q?", answer: "Inline A." }],
+            },
+          },
+        ],
+      }),
+      getFaqEntries: async () => [],
+    });
+    const result = await buildSemanticPageModelWith(reader, baseArgs);
+    expect(
+      result!.faqEntries,
+      "empty collection must not suppress inline Q&A — pSEO pages rely on it",
+    ).toEqual([{ id: "faq/city-qa-0", question: "Inline Q?", answer: "Inline A." }]);
+  });
+
+  it("RFC-1197: empty tag-filter no longer suppresses the FAQPage when inline items exist", async () => {
+    const reader = makeReader({
+      getPageFrontmatter: async () => ({
+        title: "Baked",
+        description: "baked page",
+        blocks: [
+          {
+            id: "city-qa",
+            type: "faq-list",
+            props: {
+              header: { heading: "Fragen" },
+              tag: "nothing-matches",
+              items: [{ question: "Inline Q?", answer: "Inline A." }],
+            },
+          },
+        ],
+      }),
+      getFaqEntries: async () => [
+        { id: "faq/c1", question: "C1?", answer: "C1.", tags: ["contact"] },
+      ],
+    });
+    const result = await buildSemanticPageModelWith(reader, baseArgs);
+    expect(result!.faqEntries).toEqual([
+      { id: "faq/city-qa-0", question: "Inline Q?", answer: "Inline A." },
+    ]);
+  });
+
   it("uses provided breadcrumbs when supplied", async () => {
     const reader = makeReader();
     const result = await buildSemanticPageModelWith(reader, {
