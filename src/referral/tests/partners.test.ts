@@ -55,7 +55,7 @@ function toYaml(partners: unknown): string {
       if (typeof v === "boolean") return `  ${k}: ${v}`;
       return `  ${k}: "${String(v).replace(/"/g, '\\"')}"`;
     });
-    return `- slug: "${(p as { slug: string }).slug}"\n${entries.filter((e) => !e.startsWith('  slug:')).join("\n")}`;
+    return `- slug: "${(p as { slug: string }).slug}"\n${entries.filter((e) => !e.startsWith("  slug:")).join("\n")}`;
   });
   return `partners:\n${list.join("\n")}`;
 }
@@ -79,9 +79,7 @@ describe("ReferralPartnerSchema", () => {
   });
 
   test("rejects unknown compensation variant", () => {
-    expect(
-      ReferralPartnerSchema.safeParse({ ...VALID, compensation: "cash" }).success,
-    ).toBe(false);
+    expect(ReferralPartnerSchema.safeParse({ ...VALID, compensation: "cash" }).success).toBe(false);
   });
 
   test("rejects empty locales", () => {
@@ -101,7 +99,7 @@ describe("loadActiveReferralPartners", () => {
   test.each([
     ["inactive", { ...VALID, active: false }],
     ["empty consent ref", { ...VALID, publicNameConsentRef: "   " }],
-    ["reserved slug", { ...VALID, slug: "agb" }],
+    ["reserved slug", { ...VALID, slug: "admin" }],
   ])("excludes %s partners", (_label, partner) => {
     const warns: string[] = [];
     expect(loadActiveReferralPartners(yamlOf([partner]), (c) => warns.push(c))).toEqual([]);
@@ -118,9 +116,7 @@ describe("loadActiveReferralPartners", () => {
   test("warns and skips a malformed file instead of throwing", () => {
     const warns: string[] = [];
     expect(
-      loadActiveReferralPartners({ "partners.yaml": "partners: [{broken" }, (c) =>
-        warns.push(c),
-      ),
+      loadActiveReferralPartners({ "partners.yaml": "partners: [{broken" }, (c) => warns.push(c)),
     ).toEqual([]);
     expect(warns).toContain("referral.partners.invalid");
   });
@@ -157,9 +153,15 @@ describe("patterns", () => {
     expect(REF_PARAM_PATTERN.test("a".repeat(33))).toBe(false);
   });
 
-  test("reserved list covers the brief's names", () => {
-    for (const slug of ["admin", "api", "kontakt", "r", "agb", "datenschutz", "uk", "de"]) {
+  test("reserved list covers platform namespaces only, not site routes", () => {
+    for (const slug of ["admin", "api", "portal", "r", "robots", "sitemap", "well-known"]) {
       expect(RESERVED_REFERRAL_SLUGS).toContain(slug);
+    }
+    // Site route names (kontakt, agb, datenschutz) are site content, not a
+    // platform concern — a slug colliding with a route 404s at build time
+    // via the routes manifest, not via this list.
+    for (const slug of ["kontakt", "agb", "datenschutz", "uk", "de"]) {
+      expect(RESERVED_REFERRAL_SLUGS).not.toContain(slug);
     }
   });
 });

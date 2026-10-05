@@ -45,27 +45,19 @@ export const REF_PARAM_PATTERN = /^[a-z0-9-]{3,32}$/;
 /** Max length of the raw `referrer` form value forwarded to integrations. */
 export const REFERRER_MAX_LENGTH = 80;
 
-/** Slugs that may never name a partner — every reserved route/namespace per
-    brief WP1 plus the platform's known top-level namespaces. The loader also
-    rejects a slug equal to any existing route; the route check is the
-    generator's job (it has the registry), this list covers the static set. */
+/** Slugs that may never name a partner — platform-owned namespaces only.
+    Partner slugs live under the `/r/` prefix and cannot collide with authored
+    routes; this list guards only against names that would mimic platform
+    machinery inside that namespace. Site-specific page slugs are deliberately
+    NOT listed — they are site content, not platform constants. */
 export const RESERVED_REFERRAL_SLUGS: readonly string[] = [
   "admin",
   "api",
-  "kontakt",
-  "preis",
-  "uk",
-  "de",
+  "portal",
   "r",
-  "team",
-  "agb",
-  "datenschutz",
-  "impressum",
-  "nachweise",
-  "notausgang",
-  "ratgeber",
-  "leistungen",
-  "website",
+  "robots",
+  "sitemap",
+  "well-known",
 ];
 
 export const ReferralPartnerSchema = z.object({
@@ -78,7 +70,11 @@ export const ReferralPartnerSchema = z.object({
   /** Public name — requires written partner consent (publicNameConsentRef). */
   displayName: z.string().min(1),
   compensation: z.enum(["referral-fee", "none", "steward"]),
-  locales: z.array(z.enum(["de", "uk"])).min(1),
+  /** Language codes for the localized landings. Open set (ISO-639-1) — the
+      site's `system.md i18n.supported` decides which of them actually emit;
+      the unprefixed `/r/<slug>` canonical landing always emits for active
+      partners in the site default language. */
+  locales: z.array(z.string().regex(/^[a-z]{2}$/)).min(1),
   active: z.boolean(),
   /** Reference to the written public-name consent (identifier/date), not its
       content. Empty → partner never builds. */
@@ -86,6 +82,11 @@ export const ReferralPartnerSchema = z.object({
 });
 
 export const ReferralPartnersFileSchema = z.object({
+  /** Optional per-language slug of the site's referral-program explainer
+      page (e.g. `{ de: "verantwortungsvolle-empfehlungen" }`). Site-authored —
+      the platform must not hardcode site routes. When absent, landings omit
+      the program link. */
+  programRoutes: z.record(z.string().regex(/^[a-z]{2}$/), z.string().min(1)).optional(),
   partners: z.array(ReferralPartnerSchema),
 });
 
@@ -108,8 +109,12 @@ export function loadActiveReferralPartners(
     let parsed: unknown;
     try {
       parsed = ReferralPartnersFileSchema.parse(yamlLike(raw));
-    } catch {
-      warn("referral.partners.invalid", { reason: "schema" });
+    } catch (error) {
+      const detail =
+        error instanceof z.ZodError
+          ? (error.issues[0]?.message ?? "schema")
+          : String(error).slice(0, 200);
+      warn("referral.partners.invalid", { reason: "schema", detail });
       continue;
     }
     for (const partner of (parsed as z.infer<typeof ReferralPartnersFileSchema>).partners) {
@@ -142,6 +147,25 @@ export function resolveReferralPartner(
   const candidate = rawInput.trim().toLowerCase();
   if (!candidate || candidate.length > REFERRER_MAX_LENGTH) return null;
   return partners.find((p) => p.slug === candidate) ?? null;
+}
+
+/**
+ * Reads the optional site-authored `programRoutes` map (lang → page slug) from
+ * the same partners.yaml. Returns null when absent or malformed — the landing
+ * then omits the program link rather than guessing a site route.
+ */
+export function loadReferralProgramRoutes(
+  globbed: Record<string, string>,
+): Record<string, string> | null {
+  for (const raw of Object.values(globbed)) {
+    try {
+      const parsed = ReferralPartnersFileSchema.parse(yamlLike(raw));
+      return parsed.programRoutes ?? null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 /** Partners files are authored YAML; a JSON body (e.g. generated fixture) is

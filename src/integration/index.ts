@@ -42,7 +42,13 @@ payload.attribution).</item>
 export type { IntegrationSecrets } from "./port.ts";
 export type { LeadMessage, Lead, IntegrationChannelAdapter, CrmAdapter } from "./port.ts";
 export type { IntegrationEvent, DestinationAdapter } from "./port.ts";
-export { DESTINATION_KINDS, EXECUTION_MODES, eventToLeadMessage, eventToLead } from "./port.ts";
+export {
+  DESTINATION_KINDS,
+  EXECUTION_MODES,
+  eventToLeadMessage,
+  eventToLead,
+  formatReferrerLine,
+} from "./port.ts";
 export type { DestinationKind, ExecutionMode } from "./port.ts";
 
 export type {

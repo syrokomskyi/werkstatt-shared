@@ -21,16 +21,22 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
 </CHANGE_SUMMARY>
 */
 
-import type { IntegrationChannelAdapter, IntegrationSecrets, LeadMessage } from "./port.ts";
+import {
+  formatReferrerLine,
+  type IntegrationChannelAdapter,
+  type IntegrationSecrets,
+  type LeadMessage,
+} from "./port.ts";
 
 function formatMessageText(message: LeadMessage): string {
+  // RFC-1198: referral line — resolved partner name or the raw input.
+  const referrerLine = formatReferrerLine(message.referrer);
   return [
     "Neue Kontaktanfrage (send-message)",
     `Formular: ${message.formId}`,
     `Sprache: ${message.locale}`,
     `Zeit: ${message.submittedAt}`,
-    // RFC-1198: referral line — resolved partner name or the raw input.
-    ...(message.referrer ? [`Empfohlen von: ${message.referrer}`] : []),
+    ...(referrerLine ? [referrerLine] : []),
     "",
     message.message,
   ].join("\n");

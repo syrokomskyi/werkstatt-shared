@@ -1118,10 +1118,6 @@
       "types": "./src/client-scripts/index.ts",
       "default": "./src/client-scripts/index.ts"
     },
-    "./integration/referral": {
-      "types": "./src/integration/referral.ts",
-      "default": "./src/integration/referral.ts"
-    },
     "./integration/lagebild-ingress": {
       "types": "./src/integration/lagebild-ingress.ts",
       "default": "./src/integration/lagebild-ingress.ts"

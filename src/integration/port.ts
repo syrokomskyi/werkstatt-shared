@@ -36,6 +36,13 @@ export interface LeadMessage {
   referrer?: string;
 }
 
+/** RFC-1198: notification label for the referral line — single home shared by
+    every channel formatter (telegram, email) so the user-facing label never
+    drifts. Returns undefined for absent/empty input. */
+export function formatReferrerLine(referrer: string | undefined): string | undefined {
+  return referrer ? `Empfohlen von: ${referrer}` : undefined;
+}
+
 export interface Lead {
   name?: string;
   email?: string;
