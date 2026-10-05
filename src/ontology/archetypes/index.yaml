@@ -264,7 +264,7 @@ entries:
     version: 1.0.0
     layoutHint: single-column
     acceptedCosmicNames:
-      - Eirene
+      - Ersa
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/referral-partner-page.yaml
     layer: component
   - id: live-photo
@@ -702,6 +702,7 @@ planetImportPaths:
   Miranda: "@warpgogol/werkstatt-site/ui/components/person-profile"
   Eirene: "@warpgogol/werkstatt-site/ui/components/components"
   Despina: "@warpgogol/werkstatt-site/ui/components/pulsar"
+  Ersa: "@warpgogol/werkstatt-site/ui/components/referral-partner"
   Belinda: "@warpgogol/werkstatt-site/ui/components/responsive-image"
   Daphnis: "@warpgogol/werkstatt-site/ui/components/scroll-to-top"
   Praxidike: "@warpgogol/werkstatt-site/ui/components/cards"
@@ -783,7 +784,7 @@ blockTypeToCosmicName:
   person-profile: Miranda
   prose-a11y: Eirene
   pulsar: Despina
-  layout.referral-partner-page: Eirene
+  layout.referral-partner-page: Ersa
   responsive-image: Belinda
   scroll-to-top: Daphnis
   section-body-cards: Praxidike
@@ -879,6 +880,7 @@ roleByCosmicName:
   Ferdinand: layout-shell
   Eirene: section-body
   Despina: lang-switcher
+  Ersa: layout-shell
   Belinda: section-image
   Daphnis: scroll-to-top
   Praxidike: section-body

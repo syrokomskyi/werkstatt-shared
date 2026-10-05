@@ -23,5 +23,5 @@ propsSchema:
   shape: |
     z.object({}).passthrough()
 acceptedCosmicNames:
-  - Eirene
+  - Ersa
 constraints: {}
