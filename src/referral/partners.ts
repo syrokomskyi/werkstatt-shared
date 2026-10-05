@@ -33,17 +33,9 @@ payload.attribution).</item>
 
 import { z } from "zod";
 import { parse as yamlParse } from "yaml";
+import { REFERRAL_SLUG_PATTERN, REF_PARAM_PATTERN, REFERRER_MAX_LENGTH } from "./patterns.ts";
 
-/** Slug contract: kebab-case, 3–32 chars (brief WP1). */
-export const REFERRAL_SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-
-/** Pattern for the `?ref` query param — slightly looser than the slug
-    contract (accepts any dash-starting shape) but same bounded charset/length;
-    used by the client prefill and the worker redirect. */
-export const REF_PARAM_PATTERN = /^[a-z0-9-]{3,32}$/;
-
-/** Max length of the raw `referrer` form value forwarded to integrations. */
-export const REFERRER_MAX_LENGTH = 80;
+export { REFERRAL_SLUG_PATTERN, REF_PARAM_PATTERN, REFERRER_MAX_LENGTH };
 
 /** Slugs that may never name a partner — platform-owned namespaces only.
     Partner slugs live under the `/r/` prefix and cannot collide with authored

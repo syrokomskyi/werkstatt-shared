@@ -306,6 +306,10 @@
       "types": "./src/referral/partners.ts",
       "default": "./src/referral/partners.ts"
     },
+    "./referral/patterns": {
+      "types": "./src/referral/patterns.ts",
+      "default": "./src/referral/patterns.ts"
+    },
     "./referral/copy": {
       "types": "./src/referral/copy.ts",
       "default": "./src/referral/copy.ts"
