@@ -171,7 +171,7 @@ entries:
   - id: faq-list
     displayName: Faq List
     semanticRole: faq-list
-    version: 1.1.0
+    version: 1.2.0
     layoutHint: single-column
     acceptedCosmicNames:
       - Atlas
@@ -690,6 +690,7 @@ planetImportPaths:
   Klarissa: "@warpgogol/werkstatt-site/ui/components/passport-score-grid"
   Adrastea: "@warpgogol/werkstatt-site/ui/components/passport-star-map"
   Miranda: "@warpgogol/werkstatt-site/ui/components/person-profile"
+  Eirene: "@warpgogol/werkstatt-site/ui/components/components"
   Despina: "@warpgogol/werkstatt-site/ui/components/pulsar"
   Belinda: "@warpgogol/werkstatt-site/ui/components/responsive-image"
   Daphnis: "@warpgogol/werkstatt-site/ui/components/scroll-to-top"
@@ -770,6 +771,7 @@ blockTypeToCosmicName:
   passport-score-grid: Klarissa
   passport-star-map: Adrastea
   person-profile: Miranda
+  prose-a11y: Eirene
   pulsar: Despina
   responsive-image: Belinda
   scroll-to-top: Daphnis
@@ -864,6 +866,7 @@ roleByCosmicName:
   Adrastea: footer
   Miranda: person-profile
   Ferdinand: layout-shell
+  Eirene: section-body
   Despina: lang-switcher
   Belinda: section-image
   Daphnis: scroll-to-top

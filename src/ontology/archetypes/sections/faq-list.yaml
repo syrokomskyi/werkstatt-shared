@@ -5,10 +5,11 @@
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 id: faq-list
 displayName: Faq List
-version: 1.1.0
+version: 1.2.0
 semanticRole: faq-list
 description: |
   FAQ accordion sourced from business/faq entries. RFC-0101/0102 composed.
+  RFC-1197: optional inline items[] for baked surfaces — same accordion, same FAQPage emission.
 expectedIntents:
   - explain-approach
   - build-trust
@@ -25,6 +26,7 @@ propsSchema:
   shape: |
     z.object({
       tag: z.string().optional(),
+      items: z.array(z.object({ question: z.string(), answer: z.string() })).optional(),
     }).strict()
 acceptedCosmicNames:
   - Atlas
