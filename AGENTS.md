@@ -392,6 +392,20 @@ Any recursive walk that rebuilds objects (`substituteRefsDeep`, `deepMerge`, pro
 
 The companion normalization contract lives in `src/content/iso-date-string.ts` — `toIsoDateString(value)` (`@warpgogol/werkstatt-shared/content/iso-date-string` subpath) is the single point for parser-typed date props: `Date` → `toISOString()`, invalid `Date` → `""` (never throws `RangeError`), `string` → passthrough, anything else → `""`. Consumers MUST NOT re-implement the `instanceof Date ? toISOString() : …` fork — two divergent copies (`""` vs `undefined`/`String(v)` fallbacks) were the review finding that extracted this helper.
 
+### Cookie-free referral attribution (RFC-1198)
+
+Location: `packages/werkstatt-shared/src/referral/` — exported via `@warpgogol/werkstatt-shared/referral` and `/referral/copy`.
+
+| Export | Purpose |
+| --- | --- |
+| `ReferralPartnerSchema` / `ReferralPartnersFileSchema` | Partner record contract: `slug` (`^[a-z0-9]+(-[a-z0-9]+)*$`, 3–32, not in `RESERVED_REFERRAL_SLUGS`), `displayName`, `compensation` (`referral-fee`\|`none`\|`steward`), `locales`, `active`, `publicNameConsentRef` |
+| `loadActiveReferralPartners(globbed, warn?)` | Parses `partners.yaml` bodies → active set. Entry is buildable only when `active === true` AND `publicNameConsentRef` is non-empty — the written-consent gate lives here, not in callers |
+| `resolveReferralPartner(rawInput, partners)` | Server-side normalization of the voluntary `referrer` form input → partner or `null` (trim + lowercase, ≤80 chars); raw value still flows as `referrer_uri` for manual review |
+| `REFERRAL_SLUG_PATTERN`, `REF_PARAM_PATTERN`, `RESERVED_REFERRAL_SLUGS`, `REFERRER_MAX_LENGTH` | Shared constants — `?ref` prefill and `slug` schema use the same patterns |
+| `referralLandingCopy(lang)` | DE/UK landing copy for the partner landing component |
+
+**No-client-storage invariant:** referral attribution carries NO cookies, `localStorage`, `sessionStorage`, or IndexedDB — the chain is `/r/<slug>` → `?ref=<slug>` URL → voluntary form field → server-side slug resolution → `referralPartnerSlug`/`referralPartnerName` on the Lagebild ingress contract. `src/referral/tests/no-cookie-remnants.test.ts` is the enforcement guard; keep the banned-literal list intact.
+
 ## Test coverage
 
 RFC-1044 (Phase 2) ratcheted the package adjacency ratio from 29% to 62% by adding 70 adjacent test files across Groups A (share/schemas + ontology/schemas) and B (share/scripts + share/agent + share/knowledge). Groups C-E remain for follow-up sessions. The adjacency baseline is tracked via `.test-adjacency-baseline.json` and enforced by `test.adjacency.validate` (RFC-1040).
