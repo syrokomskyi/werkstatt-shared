@@ -23,7 +23,13 @@ import { sectionHeadingId } from "../heading-id.ts";
  */
 
 const arbTypeId = fc.option(fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,59}$/), { nil: undefined });
-const arbMaybeEmpty = fc.option(fc.string({ maxLength: 40 }), { nil: undefined });
+// Prefix sources are domain-shaped: sectionNumber is a zero-padded index or "",
+// sectionId is an authored kebab blockId — neither can start with '-'.
+const arbMaybeEmpty = fc.oneof(
+  fc.constant(undefined),
+  fc.constant(""),
+  fc.stringMatching(/^[a-z0-9][a-z0-9-]{0,39}$/),
+);
 
 test("result never starts with '-' — an empty prefix must never leak into the id", () => {
   fc.assert(

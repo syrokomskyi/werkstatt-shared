@@ -114,10 +114,13 @@ const PAGE_INCLUDE_FAQ: ReadonlySet<SemanticPageType> = new Set<SemanticPageType
 /**
  * Resolve the FAQ entries a page should embed (drives the FAQPage JSON-LD node).
  * A page carries FAQ when its semanticType opts in (PAGE_INCLUDE_FAQ), it is the
- * canonical `faq` page, or it declares a visible `faq-list` block. When `faq-list`
- * blocks declare tags, entries are filtered to those tags (RFC-0208). RFC-1197:
- * `faq-list` blocks carrying inline `items[]` (baked surfaces) merge their Q&A
- * pairs into the FAQPage alongside collection entries — one derivation, one node.
+ * canonical `faq` page, or it declares a visible `faq-list` block. RFC-1197:
+ * `faq-list` blocks carrying non-empty inline `items[]` (baked surfaces)
+ * contribute ONLY those items — the section skips the collection read in
+ * inline mode, so the JSON-LD side mirrors it (one derivation, one node).
+ * Blocks with `tag` contribute tag-filtered collection entries; blocks with
+ * neither tag nor items contribute the whole lang collection; a page with no
+ * faq-list block but an opt-in type/pageId embeds the whole collection.
  * Returns undefined when the page should carry no FAQPage. Shared by the home
  * and markdown builder paths so a `faq-list` block on the home emits FAQPage too.
  */
@@ -150,13 +153,34 @@ async function resolveFaqEntries(
     });
   });
   const faqEntries = await reader.getFaqEntries(lang);
-  const tags = new Set(
-    faqBlocks
-      .map((b) => ((b["props"] ?? b) as Record<string, unknown>)["tag"] as string | undefined)
-      .filter((t): t is string => typeof t === "string" && t.length > 0),
-  );
-  const collectionEntries =
-    tags.size > 0 ? faqEntries.filter((e) => e.tags?.some((t) => tags.has(t))) : faqEntries;
+  // Mirror the section's per-block semantics: a block with non-empty items[]
+  // renders ONLY those items (no collection read); a block with tag renders
+  // the tag-filtered collection; a block with neither renders all entries.
+  // No faq-list blocks at all means the page type itself opts in (hub) → all.
+  const seenIds = new Set<string>();
+  const collectionEntries: SemanticFaqEntry[] = [];
+  const pushUnique = (entries: SemanticFaqEntry[]) => {
+    for (const e of entries) {
+      if (seenIds.has(e.id)) continue;
+      seenIds.add(e.id);
+      collectionEntries.push(e);
+    }
+  };
+  if (faqBlocks.length === 0) {
+    pushUnique(faqEntries);
+  } else {
+    for (const b of faqBlocks) {
+      const props = (b["props"] ?? b) as Record<string, unknown>;
+      const hasInline = Array.isArray(props["items"]) && props["items"].length > 0;
+      if (hasInline) continue;
+      const tag = props["tag"];
+      pushUnique(
+        typeof tag === "string" && tag.length > 0
+          ? faqEntries.filter((e) => e.tags?.includes(tag))
+          : faqEntries,
+      );
+    }
+  }
   const merged = [...collectionEntries, ...inlineItems];
   return merged.length > 0 ? merged : undefined;
 }

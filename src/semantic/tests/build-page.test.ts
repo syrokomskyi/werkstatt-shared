@@ -94,7 +94,7 @@ describe("buildSemanticPageModelWith", () => {
     expect(result!.faqEntries).toEqual([{ id: "q1", question: "Q?", answer: "A." }]);
   });
 
-  it("RFC-1197: merges inline faq-list items with tag-filtered collection entries", async () => {
+  it("RFC-1197: inline-only faq-list block contributes only its items (mirrors the section's skipped collection read)", async () => {
     const reader = makeReader({
       getPageFrontmatter: async () => ({
         title: "Baked",
@@ -121,12 +121,36 @@ describe("buildSemanticPageModelWith", () => {
     const result = await buildSemanticPageModelWith(reader, baseArgs);
     expect(
       result!.faqEntries,
-      "no tag on the block -> all collection entries + inline items after",
+      "items[] without tag -> inline items only; collection read is skipped in the visible section",
     ).toEqual([
-      { id: "faq/c1", question: "C1?", answer: "C1.", tags: ["contact"] },
-      { id: "faq/c2", question: "C2?", answer: "C2.", tags: ["pricing"] },
       { id: "faq/city-qa-0", question: "Inline Q?", answer: "Inline A." },
       { id: "faq/city-qa-1", question: "Inline Q2?", answer: "Inline A2." },
+    ]);
+  });
+
+  it("RFC-1197: unions a tag-filtered collection block with an inline-items block", async () => {
+    const reader = makeReader({
+      getPageFrontmatter: async () => ({
+        title: "Mixed",
+        description: "tag block plus inline block",
+        blocks: [
+          { id: "tagged", type: "faq-list", props: { tag: "contact" } },
+          {
+            id: "city-qa",
+            type: "faq-list",
+            props: { items: [{ question: "Inline Q?", answer: "Inline A." }] },
+          },
+        ],
+      }),
+      getFaqEntries: async () => [
+        { id: "faq/c1", question: "C1?", answer: "C1.", tags: ["contact"] },
+        { id: "faq/c2", question: "C2?", answer: "C2.", tags: ["pricing"] },
+      ],
+    });
+    const result = await buildSemanticPageModelWith(reader, baseArgs);
+    expect(result!.faqEntries).toEqual([
+      { id: "faq/c1", question: "C1?", answer: "C1.", tags: ["contact"] },
+      { id: "faq/city-qa-0", question: "Inline Q?", answer: "Inline A." },
     ]);
   });
 
