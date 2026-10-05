@@ -28,6 +28,12 @@ export interface LeadMessage {
   /** ISO-8601 submission time. */
   submittedAt: string;
   contact?: { email?: string; phone?: string };
+  /**
+   * RFC-1198: referral display text — resolved partner displayName when
+   * the slug matched an active partner, else the raw voluntary input.
+   * Absent when the visitor left the field empty.
+   */
+  referrer?: string;
 }
 
 export interface Lead {
@@ -132,6 +138,14 @@ export function eventToLeadMessage(event: IntegrationEvent): LeadMessage {
         : "";
   const email = event.contact?.email;
   const phone = event.contact?.phone;
+  // RFC-1198: resolved partner displayName wins over the raw field input.
+  const referrer =
+    typeof event.payload.referralPartnerName === "string" &&
+    event.payload.referralPartnerName.length > 0
+      ? event.payload.referralPartnerName
+      : typeof event.payload.referrer === "string" && event.payload.referrer.length > 0
+        ? event.payload.referrer
+        : undefined;
   return {
     message,
     // RFC-1186: agent-bound events carry the real form discriminator in
@@ -146,6 +160,7 @@ export function eventToLeadMessage(event: IntegrationEvent): LeadMessage {
     ...(email || phone
       ? { contact: { ...(email ? { email } : {}), ...(phone ? { phone } : {}) } }
       : {}),
+    ...(referrer ? { referrer } : {}),
   };
 }
 

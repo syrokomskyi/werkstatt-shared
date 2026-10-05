@@ -29,6 +29,8 @@ function formatMessageText(message: LeadMessage): string {
     `Formular: ${message.formId}`,
     `Sprache: ${message.locale}`,
     `Zeit: ${message.submittedAt}`,
+    // RFC-1198: referral line — resolved partner name or the raw input.
+    ...(message.referrer ? [`Empfohlen von: ${message.referrer}`] : []),
     "",
     message.message,
   ].join("\n");

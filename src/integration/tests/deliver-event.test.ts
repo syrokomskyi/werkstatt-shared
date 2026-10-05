@@ -46,6 +46,28 @@ test("deliverEvent with no secrets skips every sink (no failures, no retry)", as
   expect(result.destinations.skipped.includes("crm:lagebild")).toBeTruthy();
 });
 
+test("RFC-1198: referrer picks the resolved partner name, else the raw input", () => {
+  const resolved = eventToLeadMessage({
+    ...EVENT,
+    payload: {
+      message: "Hallo",
+      referrer: "anna-schreiner",
+      referralPartnerSlug: "anna-schreiner",
+      referralPartnerName: "Anna Schreiner",
+    },
+  });
+  expect(resolved.referrer).toBe("Anna Schreiner");
+
+  const raw = eventToLeadMessage({
+    ...EVENT,
+    payload: { message: "Hallo", referrer: "Mein Nachbar Karl" },
+  });
+  expect(raw.referrer).toBe("Mein Nachbar Karl");
+
+  const absent = eventToLeadMessage(EVENT);
+  expect(absent.referrer).toBeUndefined();
+});
+
 test("email is no longer a fetch channel adapter (Cloudflare Email Routing handles it)", async () => {
   const result = await deliverEvent(EVENT, {});
   expect(!result.channels.skipped.includes("email")).toBeTruthy();
