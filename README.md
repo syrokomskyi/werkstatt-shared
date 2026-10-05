@@ -98,6 +98,7 @@ The package has **no root barrel export** (RFC-1106) — all consumption is via 
 | `src/typography/` | Typography rules (Tier 1–3) and fix engine |
 | `src/middleware/` | Access protection, language redirect, retired tombstones |
 | `src/routes/` | Route filtering, placeholder route detection |
+| `src/sections/` | Section helpers — `sectionHeadingId` resolver (RFC-1196), RFC-0042 need/cast |
 | `src/surface/` | Surface expand/bake helpers and labels |
 | `src/content/` | SystemManifest types, content helpers (`substituteRefsDeep`, `toIsoDateString`) |
 | `src/node/` | Node-only utilities (fs, import-scan) — never re-exported from browser barrels |
