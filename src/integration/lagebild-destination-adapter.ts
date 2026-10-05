@@ -31,7 +31,7 @@ import {
   type IdentityClaim,
   type IngressOrigin,
 } from "./lagebild-ingress.ts";
-import { ReferralAttributionPayloadSchema } from "./referral.ts";
+import { ReferralAttributionPayloadSchema } from "./referral-schema.ts";
 
 /**
  * Lagebild destination adapter (RFC-0176). Self-enables by secret presence:

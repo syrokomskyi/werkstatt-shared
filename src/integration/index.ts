@@ -81,11 +81,11 @@ export type { ReferralAttributionPayload } from "./referral.ts";
 export {
   REF_CODE_PATTERN,
   WG_REF_COOKIE,
-  ReferralAttributionPayloadSchema,
   encodeRefCookieValue,
   decodeRefCookieValue,
   readCookieHeader,
 } from "./referral.ts";
+export { ReferralAttributionPayloadSchema } from "./referral-schema.ts";
 
 export type { LifecycleEventPayload } from "./lifecycle.ts";
 export {

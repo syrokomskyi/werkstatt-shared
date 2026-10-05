@@ -14,10 +14,10 @@ inside the cookie value itself.</purpose>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1191: initial referral-attribution contracts + wg_ref codec.</item>
+  <item>RFC-1191: zod schema moved to referral-schema.ts — this module stays
+        dependency-free so the client capture path never bundles zod.</item>
 </CHANGE_SUMMARY>
 */
-
-import { z } from "zod";
 
 /** Closed charset/length for ref codes (RFC-1191: opaque, non-guessable). */
 export const REF_CODE_PATTERN = /^[a-z2-7]{10}$/;
@@ -36,12 +36,6 @@ export interface ReferralAttributionPayload {
   /** ISO-8601 first-touch time — decoded from the wg_ref value's epoch suffix. */
   firstTouchAt: string;
 }
-
-/** Zod schema the dispatch path validates attribution against. */
-export const ReferralAttributionPayloadSchema = z.object({
-  refCode: z.string().regex(REF_CODE_PATTERN),
-  firstTouchAt: z.string().datetime(),
-});
 
 /**
  * Encodes the wg_ref cookie value: `<refCode>.<unixSeconds>`. The epoch suffix

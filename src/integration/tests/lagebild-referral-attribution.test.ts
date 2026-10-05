@@ -13,9 +13,9 @@ import {
   decodeRefCookieValue,
   readAttributionFromRequest,
   readCookieHeader,
-  ReferralAttributionPayloadSchema,
   WG_REF_COOKIE,
 } from "../referral.ts";
+import { ReferralAttributionPayloadSchema } from "../referral-schema.ts";
 import { lagebildDestinationAdapter } from "../lagebild-destination-adapter.ts";
 import type { IntegrationEvent } from "../port.ts";
 
@@ -116,10 +116,7 @@ describe("lagebild adapter attribution pass-through (RFC-1191 AC-6/7)", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("AC-6: a valid payload.attribution maps onto the ingress attribution field", async () => {
-    await lagebildDestinationAdapter.route(
-      event({ refCode: CODE, firstTouchAt: ISO }),
-      SECRETS,
-    );
+    await lagebildDestinationAdapter.route(event({ refCode: CODE, firstTouchAt: ISO }), SECRETS);
     const body = JSON.parse((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body as string);
     expect(body.attribution).toEqual({ referral_code: CODE, first_touch_at: ISO });
   });
