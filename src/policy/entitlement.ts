@@ -10,7 +10,6 @@ agnostic contract consumed by the build-time resolver, the feature gates, and ru
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0706: add nachweis feature for Nachweisregister commercial module.</item>
   <item>RFC-0741: add multi-currency feature for multi-currency build pipeline.</item>
   <item>RFC-0932: add external-link-qr feature for QR code modal entitlement module.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
@@ -19,7 +18,17 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
-  <history>RFC-0169</history>
+  <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
+
+Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
+static /r/<slug> and /<lang>/r/<slug> partner landings (noindex, zero JS,
+consent-gated via publicNameConsentRef), ?ref prefill on the existing
+referrerField rail, server-side slug resolution against the bundled
+partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
+legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
+the cookie capture module (wg_ref, referral.attribution entitlement,
+payload.attribution).</item>
+  <history>RFC-0169, RFC-0706</history>
 </CHANGE_SUMMARY>
 */
 
@@ -48,8 +57,6 @@ export const ENTITLED_FEATURES = [
   "multi-currency",
   // RFC-0932: external-link QR code modal module
   "external-link-qr",
-  // RFC-1191: recommender-link attribution (consent-gated capture + CRM credit)
-  "referral.attribution",
 ] as const;
 
 /**
@@ -83,8 +90,6 @@ export const STRIPE_FEATURE_LOOKUP_MAP: Record<string, EntitledFeature> = {
   feature_multi_currency: "multi-currency",
   // RFC-0932
   feature_external_link_qr: "external-link-qr",
-  // RFC-1191
-  feature_referral_attribution: "referral.attribution",
 };
 
 /**

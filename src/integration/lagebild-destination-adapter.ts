@@ -21,6 +21,16 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
+
+Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
+static /r/<slug> and /<lang>/r/<slug> partner landings (noindex, zero JS,
+consent-gated via publicNameConsentRef), ?ref prefill on the existing
+referrerField rail, server-side slug resolution against the bundled
+partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
+legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
+the cookie capture module (wg_ref, referral.attribution entitlement,
+payload.attribution).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -31,7 +41,6 @@ import {
   type IdentityClaim,
   type IngressOrigin,
 } from "./lagebild-ingress.ts";
-import { ReferralAttributionPayloadSchema } from "./referral-schema.ts";
 
 /**
  * Lagebild destination adapter (RFC-0176). Self-enables by secret presence:
@@ -80,17 +89,17 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
 
     const message = typeof event.payload.message === "string" ? event.payload.message : null;
 
-    // RFC-1191: referral attribution pass-through. The adapter never resolves
-    // codes (registry is Lagebild-internal) and never fails a dispatch on a
-    // malformed/unknown code — a valid block maps onto the ingress attribution
-    // field, anything else is simply omitted.
-    const attributionParsed = ReferralAttributionPayloadSchema.safeParse(event.payload.attribution);
-    const attribution = attributionParsed.success
-      ? {
-          referral_code: attributionParsed.data.refCode,
-          first_touch_at: attributionParsed.data.firstTouchAt,
-        }
-      : undefined;
+    // RFC-1198: server-resolved partner fields pass through verbatim — the site
+    // API already matched the raw referrer input against the bundled partner
+    // list. A non-string/empty value is simply omitted, never a dispatch error.
+    const referralPartnerSlug =
+      typeof event.payload.referralPartnerSlug === "string" && event.payload.referralPartnerSlug
+        ? event.payload.referralPartnerSlug
+        : undefined;
+    const referralPartnerName =
+      typeof event.payload.referralPartnerName === "string" && event.payload.referralPartnerName
+        ? event.payload.referralPartnerName
+        : undefined;
 
     const result = await submitIngress(
       { apiUrl, apiKey, tenantId, sourceSystemId },
@@ -109,7 +118,8 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
             statement_ref: "contact_form_consent",
           },
         ],
-        ...(attribution ? { attribution } : {}),
+        ...(referralPartnerSlug ? { referralPartnerSlug } : {}),
+        ...(referralPartnerName ? { referralPartnerName } : {}),
       },
     );
 

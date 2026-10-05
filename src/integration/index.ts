@@ -14,7 +14,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0168: initial implementation.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -25,6 +24,17 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
 
 port-barrel.ts deleted; its explicit contract re-exports absorbed into integration/index.ts. The site domain/integration barrel rewires to explicit names from the shared barrel. ./integration/port-barrel export entry removed; ./integration/port (→ port.ts) stays — engine agent-gate consumers unaffected.</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
+  <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
+
+Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
+static /r/<slug> and /<lang>/r/<slug> partner landings (noindex, zero JS,
+consent-gated via publicNameConsentRef), ?ref prefill on the existing
+referrerField rail, server-side slug resolution against the bundled
+partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
+legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
+the cookie capture module (wg_ref, referral.attribution entitlement,
+payload.attribution).</item>
+  <history>RFC-0168</history>
 </CHANGE_SUMMARY>
 */
 
@@ -74,18 +84,6 @@ export type {
   SyncOutboxStatus,
   SyncOutboxOp,
 } from "./funnel.ts";
-
-// RFC-1191: referral.attribution contracts (paid module — opaque ref code,
-// consent-gated wg_ref cookie, payload.attribution block on PII events).
-export type { ReferralAttributionPayload } from "./referral.ts";
-export {
-  REF_CODE_PATTERN,
-  WG_REF_COOKIE,
-  encodeRefCookieValue,
-  decodeRefCookieValue,
-  readCookieHeader,
-} from "./referral.ts";
-export { ReferralAttributionPayloadSchema } from "./referral-schema.ts";
 
 export type { LifecycleEventPayload } from "./lifecycle.ts";
 export {

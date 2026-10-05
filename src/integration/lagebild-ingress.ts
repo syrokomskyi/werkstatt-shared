@@ -15,6 +15,16 @@ built-in via a stable idempotency_key (derived from submission_id + tenant).</pu
   <item>RFC-1097: sweep — tail packages clean
 
 Sweep batch 3: rewrote ~95 purposes across werkstatt-knowledge, werkstatt-shared, godot-game, phaser-game, lifecycle-core, projektarchiv-*, portal-*, billing-*, typescript (CONTRACT-02/PURPOSE-02). Real KEY_DECISIONS on 5 godot utils, non-goals on 5 CONTRACT-03 files, headers on 4 headerless files, CS-07 history literal fix on 2 files. Policy: vitest.config.ts + test-fixtures testPatterns, worker-configuration.d.ts excludedPath. All non-site/engine packages now 0 diagnostics.</item>
+  <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
+
+Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
+static /r/<slug> and /<lang>/r/<slug> partner landings (noindex, zero JS,
+consent-gated via publicNameConsentRef), ?ref prefill on the existing
+referrerField rail, server-side slug resolution against the bundled
+partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
+legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
+the cookie capture module (wg_ref, referral.attribution entitlement,
+payload.attribution).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -48,14 +58,6 @@ export interface ExplicitPolicyAssertion {
   readonly statement_ref?: string | null;
 }
 
-/** RFC-1191: optional referral attribution block (extended ingress contract). */
-export interface IngressAttribution {
-  /** Opaque recommender code — resolved to a referrer contact inside Lagebild. */
-  readonly referral_code: string;
-  /** ISO-8601 first-touch time from the wg_ref cookie value. */
-  readonly first_touch_at: string;
-}
-
 export interface WebsiteIngressPayload {
   readonly contract_version: typeof LAGEBILD_INGRESS_CONTRACT_VERSION;
   readonly tenant_id: string;
@@ -69,7 +71,12 @@ export interface WebsiteIngressPayload {
   readonly origin?: IngressOrigin;
   readonly explicit_policy_assertions?: readonly ExplicitPolicyAssertion[];
   readonly correlation_id?: string | null;
-  readonly attribution?: IngressAttribution;
+  /** RFC-1198: server-resolved active partner slug (site-side resolution against
+      the site's partner collection). Absent when the raw referrer input matches
+      no active partner. */
+  readonly referral_partner_slug?: string | null;
+  /** Partner's public displayName — already public on /r/<slug>. */
+  readonly referral_partner_name?: string | null;
 }
 
 export interface IngressResult {
@@ -96,7 +103,8 @@ export interface IngressSubmitInput {
   readonly origin?: IngressOrigin;
   readonly explicitPolicyAssertions?: readonly ExplicitPolicyAssertion[];
   readonly correlationId?: string | null;
-  readonly attribution?: IngressAttribution;
+  readonly referralPartnerSlug?: string | null;
+  readonly referralPartnerName?: string | null;
 }
 
 /**
@@ -123,7 +131,12 @@ export async function submitIngress(
       ? { explicit_policy_assertions: input.explicitPolicyAssertions }
       : {}),
     ...(input.correlationId != null ? { correlation_id: input.correlationId } : {}),
-    ...(input.attribution != null ? { attribution: input.attribution } : {}),
+    ...(input.referralPartnerSlug != null
+      ? { referral_partner_slug: input.referralPartnerSlug }
+      : {}),
+    ...(input.referralPartnerName != null
+      ? { referral_partner_name: input.referralPartnerName }
+      : {}),
   };
 
   const url = config.apiUrl.replace(/\/$/, "") + "/v1/ingress";

@@ -6,13 +6,20 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1175: initBackgroundVideos for video[data-bg-video] — capability-gated background autoplay (always-on step; the marker replaces the native autoplay attribute in media.astro).</item>
   <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
   <item>RFC-1175 AC-5: single-chunk orchestrator — all self-gating feature modules statically imported (scheduler, gsap-*, inline-number, live-photos, video-player, background-video, external-link-qr), so the entry script's one dynamic import resolves the whole dispatch graph; heavy deps stay lazy inside each init.</item>
   <item>warpgogol-m000170: initLenis moved behind scheduleTask — it was the only awaited feature init, pulling the lenis chunk into the critical request chain Lighthouse reported.</item>
+  <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
+
+Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
+static /r/<slug> and /<lang>/r/<slug> partner landings (noindex, zero JS,
+consent-gated via publicNameConsentRef), ?ref prefill on the existing
+referrerField rail, server-side slug resolution against the bundled
+partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
+legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
+the cookie capture module (wg_ref, referral.attribution entitlement,
+payload.attribution).</item>
   <history>RFC-1097</history>
 </CHANGE_SUMMARY>
 */
@@ -41,7 +48,6 @@ import { initInlineNumberAnimation } from "./inline-number-animation.ts";
 import { initLivePhotos } from "./live-photos.ts";
 import { initVideoPlayers } from "./video-player.ts";
 import { initCookieConsent } from "./cookie-consent.ts";
-import { initReferralCapture } from "./referral-capture.ts";
 import { scheduleTask } from "./scheduler.ts";
 
 export interface OrchestrationOptions {
@@ -66,8 +72,6 @@ export interface OrchestrationOptions {
   externalLinkQrEntitled?: boolean;
   /** RFC-1192: entitled COOKIE_MODULES ids for this site — non-empty activates the consent surface. */
   cookieModules?: string[];
-  /** RFC-1191: referral.attribution entitlement flag — activates the ?ref= capture module. */
-  referralAttribution?: boolean;
 }
 
 const has = (selector: string) => document.querySelector(selector) instanceof Element;
@@ -187,13 +191,6 @@ export async function runStandardLayoutOrchestration(
   // only when a COOKIE_MODULES module is entitled on this site.
   if (options.cookieModules && options.cookieModules.length > 0) {
     initCookieConsent(options.cookieModules);
-  }
-
-  // 12b. RFC-1191: referral capture — reads ?ref= on every render while the
-  // entitlement is on; the write goes through the consent gate so pre-consent
-  // captures stay in-memory for same-request pass-through only.
-  if (options.referralAttribution) {
-    initReferralCapture();
   }
 
   // 13. RFC-1061: scroll-spy URL hash updates (always-on, zero-dependency).

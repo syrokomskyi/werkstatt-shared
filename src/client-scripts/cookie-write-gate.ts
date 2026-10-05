@@ -12,10 +12,32 @@ writer.</purpose>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1192: initial consent flag + write-gate (RFC-1192 amends RFC-0188 storage policy).</item>
+  <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
+
+Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
+static /r/<slug> and /<lang>/r/<slug> partner landings (noindex, zero JS,
+consent-gated via publicNameConsentRef), ?ref prefill on the existing
+referrerField rail, server-side slug resolution against the bundled
+partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
+legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
+the cookie capture module (wg_ref, referral.attribution entitlement,
+payload.attribution).</item>
 </CHANGE_SUMMARY>
 */
 
-import { parseCookiePair } from "../integration/referral.ts";
+/**
+ * Parses a `name=value` pair out of a cookie source string — the shared
+ * split/trim/decode used by the consent-gated readers below (RFC-1192).
+ */
+function parseCookiePair(source: string | null, name: string): string | null {
+  if (!source) return null;
+  for (const part of source.split(";")) {
+    const eq = part.indexOf("=");
+    if (eq <= 0) continue;
+    if (part.slice(0, eq).trim() === name) return decodeURIComponent(part.slice(eq + 1).trim());
+  }
+  return null;
+}
 
 /** localStorage key holding the cookie-consent record. */
 export const CONSENT_FLAG_KEY = "wg_consent";

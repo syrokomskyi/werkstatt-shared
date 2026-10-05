@@ -302,6 +302,14 @@
       "types": "./src/sections/rfc0042-utils.ts",
       "default": "./src/sections/rfc0042-utils.ts"
     },
+    "./referral": {
+      "types": "./src/referral/partners.ts",
+      "default": "./src/referral/partners.ts"
+    },
+    "./referral/copy": {
+      "types": "./src/referral/copy.ts",
+      "default": "./src/referral/copy.ts"
+    },
     "./sections/heading-id": {
       "types": "./src/sections/heading-id.ts",
       "default": "./src/sections/heading-id.ts"

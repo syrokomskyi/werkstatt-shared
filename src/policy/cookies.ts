@@ -13,12 +13,22 @@ siteUsesCookies() gate that drives the conditional consent surface.</purpose>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1192: initial COOKIE_MODULES catalog + siteUsesCookies gate.</item>
+  <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
+
+Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
+static /r/<slug> and /<lang>/r/<slug> partner landings (noindex, zero JS,
+consent-gated via publicNameConsentRef), ?ref prefill on the existing
+referrerField rail, server-side slug resolution against the bundled
+partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
+legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
+the cookie capture module (wg_ref, referral.attribution entitlement,
+payload.attribution).</item>
 </CHANGE_SUMMARY>
 */
 
 /** A single cookie a catalog module may set. */
 export interface CookieDescriptor {
-  /** Cookie name (e.g. "wg_ref"). */
+  /** Cookie name (e.g. "session_pref"). */
   name: string;
   /** Max-Age in days the module may request. */
   maxAgeDays: number;
@@ -45,20 +55,11 @@ export interface CookieModule {
  * platform. Empty slots do not exist by construction: an entry absent from this
  * array may never set a cookie (RFC-1192 amends RFC-0188).
  */
-export const COOKIE_MODULES: readonly CookieModule[] = [
-  {
-    moduleId: "referral.attribution",
-    entitlement: "referral.attribution",
-    cookies: [
-      {
-        name: "wg_ref",
-        maxAgeDays: 180,
-        sameSite: "Lax",
-        purpose: "Recommender attribution — remembers which Empfehlungsgeber link brought this visitor",
-      },
-    ],
-  },
-];
+// RFC-1198: the catalog is empty — referral attribution moved to URL+form data
+// only (no client storage anywhere in the new code path). siteUsesCookies()
+// returns false for every site, so the consent surface never renders. The
+// bounded-cookie mechanism stays available for future entitled modules.
+export const COOKIE_MODULES: readonly CookieModule[] = [];
 
 /**
  * Site-level gate: true iff any entitled feature owns catalog cookies.

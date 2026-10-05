@@ -6,10 +6,38 @@ CustomEvent (AC-2 conditional render, AC-3 flag record).</purpose>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1192: initial consent-surface tests.</item>
+  <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
+
+Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
+static /r/<slug> and /<lang>/r/<slug> partner landings (noindex, zero JS,
+consent-gated via publicNameConsentRef), ?ref prefill on the existing
+referrerField rail, server-side slug resolution against the bundled
+partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
+legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
+the cookie capture module (wg_ref, referral.attribution entitlement,
+payload.attribution).</item>
 </CHANGE_SUMMARY>
 */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
+
+// RFC-1198: the live catalog is empty (consent surface dormant). The surface
+// mechanism is still contract-covered — the tests inject a synthetic catalog
+// entry so the gating/choice behavior stays exercised for future modules.
+vi.mock("../../policy/cookies.ts", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../policy/cookies.ts")>();
+  return {
+    ...actual,
+    COOKIE_MODULES: [
+      {
+        moduleId: "example.module",
+        entitlement: "example.module",
+        cookies: [{ name: "example_pref", maxAgeDays: 30, sameSite: "Lax", purpose: "test" }],
+      },
+    ],
+  };
+});
+
 import { COOKIE_CONSENT_EVENT, initCookieConsent } from "../cookie-consent.ts";
 import { CONSENT_FLAG_KEY, readConsentFlag } from "../cookie-write-gate.ts";
 
@@ -91,7 +119,7 @@ afterEach(() => {
 describe("initCookieConsent gating (AC-2)", () => {
   it("renders nothing when the host node is absent (unentitled site)", () => {
     const { host, documentStub } = stubDom({ hostPresent: false });
-    initCookieConsent(["referral.attribution"]);
+    initCookieConsent(["example.module"]);
     expect(documentStub.createElement).not.toHaveBeenCalled();
     expect(host.children).toHaveLength(0);
   });
@@ -101,7 +129,7 @@ describe("initCookieConsent gating (AC-2)", () => {
       hostPresent: true,
       flagRaw: JSON.stringify({ v: 1, at: new Date().toISOString(), granted: false }),
     });
-    initCookieConsent(["referral.attribution"]);
+    initCookieConsent(["example.module"]);
     expect(documentStub.createElement).not.toHaveBeenCalled();
   });
 
@@ -116,7 +144,7 @@ describe("initCookieConsent gating (AC-2)", () => {
 describe("initCookieConsent choices (AC-3)", () => {
   it("accept writes {v:1, at, granted:true} and dispatches the consent event", () => {
     const { host, windowStub } = stubDom({ hostPresent: true });
-    initCookieConsent(["referral.attribution"]);
+    initCookieConsent(["example.module"]);
     expect(host.children).toHaveLength(1);
     const banner = host.children[0];
     // last two appended children are the accept and decline buttons
@@ -131,7 +159,7 @@ describe("initCookieConsent choices (AC-3)", () => {
 
   it("decline writes granted:false and dispatches the consent event", () => {
     const { host, windowStub } = stubDom({ hostPresent: true });
-    initCookieConsent(["referral.attribution"]);
+    initCookieConsent(["example.module"]);
     const banner = host.children[0];
     const decline = banner.children[banner.children.length - 1];
     decline.click();
