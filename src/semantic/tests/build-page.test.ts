@@ -206,6 +206,55 @@ describe("buildSemanticPageModelWith", () => {
     ]);
   });
 
+  it("m000185: inline faq items resolve =(…) expressions via reader.resolveInlineText", async () => {
+    const reader = makeReader({
+      getPageFrontmatter: async () => ({
+        title: "Offer",
+        description: "offer page",
+        blocks: [
+          {
+            id: "offer-faq",
+            type: "faq-list",
+            props: {
+              items: [
+                {
+                  question: "Was kostet das Modul?",
+                  answer:
+                    "=(business-profile.offerings/visibility.pricing.charges.monthlySubscription.amount.value | money) im Monat.",
+                },
+              ],
+            },
+          },
+        ],
+      }),
+      resolveInlineText: async (text) => text.replace(/=\([^)]*\|[^)]*\)/, "29 €"),
+    });
+    const result = await buildSemanticPageModelWith(reader, baseArgs);
+    expect(result!.faqEntries).toEqual([
+      { id: "faq/offer-faq-0", question: "Was kostet das Modul?", answer: "29 € im Monat." },
+    ]);
+    expect(result!.faqEntries![0]!.answer).not.toContain("=(");
+  });
+
+  it("m000185: without resolveInlineText, raw inline text passes through unchanged", async () => {
+    const raw = "=(business-profile.x.y | money) im Monat.";
+    const reader = makeReader({
+      getPageFrontmatter: async () => ({
+        title: "Offer",
+        description: "offer page",
+        blocks: [
+          {
+            id: "offer-faq",
+            type: "faq-list",
+            props: { items: [{ question: "Q?", answer: raw }] },
+          },
+        ],
+      }),
+    });
+    const result = await buildSemanticPageModelWith(reader, baseArgs);
+    expect(result!.faqEntries![0]!.answer).toBe(raw);
+  });
+
   it("uses provided breadcrumbs when supplied", async () => {
     const reader = makeReader();
     const result = await buildSemanticPageModelWith(reader, {

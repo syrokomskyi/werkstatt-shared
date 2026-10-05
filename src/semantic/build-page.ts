@@ -21,6 +21,7 @@ per tag with order fallback (was alphabetical-by-slug). build-page
 resolveFaqEntries merges inline faq-list items with tag-filtered collection
 entries — empty tag-filter no longer suppresses the FAQPage when inline items
 exist. 3 new build-page tests + 8 existing green.</item>
+  <item>warpgogol-m000185: optional resolveInlineText on SemanticContentReader — inline faq-list items[] carry =(…) expressions on baked surfaces (raw baked props reach JSON-LD pre-substitution); resolveFaqEntries resolves them through the reader seam so accordion and FAQPage derive from the same resolved text.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -73,6 +74,15 @@ export interface SemanticContentReader {
    * interface to keep build-page.ts I/O-free per its module contract.
    */
   getDerivedPrices(): Record<string, DerivedPriceEntry[]> | null;
+  /**
+   * warpgogol-m000185: resolve =(collection/file.field | pipe) content
+   * references in arbitrary text. Inline faq-list items[] on baked surfaces
+   * carry such expressions — the visible accordion gets them resolved via
+   * substituteBlockPropReferences, but the JSON-LD path reads the raw baked
+   * props, so it must resolve through the same index (single derivation).
+   * Optional: readers without a ref index may omit it (text passes through).
+   */
+  resolveInlineText?(text: string, lang: string): Promise<string>;
 }
 
 export interface SemanticPageBuildArgs {
@@ -135,23 +145,27 @@ async function resolveFaqEntries(
   if (!(PAGE_INCLUDE_FAQ.has(semanticType) || pageId === "faq" || faqBlocks.length > 0)) {
     return undefined;
   }
-  const inlineItems: SemanticFaqEntry[] = faqBlocks.flatMap((b) => {
-    const props = (b["props"] ?? b) as Record<string, unknown>;
-    const blockId = typeof b["id"] === "string" ? b["id"] : "faq-inline";
-    const items = Array.isArray(props["items"])
-      ? (props["items"] as Array<{ question?: unknown; answer?: unknown }>)
-      : [];
-    return items.flatMap((item, i) => {
-      if (typeof item?.question !== "string" || typeof item?.answer !== "string") return [];
-      return [
-        {
+  const resolveInline = reader.resolveInlineText;
+  const inlineNested = await Promise.all(
+    faqBlocks.map(async (b) => {
+      const props = (b["props"] ?? b) as Record<string, unknown>;
+      const blockId = typeof b["id"] === "string" ? b["id"] : "faq-inline";
+      const items = Array.isArray(props["items"])
+        ? (props["items"] as Array<{ question?: unknown; answer?: unknown }>)
+        : [];
+      const resolved: SemanticFaqEntry[] = [];
+      for (const [i, item] of items.entries()) {
+        if (typeof item?.question !== "string" || typeof item?.answer !== "string") continue;
+        resolved.push({
           id: `faq/${blockId}-${i}`,
-          question: item.question,
-          answer: item.answer,
-        },
-      ];
-    });
-  });
+          question: resolveInline ? await resolveInline(item.question, lang) : item.question,
+          answer: resolveInline ? await resolveInline(item.answer, lang) : item.answer,
+        });
+      }
+      return resolved;
+    }),
+  );
+  const inlineItems = inlineNested.flat();
   const faqEntries = await reader.getFaqEntries(lang);
   // Mirror the section's per-block semantics: a block with non-empty items[]
   // renders ONLY those items (no collection read); a block with tag renders
