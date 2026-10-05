@@ -4,7 +4,7 @@
 # Edit instead: the archetype.registry.build generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 schemaVersion: 1.0.0
-totalCount: 62
+totalCount: 63
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
@@ -257,6 +257,15 @@ entries:
     acceptedCosmicNames:
       - Cressida
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/not-found.yaml
+    layer: component
+  - id: layout.referral-partner-page
+    displayName: Referral partner page
+    semanticRole: component-layout.referral-partner-page
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Eirene
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/referral-partner-page.yaml
     layer: component
   - id: live-photo
     displayName: Living photo
@@ -609,6 +618,7 @@ componentRoles:
   - component-lang-switcher
   - component-layout
   - component-layout.not-found
+  - component-layout.referral-partner-page
   - component-live-photo
   - component-material-credit
   - component-media
@@ -773,6 +783,7 @@ blockTypeToCosmicName:
   person-profile: Miranda
   prose-a11y: Eirene
   pulsar: Despina
+  layout.referral-partner-page: Eirene
   responsive-image: Belinda
   scroll-to-top: Daphnis
   section-body-cards: Praxidike
