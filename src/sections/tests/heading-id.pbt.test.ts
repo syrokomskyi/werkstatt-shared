@@ -1,3 +1,18 @@
+/*
+<MODULE_CONTRACT>
+<purpose>RFC-1196: property guarantees for sectionHeadingId() (DNA-101 PBT) —
+a falsy prefix never produces a leading-dash id, non-empty sectionNumber always
+wins, and empty prefix sources are equivalent to absent ones.</purpose>
+<non-goals>
+  <item>Do not validate caller-supplied id shape — the kebab typeId contract belongs to the section schema.</item>
+</non-goals>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1196: created — fast-check properties over all prefix-source combinations.</item>
+  <item>RFC-1196: review — sectionId from rawProps only, Compass headers on new tests</item>
+</CHANGE_SUMMARY>
+*/
+
 import { test, expect } from "vitest";
 import fc from "fast-check";
 import { sectionHeadingId } from "../heading-id.ts";

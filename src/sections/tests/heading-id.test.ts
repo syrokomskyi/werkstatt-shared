@@ -1,3 +1,18 @@
+/*
+<MODULE_CONTRACT>
+<purpose>RFC-1196: example-based verification of the sectionHeadingId() fallback
+chain — non-empty sectionNumber wins, sectionId (blockId) is the fallback, the
+bare type id is the last resort, and "" behaves like absent.</purpose>
+<non-goals>
+  <item>Do not test DOM rendering — the resolver is pure; rendering parity is guarded by section-shell.test.ts.</item>
+</non-goals>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1196: created — unit cases for numbered/unnumbered/empty-string prefix fallbacks.</item>
+  <item>RFC-1196: review — sectionId from rawProps only, Compass headers on new tests</item>
+</CHANGE_SUMMARY>
+*/
+
 import { test, expect, describe } from "vitest";
 import { sectionHeadingId } from "../heading-id.ts";
 
