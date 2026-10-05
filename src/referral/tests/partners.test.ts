@@ -27,6 +27,7 @@ payload.attribution).</item>
 import { describe, expect, test } from "vitest";
 import {
   loadActiveReferralPartners,
+  loadReferralLandingConfig,
   REF_PARAM_PATTERN,
   REFERRER_MAX_LENGTH,
   ReferralPartnerSchema,
@@ -105,12 +106,18 @@ describe("loadActiveReferralPartners", () => {
     expect(loadActiveReferralPartners(yamlOf([partner]), (c) => warns.push(c))).toEqual([]);
   });
 
-  test("excludes duplicate slugs after the first", () => {
+  test("rejects duplicate slugs — the whole file fails schema validation", () => {
+    // A duplicate slug is ambiguous attribution (which partner is paid?) —
+    // the schema refuses the file outright instead of silently keeping the
+    // first entry. The loader surfaces the failure as referral.partners.invalid.
     const other = { ...VALID, displayName: "Other" };
-    const warns: string[] = [];
-    const out = loadActiveReferralPartners(yamlOf([VALID, other]), (c) => warns.push(c));
-    expect(out).toEqual([VALID]);
-    expect(warns).toContain("referral.partners.duplicate");
+    const warns: { code: string; data: Record<string, unknown> }[] = [];
+    const out = loadActiveReferralPartners(yamlOf([VALID, other]), (c, d) =>
+      warns.push({ code: c, data: d }),
+    );
+    expect(out).toEqual([]);
+    expect(warns.map((w) => w.code)).toContain("referral.partners.invalid");
+    expect(warns[0]?.data.detail).toContain("duplicate partner slug");
   });
 
   test("warns and skips a malformed file instead of throwing", () => {
@@ -119,6 +126,37 @@ describe("loadActiveReferralPartners", () => {
       loadActiveReferralPartners({ "partners.yaml": "partners: [{broken" }, (c) => warns.push(c)),
     ).toEqual([]);
     expect(warns).toContain("referral.partners.invalid");
+  });
+});
+
+describe("loadReferralLandingConfig", () => {
+  test("returns the authored landing block verbatim", () => {
+    const raw = `landing:
+  rewardPhrases:
+    referral-fee: { de: "70 €", uk: "70 €" }
+  stewardRole: { de: "Markt-Steward" }
+  audiencePhrase: { de: "Firmenwebsites", uk: "вебсайти" }
+  conditionsNote: { de: "(AGB § 3 Abs. 5)" }
+partners:
+  - slug: "anna"
+    displayName: "Anna"
+    compensation: "referral-fee"
+    locales: ["de"]
+    active: true
+    publicNameConsentRef: "consent-1"
+`;
+    const config = loadReferralLandingConfig({ "partners.yaml": raw });
+    expect(config?.stewardRole?.de).toBe("Markt-Steward");
+    expect(config?.rewardPhrases?.["referral-fee"]?.uk).toBe("70 €");
+    expect(config?.audiencePhrase?.de).toBe("Firmenwebsites");
+    expect(config?.conditionsNote?.de).toBe("(AGB § 3 Abs. 5)");
+  });
+
+  test("returns null when the block is absent or malformed", () => {
+    expect(loadReferralLandingConfig(yamlOf([VALID]))).toBeNull();
+    expect(
+      loadReferralLandingConfig({ "partners.yaml": "landing: { bogus: 1 }\npartners: []" }),
+    ).toBeNull();
   });
 });
 

@@ -73,16 +73,66 @@ export const ReferralPartnerSchema = z.object({
   publicNameConsentRef: z.string(),
 });
 
-export const ReferralPartnersFileSchema = z.object({
-  /** Optional per-language slug of the site's referral-program explainer
-      page (e.g. `{ de: "verantwortungsvolle-empfehlungen" }`). Site-authored —
-      the platform must not hardcode site routes. When absent, landings omit
-      the program link. */
-  programRoutes: z.record(z.string().regex(/^[a-z]{2}$/), z.string().min(1)).optional(),
-  partners: z.array(ReferralPartnerSchema),
-});
+/** Localized display phrase map — `{ de: "…", uk: "…" }`. Site-authored
+    because legal wording must be authored, never derived. */
+const LocalizedPhraseSchema = z.record(z.string().regex(/^[a-z]{2}$/), z.string().min(1));
+
+/** Site-authored landing copy facts — the pieces of the referral landing that
+    vary per site (economics, audience, role term, legal pointer). The platform
+    owns the sentence structure; the site owns these phrases. */
+export const ReferralLandingConfigSchema = z
+  .object({
+    /** Reward display phrase per compensation variant, interpolated into the
+        disclosure (e.g. `referral-fee: { de: "70 €" }` → "erhält Anna dafür
+        70 € von …"; `steward` is appended after ", unter anderem"). */
+    rewardPhrases: z
+      .object({
+        "referral-fee": LocalizedPhraseSchema.optional(),
+        steward: LocalizedPhraseSchema.optional(),
+      })
+      .strict()
+      .optional(),
+    /** Role term for the steward disclosure variant (e.g. "Markt-Steward"). */
+    stewardRole: LocalizedPhraseSchema.optional(),
+    /** Audience/product clause for the lead sentence (e.g. "Firmenwebsites
+        für Handwerk und lokales Gewerbe"). Absent → generic "Websites". */
+    audiencePhrase: LocalizedPhraseSchema.optional(),
+    /** Legal pointer appended to the referred-customer benefit sentence
+        (e.g. "(AGB § 3 Abs. 5)"). The platform must not hardcode document
+        section numbers — they are site-text decisions. */
+    conditionsNote: LocalizedPhraseSchema.optional(),
+  })
+  .strict();
+
+export const ReferralPartnersFileSchema = z
+  .object({
+    /** Optional per-language slug of the site's referral-program explainer
+        page (e.g. `{ de: "verantwortungsvolle-empfehlungen" }`). Site-authored —
+        the platform must not hardcode site routes. When absent, landings omit
+        the program link. */
+    programRoutes: z.record(z.string().regex(/^[a-z]{2}$/), z.string().min(1)).optional(),
+    /** Optional site-authored landing copy facts (reward phrase, steward role
+        term, audience clause, legal pointer). */
+    landing: ReferralLandingConfigSchema.optional(),
+    partners: z.array(ReferralPartnerSchema),
+  })
+  .superRefine((file, ctx) => {
+    const seen = new Set<string>();
+    for (const partner of file.partners) {
+      if (seen.has(partner.slug)) {
+        ctx.addIssue({
+          code: "custom",
+          message: `duplicate partner slug "${partner.slug}"`,
+          path: ["partners"],
+        });
+      }
+      seen.add(partner.slug);
+    }
+  });
 
 export type ReferralPartner = z.infer<typeof ReferralPartnerSchema>;
+export type ReferralLandingConfig = z.infer<typeof ReferralLandingConfigSchema>;
+export type ReferralPartnersFile = z.infer<typeof ReferralPartnersFileSchema>;
 
 /**
  * Parses a `partners.yaml` collection into the active-partner set. An entry is
@@ -153,6 +203,25 @@ export function loadReferralProgramRoutes(
     try {
       const parsed = ReferralPartnersFileSchema.parse(yamlLike(raw));
       return parsed.programRoutes ?? null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/**
+ * Reads the optional site-authored `landing` copy-facts block from the same
+ * partners.yaml. Returns null when absent or malformed — landings then use
+ * the generic site-agnostic phrases (no reward amount, generic audience).
+ */
+export function loadReferralLandingConfig(
+  globbed: Record<string, string>,
+): ReferralLandingConfig | null {
+  for (const raw of Object.values(globbed)) {
+    try {
+      const parsed = ReferralPartnersFileSchema.parse(yamlLike(raw));
+      return parsed.landing ?? null;
     } catch {
       return null;
     }

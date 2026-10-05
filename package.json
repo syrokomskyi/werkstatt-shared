@@ -218,6 +218,10 @@
       "types": "./src/policy/feature-policy.ts",
       "default": "./src/policy/feature-policy.ts"
     },
+    "./offers/duration": {
+      "types": "./src/offers/duration.ts",
+      "default": "./src/offers/duration.ts"
+    },
     "./offers/formula-eval": {
       "types": "./src/offers/formula-eval.ts",
       "default": "./src/offers/formula-eval.ts"
