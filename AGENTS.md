@@ -398,12 +398,14 @@ Location: `packages/werkstatt-shared/src/referral/` — exported via `@warpgogol
 
 | Export | Purpose |
 | --- | --- |
-| `ReferralPartnerSchema` / `ReferralPartnersFileSchema` | Partner record contract: `slug` (`^[a-z0-9]+(-[a-z0-9]+)*$`, 3–32, not in `RESERVED_REFERRAL_SLUGS`), `displayName`, `compensation` (`referral-fee`\|`none`\|`steward`), `locales`, `active`, `publicNameConsentRef` |
+| `ReferralPartnerSchema` / `ReferralPartnersFileSchema` | Partner record contract: `slug` (`^[a-z0-9]+(-[a-z0-9]+)*$`, 3–32, not in `RESERVED_REFERRAL_SLUGS`), `displayName`, `compensation` (`referral-fee`\|`none`\|`steward`), `locales`, `active`, `publicNameConsentRef`. Slugs MUST be unique file-wide — a duplicate fails schema validation (ambiguous attribution must not silently first-win) |
+| `ReferralLandingConfigSchema` | Site-authored `landing` block in partners.yaml: `rewardPhrases`, `stewardRole`, `audiencePhrase`, `conditionsNote` (lang → phrase maps) — economics and legal pointers are site content, never platform literals |
 | `loadActiveReferralPartners(globbed, warn?)` | Parses `partners.yaml` bodies → active set. Entry is buildable only when `active === true` AND `publicNameConsentRef` is non-empty — the written-consent gate lives here, not in callers |
-| `loadReferralProgramRoutes(globbed)` | Optional site-authored `programRoutes` map (lang → explainer-page slug); null when undeclared — landings then omit the program link |
+| `loadReferralProgramRoutes(globbed)` / `loadReferralLandingConfig(globbed)` | Optional site-authored `programRoutes` map (lang → explainer-page slug) and `landing` copy-facts block; null when undeclared — landings then omit the link / use generic phrases |
 | `resolveReferralPartner(rawInput, partners)` | Server-side normalization of the voluntary `referrer` form input → partner or `null` (trim + lowercase, ≤80 chars); raw value still flows as `referrer_uri` for manual review |
 | `REFERRAL_SLUG_PATTERN`, `REF_PARAM_PATTERN`, `RESERVED_REFERRAL_SLUGS`, `REFERRER_MAX_LENGTH` | Shared constants — `?ref` prefill and `slug` schema use the same patterns; `RESERVED_REFERRAL_SLUGS` holds platform namespaces only (site route names are site content) |
-| `referralLandingCopy(lang, siteName)` | DE/UK landing copy with the site's PBP `brandName` interpolated — no hardcoded brand or site routes (`locales` in the schema is an open ISO-639-1 set, `system.md i18n.supported` gates emission) |
+| `referralLandingCopy(lang, siteName, facts?)` | DE/UK landing copy — `siteName` is the PBP org name; `facts` (from `resolveReferralLandingFacts` + `deriveReferralBenefit`) carries reward/steward/audience/conditionsNote phrases and the PBP partner-program benefit. Absent facts degrade to truthful generic wording; `conditions` is `null` (hidden) when the site declares no benefit — never invent program economics |
+| `resolveReferralLandingFacts(config, lang, fallbackLang?)` | Resolves the `landing` block's lang→phrase maps to one language (with fallback chain) — call it once per landing render |
 
 **No-client-storage invariant:** referral attribution carries NO cookies, `localStorage`, `sessionStorage`, or IndexedDB — the chain is `/r/<slug>` → `?ref=<slug>` URL → voluntary form field → server-side slug resolution → `referralPartnerSlug`/`referralPartnerName` on the Lagebild ingress contract. `src/referral/tests/no-cookie-remnants.test.ts` is the enforcement guard; keep the banned-literal list intact.
 
