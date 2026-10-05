@@ -12,6 +12,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>warpgogol-m000185: pillarSchema gains optional `faq` array (localized question/answer items) — depth-0 pillar hubs can emit a faq-list block.</item>
   <item>RFC-0199: resolveSlug/routesFor/assembleEntries/generateEntries take a LocalizedUniverse so URL segments localize per language while identity stays on the neutral tuple.</item>
   <item>RFC-0496: add BlueprintServiceConfig + ServicePublicationGate for website-service depth-1 service dossier configuration; add BlueprintLinkingParent for cross-surface parent linking.</item>
   <item>RFC-0497: add BlueprintIntersectionConfig + IntersectionGate + IntersectionSimilarity for website-local depth-5 intersection gate configuration.</item>
@@ -90,12 +91,18 @@ const pillarFinalCtaSchema = z.object({
   secondaryCta: pillarCtaSchema,
 });
 
+const pillarFaqItemSchema = z.object({
+  question: localizedString,
+  answer: localizedString,
+});
+
 const pillarSchema = z.object({
   hero: pillarHeroSchema,
   adaptation: pillarAdaptationSchema,
   productPrice: pillarProductPriceSchema,
   finalCta: pillarFinalCtaSchema,
   catalogHeading: localizedString.optional(),
+  faq: z.array(pillarFaqItemSchema).optional(),
 });
 
 // RFC-0492: dossier configuration for depth-1 industry pages.
