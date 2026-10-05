@@ -14,6 +14,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0192: initial contracts.</item>
   <item>RFC-0207: SurfaceNarrative (bespoke per-page hero/section prose) + SurfaceRecordImage (per-record image token + alt).</item>
+  <item>warpgogol-m000185: VirtualRouteEntry.noindexLocales — per-locale index suppression on generated surface entries.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -222,6 +223,14 @@ export interface VirtualRouteEntry {
    * route reappears on the next generate.
    */
   untranslatedLangs?: string[];
+  /**
+   * warpgogol-m000185: locales whose rendered page stays live but carries robots
+   * noindex and drops out of sitemap/llms (e.g. operator-language copies of
+   * generated city/service pages). Set by surface.generate from the owning
+   * module context's `noindexLocales`; the tuple-level `indexable`/`noindex`
+   * stay untouched so sibling locales remain indexable.
+   */
+  noindexLocales?: string[];
   /** Decision provenance for the manifest (RFC-0194/0196 enrich this). */
   decision?: IndexDecision;
 }

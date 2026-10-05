@@ -13,6 +13,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0271: add module context contracts for masterLocale, publishedLocales, entitlement, glossary refs, translator-note refs, and generation/approval policy.</item>
   <item>RFC-0277: add stage and urlPolicy fields for PSEO lifecycle governance.</item>
+  <item>warpgogol-m000185: add noindexLocales/noindexDepths module policies — locale-scoped and depth-scoped index suppression for generated pages (pages stay live, robots noindex + sitemap/llms exclusion).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -36,6 +37,19 @@ export const surfaceModuleContextSchema = z.object({
   blueprints: z.array(z.string().min(1)).min(1),
   masterLocale: z.string().min(2),
   publishedLocales: z.array(z.string().min(2)).default([]),
+  /**
+   * Per-Blueprint locale-scoped index suppression: the rendered page stays live
+   * for users but carries robots noindex and drops out of sitemap/llms for the
+   * listed locales (e.g. operator-language copies of generated city/service
+   * pages). Keyed by Blueprint id. The default locale is never suppressed.
+   */
+  noindexLocales: z.record(z.string().min(1), z.array(z.string().min(2))).optional(),
+  /**
+   * Per-Blueprint depth-scoped index suppression: entries at the listed depths
+   * are marked noindex in every locale (live for users, out of sitemap/llms).
+   * Keyed by Blueprint id. For locale-scoped suppression use noindexLocales.
+   */
+  noindexDepths: z.record(z.string().min(1), z.array(z.number().int().min(0))).optional(),
   stage: pseoStageSchema.optional(),
   urlPolicy: urlPolicySchema.optional(),
   context: z
