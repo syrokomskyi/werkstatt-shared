@@ -302,6 +302,10 @@
       "types": "./src/sections/rfc0042-utils.ts",
       "default": "./src/sections/rfc0042-utils.ts"
     },
+    "./sections/heading-id": {
+      "types": "./src/sections/heading-id.ts",
+      "default": "./src/sections/heading-id.ts"
+    },
     "./stack/run-tool": {
       "types": "./src/stack/run-tool.ts",
       "default": "./src/stack/run-tool.ts"

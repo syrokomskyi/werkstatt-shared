@@ -12,6 +12,7 @@ section number, optional level override.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
+  <item>RFC-1196: step 1 — sectionHeadingId() resolver + sectionId prop</item>
 </CHANGE_SUMMARY>
 */
 
@@ -61,6 +62,12 @@ export const sectionHeaderSchema = z
     level: sectionHeaderLevelSchema.optional(),
     /** Used as aria-labelledby target by <SectionShell>. */
     id: z.string().optional(),
+    /**
+     * RFC-1196 — per-instance anchor id resolved via resolveSectionAnchor
+     * (= blockId, RFC-0914). Uniqueness fallback for heading ids when
+     * `sectionNumber` is empty — consumed by sectionHeadingId().
+     */
+    sectionId: z.string().optional(),
     /**
      * RFC-0151 — resolved typographic effect stack for the `heading` target.
      * Section composites pass resolveEffectsForTarget(effects, "heading").
