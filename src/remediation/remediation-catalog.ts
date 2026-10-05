@@ -15,6 +15,7 @@
   <item>RFC-1185: remediation entries for SHARED-CONTEXT-COLLISION-UNDECLARED and the SHARED-CONTEXT-INHERIT-* rule family.</item>
   <item>RFC-1185: review fix — Compass CHANGE_SUMMARY coverage only, no behavior change.</item>
   <item>ADR-0105: remediation entries for the DIST-LEAK-01..05 rule family (serialization-leak guard).</item>
+  <item>RFC-1201: remediation entry for PARITY-MD-CONSTRUCT-COUNT (inline-construct parity).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -55,6 +56,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "PARITY-SECTION-COUNT",
     action: "Add or remove sections so the locale overlay matches the base locale section count.",
+    docRef: "docs/authoring/preventive-measures-parity-and-templates.md",
+  },
+  {
+    ruleId: "PARITY-MD-CONSTRUCT-COUNT",
+    action:
+      "Align inline markdown constructs (code spans, links, images, footnote references) between the localized block and its counterpart locale, or record an intentional difference via translation.parity.suppress.",
     docRef: "docs/authoring/preventive-measures-parity-and-templates.md",
   },
   {

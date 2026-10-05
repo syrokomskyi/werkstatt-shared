@@ -331,6 +331,23 @@ describe("TYPO-LOCALE-01 (mixed-script word)", () => {
     const findings = runRule("TYPO-LOCALE-01", seg, ctx);
     expect(findings).toHaveLength(1);
   });
+
+  it("RFC-1201: path-like tokens get the domain-qualified URL-placeholder hint", () => {
+    const seg = makeSegment("Перейдіть на /r/<ім'я> для деталей", { locale: "uk" });
+    const findings = runRule("TYPO-LOCALE-01", seg);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.fixHint).toContain("domain-qualified");
+    expect(findings[0]!.fixHint).toContain("<placeholder>");
+  });
+
+  it("RFC-1201: plain mixed-script words keep the generic single-script hint", () => {
+    const seg = makeSegment("This is wоrld text");
+    const findings = runRule("TYPO-LOCALE-01", seg);
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.fixHint).toBe(
+      "Separate scripts — this is likely a homoglyph or translation artifact.",
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------

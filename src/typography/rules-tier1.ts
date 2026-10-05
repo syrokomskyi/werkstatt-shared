@@ -20,6 +20,7 @@ TypographyRule[].</purpose>
   <item>RFC-1070: extended TypographyRuleId and TypographyRuleFamily with NUM, ABBR, APOS families; added localeDefaults to TypographyContext.</item>
   <item>RFC-1071: extended TypographyRuleId and TypographyRuleFamily with UNICODE, LINK, SENT families.</item>
   <item>RFC-1072: changed TypographyFinding.fix from null to FixAction | null; extended finding() helper with optional FixAction param; populated fix on PUNCT-01, SPACE-01, SPACE-02.</item>
+  <item>RFC-1201: TYPO-LOCALE-01 fixHint branches on token shape — path-like tokens (`/` or `<` present) name the accepted domain-qualified URL-placeholder normalization form; plain mixed-script words keep the generic single-script hint. Detection unchanged.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -725,6 +726,13 @@ const CYRILLIC_SCRIPT = /\p{Script=Cyrillic}/u;
 const LATIN_ONLY = /^[\p{Script=Latin}0-9.]+$/u;
 const HAS_LATIN_LETTER = /\p{Script=Latin}/u;
 
+// RFC-1201: path-like flagged tokens get the domain-qualified URL-placeholder
+// hint — the same normalization the validator already accepts for
+// `domain.tld/path/<placeholder>` forms.
+function isPathLikeToken(token: string): boolean {
+  return token.includes("/") || token.includes("<");
+}
+
 function extractLatinParts(token: string): string[] {
   const parts = token.split("-");
   return parts
@@ -760,7 +768,9 @@ const locale01: TypographyRule = {
             token,
             segment.text.indexOf(token),
             `Mixed-script word (Latin and Cyrillic letters in one token): "${token}".`,
-            "Separate scripts — this is likely a homoglyph or translation artifact.",
+            isPathLikeToken(token)
+              ? `If "${token}" is a URL/path placeholder, use the domain-qualified form (e.g. "domain.tld/path/<placeholder>") — URL-like tokens are normalized to placeholders. Otherwise rewrite the token in a single script.`
+              : "Separate scripts — this is likely a homoglyph or translation artifact.",
           ),
         ];
       }
