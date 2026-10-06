@@ -25,6 +25,7 @@ operations and MCP tools.
 
 import type { CapabilityRecord } from "@warpgogol/werkstatt-shared/ontology";
 import type { AgentActionRef } from "./manifest.ts";
+import { capabilityPricingProjection } from "./capability-schema.ts";
 
 export type { CapabilityRecord } from "@warpgogol/werkstatt-shared/ontology";
 
@@ -86,6 +87,7 @@ export function resolveActiveCapabilities(
 
 /** Project one active capability into its manifest AgentActionRef (RFC-0286). */
 export function capabilityToActionRef(cap: CapabilityRecord): AgentActionRef {
+  const pricing = capabilityPricingProjection(cap);
   return {
     id: cap.id,
     // RFC-1171: canonical action urls live under the versioned namespace; the
@@ -97,5 +99,8 @@ export function capabilityToActionRef(cap: CapabilityRecord): AgentActionRef {
     entitlement: "agent.actions",
     // RFC-1169: consumers must distinguish preview ("none") from write actions.
     sideEffect: cap.sideEffect ?? "write",
+    // RFC-1212: metered capabilities expose machine-readable pricing — absent
+    // for unmetered records (bijective projection, AGM-04 enforces).
+    ...(pricing ? { pricing } : {}),
   };
 }

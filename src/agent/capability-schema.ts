@@ -20,6 +20,7 @@ the dependency direction stays acyclic.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1211: initial contract — capabilityUiSchema, UiResourceDoc envelope, ui:// URI + .well-known path helpers.</item>
+  <item>RFC-1212: metering contract — CapabilityMetering block, CapabilityPricing manifest projection, AgentUsageRecord journal schema.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -90,4 +91,106 @@ export function parseUiResourceUri(uri: string): { site: string; capabilityId: s
   const match = /^ui:\/\/([^\s/]+)\/([^\s/]+)$/.exec(uri);
   if (!match) return null;
   return { site: match[1]!, capabilityId: match[2]! };
+}
+
+// ---------------------------------------------------------------------------
+// RFC-1212: metered invocation + machine-readable pricing
+// ---------------------------------------------------------------------------
+
+/**
+ * RFC-1212: the closed `metering` block of a capability catalog record —
+ * opt-in per-call pricing on top of `requires.entitlements`. `product` is a
+ * pricing-catalog reference `<offeringSlug>.<chargeKey>` resolving to a PBP
+ * `usage`-typed Charge in `src/content/business-profile/<lang>/offerings/`;
+ * `pricePerUnit` is the declared projection, AGM-02 blocks when it diverges
+ * from the catalog charge's unit-rate amount or policy currency.
+ */
+export const capabilityMeteringSchema = z
+  .object({
+    /** Pricing-catalog reference "<offeringSlug>.<chargeKey>" (PBP usage Charge). */
+    product: z
+      .string()
+      .regex(
+        /^[a-z0-9][a-z0-9-]*\.[a-z0-9][a-z0-9-]*$/,
+        "product must be <offeringSlug>.<chargeKey>",
+      ),
+    /** What one unit measures — v1 always meters per invocation. */
+    unit: z.enum(["invocation", "record", "token"]),
+    /** Declared per-unit price — must match the catalog charge (AGM-02). */
+    pricePerUnit: z
+      .object({
+        amount: z.number().positive(),
+        /** ISO-4217 alpha-3, e.g. "EUR". */
+        currency: z.string().regex(/^[A-Z]{3}$/),
+      })
+      .strict(),
+    /** Included units per billing window before billing applies. */
+    freeUnitsPerWindow: z.number().int().nonnegative().optional(),
+    /** Free-allowance window granularity — defaults to "month". */
+    window: z.enum(["day", "month"]).optional(),
+  })
+  .strict();
+
+export type CapabilityMetering = z.infer<typeof capabilityMeteringSchema>;
+
+/**
+ * RFC-1212: the `pricing` object projected into agent.json / OpenAPI per
+ * metered capability — bijective with `metering` (AGM-04 enforces).
+ */
+export const capabilityPricingSchema = z
+  .object({
+    metered: z.literal(true),
+    product: z.string().min(1),
+    unit: z.enum(["invocation", "record", "token"]),
+    pricePerUnit: z
+      .object({ amount: z.number().positive(), currency: z.string().regex(/^[A-Z]{3}$/) })
+      .strict(),
+    freeUnitsPerWindow: z.number().int().nonnegative(),
+    window: z.enum(["day", "month"]),
+  })
+  .strict();
+
+export type CapabilityPricing = z.infer<typeof capabilityPricingSchema>;
+
+/** RFC-1212: schema marker stamped into every journaled usage record. */
+export const AGENT_USAGE_SCHEMA_ID = "gogol.agent-usage/1";
+
+/**
+ * RFC-1212: one journaled usage record per dispatched metered invocation —
+ * a sibling of the traffic telemetry event, emitted post-dispatch only (a
+ * rejected/replayed call never bills). `callerIdentity` is the verified
+ * agentId (pseudonymous billing identity) or "anonymous"; `billable` carries
+ * the free-allowance verdict so the billing bridge can separate included
+ * usage from chargeable usage without re-deriving window state.
+ */
+export const agentUsageRecordSchema = z
+  .object({
+    schema: z.literal(AGENT_USAGE_SCHEMA_ID),
+    siteId: z.string().min(1),
+    capability: z.string().min(1),
+    callerIdentity: z.string().min(1),
+    units: z.number().int().positive(),
+    billable: z.boolean(),
+    /** Dedup anchor — a replayed call never bills twice. */
+    idempotencyKey: z.string().min(1).optional(),
+    occurredAt: z.string().min(1),
+  })
+  .strict();
+
+export type AgentUsageRecord = z.infer<typeof agentUsageRecordSchema>;
+
+/** RFC-1212: project a capability's metering block into the public pricing ref. */
+export function capabilityPricingProjection(cap: {
+  metering?: CapabilityMetering;
+}): CapabilityPricing | undefined {
+  const m = cap.metering;
+  if (!m) return undefined;
+  return {
+    metered: true,
+    product: m.product,
+    unit: m.unit,
+    pricePerUnit: m.pricePerUnit,
+    freeUnitsPerWindow: m.freeUnitsPerWindow ?? 0,
+    window: m.window ?? "month",
+  };
 }

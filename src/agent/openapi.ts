@@ -43,6 +43,8 @@ export interface OpenApiOperation {
   description?: string;
   /** RFC-1171: OpenAPI 3.1 deprecation flag — set on alias operations. */
   deprecated?: boolean;
+  /** RFC-1212: machine-readable pricing — the agent.json `pricing` projection. */
+  "x-gogol-pricing"?: unknown;
   tags: string[];
   parameters?: Array<{
     name: string;
@@ -235,6 +237,9 @@ export function formatAgentOpenApi(
               "Optional dedup key. Repeating a request with the same key and body returns the original receipt; the same key with a different body is rejected with 409.",
           },
         ],
+        // RFC-1212: machine-readable pricing on metered capabilities — the
+        // same projection agent.json carries, exposed as an OpenAPI extension.
+        ...(ref.pricing ? { "x-gogol-pricing": ref.pricing } : {}),
         requestBody: {
           required: true,
           content: { "application/json": { schema: schemas.input } },

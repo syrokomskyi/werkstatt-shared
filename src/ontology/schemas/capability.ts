@@ -29,7 +29,7 @@ interprets flat shapes only.
 
 import { z } from "zod";
 import { INTEGRATION_EVENT_KINDS } from "../../integration/port.ts";
-import { capabilityUiSchema } from "../../agent/capability-schema.ts";
+import { capabilityMeteringSchema, capabilityUiSchema } from "../../agent/capability-schema.ts";
 
 /** Localized string map: language code → string. At least one entry required. */
 const localizedStringSchema = z
@@ -230,6 +230,13 @@ export const capabilityRecordSchema = z
      * the canonical schema lives in agent/capability-schema.ts.
      */
     ui: capabilityUiSchema.optional(),
+    /**
+     * RFC-1212: opt-in metered invocation — closed `metering` block declaring
+     * per-call pricing (PBP usage-Charge product ref + unit price + free
+     * window). Metered capabilities emit exactly one journaled AgentUsageRecord
+     * per dispatched call and project `pricing` into the agent manifest.
+     */
+    metering: capabilityMeteringSchema.optional(),
   })
   .strict()
   .superRefine((record, ctx) => {

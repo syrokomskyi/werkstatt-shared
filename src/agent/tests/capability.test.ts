@@ -173,3 +173,29 @@ test("capabilityToActionRef: projects id/url/title/entitlement", () => {
   expect(ref.entitlement).toBe("agent.actions");
   expect(ref.title).toEqual({ de: "x", en: "x" });
 });
+
+test("capabilityToActionRef: metered capability projects resolved pricing (AC-2)", () => {
+  const ref = capabilityToActionRef(
+    makeCap({
+      metering: {
+        product: "agent-services.quote-run",
+        unit: "invocation",
+        pricePerUnit: { amount: 0.05, currency: "EUR" },
+        freeUnitsPerWindow: 3,
+        window: "month",
+      },
+    }),
+  );
+  expect(ref.pricing).toEqual({
+    metered: true,
+    product: "agent-services.quote-run",
+    unit: "invocation",
+    pricePerUnit: { amount: 0.05, currency: "EUR" },
+    freeUnitsPerWindow: 3,
+    window: "month",
+  });
+});
+
+test("capabilityToActionRef: unmetered capability projects no pricing", () => {
+  expect(capabilityToActionRef(makeCap()).pricing).toBeUndefined();
+});

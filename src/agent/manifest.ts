@@ -26,6 +26,8 @@ two runs on unchanged input are byte-identical (AS-7).
 import { createHash } from "node:crypto";
 import type { AgentSurfaceProof } from "./proof.ts";
 
+import type { CapabilityPricing } from "./capability-schema.ts";
+
 /** Semver of THIS manifest schema. Bump only via an RFC amending RFC-0286 (AS-7). */
 export const AGENT_SURFACE_VERSION = "2.0.0";
 
@@ -76,6 +78,12 @@ export interface AgentActionRef {
    * RFC-1169 lack it; absent reads as "write".
    */
   sideEffect?: "write" | "none";
+  /**
+   * RFC-1212: machine-readable pricing — present iff the capability declares
+   * `metering` in the closed catalog (bijective projection, AGM-04 enforces).
+   * Optional — manifests generated before RFC-1212 lack it.
+   */
+  pricing?: CapabilityPricing;
 }
 
 export interface AgentClaimRef {

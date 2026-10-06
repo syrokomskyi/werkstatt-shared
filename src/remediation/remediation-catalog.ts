@@ -481,6 +481,41 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "A UI artifact exists for a suppressed or disabled capability — rerun agent.ui.generate; it sweeps artifacts outside the active emission set.",
     docRef: "docs/rfcs/rfc-1211-generative-ui-surface-via-mcp-ui-resource-projection.md",
   },
+  {
+    ruleId: "AGM-01",
+    action:
+      "A capability's metering block fails the closed schema — fix the metering fields (unknown keys are rejected); see the metering block contract in the capability schema.",
+    docRef:
+      "docs/rfcs/rfc-1212-metered-agent-invocation-and-machine-readable-capability-pricing.md",
+  },
+  {
+    ruleId: "AGM-02",
+    action:
+      "metering.product does not resolve to a usage-type Charge in the site's PBP pricing catalog, or the declared pricePerUnit diverges from the catalog unit-rate — align the declaration with the catalog entry.",
+    docRef:
+      "docs/rfcs/rfc-1212-metered-agent-invocation-and-machine-readable-capability-pricing.md",
+  },
+  {
+    ruleId: "AGM-03",
+    action:
+      "A metered capability lacks requires.entitlements — metered calls must carry a verified caller identity; add the entitlement requirement or drop metering.",
+    docRef:
+      "docs/rfcs/rfc-1212-metered-agent-invocation-and-machine-readable-capability-pricing.md",
+  },
+  {
+    ruleId: "AGM-04",
+    action:
+      "The manifest pricing projection diverges from the metering declaration — rerun agent.manifest.generate; the projection is derived, never hand-edited.",
+    docRef:
+      "docs/rfcs/rfc-1212-metered-agent-invocation-and-machine-readable-capability-pricing.md",
+  },
+  {
+    ruleId: "AGM-05",
+    action:
+      "A usage record was emitted outside the post-dispatch boundary (preview, rejection, replay, or failed dispatch) — fix the emission call site; metering must never precede a successful dispatch.",
+    docRef:
+      "docs/rfcs/rfc-1212-metered-agent-invocation-and-machine-readable-capability-pricing.md",
+  },
 ];
 
 export const REMEDIATION_CATALOG: ReadonlyMap<string, RemediationPattern> = new Map(
