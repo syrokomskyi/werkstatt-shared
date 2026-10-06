@@ -18,6 +18,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1204: effectsParity flag on section manifests + resolver lookup</item>
 </CHANGE_SUMMARY>
 */
 
@@ -52,6 +53,69 @@ export async function getSectionPropsSchema(
   semanticId: string;
   version: string;
 } | null> {
+  for (const manifest of await collectSectionManifests(packagesUiRoot, io)) {
+    if (manifest.cosmicName !== cosmicName) continue;
+
+    const compose = manifest.propsSchemaCompose;
+    const local = manifest.propsSchema;
+
+    // RFC-0101 + RFC-0102 + RFC-0103: when the manifest declares
+    // propsSchemaCompose, merge the referenced shared fragments before
+    // validation. A manifest without either field disables strict prop
+    // validation (existing behaviour preserved).
+    if (!compose && !local) return null;
+
+    const composed = composeManifestPropsSchema({
+      compose,
+      local: local as Record<string, unknown> | undefined,
+    });
+    return {
+      propsSchema: composed,
+      semanticId: manifest.semanticId,
+      version: manifest.version,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * RFC-1204: map of `cosmicName → effectsParity` for every section manifest
+ * that opted into sibling effect-signature parity (only `"strict"` exists
+ * today, so the map value is the literal). Sections without the flag are
+ * absent from the map — consumers treat absence as "no cross-page parity".
+ *
+ * Not a getSectionPropsSchema extension: that function only resolves
+ * manifests that declare propsSchema/propsSchemaCompose and returns a
+ * per-cosmicName record, whereas parity consumers need the full opt-in set
+ * in one pass.
+ */
+export async function resolveEffectsParityFlags(
+  packagesUiRoot: string,
+  io: WorkspaceIO = createDefaultIO().io,
+): Promise<Map<string, "strict">> {
+  const flags = new Map<string, "strict">();
+  for (const manifest of await collectSectionManifests(packagesUiRoot, io)) {
+    if (manifest.effectsParity === "strict") {
+      flags.set(manifest.cosmicName, "strict");
+    }
+  }
+  return flags;
+}
+
+type ParsedSectionManifest = ReturnType<typeof sectionManifestSchema.parse>;
+
+/**
+ * Reads every `*-section.manifest.yaml` / `*.manifest.yaml` under
+ * `packagesUiRoot/{sections,components}` and returns the entries that parse
+ * against sectionManifestSchema. Component-layer manifests never satisfy the
+ * `layer: "section"` literal and are filtered out — scanning both trees is
+ * preserved for the historical passport-reserved-moon lookup path.
+ */
+async function collectSectionManifests(
+  packagesUiRoot: string,
+  io: WorkspaceIO,
+): Promise<ParsedSectionManifest[]> {
   // Scan section AND component manifests — the five PASSPORT-RESERVED moons
   // resolve to component manifests (passport components are invoked as
   // page-blocks on cosmic/passport and cosmic/star-map routes — RFC-0028).
@@ -68,6 +132,7 @@ export async function getSectionPropsSchema(
     }
   }
 
+  const manifests: ParsedSectionManifest[] = [];
   for (const { dir, layer } of candidates) {
     const layerSuffix = layer === "sections" ? "-section" : "-component";
     const layerDir = join(packagesUiRoot, layer);
@@ -101,29 +166,7 @@ export async function getSectionPropsSchema(
     }
 
     const result = sectionManifestSchema.safeParse(parsed);
-    if (!result.success) continue;
-
-    if (result.data.cosmicName === cosmicName) {
-      const compose = result.data.propsSchemaCompose;
-      const local = result.data.propsSchema;
-
-      // RFC-0101 + RFC-0102 + RFC-0103: when the manifest declares
-      // propsSchemaCompose, merge the referenced shared fragments before
-      // validation. A manifest without either field disables strict prop
-      // validation (existing behaviour preserved).
-      if (!compose && !local) return null;
-
-      const composed = composeManifestPropsSchema({
-        compose,
-        local: local as Record<string, unknown> | undefined,
-      });
-      return {
-        propsSchema: composed,
-        semanticId: result.data.semanticId,
-        version: result.data.version,
-      };
-    }
+    if (result.success) manifests.push(result.data);
   }
-
-  return null;
+  return manifests;
 }
