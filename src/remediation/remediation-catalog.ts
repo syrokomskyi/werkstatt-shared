@@ -516,6 +516,41 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     docRef:
       "docs/rfcs/rfc-1212-metered-agent-invocation-and-machine-readable-capability-pricing.md",
   },
+  {
+    ruleId: "AGP-01",
+    action:
+      "A verifiablePresentation block fails the closed schema — fix the requirement fields (unknown keys are rejected); see the presentation-verdict contract.",
+    docRef:
+      "docs/rfcs/rfc-1213-verifier-side-verifiable-credential-readiness-for-gated-capabilities.md",
+  },
+  {
+    ruleId: "AGP-02",
+    action:
+      "A verifiablePresentation requirement is declared while agent.auth is disabled — verified-agent binding needs the authorization server; enable agent.auth or remove the requirement.",
+    docRef:
+      "docs/rfcs/rfc-1213-verifier-side-verifiable-credential-readiness-for-gated-capabilities.md",
+  },
+  {
+    ruleId: "AGP-03",
+    action:
+      'An accept[] issuer reference is neither a "@name" registry ref nor a did:/https: identifier — fix the reference shape.',
+    docRef:
+      "docs/rfcs/rfc-1213-verifier-side-verifiable-credential-readiness-for-gated-capabilities.md",
+  },
+  {
+    ruleId: "AGP-04",
+    action:
+      "A verifiablePresentation requirement sits on an anonymous-only capability — declare requires.entitlements so a verified agent identity exists to bind to, or remove the requirement.",
+    docRef:
+      "docs/rfcs/rfc-1213-verifier-side-verifiable-credential-readiness-for-gated-capabilities.md",
+  },
+  {
+    ruleId: "AGP-05",
+    action:
+      'An "@name" issuer reference does not resolve against src/content/agent/trusted-issuers.yaml — add the named set or fix the reference.',
+    docRef:
+      "docs/rfcs/rfc-1213-verifier-side-verifiable-credential-readiness-for-gated-capabilities.md",
+  },
 ];
 
 export const REMEDIATION_CATALOG: ReadonlyMap<string, RemediationPattern> = new Map(

@@ -30,6 +30,7 @@ interprets flat shapes only.
 import { z } from "zod";
 import { INTEGRATION_EVENT_KINDS } from "../../integration/port.ts";
 import { capabilityMeteringSchema, capabilityUiSchema } from "../../agent/capability-schema.ts";
+import { verifiablePresentationRequirementSchema } from "../../agent/presentation-verdict.ts";
 
 /** Localized string map: language code → string. At least one entry required. */
 const localizedStringSchema = z
@@ -158,6 +159,13 @@ const capabilityRequiresSchema = z
      * affect activation.
      */
     formBinding: z.boolean().optional(),
+    /**
+     * RFC-1213: opt-in verifier-side presentation requirement — the caller
+     * must attach a W3C verifiable presentation satisfying `accept` and bound
+     * to its verified agent identity (bindTo: "verified-agent" only in v1).
+     * Closed shape; the canonical schema lives in agent/presentation-verdict.ts.
+     */
+    verifiablePresentation: verifiablePresentationRequirementSchema.optional(),
   })
   .strict();
 

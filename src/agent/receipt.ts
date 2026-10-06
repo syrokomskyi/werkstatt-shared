@@ -49,7 +49,9 @@ export type AgentErrorCode =
   | "invalid-proof"
   | "already-registered"
   | "oauth-unavailable"
-  | "auth-backend-unavailable";
+  | "auth-backend-unavailable"
+  | "presentation-required"
+  | "presentation-invalid";
 
 /** RFC 9457 problem details with platform extension members (`code`, `retryable`, …). */
 export interface AgentProblemDetails {
@@ -81,6 +83,8 @@ export const AGENT_ERROR_STATUS: Record<AgentErrorCode, number> = {
   "already-registered": 409,
   "oauth-unavailable": 404,
   "auth-backend-unavailable": 503,
+  "presentation-required": 403,
+  "presentation-invalid": 403,
 };
 
 export const AGENT_ERROR_RETRYABLE: Record<AgentErrorCode, boolean> = {
@@ -97,6 +101,8 @@ export const AGENT_ERROR_RETRYABLE: Record<AgentErrorCode, boolean> = {
   "already-registered": false,
   "oauth-unavailable": false,
   "auth-backend-unavailable": true,
+  "presentation-required": false,
+  "presentation-invalid": false,
 };
 
 const AGENT_ERROR_TITLE: Record<AgentErrorCode, string> = {
@@ -113,6 +119,8 @@ const AGENT_ERROR_TITLE: Record<AgentErrorCode, string> = {
   "already-registered": "Agent is already registered",
   "oauth-unavailable": "Authorization server is not configured on this site",
   "auth-backend-unavailable": "Authorization backend temporarily unavailable",
+  "presentation-required": "A verifiable presentation is required for this capability",
+  "presentation-invalid": "The verifiable presentation did not satisfy the requirement",
 };
 
 /** Build a problem-details object for `code`; status/title/retryable derive from the closed tables. */

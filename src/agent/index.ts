@@ -40,3 +40,4 @@ export * from "./health.ts";
 export * from "./registration.ts";
 export * from "./agent-jwt.ts";
 export * from "./wba-sign.ts";
+export * from "./presentation-verdict.ts";
