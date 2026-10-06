@@ -11,6 +11,7 @@
   <item>RFC-0684: initial implementation of suppression config schema, loaders, merger, and applySuppressions post-filter.</item>
   <item>RFC-0688: add titlePattern field to match against finding.title (always populated). messagePattern/descriptionPattern kept for forward compatibility but match against non-existent Finding fields.</item>
   <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
+  <item>RFC-1208: add expiresOn/reviewAfter lifecycle fields; expired rules inactive in applySuppressions via asOf-aware UTC calendar-date comparison</item>
 </CHANGE_SUMMARY>
 */
 
@@ -45,6 +46,8 @@ interface Finding {
   extension: Record<string, unknown>;
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 export const suppressionRuleSchema = z.object({
   ruleId: z.string().min(1),
   category: z.string().min(1),
@@ -55,6 +58,11 @@ export const suppressionRuleSchema = z.object({
   titlePattern: z.string().optional(),
   messagePattern: z.string().optional(),
   descriptionPattern: z.string().optional(),
+  // RFC-1208: UTC calendar dates (YYYY-MM-DD). A rule stays active ON its
+  // expiresOn date and deactivates the day after; reviewAfter follows the
+  // same boundary. Absent fields mean the rule never expires.
+  expiresOn: z.string().regex(ISO_DATE).optional(),
+  reviewAfter: z.string().regex(ISO_DATE).optional(),
   reason: z.string().min(1),
 });
 
@@ -180,17 +188,42 @@ function extractDescription(finding: Finding): string | undefined {
   return undefined;
 }
 
+/**
+ * RFC-1208: a rule is active ON its expiresOn date and inactive from the
+ * following day. `asOf` is an ISO calendar date (YYYY-MM-DD); plain string
+ * comparison is a correct UTC calendar-date ordering.
+ */
+export function isSuppressionExpired(rule: SuppressionRule, asOf: string): boolean {
+  return rule.expiresOn !== undefined && rule.expiresOn < asOf;
+}
+
+/**
+ * RFC-1208: review-due = reviewAfter passed while the rule is still active
+ * (expiresOn absent or not yet reached).
+ */
+export function isSuppressionReviewDue(rule: SuppressionRule, asOf: string): boolean {
+  return (
+    rule.reviewAfter !== undefined && rule.reviewAfter < asOf && !isSuppressionExpired(rule, asOf)
+  );
+}
+
+function defaultAsOf(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export function applySuppressions(
   findings: Finding[],
   rules: SuppressionRule[],
-  context: { channel: string },
+  context: { channel: string; asOf?: string },
 ): SuppressedFinding[] {
+  const asOf = context.asOf ?? defaultAsOf();
   return findings.map((finding) => {
     // If already suppressed, keep as-is
     if ((finding as SuppressedFinding).suppressed) return finding;
 
     for (let i = 0; i < rules.length; i++) {
       const rule = rules[i];
+      if (isSuppressionExpired(rule, asOf)) continue;
       if (matchesCondition(finding, rule, context)) {
         return {
           ...finding,
