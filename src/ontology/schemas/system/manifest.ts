@@ -6,7 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0377: added optional `audience` field to the per-page pin schema.</item>
   <item>ADR-0062: added `ctaTarget` to identity, `sectionNav` + `ctaTarget` to page pins, created `systemCollectionSchema` for content collection typing.</item>
   <item>RFC-1106: step 2 — extend systemManifestSchema
 
@@ -22,7 +21,8 @@ build-prepare after robots.generate (first pipeline placement). Fix
 upstream dead config: robots block now declared in systemManifestSchema
 (manifest.robots was stripped by strict parse).</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
-  <history>RFC-0303</history>
+  <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
+  <history>RFC-0303, RFC-0377</history>
 </CHANGE_SUMMARY>
 */
 
@@ -33,6 +33,7 @@ import { systemReleaseSchema } from "./release.ts";
 import { systemTextSchema, systemTypographySchema } from "./text.ts";
 import { systemIntegrationsSchema } from "./integrations.ts";
 import { systemVerificationSchema } from "./verification.ts";
+import { resourceBudgetConfigSchema } from "../../../policy/resource-budget.ts";
 import { semanticPageTypeSchema, articleMetadataSchema, pageOutputSchema } from "./page-output.ts";
 
 /**
@@ -358,6 +359,19 @@ export const systemManifestSchema = z.object({
    * per-locale abbreviation overrides. Client-writable.
    */
   typography: systemTypographySchema.optional(),
+
+  /**
+   * RFC-1209: resource-budget declaration. `resourceBudget` carries per-site
+   * byte/request ceilings (`maxPageWeightKb`, `maxJsKb`, `maxRequests`,
+   * `maxThirdPartyOrigins`), an `enforce` mode (advisory default; blocking is
+   * per-site opt-in), and optional `routeOverrides`. When omitted the site
+   * resolves to the workspace baseline in `RESOURCE_BUDGET_BASELINE`
+   * (`@warpgogol/werkstatt-shared/policy/resource-budget`). Measured on-disk
+   * against `dist/client` by `resource.budget.validate`; the public report is
+   * emitted to `public/.well-known/resource-budget.json` by
+   * `resource.budget.report`. Client-writable.
+   */
+  resourceBudget: resourceBudgetConfigSchema.optional(),
 
   /**
    * RFC-0169: subscription billing binding. `billing.stripeCustomerId` is the

@@ -218,6 +218,10 @@
       "types": "./src/policy/feature-policy.ts",
       "default": "./src/policy/feature-policy.ts"
     },
+    "./policy/resource-budget": {
+      "types": "./src/policy/resource-budget.ts",
+      "default": "./src/policy/resource-budget.ts"
+    },
     "./offers/duration": {
       "types": "./src/offers/duration.ts",
       "default": "./src/offers/duration.ts"

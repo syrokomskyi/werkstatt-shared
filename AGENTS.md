@@ -222,6 +222,25 @@ ui?: {
 - When absent, the default `github-light` theme is used.
 - The field is optional; consumers fall back to the default theme when absent.
 
+### SystemManifest `resourceBudget` field (RFC-1209)
+
+The `SystemManifest` type includes an optional `resourceBudget` field for per-site resource-budget ceilings:
+
+```ts
+resourceBudget?: {
+  maxPageWeightKb: number;
+  maxJsKb: number;
+  maxRequests: number;
+  maxThirdPartyOrigins: number;
+  enforce: "advisory" | "blocking";
+  routeOverrides?: Record<string, Partial<…>>;
+};
+```
+
+- Sites declare budgets in `system.md` frontmatter; when absent the workspace baseline `RESOURCE_BUDGET_BASELINE` applies (advisory by default — `enforce: "blocking"` is per-site opt-in only).
+- The Zod schema is `resourceBudgetConfigSchema` in `src/policy/resource-budget.ts`, exported via `@warpgogol/werkstatt-shared/policy/resource-budget` alongside `resourceBudgetReportSchema`, `resolveResourceBudget`, and `effectiveBudgetForRoute`.
+- `resource.budget.validate` / `resource.budget.report` (werkstatt-site checks) consume it; the emitted `/.well-known/resource-budget.json` is wall-clock-free (`buildContentHash`, DNA-58).
+
 ### SystemManifest strict parse (RFC-1106)
 
 `loadSystemManifest` / `loadSystemManifestSync` in `src/content/system-manifest.ts` run `systemManifestSchema.parse()` — there is no interface and no `as unknown as` cast. The Zod schema in `src/ontology/schemas/system/manifest.ts` is the sole contract.

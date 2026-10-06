@@ -11,11 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1027: Create REMEDIATION_CATALOG with 30+ patterns for the most common ruleIds.</item>
-  <item>RFC-1185: remediation entries for SHARED-CONTEXT-COLLISION-UNDECLARED and the SHARED-CONTEXT-INHERIT-* rule family.</item>
   <item>RFC-1185: review fix — Compass CHANGE_SUMMARY coverage only, no behavior change.</item>
   <item>ADR-0105: remediation entries for the DIST-LEAK-01..05 rule family (serialization-leak guard).</item>
   <item>RFC-1201: remediation entry for PARITY-MD-CONSTRUCT-COUNT (inline-construct parity).</item>
+  <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
+  <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
+  <history>RFC-1027, RFC-1185</history>
 </CHANGE_SUMMARY>
 */
 
@@ -382,6 +383,46 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     ruleId: "DIST-LEAK-05",
     action:
       "A dist file could not be read and was skipped by the scan — fix permissions/encoding; a skipped file escapes a fail-closed guard.",
+  },
+  {
+    ruleId: "RB-01",
+    action:
+      "Route exceeds the pageWeightKb budget — shrink media/markup on the route or declare a routeOverrides entry for it in src/content/system.md.",
+    docRef: "docs/rfcs/rfc-1209-site-resource-budgets-and-public-energy-transparency-surface.md",
+    targetFiles: ["src/content/system.md"],
+  },
+  {
+    ruleId: "RB-02",
+    action:
+      "Route exceeds the maxJsKb budget — remove or slim scripts (including inline <script> blocks), or raise the budget for this route via routeOverrides in src/content/system.md.",
+    docRef: "docs/rfcs/rfc-1209-site-resource-budgets-and-public-energy-transparency-surface.md",
+    targetFiles: ["src/content/system.md"],
+  },
+  {
+    ruleId: "RB-03",
+    action:
+      "Route exceeds the maxRequests budget — reduce the number of asset references or declare a routeOverrides entry in src/content/system.md.",
+    docRef: "docs/rfcs/rfc-1209-site-resource-budgets-and-public-energy-transparency-surface.md",
+    targetFiles: ["src/content/system.md"],
+  },
+  {
+    ruleId: "RB-04",
+    action:
+      "Route references more third-party origins than maxThirdPartyOrigins allows — self-host the asset or raise the bound via routeOverrides in src/content/system.md.",
+    docRef: "docs/rfcs/rfc-1209-site-resource-budgets-and-public-energy-transparency-surface.md",
+    targetFiles: ["src/content/system.md"],
+  },
+  {
+    ruleId: "RB-05",
+    action:
+      "The resourceBudget block in src/content/system.md is malformed — fix the frontmatter to match ResourceBudgetConfig (numeric KB ceilings, enforce: advisory|blocking).",
+    docRef: "docs/rfcs/rfc-1209-site-resource-budgets-and-public-energy-transparency-surface.md",
+    targetFiles: ["src/content/system.md"],
+  },
+  {
+    ruleId: "RB-06",
+    action:
+      "The dist output tree is absent — run the site build before validating resource budgets.",
   },
 ];
 
