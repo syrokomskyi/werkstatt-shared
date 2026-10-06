@@ -302,6 +302,10 @@
       "types": "./src/remediation/remediation-catalog.ts",
       "default": "./src/remediation/remediation-catalog.ts"
     },
+    "./remediation/classes": {
+      "types": "./src/remediation/remediation-classes.ts",
+      "default": "./src/remediation/remediation-classes.ts"
+    },
     "./pbt": {
       "types": "./src/pbt/index.ts",
       "default": "./src/pbt/index.ts"

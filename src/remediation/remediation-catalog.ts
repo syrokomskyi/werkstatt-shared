@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1185: review fix — Compass CHANGE_SUMMARY coverage only, no behavior change.</item>
   <item>ADR-0105: remediation entries for the DIST-LEAK-01..05 rule family (serialization-leak guard).</item>
   <item>RFC-1201: remediation entry for PARITY-MD-CONSTRUCT-COUNT (inline-construct parity).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
+  <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
   <history>RFC-1027, RFC-1185</history>
 </CHANGE_SUMMARY>
 */
@@ -70,6 +70,27 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     action:
       "Regenerate generated files by running the owning kernel command, then commit the updated output.",
     docRef: "docs/authoring/generated-files-and-templates.md",
+  },
+  {
+    ruleId: "RAUT-01",
+    action:
+      "Fix the remediation block in system-state.yaml to match the autonomy schema (autonomy: off|bounded, signalSources: string[]).",
+    docRef:
+      "docs/rfcs/rfc-1210-closed-loop-runtime-remediation-channel-from-telemetry-signals-to-bounded-missions.md",
+  },
+  {
+    ruleId: "RAUT-02",
+    action:
+      "Repair the remediationClasses catalog — every autoFixable entry must name a registered fixCommand; the catalog is closed, fix the entry or drop autoFixable.",
+    docRef:
+      "docs/rfcs/rfc-1210-closed-loop-runtime-remediation-channel-from-telemetry-signals-to-bounded-missions.md",
+  },
+  {
+    ruleId: "RAUT-03",
+    action:
+      "Declare at least one signalSources invoker in system-state.yaml for bounded autonomy, or set remediation.autonomy: off.",
+    docRef:
+      "docs/rfcs/rfc-1210-closed-loop-runtime-remediation-channel-from-telemetry-signals-to-bounded-missions.md",
   },
   {
     ruleId: "DEPS-GEN-01",
