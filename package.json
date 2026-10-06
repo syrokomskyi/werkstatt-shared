@@ -670,6 +670,10 @@
       "types": "./src/agent/capability.ts",
       "default": "./src/agent/capability.ts"
     },
+    "./agent/capability-schema": {
+      "types": "./src/agent/capability-schema.ts",
+      "default": "./src/agent/capability-schema.ts"
+    },
     "./agent/dns-aid": {
       "types": "./src/agent/dns-aid.ts",
       "default": "./src/agent/dns-aid.ts"

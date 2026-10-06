@@ -445,6 +445,42 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     action:
       "The dist output tree is absent — run the site build before validating resource budgets.",
   },
+  {
+    ruleId: "AGUI-01",
+    action:
+      "A ui-capable capability has no committed valid artifact — rerun agent.ui.generate to emit the ui:// resource (artifacts are generated, never hand-edited).",
+    docRef: "docs/rfcs/rfc-1211-generative-ui-surface-via-mcp-ui-resource-projection.md",
+  },
+  {
+    ruleId: "AGUI-02",
+    action:
+      "A UI artifact references non-allowlisted externals — inline the resource or remove the reference; ui:// documents must be self-contained.",
+    docRef: "docs/rfcs/rfc-1211-generative-ui-surface-via-mcp-ui-resource-projection.md",
+  },
+  {
+    ruleId: "AGUI-03",
+    action:
+      "A UI artifact contains <script> markup — remove it; v1 resources are read-only and interactivity requires a superseding RFC.",
+    docRef: "docs/rfcs/rfc-1211-generative-ui-surface-via-mcp-ui-resource-projection.md",
+  },
+  {
+    ruleId: "AGUI-04",
+    action:
+      "interfaces.mcpUi is advertised while its precondition fails — rerun agent.manifest.generate (mcpUi requires the live MCP route and >=1 resolvable ui:// artifact).",
+    docRef: "docs/rfcs/rfc-1211-generative-ui-surface-via-mcp-ui-resource-projection.md",
+  },
+  {
+    ruleId: "AGUI-05",
+    action:
+      "A committed UI artifact differs from a fresh deterministic render — rerun agent.ui.generate and commit the regenerated artifact.",
+    docRef: "docs/rfcs/rfc-1211-generative-ui-surface-via-mcp-ui-resource-projection.md",
+  },
+  {
+    ruleId: "AGUI-06",
+    action:
+      "A UI artifact exists for a suppressed or disabled capability — rerun agent.ui.generate; it sweeps artifacts outside the active emission set.",
+    docRef: "docs/rfcs/rfc-1211-generative-ui-surface-via-mcp-ui-resource-projection.md",
+  },
 ];
 
 export const REMEDIATION_CATALOG: ReadonlyMap<string, RemediationPattern> = new Map(

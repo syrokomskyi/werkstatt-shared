@@ -22,12 +22,14 @@ interprets flat shapes only.
   <item>RFC-1186: steps 1-2 — capability contracts, catalog records, resolver, propsSchema</item>
   <item>RFC-1186: step 5a — IntegrationEvent kind union + delivery formId parity</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
+  <item>RFC-1211: optional closed `ui` block (capabilityUiSchema from agent/capability-schema.ts) — opts a capability into deterministic ui:// resource projection.</item>
   <history>RFC-0288, RFC-1112, RFC-1115</history>
 </CHANGE_SUMMARY>
 */
 
 import { z } from "zod";
 import { INTEGRATION_EVENT_KINDS } from "../../integration/port.ts";
+import { capabilityUiSchema } from "../../agent/capability-schema.ts";
 
 /** Localized string map: language code → string. At least one entry required. */
 const localizedStringSchema = z
@@ -221,6 +223,13 @@ export const capabilityRecordSchema = z
     humanEquivalent: capabilityHumanEquivalentSchema.optional(),
     limits: capabilityLimitsSchema,
     agentGuidance: capabilityAgentGuidanceSchema.optional(),
+    /**
+     * RFC-1211: opt-in MCP-UI resource projection — `resource: true` gives the
+     * capability a deterministic self-contained `ui://` document committed
+     * under public/.well-known/ui/ and served via MCP resources. Closed shape;
+     * the canonical schema lives in agent/capability-schema.ts.
+     */
+    ui: capabilityUiSchema.optional(),
   })
   .strict()
   .superRefine((record, ctx) => {

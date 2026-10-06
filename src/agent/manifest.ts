@@ -18,6 +18,7 @@ two runs on unchanged input are byte-identical (AS-7).
   <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
   <item>RFC-1187: fo-review — interfaces.oauth carries keyVersion (JWT/JWKS kid follows passport rotation)</item>
   <item>RFC-1188: Web Bot Auth outbound identity: wba-sign primitives, directory emit+sweep, AGS-WBA-01, leitstand signed fetches</item>
+  <item>RFC-1211: interfaces.mcpUi + supportedProtocols "mcp-ui" — advertised only when the MCP route is live and the ui:// emission set is non-empty.</item>
   <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112, RFC-1113, RFC-1114, RFC-1115, RFC-1165</history>
 </CHANGE_SUMMARY>
 */
@@ -51,6 +52,7 @@ export type AgentProtocol =
   | "nlweb"
   | "oauth"
   | "webBotAuth"
+  | "mcp-ui"
   | "search";
 
 export interface AgentKnowledgeRef {
@@ -247,6 +249,15 @@ export interface AgentSurfaceManifest {
      * signs no outbound requests and advertises none.
      */
     webBotAuth: { directory: string } | null;
+    /**
+     * RFC-1211: MCP-UI resource surface — populated iff `interfaces.mcp` is
+     * live AND at least one ui:// artifact resolves (≥1 active capability
+     * declares `ui.resource`). `url` is the browsable public directory of the
+     * committed artifacts; `uriPrefix` is the scheme prefix used in
+     * resources/list. null = honest absence (partial agent surface or no
+     * ui-capable capability — AGS-DISCOVERY-01/AGUI-04 enforce).
+     */
+    mcpUi: { url: string; uriPrefix: string } | null;
   };
   /** Null until agent.surface.sign signs it (RFC-0308) or when no key material exists. */
   proof: AgentSurfaceProof | null;
@@ -293,6 +304,12 @@ export interface AgentSurfaceManifestInput {
    * Set only when a passport signing key was configured at generation.
    */
   webBotAuth?: { directory: string } | null;
+  /**
+   * RFC-1211: MCP-UI advertisement — set only when the MCP route is live and
+   * the ui:// emission set is non-empty (deterministic sibling of
+   * agent.ui.generate — same precedent as openapiUrl/mcp).
+   */
+  mcpUi?: { url: string; uriPrefix: string } | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -371,6 +388,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       ...(input.nlweb ? ["nlweb"] : []),
       ...(input.oauth ? ["oauth"] : []),
       ...(input.webBotAuth ? ["webBotAuth"] : []),
+      ...(input.mcpUi ? ["mcp-ui"] : []),
       ...(input.hasTwins ? ["twins"] : []),
     ] as AgentProtocol[]
   ).sort();
@@ -400,6 +418,7 @@ export function buildAgentSurfaceManifest(input: AgentSurfaceManifestInput): Age
       nlweb: input.nlweb ?? null,
       oauth: input.oauth ?? null,
       webBotAuth: input.webBotAuth ?? null,
+      mcpUi: input.mcpUi ?? null,
     },
     proof: null,
   };

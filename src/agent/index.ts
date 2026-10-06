@@ -22,6 +22,7 @@ here (knowledge, capability, openapi, proof) and re-export them from this barrel
 export * from "./manifest.ts";
 export * from "./knowledge.ts";
 export * from "./capability.ts";
+export * from "./capability-schema.ts";
 export * from "./openapi.ts";
 export * from "./omit-empty.ts";
 export * from "./proof.ts";
