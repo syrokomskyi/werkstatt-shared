@@ -305,6 +305,12 @@ export interface KernelRuntimeContext {
   dryRun: boolean;
   /** RFC-0635: when true, injected into input.flags.force by executeRegisteredCommand. */
   force?: boolean;
+  /**
+   * RFC-1231: true when `--all` was passed on the invocation. Injected into
+   * `input.flags.all` by executeRegisteredCommand when the command declares an
+   * `all` flag and passed the `acceptsAllFlag` gate.
+   */
+  allSites?: boolean;
   outputFormat: KernelOutputFormat;
   /**
    * RFC-0267: the WorkspaceIO port. The executor selects the adapter:
