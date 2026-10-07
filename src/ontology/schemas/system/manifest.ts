@@ -6,7 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>ADR-0062: added `ctaTarget` to identity, `sectionNav` + `ctaTarget` to page pins, created `systemCollectionSchema` for content collection typing.</item>
   <item>RFC-1106: step 2 — extend systemManifestSchema
 
 Add identity.legal (RFC-0096) and seo.anchorText.extraStopPhrases (RFC-0911) to systemManifestSchema — the two interface-only fields with living consumers. No dead fields found: all other interface fields already exist in the schema.</item>
@@ -22,7 +21,14 @@ upstream dead config: robots block now declared in systemManifestSchema
 (manifest.robots was stripped by strict parse).</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
-  <history>RFC-0303, RFC-0377</history>
+  <item>RFC-1229: step 1 — shellContract schema in systemManifestSchema
+
+Add packages/werkstatt-shared/src/ontology/schemas/system/shell-contract.ts:
+closed-set region names, profile shape (regions + document-level script
+policy + breadcrumbsScope), routeProfiles closed-set reference check via
+superRefine, mode default report. Wire shellContract into
+systemManifestSchema and profile into pages[].shell.</item>
+  <history>ADR-0062, RFC-0303, RFC-0377</history>
 </CHANGE_SUMMARY>
 */
 
@@ -33,6 +39,7 @@ import { systemReleaseSchema } from "./release.ts";
 import { systemTextSchema, systemTypographySchema } from "./text.ts";
 import { systemIntegrationsSchema } from "./integrations.ts";
 import { systemVerificationSchema } from "./verification.ts";
+import { systemShellContractSchema } from "./shell-contract.ts";
 import { resourceBudgetConfigSchema } from "../../../policy/resource-budget.ts";
 import { semanticPageTypeSchema, articleMetadataSchema, pageOutputSchema } from "./page-output.ts";
 
@@ -286,6 +293,11 @@ export const systemManifestSchema = z.object({
                 props: z.record(z.string(), z.unknown()).optional(),
               })
               .optional(),
+            /**
+             * RFC-1229: bound shell profile name — resolves the page to a
+             * shellContract.profiles entry. Outranks routeProfiles globs.
+             */
+            profile: z.string().min(1).optional(),
           })
           .optional(),
 
@@ -606,6 +618,14 @@ export const systemManifestSchema = z.object({
    * When absent, search.verification.validate emits SEARCH-VERIFY-01.
    */
   verification: systemVerificationSchema.optional(),
+
+  /**
+   * RFC-1229: site shell contract — named shell profiles (required regions +
+   * document-level script policy) and route→profile bindings enforced on
+   * emitted markup by site.shell.contract.validate. Absent = report mode
+   * with no route bindings (implicit "default" profile assumed).
+   */
+  shellContract: systemShellContractSchema.optional(),
 
   /**
    * RFC-0911: SEO validator configuration extension point.
