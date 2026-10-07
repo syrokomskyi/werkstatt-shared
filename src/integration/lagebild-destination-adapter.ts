@@ -31,6 +31,8 @@ partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
 legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
 the cookie capture module (wg_ref, referral.attribution entitlement,
 payload.attribution).</item>
+  <item>RFC-1222: pass through the server-resolved receipt provenance —
+partnerMode, policyEffectiveFrom, capturedAt, disclosureVersion.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -100,6 +102,24 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
       typeof event.payload.referralPartnerName === "string" && event.payload.referralPartnerName
         ? event.payload.referralPartnerName
         : undefined;
+    // RFC-1222: receipt provenance rides the same payload — server-resolved on
+    // the site, passed through verbatim here, snake_cased at the ingress edge.
+    const partnerMode =
+      typeof event.payload.partnerMode === "string" && event.payload.partnerMode
+        ? event.payload.partnerMode
+        : undefined;
+    const policyEffectiveFrom =
+      typeof event.payload.policyEffectiveFrom === "string" && event.payload.policyEffectiveFrom
+        ? event.payload.policyEffectiveFrom
+        : undefined;
+    const capturedAt =
+      typeof event.payload.capturedAt === "string" && event.payload.capturedAt
+        ? event.payload.capturedAt
+        : undefined;
+    const disclosureVersion =
+      typeof event.payload.disclosureVersion === "string" && event.payload.disclosureVersion
+        ? event.payload.disclosureVersion
+        : undefined;
 
     const result = await submitIngress(
       { apiUrl, apiKey, tenantId, sourceSystemId },
@@ -120,6 +140,10 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
         ],
         ...(referralPartnerSlug ? { referralPartnerSlug } : {}),
         ...(referralPartnerName ? { referralPartnerName } : {}),
+        ...(partnerMode ? { partnerMode } : {}),
+        ...(policyEffectiveFrom ? { policyEffectiveFrom } : {}),
+        ...(capturedAt ? { capturedAt } : {}),
+        ...(disclosureVersion ? { disclosureVersion } : {}),
       },
     );
 

@@ -38,7 +38,7 @@ const arbSlug = fc
 
 const arbPartner = (slug: string): ReferralPartner => ({
   slug,
-  displayName: "P " + slug,
+  displayName: "Test Person",
   compensation: "referral-fee",
   locales: ["de"],
   status: "active",

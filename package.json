@@ -326,6 +326,10 @@
       "types": "./src/referral/copy.ts",
       "default": "./src/referral/copy.ts"
     },
+    "./referral/disclosure-json": {
+      "types": "./src/referral/disclosure-json.ts",
+      "default": "./src/referral/disclosure-json.ts"
+    },
     "./sections/heading-id": {
       "types": "./src/sections/heading-id.ts",
       "default": "./src/sections/heading-id.ts"

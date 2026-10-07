@@ -25,6 +25,8 @@ partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
 legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
 the cookie capture module (wg_ref, referral.attribution entitlement,
 payload.attribution).</item>
+  <item>RFC-1222: additive receipt-provenance fields on the referral block —
+partner_mode, policy_effective_from, captured_at, disclosure_version.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -77,6 +79,14 @@ export interface WebsiteIngressPayload {
   readonly referral_partner_slug?: string | null;
   /** Partner's public displayName — already public on /r/<slug>. */
   readonly referral_partner_name?: string | null;
+  /** RFC-1222: the partner's compensation mode (referral-fee | none | steward). */
+  readonly partner_mode?: string | null;
+  /** RFC-1222: partner-program policy governance.effectiveFrom (ISO date). */
+  readonly policy_effective_from?: string | null;
+  /** RFC-1222: server-stamped receipt timestamp (ISO datetime). */
+  readonly captured_at?: string | null;
+  /** RFC-1222: disclosure sentence-structure version (platform constant). */
+  readonly disclosure_version?: string | null;
 }
 
 export interface IngressResult {
@@ -105,6 +115,10 @@ export interface IngressSubmitInput {
   readonly correlationId?: string | null;
   readonly referralPartnerSlug?: string | null;
   readonly referralPartnerName?: string | null;
+  readonly partnerMode?: string | null;
+  readonly policyEffectiveFrom?: string | null;
+  readonly capturedAt?: string | null;
+  readonly disclosureVersion?: string | null;
 }
 
 /**
@@ -137,6 +151,12 @@ export async function submitIngress(
     ...(input.referralPartnerName != null
       ? { referral_partner_name: input.referralPartnerName }
       : {}),
+    ...(input.partnerMode != null ? { partner_mode: input.partnerMode } : {}),
+    ...(input.policyEffectiveFrom != null
+      ? { policy_effective_from: input.policyEffectiveFrom }
+      : {}),
+    ...(input.capturedAt != null ? { captured_at: input.capturedAt } : {}),
+    ...(input.disclosureVersion != null ? { disclosure_version: input.disclosureVersion } : {}),
   };
 
   const url = config.apiUrl.replace(/\/$/, "") + "/v1/ingress";

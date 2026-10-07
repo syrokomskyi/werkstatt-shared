@@ -32,6 +32,10 @@ conditionsNote phrases arrive via ReferralLandingFacts (partners.yaml `landing`)
 the referred-customer benefit sentence derives from the site's PBP
 partner-program policy, and the privacy line no longer cites a hardcoded
 Datenschutz section number.</item>
+  <item>RFC-1222: trust-handoff copy — paid/unpaid disclosure badge (§ 5a UWG),
+proofs/price/no-promises blocks, recommendation receipt rows, retired status
+copy, REFERRAL_DISCLOSURE_VERSION, and the corrected privacy line (the code
+lives in the form field, not the contact-page address).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -139,9 +143,9 @@ export interface ReferralReceiptCopy {
     ruleset: string;
     captured: string;
   };
-  /** "Vergütet · 70 €" / "Unvergütet" — the reward phrase comes from the
-      site-authored landing facts, never invented. */
-  compensationStatus: (kind: ReferralDisclosureKind, reward?: string) => string;
+  /** "Vergütet · 70 €" / "Unvergütet" — the reward phrase resolves from the
+      site-authored landing facts inside the copy closure, never invented. */
+  compensationStatus: (compensation: ReferralCompensation) => string;
   /** "Partner Policy, Stand 01.01.2026" — takes the localized effectiveFrom. */
   ruleset: (effectiveFrom: string) => string;
   /** "Die Empfehlung verpflichtet Sie zu nichts." + the removable-code line. */
@@ -274,8 +278,14 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         ruleset: "Regelwerk",
         captured: "Erfasst",
       },
-      compensationStatus: (kind, reward) =>
-        kind === "paid" ? `Vergütet${reward ? ` · ${reward}` : ""}` : "Unvergütet",
+      compensationStatus: (compensation) =>
+        compensation === "none"
+          ? "Unvergütet"
+          : `Vergütet${
+              facts.reward?.[compensation === "steward" ? "steward" : "referral-fee"]
+                ? ` · ${facts.reward[compensation === "steward" ? "steward" : "referral-fee"]}`
+                : ""
+            }`,
       ruleset: (effectiveFrom) => `Partner Policy, Stand ${effectiveFrom}`,
       closing: [
         "Die Empfehlung verpflichtet Sie zu nichts.",
@@ -288,7 +298,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       home: "Zur Startseite",
     },
     privacy:
-      "Auf dieser Seite setzen wir keine Cookies und speichern nichts in Ihrem Browser. Der Empfehlungscode steht nur in der Adresse der Kontaktseite und wird mit Ihrer Anfrage übermittelt, solange Sie ihn nicht entfernen. Mehr in der Datenschutzerklärung.",
+      "Auf dieser Seite setzen wir keine Cookies und speichern nichts in Ihrem Browser. Der Empfehlungscode steht nur im Formularfeld und wird mit Ihrer Anfrage übermittelt, solange Sie ihn nicht entfernen. Mehr in der Datenschutzerklärung.",
   };
 }
 
@@ -336,8 +346,14 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         ruleset: "Регламент",
         captured: "Зафіксовано",
       },
-      compensationStatus: (kind, reward) =>
-        kind === "paid" ? `З винагородою${reward ? ` · ${reward}` : ""}` : "Без винагороди",
+      compensationStatus: (compensation) =>
+        compensation === "none"
+          ? "Без винагороди"
+          : `З винагородою${
+              facts.reward?.[compensation === "steward" ? "steward" : "referral-fee"]
+                ? ` · ${facts.reward[compensation === "steward" ? "steward" : "referral-fee"]}`
+                : ""
+            }`,
       ruleset: (effectiveFrom) => `Партнерська політика, станом на ${effectiveFrom}`,
       closing: [
         "Рекомендація ні до чого вас не зобов'язує.",
@@ -350,7 +366,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       home: "На головну",
     },
     privacy:
-      "На цій сторінці ми не використовуємо cookie і нічого не зберігаємо у вашому браузері. Код рекомендації є лише в адресі сторінки контактів і передається разом із вашим запитом, доки ви його не приберете. Докладніше в політиці конфіденційності.",
+      "На цій сторінці ми не використовуємо cookie і нічого не зберігаємо у вашому браузері. Код рекомендації є лише в полі форми й передається разом із вашим запитом, доки ви його не приберете. Докладніше в політиці конфіденційності.",
   };
 }
 

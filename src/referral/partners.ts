@@ -131,6 +131,15 @@ export const ReferralPartnerSchema = z
         path: ["retiredAt"],
       });
     }
+    // RFC-1222 slug-privacy guard: the slug must not spell a display-name
+    // token — the URL itself would leak the identity it pseudonymizes.
+    if (slugContainsNameToken(partner.slug, partner.displayName)) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner slug "${partner.slug}" contains a displayName token — pick a pseudonymous slug`,
+        path: ["slug"],
+      });
+    }
     if (partner.role) {
       for (const lang of Object.keys(partner.role)) {
         if (!partner.locales.includes(lang)) {
@@ -219,6 +228,30 @@ export interface ReferralPartnerLifecycleSets {
 }
 
 export type ReferralPartnerWarn = (code: string, data: Record<string, unknown>) => void;
+
+/** RFC-1222: strict source validation for `referral.partners.validate` —
+    returns the parsed file or the full issue list (loaders swallow these into
+    a single warn; the author-stage guard needs each violation named). */
+export function validateReferralPartnersSource(
+  raw: string,
+): { file: ReferralPartnersFile; issues: string[] } | { file: null; issues: string[] } {
+  let yaml: unknown;
+  try {
+    yaml = yamlLike(raw);
+  } catch (error) {
+    return { file: null, issues: [`yaml: ${String(error).slice(0, 300)}`] };
+  }
+  const parsed = ReferralPartnersFileSchema.safeParse(yaml);
+  if (!parsed.success) {
+    return {
+      file: null,
+      issues: parsed.error.issues.map(
+        (issue) => `${issue.path.join(".") || "file"}: ${issue.message}`,
+      ),
+    };
+  }
+  return { file: parsed.data, issues: [] };
+}
 
 /**
  * Parses `partners.yaml` payloads into lifecycle-classified partner sets. A
