@@ -17,13 +17,12 @@ interprets flat shapes only.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1169: add optional nextAction object (capability + sideEffect consequence prose) and widen output properties with nested object/array shapes via capabilityNestedPropertySchema. Input stays flat.</item>
   <item>RFC-1186: capabilityRequiresSchema gains optional formBinding flag (activate only where a bound send-message block exists); eventKind enum gains recommendation and referral-application.</item>
   <item>RFC-1186: steps 1-2 — capability contracts, catalog records, resolver, propsSchema</item>
   <item>RFC-1186: step 5a — IntegrationEvent kind union + delivery formId parity</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
   <item>RFC-1211: optional closed `ui` block (capabilityUiSchema from agent/capability-schema.ts) — opts a capability into deterministic ui:// resource projection.</item>
-  <history>RFC-0288, RFC-1112, RFC-1115</history>
+  <history>RFC-0288, RFC-1112, RFC-1115, RFC-1169</history>
 </CHANGE_SUMMARY>
 */
 

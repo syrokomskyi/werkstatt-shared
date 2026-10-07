@@ -8,7 +8,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0144: initial extraction of the shared per-page builder from the two duplicated paths.</item>
   <item>RFC-0372: unified all page types through extractContentBlocks + extractPageHeading; removed home-specific branch and extractMarkdownProps; extractContentBlocks returns SemanticBlock[].</item>
   <item>RFC-0912: extract seo.videoObject opt-in from block props and attach VideoSeoData to SemanticBlock.video.</item>
   <item>RFC-1197: resolveFaqEntries merges inline faq-list items[] (baked surfaces) with tag-filtered collection entries — empty tag-filter no longer suppresses the FAQPage when inline items exist.</item>
@@ -22,6 +21,7 @@ resolveFaqEntries merges inline faq-list items with tag-filtered collection
 entries — empty tag-filter no longer suppresses the FAQPage when inline items
 exist. 3 new build-page tests + 8 existing green.</item>
   <item>warpgogol-m000185: optional resolveInlineText on SemanticContentReader — inline faq-list items[] carry =(…) expressions on baked surfaces (raw baked props reach JSON-LD pre-substitution); resolveFaqEntries resolves them through the reader seam so accordion and FAQPage derive from the same resolved text.</item>
+  <history>RFC-0144</history>
 </CHANGE_SUMMARY>
 */
 

@@ -15,12 +15,12 @@ TypographyRule[].</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1068: initial creation with 14 Tier 1 rules.</item>
   <item>RFC-1069: extended TypographyRuleId and TypographyRuleFamily with HEAD, PAIR, MD families.</item>
   <item>RFC-1070: extended TypographyRuleId and TypographyRuleFamily with NUM, ABBR, APOS families; added localeDefaults to TypographyContext.</item>
   <item>RFC-1071: extended TypographyRuleId and TypographyRuleFamily with UNICODE, LINK, SENT families.</item>
   <item>RFC-1072: changed TypographyFinding.fix from null to FixAction | null; extended finding() helper with optional FixAction param; populated fix on PUNCT-01, SPACE-01, SPACE-02.</item>
   <item>RFC-1201: TYPO-LOCALE-01 fixHint branches on token shape — path-like tokens (`/` or `<` present) name the accepted domain-qualified URL-placeholder normalization form; plain mixed-script words keep the generic single-script hint. Detection unchanged.</item>
+  <history>RFC-1068</history>
 </CHANGE_SUMMARY>
 */
 

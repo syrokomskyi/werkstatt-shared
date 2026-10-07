@@ -13,13 +13,12 @@ two runs on unchanged input are byte-identical (AS-7).
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1171: ManifestDeprecation + platform-injected unversioned→v1 deprecations[] with fixed date constants (determinism), validateManifestDeprecations enforcing successor resolution and the 90-day sunset window.</item>
   <item>RFC-1113: supportedProtocols comment update — unconditional ARD emission now spans ard.json + ai-catalog.json, agent-skills spans index + per-domain SKILL.md.</item>
   <item>RFC-1187: phases 5-7 — OAuth route/discovery generators, env schema, operator commands</item>
   <item>RFC-1187: fo-review — interfaces.oauth carries keyVersion (JWT/JWKS kid follows passport rotation)</item>
   <item>RFC-1188: Web Bot Auth outbound identity: wba-sign primitives, directory emit+sweep, AGS-WBA-01, leitstand signed fetches</item>
   <item>RFC-1211: interfaces.mcpUi + supportedProtocols "mcp-ui" — advertised only when the MCP route is live and the ui:// emission set is non-empty.</item>
-  <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112, RFC-1113, RFC-1114, RFC-1115, RFC-1165</history>
+  <history>RFC-0286, RFC-0954, RFC-1076, RFC-1112, RFC-1113, RFC-1114, RFC-1115, RFC-1165, RFC-1171</history>
 </CHANGE_SUMMARY>
 */
 
