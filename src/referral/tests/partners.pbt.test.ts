@@ -32,15 +32,17 @@ import {
   type ReferralPartner,
 } from "../partners.ts";
 
-const arbSlug = fc.stringMatching(/^[a-z0-9]+(-[a-z0-9]+){0,3}$/).filter((s) => s.length >= 3 && s.length <= 32);
+const arbSlug = fc
+  .stringMatching(/^[a-z0-9]+(-[a-z0-9]+){0,3}$/)
+  .filter((s) => s.length >= 3 && s.length <= 32);
 
 const arbPartner = (slug: string): ReferralPartner => ({
   slug,
   displayName: "P " + slug,
   compensation: "referral-fee",
   locales: ["de"],
-  active: true,
-  publicNameConsentRef: "c",
+  status: "active",
+  consent: { method: "channel", channel: "email", grantedAt: "2026-01-01" },
 });
 
 describe("ReferralPartnerSchema PBT", () => {

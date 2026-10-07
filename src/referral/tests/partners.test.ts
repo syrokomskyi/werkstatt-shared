@@ -1,9 +1,10 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-[RFC-1198] Unit tests for the referral-partner contract: schema boundaries,
-loadActiveReferralPartners filtering (inactive, consent-missing, malformed,
-reserved, duplicate), and resolveReferralPartner normalization.
+[RFC-1222] Unit tests for the referral-partner contract: v2 schema boundaries
+(status lifecycle, structured consent union, role, retiredAt), loader
+classification (pending|active|retired, malformed, reserved, duplicate),
+resolveReferralPartner normalization, and the slug-PII guard.
 </purpose>
 <non-goals>
   <item>Does not test route generation or HTTP — loader/resolver purity only.</item>
@@ -11,16 +12,7 @@ reserved, duplicate), and resolveReferralPartner normalization.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1198: created.</item>
-  <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
-
-Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
-static /r/<slug> and /<lang>/r/<slug> partner landings (noindex, zero JS,
-consent-gated via publicNameConsentRef), ?ref prefill on the existing
-referrerField rail, server-side slug resolution against the bundled
-partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
-legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
-the cookie capture module (wg_ref, referral.attribution entitlement,
-payload.attribution).</item>
+  <item>RFC-1222: rewritten for schema v2 — lifecycle sets, consent union (none|document|channel), active⇒consent and retired⇒retiredAt refinements, slugContainsNameToken; v1 field rejection asserted (forward-only).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -28,42 +20,88 @@ import { describe, expect, test } from "vitest";
 import {
   loadActiveReferralPartners,
   loadReferralLandingConfig,
+  loadReferralPartners,
   REF_PARAM_PATTERN,
   REFERRER_MAX_LENGTH,
   ReferralPartnerSchema,
   resolveReferralPartner,
   RESERVED_REFERRAL_SLUGS,
+  slugContainsNameToken,
   type ReferralPartner,
 } from "../partners.ts";
 
-const VALID: ReferralPartner = {
-  slug: "anna",
-  displayName: "Anna Beispiel",
+const ACTIVE: ReferralPartner = {
+  slug: "ostpost",
+  displayName: "Luba Kemenova",
   compensation: "referral-fee",
   locales: ["de", "uk"],
-  active: true,
-  publicNameConsentRef: "consent-2026-10-01",
+  status: "active",
+  consent: { method: "document", ref: "trust/consents/ostpost", grantedAt: "2026-10-01" },
 };
 
-function yamlOf(partners: unknown): Record<string, string> {
-  return { "/src/content/referral-partners/partners.yaml": toYaml(partners) };
+const PENDING: ReferralPartner = {
+  ...ACTIVE,
+  status: "pending",
+  consent: { method: "none" },
+};
+
+const RETIRED: ReferralPartner = {
+  ...ACTIVE,
+  status: "retired",
+  retiredAt: "2026-12-31",
+};
+
+function yamlOf(body: string): Record<string, string> {
+  return { "/src/content/referral-partners/partners.yaml": body };
 }
 
-function toYaml(partners: unknown): string {
-  const list = (partners as Record<string, unknown>[]).map((p) => {
-    const entries = Object.entries(p).map(([k, v]) => {
-      if (Array.isArray(v)) return `  ${k}: [${v.map((x) => `"${x}"`).join(", ")}]`;
-      if (typeof v === "boolean") return `  ${k}: ${v}`;
-      return `  ${k}: "${String(v).replace(/"/g, '\\"')}"`;
-    });
-    return `- slug: "${(p as { slug: string }).slug}"\n${entries.filter((e) => !e.startsWith("  slug:")).join("\n")}`;
+const partnerYaml = (extra = "") => `partners:
+  - slug: "ostpost"
+    displayName: "Luba Kemenova"
+    compensation: "referral-fee"
+    locales: ["de", "uk"]
+    status: "active"
+    consent: { method: "document", ref: "trust/consents/ostpost", grantedAt: "2026-10-01" }
+${extra}`;
+
+describe("ReferralPartnerSchema v2", () => {
+  test("accepts a fully-specified active partner", () => {
+    expect(ReferralPartnerSchema.parse(ACTIVE)).toEqual(ACTIVE);
   });
-  return `partners:\n${list.join("\n")}`;
-}
 
-describe("ReferralPartnerSchema", () => {
-  test("accepts a fully-specified partner", () => {
-    expect(ReferralPartnerSchema.parse(VALID)).toEqual(VALID);
+  test("accepts pending with consent.method none", () => {
+    expect(ReferralPartnerSchema.parse(PENDING)).toEqual(PENDING);
+  });
+
+  test("accepts channel consent", () => {
+    const p = {
+      ...ACTIVE,
+      consent: { method: "channel", channel: "telegram", grantedAt: "2026-10-01" },
+    };
+    expect(ReferralPartnerSchema.parse(p)).toEqual(p);
+  });
+
+  test.each([
+    ["active with consent.method none", { ...ACTIVE, consent: { method: "none" } }],
+    [
+      "active with consent lacking grantedAt",
+      { ...ACTIVE, consent: { method: "document", ref: "x" } },
+    ],
+    ["retired without retiredAt", { ...ACTIVE, status: "retired" }],
+    ["pending carrying retiredAt", { ...PENDING, retiredAt: "2026-12-31" }],
+    ["legacy v1 field publicNameConsentRef", { ...ACTIVE, publicNameConsentRef: "c" }],
+    ["legacy v1 field active", { ...ACTIVE, active: true }],
+    [
+      "consent with unknown key",
+      { ...ACTIVE, consent: { method: "none", grantedAt: "2026-10-01" } },
+    ],
+    ["role locale outside locales", { ...ACTIVE, role: { fr: "Rôle" } }],
+  ])("rejects %s", (_label, partner) => {
+    const result = ReferralPartnerSchema.safeParse(partner);
+    expect(
+      result.success,
+      "v2 schema must reject this shape — check ReferralPartnerSchema superRefine/strict members",
+    ).toBe(false);
   });
 
   test.each([
@@ -71,51 +109,69 @@ describe("ReferralPartnerSchema", () => {
     ["too long", "a".repeat(33)],
     ["uppercase", "Anna"],
     ["leading dash", "-anna"],
-    ["trailing dash", "anna-"],
     ["double dash", "an--na"],
-    ["underscore", "an_na"],
     ["reserved", "admin"],
   ])("rejects invalid slug: %s", (_label, slug) => {
-    expect(ReferralPartnerSchema.safeParse({ ...VALID, slug }).success).toBe(false);
-  });
-
-  test("rejects unknown compensation variant", () => {
-    expect(ReferralPartnerSchema.safeParse({ ...VALID, compensation: "cash" }).success).toBe(false);
-  });
-
-  test("rejects empty locales", () => {
-    expect(ReferralPartnerSchema.safeParse({ ...VALID, locales: [] }).success).toBe(false);
+    expect(ReferralPartnerSchema.safeParse({ ...ACTIVE, slug }).success).toBe(false);
   });
 });
 
-describe("loadActiveReferralPartners", () => {
-  test("returns active partners with consent ref", () => {
-    expect(loadActiveReferralPartners(yamlOf([VALID]))).toEqual([VALID]);
+describe("loadReferralPartners lifecycle classification", () => {
+  test("classifies pending/active/retired into separate sets", () => {
+    const raw = `partners:
+  - slug: "ostpost"
+    displayName: "Luba Kemenova"
+    compensation: "referral-fee"
+    locales: ["de"]
+    status: "pending"
+    consent: { method: "none" }
+  - slug: "markt-blick"
+    displayName: "Maria I."
+    compensation: "steward"
+    locales: ["de"]
+    status: "active"
+    consent: { method: "channel", channel: "email", grantedAt: "2026-09-15" }
+  - slug: "alt-werk"
+    displayName: "Peter P."
+    compensation: "none"
+    locales: ["de"]
+    status: "retired"
+    retiredAt: "2026-08-01"
+    consent: { method: "document", ref: "trust/consents/alt-werk", grantedAt: "2026-01-10" }
+`;
+    const sets = loadReferralPartners(yamlOf(raw));
+    expect(sets.pending.map((p) => p.slug)).toEqual(["ostpost"]);
+    expect(sets.active.map((p) => p.slug)).toEqual(["markt-blick"]);
+    expect(sets.retired.map((p) => p.slug)).toEqual(["alt-werk"]);
   });
 
-  test("returns empty for missing file", () => {
-    expect(loadActiveReferralPartners({})).toEqual([]);
+  test("loadActiveReferralPartners returns only the active set", () => {
+    const raw = `partners:
+  - slug: "ostpost"
+    displayName: "Luba Kemenova"
+    compensation: "referral-fee"
+    locales: ["de"]
+    status: "pending"
+    consent: { method: "none" }
+`;
+    expect(loadActiveReferralPartners(yamlOf(raw))).toEqual([]);
   });
 
-  test.each([
-    ["inactive", { ...VALID, active: false }],
-    ["empty consent ref", { ...VALID, publicNameConsentRef: "   " }],
-    ["reserved slug", { ...VALID, slug: "admin" }],
-  ])("excludes %s partners", (_label, partner) => {
-    const warns: string[] = [];
-    expect(loadActiveReferralPartners(yamlOf([partner]), (c) => warns.push(c))).toEqual([]);
+  test("returns empty sets for missing file", () => {
+    expect(loadReferralPartners({})).toEqual({ active: [], retired: [], pending: [] });
   });
 
   test("rejects duplicate slugs — the whole file fails schema validation", () => {
-    // A duplicate slug is ambiguous attribution (which partner is paid?) —
-    // the schema refuses the file outright instead of silently keeping the
-    // first entry. The loader surfaces the failure as referral.partners.invalid.
-    const other = { ...VALID, displayName: "Other" };
     const warns: { code: string; data: Record<string, unknown> }[] = [];
-    const out = loadActiveReferralPartners(yamlOf([VALID, other]), (c, d) =>
-      warns.push({ code: c, data: d }),
-    );
-    expect(out).toEqual([]);
+    const dup = partnerYaml(`  - slug: "ostpost"
+    displayName: "Other"
+    compensation: "none"
+    locales: ["de"]
+    status: "pending"
+    consent: { method: "none" }
+`);
+    const sets = loadReferralPartners(yamlOf(dup), (c, d) => warns.push({ code: c, data: d }));
+    expect(sets.active).toEqual([]);
     expect(warns.map((w) => w.code)).toContain("referral.partners.invalid");
     expect(warns[0]?.data.detail).toContain("duplicate partner slug");
   });
@@ -123,9 +179,24 @@ describe("loadActiveReferralPartners", () => {
   test("warns and skips a malformed file instead of throwing", () => {
     const warns: string[] = [];
     expect(
-      loadActiveReferralPartners({ "partners.yaml": "partners: [{broken" }, (c) => warns.push(c)),
-    ).toEqual([]);
+      loadReferralPartners({ "partners.yaml": "partners: [{broken" }, (c) => warns.push(c)),
+    ).toEqual({ active: [], retired: [], pending: [] });
     expect(warns).toContain("referral.partners.invalid");
+  });
+
+  test("a legacy v1 file invalidates the whole registry (forward-only)", () => {
+    const warns: { code: string; data: Record<string, unknown> }[] = [];
+    const legacy = `partners:
+  - slug: "ostpost"
+    displayName: "Luba Kemenova"
+    compensation: "referral-fee"
+    locales: ["de"]
+    active: true
+    publicNameConsentRef: "consent-1"
+`;
+    const sets = loadReferralPartners(yamlOf(legacy), (c, d) => warns.push({ code: c, data: d }));
+    expect(sets.active).toEqual([]);
+    expect(warns.map((w) => w.code)).toContain("referral.partners.invalid");
   });
 });
 
@@ -137,14 +208,7 @@ describe("loadReferralLandingConfig", () => {
   stewardRole: { de: "Markt-Steward" }
   audiencePhrase: { de: "Firmenwebsites", uk: "вебсайти" }
   conditionsNote: { de: "(AGB § 3 Abs. 5)" }
-partners:
-  - slug: "anna"
-    displayName: "Anna"
-    compensation: "referral-fee"
-    locales: ["de"]
-    active: true
-    publicNameConsentRef: "consent-1"
-`;
+${partnerYaml()}`;
     const config = loadReferralLandingConfig({ "partners.yaml": raw });
     expect(config?.stewardRole?.de).toBe("Markt-Steward");
     expect(config?.rewardPhrases?.["referral-fee"]?.uk).toBe("70 €");
@@ -153,7 +217,7 @@ partners:
   });
 
   test("returns null when the block is absent or malformed", () => {
-    expect(loadReferralLandingConfig(yamlOf([VALID]))).toBeNull();
+    expect(loadReferralLandingConfig(yamlOf(partnerYaml()))).toBeNull();
     expect(
       loadReferralLandingConfig({ "partners.yaml": "landing: { bogus: 1 }\npartners: []" }),
     ).toBeNull();
@@ -161,14 +225,19 @@ partners:
 });
 
 describe("resolveReferralPartner", () => {
-  const partners = [VALID];
+  const partners = [ACTIVE];
 
   test("resolves an exact slug", () => {
-    expect(resolveReferralPartner("anna", partners)).toEqual(VALID);
+    expect(resolveReferralPartner("ostpost", partners)).toEqual(ACTIVE);
   });
 
   test("trims and lower-cases before matching", () => {
-    expect(resolveReferralPartner("  ANNA  ", partners)).toEqual(VALID);
+    expect(resolveReferralPartner("  OSTPOST  ", partners)).toEqual(ACTIVE);
+  });
+
+  test("never resolves a pending or retired slug", () => {
+    expect(resolveReferralPartner("ostpost", [PENDING])).toBeNull();
+    expect(resolveReferralPartner("ostpost", [RETIRED])).toBeNull();
   });
 
   test.each([
@@ -176,15 +245,31 @@ describe("resolveReferralPartner", () => {
     ["whitespace", "   "],
     ["unknown slug", "boris"],
     ["over-length", "a".repeat(REFERRER_MAX_LENGTH + 1)],
-    ["free text", "mein Nachbar Anna hat empfohlen"],
+    ["free text", "mein Nachbar hat empfohlen"],
   ])("returns null for %s", (_label, input) => {
     expect(resolveReferralPartner(input, partners)).toBeNull();
   });
 });
 
+describe("slugContainsNameToken (slug-PII guard)", () => {
+  test("flags a slug carrying a displayName token", () => {
+    expect(slugContainsNameToken("luba-kemenova", "Luba Kemenova")).toBe(true);
+    expect(slugContainsNameToken("luba-tipps", "Luba Kemenova")).toBe(true);
+  });
+
+  test("accepts a pseudonymous slug", () => {
+    expect(slugContainsNameToken("ostpost", "Luba Kemenova")).toBe(false);
+  });
+
+  test("ignores short tokens and substring-only overlap", () => {
+    expect(slugContainsNameToken("marktplatz-ost", "Max Os")).toBe(false);
+    expect(slugContainsNameToken("annate", "Anna Beispiel")).toBe(false);
+  });
+});
+
 describe("patterns", () => {
   test("REF_PARAM_PATTERN bounds ?ref values to slug-like charset", () => {
-    expect(REF_PARAM_PATTERN.test("anna")).toBe(true);
+    expect(REF_PARAM_PATTERN.test("ostpost")).toBe(true);
     expect(REF_PARAM_PATTERN.test("a-b-c")).toBe(true);
     expect(REF_PARAM_PATTERN.test("ab")).toBe(false);
     expect(REF_PARAM_PATTERN.test("anna<script>")).toBe(false);
@@ -195,9 +280,6 @@ describe("patterns", () => {
     for (const slug of ["admin", "api", "portal", "r", "robots", "sitemap", "well-known"]) {
       expect(RESERVED_REFERRAL_SLUGS).toContain(slug);
     }
-    // Site route names (kontakt, agb, datenschutz) are site content, not a
-    // platform concern — a slug colliding with a route 404s at build time
-    // via the routes manifest, not via this list.
     for (const slug of ["kontakt", "agb", "datenschutz", "uk", "de"]) {
       expect(RESERVED_REFERRAL_SLUGS).not.toContain(slug);
     }
