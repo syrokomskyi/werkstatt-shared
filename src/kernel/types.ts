@@ -110,6 +110,14 @@ export interface KernelCommandMetadata {
    */
   mutatingFlags?: string[];
   requiresNetwork?: boolean;
+  /**
+   * RFC-1231: when true, the command accepts the reserved `--all` token
+   * (`assertAllFlagAccepted` stays fail-closed otherwise). Effect follows
+   * scope: app-scope commands fan out over all sites via `ensureTargetSites`;
+   * workspace commands — and uniformly app-scope ones too — receive the
+   * consumed value re-injected as `input.flags.all` when the schema declares
+   * an `all` flag. Declaring `all` without this field is KERNEL-FLAG-09.
+   */
   acceptsAllFlag?: boolean;
   timeoutMs?: number;
   expectedDurationMs?: number;
