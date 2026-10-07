@@ -17,6 +17,19 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1229: steps 2-4 — component region contracts, validator, pipeline wiring
+
+Component-declared ShellRegionContract per shell component (verified
+against workpiece dist): header (enhanced=layout-pending+#mobile-menu-toggle
+hooks, unenhanced=details/summary), footer (copy-btn hooks forbidden when
+unenhanced, copyright+main unconditional), site-background (data-volume
+root), breadcrumbs (section/nav/ol). SITE_SHELL_CONTRACTS registry +
+site.shell.contract.validate over dist/client — SITE-SHELL-01..08,
+profile resolution (routeProfiles glob -> pages[].shell.profile ->
+default), minimal CSS matcher, variadic skeleton collapse, variant-grouped
+skeleton consistency, strict/report/off modes. Wired into
+SITES_CHECK_POSTBUILD_PIPELINE and CONTRACT_FULL_VALIDATORS; command
+table + manifest regenerated.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -74,6 +87,14 @@ export type {
   SystemPlanetPin,
   SystemCollectionData,
 } from "./system.ts";
+
+// RFC-1229: shell contract — schema + types for system.md shellContract block.
+export {
+  shellRegionNameSchema,
+  systemShellProfileSchema,
+  systemShellContractSchema,
+} from "./system.ts";
+export type { ShellRegionName, SystemShellProfile, SystemShellContract } from "./system.ts";
 
 // Architecture review 2026-07-10: Re-export growthVendorSchema for @warpgogol/werkstatt-site/growth/config.ts.
 export { growthVendorSchema } from "./system.ts";
