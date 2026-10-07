@@ -18,6 +18,7 @@ closed-set region names, profile shape (regions + document-level script
 policy + breadcrumbsScope), routeProfiles closed-set reference check via
 superRefine, mode default report. Wire shellContract into
 systemManifestSchema and profile into pages[].shell.</item>
+  <item>RFC-1229 remediation: docstring example updated — no-script declares breadcrumbs and the bare/404 binding example is dropped (404 binds the default profile after the 404 remediation).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -35,22 +36,13 @@ import { z } from "zod";
  *         breadcrumbsScope: non-home
  *         scripts: required
  *       no-script:
- *         regions: [header, footer, background]
+ *         regions: [header, footer, background, breadcrumbs]
  *         scripts: forbidden
- *       bare:
- *         regions: [header, footer]
- *         scripts: required
  *     routeProfiles:
  *       "r/**": no-script
  *       "**\/r/**": no-script
- *       "404.html": bare
  */
-export const shellRegionNameSchema = z.enum([
-  "header",
-  "footer",
-  "background",
-  "breadcrumbs",
-]);
+export const shellRegionNameSchema = z.enum(["header", "footer", "background", "breadcrumbs"]);
 
 export type ShellRegionName = z.infer<typeof shellRegionNameSchema>;
 
