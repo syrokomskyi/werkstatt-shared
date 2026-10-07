@@ -39,6 +39,29 @@ import type { ReferralLandingConfig } from "./partners.ts";
 
 export type ReferralCompensation = "referral-fee" | "none" | "steward";
 
+/** RFC-1222: disclosure-structure version stamped onto the submit payload.
+    Manual constant — bump only when the disclosure sentence structure changes,
+    never auto-incremented. */
+export const REFERRAL_DISCLOSURE_VERSION = "v1";
+
+/** RFC-1222: the § 5a Abs. 4 UWG binary — "is there a commercial interest".
+    `referral-fee` and `steward` are paid; `none` is unpaid. The finer
+    distinction stays in `compensation.mode`; this answers only the binary. */
+export type ReferralDisclosureKind = "paid" | "unpaid";
+export function referralDisclosureKind(compensation: ReferralCompensation): ReferralDisclosureKind {
+  return compensation === "none" ? "unpaid" : "paid";
+}
+
+/** Localized long date for receipt rows ("Erfasst", "Stand"). */
+export function referralLocalDate(isoDate: string, lang: string): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  if (Number.isNaN(date.getTime())) return isoDate;
+  return new Intl.DateTimeFormat(lang === "uk" ? "uk-UA" : "de-DE", {
+    dateStyle: "long",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 /** Referred-customer benefit derived from the site's PBP partner-program
     policy (`referredCustomerBenefit` + `terms.referralFreePeriodCondition`).
     All fields already localized/formatted by the caller. */
@@ -66,6 +89,16 @@ export interface ReferralLandingFacts {
   /** Referred-customer benefit from the PBP partner-program policy. Absent →
       the conditions line is omitted entirely (no invented benefit). */
   readonly benefit?: ReferralBenefitFacts;
+  /** Site-authored proof points (RFC-1222 §landing item 3). Absent → the
+      proofs block is omitted. */
+  readonly proofs?: readonly string[];
+  /** Site-authored open-price line — `{price:offering:charge}` markers are
+      resolved upstream before reaching the copy (PBP is the only money
+      source). Absent → the price block is omitted. */
+  readonly priceLine?: string;
+  /** Partner-program policy `governance.effectiveFrom` (ISO date) — the
+      ruleset anchor rendered in the receipt's "Regelwerk" row. */
+  readonly policyEffectiveFrom?: string;
 }
 
 /**
@@ -83,12 +116,43 @@ export function resolveReferralLandingFacts(
     map?.[lang] ?? map?.[fallbackLang] ?? Object.values(map ?? {})[0];
   const referralFee = pick(config.rewardPhrases?.["referral-fee"]);
   const steward = pick(config.rewardPhrases?.steward);
+  const pickList = (map: Record<string, string[]> | undefined): string[] | undefined =>
+    map?.[lang] ?? map?.[fallbackLang] ?? Object.values(map ?? {})[0];
   return {
     stewardRole: pick(config.stewardRole),
     audience: pick(config.audiencePhrase),
     conditionsNote: pick(config.conditionsNote),
+    priceLine: pick(config.priceLine),
+    proofs: pickList(config.proofs),
     ...(referralFee || steward ? { reward: { "referral-fee": referralFee, steward } } : {}),
   };
+}
+
+/** RFC-1222: receipt block rows — labels are fixed contract text; values are
+    resolved from the partner record + PBP facts by the component. */
+export interface ReferralReceiptCopy {
+  heading: string;
+  labels: {
+    recommendation: string;
+    recommendedBy: string;
+    compensationStatus: string;
+    ruleset: string;
+    captured: string;
+  };
+  /** "Vergütet · 70 €" / "Unvergütet" — the reward phrase comes from the
+      site-authored landing facts, never invented. */
+  compensationStatus: (kind: ReferralDisclosureKind, reward?: string) => string;
+  /** "Partner Policy, Stand 01.01.2026" — takes the localized effectiveFrom. */
+  ruleset: (effectiveFrom: string) => string;
+  /** "Die Empfehlung verpflichtet Sie zu nichts." + the removable-code line. */
+  closing: readonly [string, string];
+}
+
+/** RFC-1222: retired-partner status page copy — never carries the name. */
+export interface ReferralRetiredCopy {
+  title: string;
+  status: string;
+  home: string;
 }
 
 export interface ReferralLandingCopy {
@@ -97,16 +161,28 @@ export interface ReferralLandingCopy {
   h1: (displayName: string) => string;
   /** Interpolates {displayName, siteName, audience}. */
   lead: (displayName: string) => string;
+  /** Disclosure badge token — VERGÜTETE/UNVERGÜTETE EMPFEHLUNG (§ 5a UWG). */
+  disclosureBadge: (kind: ReferralDisclosureKind) => string;
   /** Compensation-variant disclosure — interpolates {displayName, siteName, reward, stewardRole}. */
   disclosure: (compensation: ReferralCompensation, displayName: string) => string;
-  expectationsHeading: string;
-  expectations: readonly string[];
+  /** Proof block — null when the site authors no `landing.proofs`. */
+  proofsHeading: string;
+  proofs: readonly string[] | null;
+  /** Open-price block — null when the site authors no `landing.priceLine`. */
+  priceHeading: string;
+  priceLine: string | null;
+  priceLinkLabel: string;
+  noPromisesHeading: string;
+  noPromises: readonly string[];
   /** Referred-customer benefit line — null when the site declares no
       partner-program policy benefit (the component then hides the block). */
   conditions: string | null;
   ctaPrimary: string;
   ctaSecondary: string;
   programLink: string;
+  formHeading: string;
+  receipt: ReferralReceiptCopy;
+  retired: ReferralRetiredCopy;
   privacy: string;
 }
 
@@ -157,10 +233,12 @@ function ukConditions(benefit: ReferralBenefitFacts, note?: string): string | nu
 function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingCopy {
   const audience = facts.audience ?? "Websites";
   return {
-    eyebrow: "Persönliche Empfehlung",
+    eyebrow: "Empfohlen von",
     h1: (displayName) => `${displayName} empfiehlt ${siteName}`,
     lead: (displayName) =>
       `${displayName} hat Ihnen diese Seite geschickt, weil ${siteName} zu Ihrem Betrieb passen könnte. Wir bauen ${audience} — auf eigener Domain, mit schriftlichen Bedingungen und vorgesehenem Ausstieg.`,
+    disclosureBadge: (kind) =>
+      kind === "paid" ? "VERGÜTETE EMPFEHLUNG" : "UNVERGÜTETE EMPFEHLUNG",
     disclosure: (compensation, displayName) => {
       switch (compensation) {
         case "referral-fee":
@@ -171,16 +249,44 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
           return `Offenlegung: ${displayName} ist als ${facts.stewardRole ?? "Partner"} für ${siteName} tätig und erhält dafür eine Vergütung${facts.reward?.steward ? `, unter anderem ${facts.reward.steward}` : ""}. Ihr Preis ändert sich dadurch nicht. Eine Empfehlung verpflichtet Sie zu nichts.`;
       }
     },
-    expectationsHeading: "Was Sie erwartet",
-    expectations: [
-      "Sie beschreiben Ihre Situation in wenigen Sätzen.",
-      "Wir antworten persönlich und schriftlich.",
-      "Ein Vertrag entsteht erst nach separater schriftlicher Vereinbarung.",
+    proofsHeading: "Was Sie konkret bekommen",
+    proofs: facts.proofs ?? null,
+    priceHeading: "Der Preis — offen",
+    priceLine: facts.priceLine ?? null,
+    priceLinkLabel: "Leistungsumfang prüfen →",
+    noPromisesHeading: "Was Ihnen hier niemand verspricht",
+    noPromises: [
+      "Keine garantierten Platzierungen.",
+      "Keine garantierten Anfragen oder Umsätze.",
+      "Kein Ergebnis ohne Ihre Mitwirkung.",
     ],
     conditions: facts.benefit ? deConditions(facts.benefit, facts.conditionsNote) : null,
     ctaPrimary: "Situation beschreiben",
     ctaSecondary: `Den ${siteName} Standard ansehen`,
     programLink: "So funktioniert das Empfehlungsprogramm",
+    formHeading: "Beschreiben Sie Ihre Situation",
+    receipt: {
+      heading: "Ihre Empfehlungsquittung",
+      labels: {
+        recommendation: "Empfehlung",
+        recommendedBy: "Empfohlen von",
+        compensationStatus: "Vergütungsstatus",
+        ruleset: "Regelwerk",
+        captured: "Erfasst",
+      },
+      compensationStatus: (kind, reward) =>
+        kind === "paid" ? `Vergütet${reward ? ` · ${reward}` : ""}` : "Unvergütet",
+      ruleset: (effectiveFrom) => `Partner Policy, Stand ${effectiveFrom}`,
+      closing: [
+        "Die Empfehlung verpflichtet Sie zu nichts.",
+        "Den Empfehlungscode können Sie vor dem Absenden entfernen.",
+      ],
+    },
+    retired: {
+      title: "Diese Empfehlung ist nicht mehr aktiv",
+      status: `${siteName} können Sie weiterhin unabhängig prüfen.`,
+      home: "Zur Startseite",
+    },
     privacy:
       "Auf dieser Seite setzen wir keine Cookies und speichern nichts in Ihrem Browser. Der Empfehlungscode steht nur in der Adresse der Kontaktseite und wird mit Ihrer Anfrage übermittelt, solange Sie ihn nicht entfernen. Mehr in der Datenschutzerklärung.",
   };
@@ -189,10 +295,12 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
 function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingCopy {
   const audience = facts.audience ?? "вебсайти";
   return {
-    eyebrow: "Особиста рекомендація",
+    eyebrow: "Рекомендує",
     h1: (displayName) => `${displayName} рекомендує ${siteName}`,
     lead: (displayName) =>
       `${displayName} надіслав(ла) вам цю сторінку, бо ${siteName} може підійти вашому бізнесу. Ми робимо ${audience}: на власному домені, з письмовими умовами та передбаченим виходом.`,
+    disclosureBadge: (kind) =>
+      kind === "paid" ? "РЕКОМЕНДАЦІЯ З ВИНАГОРОДОЮ" : "РЕКОМЕНДАЦІЯ БЕЗ ВИНАГОРОДИ",
     disclosure: (compensation, displayName) => {
       switch (compensation) {
         case "referral-fee":
@@ -203,16 +311,44 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
           return `Розкриття: ${displayName} працює для ${siteName} як ${facts.stewardRole ?? "партнер"} і отримує за це винагороду${facts.reward?.steward ? `, зокрема ${facts.reward.steward}` : ""}. Ваша ціна через це не змінюється. Рекомендація ні до чого вас не зобов'язує.`;
       }
     },
-    expectationsHeading: "Що вас чекає",
-    expectations: [
-      "Ви описуєте свою ситуацію кількома реченнями.",
-      "Ми відповідаємо особисто і письмово.",
-      "Договір виникає лише після окремої письмової домовленості.",
+    proofsHeading: "Що ви конкретно отримуєте",
+    proofs: facts.proofs ?? null,
+    priceHeading: "Ціна — відкрито",
+    priceLine: facts.priceLine ?? null,
+    priceLinkLabel: "Перевірити обсяг послуг →",
+    noPromisesHeading: "Чого вам тут ніхто не обіцяє",
+    noPromises: [
+      "Жодних гарантованих позицій.",
+      "Жодних гарантованих звернень чи продажів.",
+      "Жодного результату без вашої участі.",
     ],
     conditions: facts.benefit ? ukConditions(facts.benefit, facts.conditionsNote) : null,
     ctaPrimary: "Описати ситуацію",
     ctaSecondary: `Переглянути стандарт ${siteName}`,
     programLink: "Як працює програма рекомендацій",
+    formHeading: "Опишіть вашу ситуацію",
+    receipt: {
+      heading: "Ваша квитанція рекомендації",
+      labels: {
+        recommendation: "Рекомендація",
+        recommendedBy: "Рекомендує",
+        compensationStatus: "Статус винагороди",
+        ruleset: "Регламент",
+        captured: "Зафіксовано",
+      },
+      compensationStatus: (kind, reward) =>
+        kind === "paid" ? `З винагородою${reward ? ` · ${reward}` : ""}` : "Без винагороди",
+      ruleset: (effectiveFrom) => `Партнерська політика, станом на ${effectiveFrom}`,
+      closing: [
+        "Рекомендація ні до чого вас не зобов'язує.",
+        "Код рекомендації можна вилучити перед надсиланням.",
+      ],
+    },
+    retired: {
+      title: "Ця рекомендація більше не активна",
+      status: `${siteName} ви можете надалі перевіряти самостійно.`,
+      home: "На головну",
+    },
     privacy:
       "На цій сторінці ми не використовуємо cookie і нічого не зберігаємо у вашому браузері. Код рекомендації є лише в адресі сторінки контактів і передається разом із вашим запитом, доки ви його не приберете. Докладніше в політиці конфіденційності.",
   };

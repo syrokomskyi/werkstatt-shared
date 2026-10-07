@@ -169,6 +169,13 @@ export const ReferralLandingConfigSchema = z
         (e.g. "(AGB § 3 Abs. 5)"). The platform must not hardcode document
         section numbers — they are site-text decisions. */
     conditionsNote: LocalizedPhraseSchema.optional(),
+    /** RFC-1222: proof points shown before the CTA (e.g. Eigene Domain /
+        Schriftliche Verantwortung / Betreuter Betrieb / Vorgesehener
+        Ausstieg) — lang → list of authored phrases. */
+    proofs: z.record(LangCodeSchema, z.array(z.string().min(1)).min(1)).optional(),
+    /** RFC-1222: open-price line with `{price:<offering>:<charge>}` markers —
+        amounts always resolve from PBP offerings, never literal digits. */
+    priceLine: LocalizedPhraseSchema.optional(),
   })
   .strict();
 
@@ -179,8 +186,11 @@ export const ReferralPartnersFileSchema = z
         the platform must not hardcode site routes. When absent, landings omit
         the program link. */
     programRoutes: z.record(LangCodeSchema, z.string().min(1)).optional(),
+    /** Optional per-language slug of the site's pricing/scope page — target of
+        the landing's "Leistungsumfang prüfen →" link next to the open price. */
+    pricingRoutes: z.record(LangCodeSchema, z.string().min(1)).optional(),
     /** Optional site-authored landing copy facts (reward phrase, steward role
-        term, audience clause, legal pointer). */
+        term, audience clause, legal pointer, proofs, open-price line). */
     landing: ReferralLandingConfigSchema.optional(),
     partners: z.array(ReferralPartnerSchema).default([]),
   })
@@ -287,6 +297,21 @@ export function loadReferralProgramRoutes(
     try {
       const parsed = ReferralPartnersFileSchema.parse(yamlLike(raw));
       return parsed.programRoutes ?? null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+/** Reads the optional site-authored `pricingRoutes` map (lang → page slug). */
+export function loadReferralPricingRoutes(
+  globbed: Record<string, string>,
+): Record<string, string> | null {
+  for (const raw of Object.values(globbed)) {
+    try {
+      const parsed = ReferralPartnersFileSchema.parse(yamlLike(raw));
+      return parsed.pricingRoutes ?? null;
     } catch {
       return null;
     }
