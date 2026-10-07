@@ -6,8 +6,8 @@ disclosure twin. Single source for both the emitted endpoint and the
 `referral.json.parity.validate` check — the validator recomputes the expected
 document through this builder, so drift means "the emitted bytes differ from
 what the PBP facts say", never two hand-maintained shapes.
-Closed shape: retired partners emit exactly {type, slug, status} — no
-identity, no economics.
+Closed shape: pending and retired partners emit exactly {type, slug, status}
+— no identity, no economics.
 </purpose>
 <non-goals>
   <item>No PBP imports — facts arrive pre-resolved (ReferralProgramFacts), keeping this module pure and testable.</item>
@@ -16,6 +16,7 @@ identity, no economics.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1222: created — disclosure twin builder shared by the generated endpoint and the parity validator.</item>
+  <item>RFC-1222 pending-landing amendment (operator, 2026-10-07): pending partners emit the nameless closed document — the route exists while consent is unrecorded, identity does not.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -33,11 +34,13 @@ export interface ReferralProgramFacts {
   readonly policyEffectiveFrom?: string;
 }
 
-/** The retired document is deliberately closed — three fields, no identity. */
-export interface ReferralPartnerRetiredDoc {
+/** The retired and pending documents are deliberately closed — three fields,
+    no identity. Pending keeps the route alive while consent is unrecorded;
+    retired preserves the historical slug after the active window. */
+export interface ReferralPartnerClosedDoc {
   readonly type: "referral-partner";
   readonly slug: string;
-  readonly status: "retired";
+  readonly status: "retired" | "pending";
 }
 
 export interface ReferralPartnerActiveDoc {
@@ -61,19 +64,18 @@ export interface ReferralPartnerActiveDoc {
   readonly contactUrl: string;
 }
 
-export type ReferralPartnerDoc = ReferralPartnerActiveDoc | ReferralPartnerRetiredDoc;
+export type ReferralPartnerDoc = ReferralPartnerActiveDoc | ReferralPartnerClosedDoc;
 
 /**
- * Builds the emitted `/r/<slug>.json` document. `pending` returns null —
- * pending partners emit nothing at all (same emission gate as the landing).
+ * Builds the emitted `/r/<slug>.json` document. Pending and retired partners
+ * emit the closed nameless document — the route exists, identity does not.
  */
 export function buildReferralPartnerDoc(
   partner: ReferralPartner,
   facts: ReferralProgramFacts,
 ): ReferralPartnerDoc | null {
-  if (partner.status === "pending") return null;
-  if (partner.status === "retired") {
-    return { type: "referral-partner", slug: partner.slug, status: "retired" };
+  if (partner.status !== "active") {
+    return { type: "referral-partner", slug: partner.slug, status: partner.status };
   }
   const reward =
     facts.rewardAmount !== undefined && facts.rewardCurrency
@@ -93,9 +95,7 @@ export function buildReferralPartnerDoc(
     customerPriceIncrease: false,
     disclosure: referralDisclosureKind(partner.compensation),
     referrerDisplayName: partner.displayName,
-    ...(facts.policyEffectiveFrom
-      ? { policyEffectiveFrom: facts.policyEffectiveFrom }
-      : {}),
+    ...(facts.policyEffectiveFrom ? { policyEffectiveFrom: facts.policyEffectiveFrom } : {}),
     contactUrl: `/r/${partner.slug}`,
   };
 }

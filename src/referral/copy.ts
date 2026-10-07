@@ -36,6 +36,9 @@ Datenschutz section number.</item>
 proofs/price/no-promises blocks, recommendation receipt rows, retired status
 copy, REFERRAL_DISCLOSURE_VERSION, and the corrected privacy line (the code
 lives in the form field, not the contact-page address).</item>
+  <item>RFC-1222 pending-landing amendment (operator, 2026-10-07): `anonymous`
+copy group — pending partners emit the full landing minus identity strings
+(name-free h1/lead/disclosure) while public-name consent is unrecorded.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -159,6 +162,19 @@ export interface ReferralRetiredCopy {
   home: string;
 }
 
+/** RFC-1222 pending-landing amendment: name-free variants for a partner whose
+    public-name consent is not yet recorded. The landing emits the same
+    document minus every string that would carry identity. */
+export interface ReferralAnonymousCopy {
+  /** Hero heading without the partner name ("Ihnen wurde X empfohlen"). */
+  h1: string;
+  /** Lead paragraph without the partner name. */
+  lead: string;
+  /** Compensation-variant disclosure with "the person who recommended" —
+      § 5a UWG still discloses the commercial interest, the name stays out. */
+  disclosure: (compensation: ReferralCompensation) => string;
+}
+
 export interface ReferralLandingCopy {
   eyebrow: string;
   /** Interpolates {displayName, siteName}. */
@@ -187,6 +203,7 @@ export interface ReferralLandingCopy {
   formHeading: string;
   receipt: ReferralReceiptCopy;
   retired: ReferralRetiredCopy;
+  anonymous: ReferralAnonymousCopy;
   privacy: string;
 }
 
@@ -297,6 +314,20 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       status: `${siteName} können Sie weiterhin unabhängig prüfen.`,
       home: "Zur Startseite",
     },
+    anonymous: {
+      h1: `Ihnen wurde ${siteName} empfohlen`,
+      lead: `Diese Seite wurde Ihnen weitergegeben, weil ${siteName} zu Ihrem Betrieb passen könnte. Wir bauen ${audience} — auf eigener Domain, mit schriftlichen Bedingungen und vorgesehenem Ausstieg.`,
+      disclosure: (compensation) => {
+        switch (compensation) {
+          case "referral-fee":
+            return `Offenlegung: Wenn Sie ein ${siteName}-Abonnement beginnen, erhält die Person, die Ihnen diese Seite empfohlen hat, dafür ${facts.reward?.["referral-fee"] ?? "eine Vergütung"} von ${siteName}. Ihr Preis ändert sich dadurch nicht. Eine Empfehlung verpflichtet Sie zu nichts.`;
+          case "none":
+            return `Offenlegung: Zwischen der Person, die Ihnen diese Seite empfohlen hat, und ${siteName} besteht eine Empfehlungspartnerschaft ohne monetäre Vergütung. Eine Empfehlung verpflichtet Sie zu nichts.`;
+          case "steward":
+            return `Offenlegung: Die Person, die Ihnen diese Seite empfohlen hat, ist als ${facts.stewardRole ?? "Partner"} für ${siteName} tätig und erhält dafür eine Vergütung${facts.reward?.steward ? `, unter anderem ${facts.reward.steward}` : ""}. Ihr Preis ändert sich dadurch nicht. Eine Empfehlung verpflichtet Sie zu nichts.`;
+        }
+      },
+    },
     privacy:
       "Auf dieser Seite setzen wir keine Cookies und speichern nichts in Ihrem Browser. Der Empfehlungscode steht nur im Formularfeld und wird mit Ihrer Anfrage übermittelt, solange Sie ihn nicht entfernen. Mehr in der Datenschutzerklärung.",
   };
@@ -364,6 +395,20 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       title: "Ця рекомендація більше не активна",
       status: `${siteName} ви можете надалі перевіряти самостійно.`,
       home: "На головну",
+    },
+    anonymous: {
+      h1: `Вам рекомендували ${siteName}`,
+      lead: `Цю сторінку вам передали, бо ${siteName} може підійти вашому бізнесу. Ми робимо ${audience}: на власному домені, з письмовими умовами та передбаченим виходом.`,
+      disclosure: (compensation) => {
+        switch (compensation) {
+          case "referral-fee":
+            return `Розкриття: якщо ви розпочнете підписку ${siteName}, особа, яка рекомендувала вам цю сторінку, отримає за це ${facts.reward?.["referral-fee"] ?? "винагороду"} від ${siteName}. Ваша ціна через це не змінюється. Рекомендація ні до чого вас не зобов'язує.`;
+          case "none":
+            return `Розкриття: між особою, яка рекомендувала вам цю сторінку, і ${siteName} діє партнерство з рекомендацій без грошової винагороди. Рекомендація ні до чого вас не зобов'язує.`;
+          case "steward":
+            return `Розкриття: особа, яка рекомендувала вам цю сторінку, працює для ${siteName} як ${facts.stewardRole ?? "партнер"} і отримує за це винагороду${facts.reward?.steward ? `, зокрема ${facts.reward.steward}` : ""}. Ваша ціна через це не змінюється. Рекомендація ні до чого вас не зобов'язує.`;
+        }
+      },
     },
     privacy:
       "На цій сторінці ми не використовуємо cookie і нічого не зберігаємо у вашому браузері. Код рекомендації є лише в полі форми й передається разом із вашим запитом, доки ви його не приберете. Докладніше в політиці конфіденційності.",

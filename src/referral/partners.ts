@@ -4,8 +4,9 @@
 [RFC-1222] Trust-handoff referral-partner registry contract — typed loader for
 the site-authored `content/referral-partners/partners.yaml` with an explicit
 lifecycle (pending|active|retired) and a structured consent union. The schema
-gates emission: active partners need recorded consent, pending partners never
-resolve, retired partners keep a nameless status page. Resolver and landing
+gates identity: active partners need recorded consent, pending partners emit
+the landing minus identity (anonymous copy), retired partners keep a nameless
+status page. Resolver and landing
 consumers read this module; client-safe constants stay in ./patterns.ts.
 </purpose>
 <non-goals>
@@ -91,8 +92,8 @@ export const ReferralPartnerSchema = z
       .min(3)
       .max(32)
       .refine((s) => !RESERVED_REFERRAL_SLUGS.includes(s), { message: "reserved slug" }),
-    /** Public display name — consent-gated: never emitted while `pending`,
-        never emitted on `retired` pages or retired JSON. */
+        /** Public display name — consent-gated: withheld while `pending`,
+        never emitted on `retired` pages or nameless JSON docs. */
     displayName: z.string().min(1),
     /** Localized public role statement (`{ de: "…", uk: "…" }`). Falls under
         the same consent gate as displayName — it describes the same person. */
@@ -220,7 +221,8 @@ export type ReferralLandingConfig = z.infer<typeof ReferralLandingConfigSchema>;
 export type ReferralPartnersFile = z.infer<typeof ReferralPartnersFileSchema>;
 
 /** Partners classified by lifecycle — `active` emits landings and resolves,
-    `retired` emits a nameless status page, `pending` emits nothing public. */
+    `retired` emits a nameless status page, `pending` emits the landing minus
+    identity (no displayName/role) while public-name consent is unrecorded. */
 export interface ReferralPartnerLifecycleSets {
   readonly active: ReferralPartner[];
   readonly retired: ReferralPartner[];
