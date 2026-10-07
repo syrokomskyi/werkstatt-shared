@@ -1,12 +1,14 @@
 /*
 <MODULE_CONTRACT>
 <purpose>Unit tests for Tier 2 structure typography rules (RFC-1069). Tests each
-of the 9 rules (TYPO-HEAD-01..03, TYPO-PAIR-01..03, TYPO-MD-01..03) with
+of the 10 rules (TYPO-HEAD-01..04, TYPO-PAIR-01..03, TYPO-MD-01..03) with
 positive and negative cases, including edge cases for frontmatter heading
-detection, link-stripping interactions, and placeholder exclusions.</purpose>
+detection, multi-sentence heading gating, link-stripping interactions, and
+placeholder exclusions.</purpose>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1069: initial test suite for 9 Tier 2 structure rules.</item>
+  <item>warpgogol-m000193: tests for TYPO-HEAD-04 and the single-sentence gate on TYPO-HEAD-01/03.</item>
+  <history>RFC-1069</history>
 </CHANGE_SUMMARY>
 */
 
@@ -99,6 +101,21 @@ describe("TYPO-HEAD-01", () => {
     const seg = makeSegment("## Heading.");
     expect(runRule("TYPO-HEAD-01", seg)).toHaveLength(1);
   });
+
+  // warpgogol-m000193: multi-sentence headings must end with a period (HEAD-04) —
+  // a trailing period there is required, not a defect.
+  it("does not flag a multi-sentence body heading ending with a period", () => {
+    const seg = makeSegment("## Own domain. Fixed price. Regulated support.");
+    expect(runRule("TYPO-HEAD-01", seg)).toHaveLength(0);
+  });
+
+  it("does not flag a multi-sentence frontmatter subheading ending with a period", () => {
+    const seg = makeFmSegment(
+      "Eigene Domain. Fester Preis. Schriftlich geregelte Betreuung.",
+      "$.blocks[0].props.subheading",
+    );
+    expect(runRule("TYPO-HEAD-01", seg)).toHaveLength(0);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -155,6 +172,101 @@ describe("TYPO-HEAD-03", () => {
   it("does not flag a heading without trailing closing punctuation", () => {
     const seg = makeSegment("## Heading");
     expect(runRule("TYPO-HEAD-03", seg)).toHaveLength(0);
+  });
+
+  // warpgogol-m000193: a multi-sentence heading may end with ! or ? — any
+  // sentence terminator satisfies HEAD-04.
+  it("does not flag a multi-sentence heading ending with !", () => {
+    const seg = makeSegment("## What happened? We explain it!");
+    expect(runRule("TYPO-HEAD-03", seg)).toHaveLength(0);
+  });
+
+  it("still flags a single-sentence heading ending with !", () => {
+    const seg = makeSegment("## Watch out!");
+    expect(runRule("TYPO-HEAD-03", seg)).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TYPO-HEAD-04: Multi-sentence heading lacks terminal punctuation
+// ---------------------------------------------------------------------------
+
+describe("TYPO-HEAD-04", () => {
+  it("flags a frontmatter subheading with unterminated final sentence", () => {
+    const seg = makeFmSegment(
+      "Власний домен. Фіксована ціна. Письмово врегульована підтримка",
+      "$.blocks[0].props.subheading",
+      { locale: "uk" },
+    );
+    const findings = runRule("TYPO-HEAD-04", seg);
+    expect(findings).toHaveLength(1);
+    expect(findings[0].ruleId).toBe("TYPO-HEAD-04");
+  });
+
+  it("does not flag a multi-sentence subheading ending with a period", () => {
+    const seg = makeFmSegment(
+      "Eigene Domain. Fester Preis. Schriftlich geregelte Betreuung.",
+      "$.blocks[0].props.subheading",
+    );
+    expect(runRule("TYPO-HEAD-04", seg)).toHaveLength(0);
+  });
+
+  it("does not flag a multi-sentence heading ending with ! or ?", () => {
+    expect(runRule("TYPO-HEAD-04", makeSegment("## What now? We act!"))).toHaveLength(0);
+    expect(runRule("TYPO-HEAD-04", makeSegment("## We act. What now?"))).toHaveLength(0);
+  });
+
+  it("does not flag a single-sentence heading without punctuation", () => {
+    const seg = makeFmSegment("My Heading", "$.blocks[0].props.heading");
+    expect(runRule("TYPO-HEAD-04", seg)).toHaveLength(0);
+  });
+
+  it("does not flag a single-sentence heading ending with a period (HEAD-01 owns it)", () => {
+    const seg = makeFmSegment("My Heading.", "$.blocks[0].props.heading");
+    expect(runRule("TYPO-HEAD-04", seg)).toHaveLength(0);
+  });
+
+  it("does not flag a non-heading frontmatter key with unterminated sentences", () => {
+    const seg = makeFmSegment("First sentence. Second sentence", "$.blocks[0].props.tagline");
+    expect(runRule("TYPO-HEAD-04", seg)).toHaveLength(0);
+  });
+
+  it("does not flag a non-heading body line", () => {
+    const seg = makeSegment("First sentence. Second sentence");
+    expect(runRule("TYPO-HEAD-04", seg)).toHaveLength(0);
+  });
+
+  it("flags a body heading with unterminated final sentence", () => {
+    const seg = makeSegment("## Not just promised. Documented");
+    expect(runRule("TYPO-HEAD-04", seg)).toHaveLength(1);
+  });
+
+  it("does not flag a heading whose internal period is a list marker or abbreviation", () => {
+    // "vs. betreutes" — lowercase continuation never splits a sentence
+    const seg = makeFmSegment("Einmalprojekt vs. betreutes Modell", "$.blocks[0].props.subheading");
+    expect(runRule("TYPO-HEAD-04", seg)).toHaveLength(0);
+  });
+
+  it("attaches an insert fix for a plain YAML-safe value", () => {
+    const seg = makeFmSegment(
+      "Eigene Domain. Fester Preis. Schriftlich geregelte Betreuung",
+      "$.blocks[0].props.subheading",
+    );
+    const findings = runRule("TYPO-HEAD-04", seg);
+    expect(findings[0].fix).toEqual({
+      type: "insert",
+      at: seg.text.trimEnd().length,
+      text: ".",
+    });
+  });
+
+  it("omits the fix when the raw value contains YAML-escapable characters", () => {
+    // A single quote is doubled in YAML single-quoted scalars, so the parsed
+    // value cannot be located verbatim on the source line.
+    const seg = makeFmSegment("We can't wait. We act now", "$.blocks[0].props.subheading");
+    const findings = runRule("TYPO-HEAD-04", seg);
+    expect(findings).toHaveLength(1);
+    expect(findings[0].fix).toBeNull();
   });
 });
 
@@ -307,8 +419,8 @@ describe("TYPO-MD-03", () => {
 // ---------------------------------------------------------------------------
 
 describe("TIER2_STRUCTURE_RULES", () => {
-  it("exports exactly 9 rules", () => {
-    expect(TIER2_STRUCTURE_RULES).toHaveLength(9);
+  it("exports exactly 10 rules", () => {
+    expect(TIER2_STRUCTURE_RULES).toHaveLength(10);
   });
 
   it("all rules have tier 2", () => {

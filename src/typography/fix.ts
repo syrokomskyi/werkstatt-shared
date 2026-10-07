@@ -11,7 +11,8 @@ whitelisted in FIXABLE_RULE_IDS populate the fix field on TypographyFinding.</pu
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1072: initial creation with FixAction type, FIXABLE_RULE_IDS, and applyFixes.</item>
+  <item>warpgogol-m000193: whitelisted TYPO-HEAD-04 for autofix — missing terminal punctuation on a multi-sentence heading is a mechanical insert of ".".</item>
+  <history>RFC-1072</history>
 </CHANGE_SUMMARY>
 */
 
@@ -38,8 +39,8 @@ export type FixAction =
 // ---------------------------------------------------------------------------
 
 /**
- * Rules that are safe for mechanical fixing. Only PUNCT, SPACE, APOS, and ABBR
- * families are fixable — other families require human judgment.
+ * Rules that are safe for mechanical fixing. Only PUNCT, SPACE, APOS, ABBR,
+ * and HEAD-04 are fixable — other families require human judgment.
  */
 export const FIXABLE_RULE_IDS: readonly string[] = [
   "TYPO-PUNCT-01",
@@ -49,6 +50,7 @@ export const FIXABLE_RULE_IDS: readonly string[] = [
   "TYPO-APOS-02",
   "TYPO-ABBR-01",
   "TYPO-ABBR-02",
+  "TYPO-HEAD-04",
 ] as const;
 
 const FIXABLE_SET: ReadonlySet<string> = new Set(FIXABLE_RULE_IDS);

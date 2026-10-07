@@ -1,7 +1,7 @@
 /*
 <MODULE_CONTRACT>
-<purpose>Tier 2 structure typography rules (RFC-1069). Implements 9 rules across
-3 families: HEAD (3), PAIR (3), MD (3). Rules operate on TextSegment objects
+<purpose>Tier 2 structure typography rules (RFC-1069). Implements 10 rules across
+3 families: HEAD (4), PAIR (3), MD (3). Rules operate on TextSegment objects
 produced by the text-surface extractor (RFC-1068), never on raw file bytes.
 All regexes use the `u` flag and Unicode property escapes where applicable.</purpose>
 <non-goals>
@@ -13,12 +13,14 @@ All regexes use the `u` flag and Unicode property escapes where applicable.</pur
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1069: initial creation with 9 Tier 2 structure rules.</item>
+  <item>warpgogol-m000193: added TYPO-HEAD-04 (multi-sentence heading must end with terminal punctuation, autofixable) and gated TYPO-HEAD-01/03 to single-sentence headings — a heading composed of complete sentences may and must end with a sentence terminator, a title-fragment heading still may not.</item>
+  <history>RFC-1069</history>
 </CHANGE_SUMMARY>
 */
 
 import type { TextSegment } from "./text-surface.ts";
 import { finding, type TypographyFinding, type TypographyRule } from "./rules-tier1.ts";
+import { splitSentences } from "../semantic/extract.ts";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,6 +58,22 @@ function isFrontmatterHeading(segment: TextSegment): boolean {
   return key === "heading" || key === "subheading";
 }
 
+function isHeadingSegment(segment: TextSegment): boolean {
+  return isBodyHeading(segment.text) || isFrontmatterHeading(segment);
+}
+
+/**
+ * Number of sentences inside a heading-class segment, via the locale-aware
+ * splitter (abbreviations, digit list markers, and lowercase continuations
+ * never produce a boundary). A single-sentence heading is a title fragment —
+ * terminal punctuation is forbidden (HEAD-01/02/03). A multi-sentence heading
+ * is prose in heading position — HEAD-04 requires the final sentence to be
+ * terminated, and HEAD-01/03 must not punish that terminator.
+ */
+function headingSentenceCount(segment: TextSegment): number {
+  return splitSentences(segment.text, segment.locale).length;
+}
+
 // ---------------------------------------------------------------------------
 // TYPO-HEAD-01: Heading ends with a period
 // ---------------------------------------------------------------------------
@@ -69,7 +87,10 @@ const head01: TypographyRule = {
   severity: "error",
   check(segment) {
     const text = segment.text;
-    if (!isBodyHeading(text) && !isFrontmatterHeading(segment)) return [];
+    if (!isHeadingSegment(segment)) return [];
+    // Multi-sentence headings are required to end with terminal punctuation
+    // (HEAD-04) — a trailing period there is correct, not a defect.
+    if (headingSentenceCount(segment) > 1) return [];
     const match = HEAD01_PERIOD.exec(text);
     if (!match) return [];
     const col = match.index;
@@ -129,7 +150,10 @@ const head03: TypographyRule = {
   severity: "error",
   check(segment) {
     const text = segment.text;
-    if (!isBodyHeading(text) && !isFrontmatterHeading(segment)) return [];
+    if (!isHeadingSegment(segment)) return [];
+    // Same gate as HEAD-01: a multi-sentence heading may end with ! or ?
+    // (any sentence terminator satisfies HEAD-04).
+    if (headingSentenceCount(segment) > 1) return [];
     const match = HEAD03_OTHER.exec(text);
     if (!match) return [];
     const col = match.index;
@@ -141,6 +165,52 @@ const head03: TypographyRule = {
         col,
         "Heading ends with closing punctuation (!, ?, or )) — a heading should not end with these marks.",
         "Remove the trailing punctuation.",
+      ),
+    ];
+  },
+};
+
+// ---------------------------------------------------------------------------
+// TYPO-HEAD-04: Multi-sentence heading lacks terminal punctuation
+// A heading composed of two or more sentences is prose in heading position —
+// every sentence, including the last, must be terminated (. ! ?). Title
+// fragments (single sentence) are governed by HEAD-01..03 instead.
+// Autofixable: inserts "." at the end of the value.
+// ---------------------------------------------------------------------------
+
+const HEAD04_TERMINAL = /[.!?]\s*$/u;
+// Chars that differ between the parsed value and the YAML source line —
+// a fix match that cannot be located verbatim would corrupt the file.
+const HEAD04_UNSAFE_MATCH = /["'\\\n]/u;
+
+const head04: TypographyRule = {
+  id: "TYPO-HEAD-04",
+  family: "HEAD",
+  tier: 2,
+  severity: "error",
+  check(segment) {
+    const text = segment.text;
+    if (!isHeadingSegment(segment)) return [];
+    if (headingSentenceCount(segment) < 2) return [];
+    if (HEAD04_TERMINAL.test(text)) return [];
+
+    // The fix locates the raw value verbatim on the source line — only offer
+    // it when the parsed value can appear there unescaped.
+    const rawMatch = segment.raw.trimEnd();
+    const fix =
+      rawMatch.length > 0 && !HEAD04_UNSAFE_MATCH.test(rawMatch)
+        ? { type: "insert" as const, at: text.trimEnd().length, text: "." }
+        : null;
+
+    return [
+      finding(
+        "TYPO-HEAD-04",
+        segment,
+        rawMatch,
+        0,
+        "Heading contains multiple sentences but does not end with terminal punctuation (. ! ?).",
+        "End the final sentence with a period, question mark, or exclamation mark — or shorten the heading to a single title phrase.",
+        fix,
       ),
     ];
   },
@@ -369,6 +439,7 @@ export const TIER2_STRUCTURE_RULES: readonly TypographyRule[] = [
   head01,
   head02,
   head03,
+  head04,
   pair01,
   pair02,
   pair03,

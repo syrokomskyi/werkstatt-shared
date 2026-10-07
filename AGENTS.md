@@ -255,11 +255,11 @@ Location: `packages/werkstatt-shared/src/typography/` — exported via `@warpgog
 | Export | Purpose |
 | --- | --- |
 | `TIER1_RULES` | 15 Tier 1 rules: PUNCT (4), SPACE (4), CASE (2), LOCALE (3), YAML (2) — RFC-1068 |
-| `TIER2_STRUCTURE_RULES` | 9 Tier 2 structure rules: HEAD (3), PAIR (3), MD (3) — RFC-1069 |
+| `TIER2_STRUCTURE_RULES` | 10 Tier 2 structure rules: HEAD (4), PAIR (3), MD (3) — RFC-1069 |
 | `TIER2_LOCALE_RULES` | 7 Tier 2 locale rules: NUM (3), ABBR (2), APOS (2) — RFC-1070 |
 | `TIER3_ADVISORY_RULES` | 5 Tier 3 advisory rules: UNICODE (2), LINK (2), SENT (1) — RFC-1071 |
 | `FixAction` | Discriminated union type for mechanical fix actions (`replace`, `insert`, `delete`) — RFC-1072 |
-| `FIXABLE_RULE_IDS` | Whitelist of 7 rule IDs safe for mechanical fixing — RFC-1072 |
+| `FIXABLE_RULE_IDS` | Whitelist of 8 rule IDs safe for mechanical fixing — RFC-1072 |
 | `isFixable(ruleId)` | Check if a rule ID is in the fixable whitelist — RFC-1072 |
 | `applyFixes(findings, ctx)` | Apply mechanical fixes to findings, returning fixed segment text — RFC-1072 |
 
@@ -276,6 +276,7 @@ All Tier 3 rules have `severity: "warning"` and `tier: 3`. They never cause `typ
 Typography rule implementation notes (RFC-1083):
 
 - `isBodyHeading` checks per-line (not whole body): a segment is a heading only if it is a single line matching `^#{1,6}\s+.+$`. Multi-line body fields starting with `##` are NOT headings — they are body content.
+- HEAD sentence gating (warpgogol-m000193): `TYPO-HEAD-01`/`03` fire only on single-sentence headings (title fragments must not end with `.`, `!`, `?`). `TYPO-HEAD-04` fires on multi-sentence headings (`splitSentences` ≥ 2) that lack a terminal `.`/`!`/`?` — prose in heading position must be fully terminated. HEAD-04 is autofixable (`typography.fix` inserts `.`).
 - PUNCT-04 excludes `\d+\.x` version patterns: the DOT_LETTER branch checks the character before the dot (must be a digit) and the letter after the dot (must be `x` followed by a non-word character or end of string). This prevents false positives on version strings like "4.x" or "2.0.x".
 
 ### Utility registry (RFC-0916)

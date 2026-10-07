@@ -48,8 +48,8 @@ function runFixableRules(text: string, locale: string): TypographyFinding[] {
 // ---------------------------------------------------------------------------
 
 describe("Fix engine — property-based tests (RFC-1072, DNA-101)", () => {
-  it("FIXABLE_RULE_IDS contains exactly 7 rule IDs", () => {
-    expect(FIXABLE_RULE_IDS).toHaveLength(7);
+  it("FIXABLE_RULE_IDS contains exactly 8 rule IDs", () => {
+    expect(FIXABLE_RULE_IDS).toHaveLength(8);
     expect(FIXABLE_RULE_IDS).toContain("TYPO-PUNCT-01");
     expect(FIXABLE_RULE_IDS).toContain("TYPO-SPACE-01");
     expect(FIXABLE_RULE_IDS).toContain("TYPO-SPACE-02");
@@ -57,6 +57,7 @@ describe("Fix engine — property-based tests (RFC-1072, DNA-101)", () => {
     expect(FIXABLE_RULE_IDS).toContain("TYPO-APOS-02");
     expect(FIXABLE_RULE_IDS).toContain("TYPO-ABBR-01");
     expect(FIXABLE_RULE_IDS).toContain("TYPO-ABBR-02");
+    expect(FIXABLE_RULE_IDS).toContain("TYPO-HEAD-04");
   });
 
   it("isFixable returns true only for whitelisted rules", () => {
