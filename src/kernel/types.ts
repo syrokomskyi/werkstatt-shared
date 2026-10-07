@@ -11,7 +11,6 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1133: cache direct executeKernelCommand executions with flag-keyed results</item>
   <item>ADR-0089: kernel and shared code must not depend on ambient process state
 
 KernelRuntimeContext is the explicit-context carrier (workspaceRoot, site, workpieceEnv) — command handlers and shared code must not fall back to process.cwd() or process.env.NODE_ENV for correctness; callers pass roots and modes explicitly.</item>
@@ -20,7 +19,13 @@ KernelRuntimeContext is the explicit-context carrier (workspaceRoot, site, workp
 Scheduler: collectErrors option on executeScheduledSteps — read-only steps (ScheduledStep.readOnly, executor-resolved from mutatesState === false) run after dependency failures with ranAfterFailedDependency annotation; ranTainted set propagates taint transitively so mutating dependents still skip. Executor: mergeCollectErrorsOption OR-merges PipelineDeclaration.collectErrors with the CLI flag at registry resolution; readOnly annotated post-buildSchedule; taint flag copied to step reports; tainted failures marked in pretty output. Contracts: PipelineDeclaration.collectErrors, KernelExecutionReport.ranAfterFailedDependency, pipelines maps store full declarations. Declarations: collectErrors on validation-gate registrations (build.post, check, build.check, compass, integrity.release in the workpiece template; packages.check in checks module). Tests: 10 new cases covering AC-1..AC-6 plus transitive taint.</item>
   <item>RFC-1147: KernelRegisteredCommandInfo.provider narrowed to workspace | site-module and siteName field removed — runtime site enumeration deleted, the canonical site module set (SITE_MODULE_MAP) is the only site provider.</item>
   <item>RFC-1193: bound module hashing to src/os roots with constant fallbacks</item>
-  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130</history>
+  <item>RFC-1231: step 1 — rename supportsAllSites to acceptsAllFlag
+
+Mechanical sweep: the field only ever gated --all argv acceptance; fan-out
+follows the parsed selector. Guard renamed assertAllSitesAllowed ->
+assertAllFlagAccepted, message updated. 417 declaration sites + type
+surfaces (KernelCommandMetadata, ForgeCommandMetadata) in one atomic pass.</item>
+  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133</history>
 </CHANGE_SUMMARY>
 */
 
@@ -105,7 +110,7 @@ export interface KernelCommandMetadata {
    */
   mutatingFlags?: string[];
   requiresNetwork?: boolean;
-  supportsAllSites?: boolean;
+  acceptsAllFlag?: boolean;
   timeoutMs?: number;
   expectedDurationMs?: number;
   longRunning?: boolean;
