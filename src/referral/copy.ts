@@ -45,6 +45,8 @@ legally binding version; UK is a synced reference translation.
   sourced benefit and the honest compensation clause per partner, "without"
   states same terms minus the benefit. Checklist labels added so the enhanced
   section shows the same contact requirement /kontakt does.</item>
+  <item>warpgogol-m000193: freePeriod condition on the with-card rephrased —
+  uk "(активується на 2-й місяць)", de "(aktiviert im 2. Monat)".</item>
   <history>RFC-1198, RFC-1222</history>
 </CHANGE_SUMMARY>
 */
@@ -473,7 +475,7 @@ function refWithHelpDe(facts: ReferralLandingFacts, compensation: ReferralCompen
   if (benefit?.priorityStart) parts.push("Prioritätsstart");
   if (benefit?.freePeriod) {
     const cond =
-      benefit.freePeriodCondition === "active-in-second-month" ? " (aktiv im 2. Monat)" : "";
+      benefit.freePeriodCondition === "active-in-second-month" ? " (aktiviert im 2. Monat)" : "";
     parts.push(`${benefit.freePeriod} Subscription kostenlos${cond}`);
   }
   const compensationClause =
@@ -491,7 +493,9 @@ function refWithHelpUk(facts: ReferralLandingFacts, compensation: ReferralCompen
   if (benefit?.priorityStart) parts.push("пріоритетний старт");
   if (benefit?.freePeriod) {
     const cond =
-      benefit.freePeriodCondition === "active-in-second-month" ? " (активні на 2-й місяць)" : "";
+      benefit.freePeriodCondition === "active-in-second-month"
+        ? " (активується на 2-й місяць)"
+        : "";
     parts.push(`${benefit.freePeriod} підписки безкоштовно${cond}`);
   }
   const compensationClause =
