@@ -14,7 +14,11 @@ truthfully rather than invent digits (DNA-103).
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>referral-brief-v1: created — single typed fact set replacing per-copy literal economics.</item>
+  <item>warpgogol-m000193: created — single typed fact set replacing per-copy literal economics.</item>
+  <item>REVIEW-CODE-2026-10-08-02: new optional facts downtimeHours,
+  priceFixMonths, cancellationDays, smallChangesPerMonth so every numeric claim
+  the copy cites resolves from a PBP policy — no digits invented at the copy
+  layer when a policy is absent.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -62,6 +66,15 @@ export interface ReferralServiceFacts {
   readonly delayCreditPerDay?: number;
   /** Availability objective percent (availability-sla threshold). */
   readonly availabilityPercent?: number;
+  /** Downtime threshold in hours — beyond it the next month is free
+      (availability-sla terms.downtimeThreshold). */
+  readonly downtimeHours?: number;
+  /** Price-fix period in months (price-changes priceFixPeriod). */
+  readonly priceFixMonths?: number;
+  /** Ordinary cancellation notice in days (cancellation ordinaryNotice.period). */
+  readonly cancellationDays?: number;
+  /** Included small changes per month (offering package.allowances.smallChanges). */
+  readonly smallChangesPerMonth?: number;
   /** Small-changes window in hours (small-changes threshold). */
   readonly smallChangeHours?: number;
   /** Support response window in hours (support-response threshold). */

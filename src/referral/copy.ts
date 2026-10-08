@@ -24,12 +24,16 @@ legally binding version; UK is a synced reference translation.
   <item>RFC-1222: trust-handoff copy — paid/unpaid disclosure badge (§ 5a UWG),
   proofs/price/no-promises blocks, recommendation receipt rows, retired status
   copy, REFERRAL_DISCLOSURE_VERSION, and the corrected privacy line.</item>
-  <item>referral-brief-v1: landing v3 rebuild — EMPFEHLUNG label hero with
+  <item>warpgogol-m000193: landing v3 rebuild — EMPFEHLUNG label hero with
   calm labelled disclosure (60-day trigger named), fixed leistung list,
   structured price cells, two-column commitments, four-step process, verbatim
   quote block, transparency card (code/art/preis/scope/exclusions/regelwerk),
   referral form strings (email/name/message/ref), neutral mode-D copy, and
   visitor auto-reply templates.</item>
+  <item>REVIEW-CODE-2026-10-08-02: endpreise/SLA/leistung numbers (priceFixMonths,
+  cancellationDays, downtimeHours, smallChangesPerMonth) interpolate PBP-derived
+  facts instead of literals; absent support-response policy no longer fabricates
+  a 24h promise — numberless sentence instead.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -493,9 +497,19 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
   const s = facts.service;
   const launchDays = s?.launchWorkdays;
   const sla = s?.availabilityPercent;
+  const downtime = s?.downtimeHours;
+  const priceFix = s?.priceFixMonths;
+  const cancel = s?.cancellationDays;
+  const perMonth = s?.smallChangesPerMonth;
   const small = s?.smallChangeHours;
   const response = s?.responseHours;
   const handover = s?.handoverHours;
+  // REVIEW-CODE-2026-10-08-02: no invented digits — an absent support-response
+  // policy degrades to a numberless sentence, never a guessed "24".
+  const responseSentence =
+    response !== undefined
+      ? `Wir antworten innerhalb von ${response} Stunden an Werktagen per E-Mail.`
+      : "Wir antworten an Werktagen per E-Mail.";
   const launchDelayClause =
     s?.launchRemedy === "continued-performance"
       ? "; bei Verzug durch uns arbeiten wir kostenlos weiter bis zum Launch"
@@ -542,7 +556,9 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         : "Hosting mit Verfügbarkeitszusage",
       "Technische Umsetzung von Impressum und Datenschutz (keine Rechtsberatung)",
       "Auffindbarkeit für KI-Systeme (strukturierte Daten)",
-      "1 kleine Änderung pro Monat inklusive",
+      perMonth !== undefined
+        ? `${perMonth} kleine ${perMonth === 1 ? "Änderung" : "Änderungen"} pro Monat inklusive`
+        : "Kleine Änderung pro Monat inklusive",
       "Quartalsauswertung zu Besuchern und Traffic-Quellen",
       handover !== undefined
         ? `Vollständige Übergabe innerhalb von ${handover} Stunden, wenn Sie gehen`
@@ -550,8 +566,13 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     ],
     preisHeading: "Preis — offen",
     priceCells: priceCellsDe(facts),
-    endpreiseLine:
-      "Endpreise, keine Umsatzsteuer (Kleinunternehmer, § 19 UStG). Preis 12 Monate festgeschrieben. Kündigung: 30 Tage zum Monatsende.",
+    endpreiseLine: [
+      "Endpreise, keine Umsatzsteuer (Kleinunternehmer, § 19 UStG).",
+      priceFix !== undefined ? `Preis ${priceFix} Monate festgeschrieben.` : "",
+      cancel !== undefined ? `Kündigung: ${cancel} Tage zum Monatsende.` : "",
+    ]
+      .filter((p) => p.length > 0)
+      .join(" "),
     vorteilHeading: "Ihr Empfehlungsvorteil",
     vorteilText: vorteilDe(facts, siteName),
     riskLine:
@@ -572,7 +593,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       {
         text:
           sla !== undefined
-            ? `${sla} % Verfügbarkeit pro Monat; über 7 Stunden Ausfall: nächster Monat kostenlos`
+            ? `${sla} % Verfügbarkeit pro Monat${downtime !== undefined ? `; über ${downtime} Stunden Ausfall` : "; bei längerem Ausfall"}: nächster Monat kostenlos`
             : "Verfügbarkeit mit Ausfall-Kulanz",
         anchorKey: "availabilitySla",
       },
@@ -678,7 +699,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       privacyNote:
         "Wir nutzen auf dieser Seite keine Cookies und speichern nichts auf Ihrem Gerät. Der Empfehlungscode wird nur mit Ihrer Anfrage übermittelt.",
       privacyLinkLabel: "Datenschutzerklärung",
-      successMessage: `Danke. Ihre Anfrage ist angekommen. Wir antworten innerhalb von ${response ?? 24} Stunden an Werktagen per E-Mail. Schauen Sie bei Bedarf im Spam-Ordner nach.`,
+      successMessage: `Danke. Ihre Anfrage ist angekommen. ${responseSentence} Schauen Sie bei Bedarf im Spam-Ordner nach.`,
       errorSummary: "Einige Angaben fehlen oder sind ungültig.",
       emailRequired: "Bitte geben Sie eine gültige E-Mail-Adresse an.",
       messageRequired: "Bitte schreiben Sie eine Nachricht.",
@@ -693,7 +714,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
           message,
           "",
           ...(code ? [`Empfehlungscode: ${code}`, ""] : []),
-          `Wir antworten innerhalb von ${response ?? 24} Stunden an Werktagen per E-Mail. Schauen Sie bei Bedarf im Spam-Ordner nach.`,
+          `${responseSentence} Schauen Sie bei Bedarf im Spam-Ordner nach.`,
         ].join("\n"),
     },
     programLink: "Wie das Empfehlungsprogramm funktioniert",
@@ -727,9 +748,17 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
   const s = facts.service;
   const launchDays = s?.launchWorkdays;
   const sla = s?.availabilityPercent;
+  const downtime = s?.downtimeHours;
+  const priceFix = s?.priceFixMonths;
+  const cancel = s?.cancellationDays;
+  const perMonth = s?.smallChangesPerMonth;
   const small = s?.smallChangeHours;
   const response = s?.responseHours;
   const handover = s?.handoverHours;
+  const responseSentence =
+    response !== undefined
+      ? `Ми відповідаємо протягом ${response} годин у робочі дні електронною поштою.`
+      : "Ми відповідаємо в робочі дні електронною поштою.";
   const launchDelayClause =
     s?.launchRemedy === "continued-performance"
       ? "; при зволіканні з нашого боку працюємо безкоштовно до запуску"
@@ -776,7 +805,9 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         : "Хостинг із гарантією доступності",
       "Технічна реалізація Impressum і Datenschutz (без юридичної консультації)",
       "Доступність для ШІ-систем (структуровані дані)",
-      "1 незначна зміна на місяць включно",
+      perMonth !== undefined
+        ? `${perMonth} ${perMonth === 1 ? "незначна зміна" : "незначні зміни"} на місяць включно`
+        : "Незначна зміна на місяць включно",
       "Квартальний звіт про відвідувачів і джерела трафіку",
       handover !== undefined
         ? `Повна передача протягом ${handover} годин, якщо ви йдете`
@@ -784,8 +815,13 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     ],
     preisHeading: "Ціна — відкрито",
     priceCells: priceCellsUk(facts),
-    endpreiseLine:
-      "Кінцеві ціни, без ПДВ (малий підприємець, § 19 UStG). Ціна зафіксована на 12 місяців. Розірвання: за 30 днів до кінця місяця.",
+    endpreiseLine: [
+      "Кінцеві ціни, без ПДВ (малий підприємець, § 19 UStG).",
+      priceFix !== undefined ? `Ціна зафіксована на ${priceFix} місяців.` : "",
+      cancel !== undefined ? `Розірвання: за ${cancel} днів до кінця місяця.` : "",
+    ]
+      .filter((p) => p.length > 0)
+      .join(" "),
     vorteilHeading: "Ваша перевага за рекомендацією",
     vorteilText: vorteilUk(facts, siteName),
     riskLine:
@@ -806,7 +842,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       {
         text:
           sla !== undefined
-            ? `Доступність ${sla} % на місяць; понад 7 годин простою: наступний місяць безкоштовно`
+            ? `Доступність ${sla} % на місяць; ${downtime !== undefined ? `понад ${downtime} годин простою` : "за тривалого простою"}: наступний місяць безкоштовно`
             : "Доступність із компенсацією простою",
         anchorKey: "availabilitySla",
       },
@@ -911,7 +947,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       privacyNote:
         "Ми не використовуємо на цій сторінці cookie і нічого не зберігаємо на вашому пристрої. Код рекомендації передається лише разом із вашим запитом.",
       privacyLinkLabel: "політиці конфіденційності",
-      successMessage: `Дякуємо. Ваш запит надійшов. Ми відповідаємо протягом ${response ?? 24} годин у робочі дні електронною поштою. За потреби перевірте папку «Спам».`,
+      successMessage: `Дякуємо. Ваш запит надійшов. ${responseSentence} За потреби перевірте папку «Спам».`,
       errorSummary: "Деякі поля не заповнені або містять помилки.",
       emailRequired: "Будь ласка, вкажіть дійсну адресу електронної пошти.",
       messageRequired: "Будь ласка, напишіть повідомлення.",
@@ -926,7 +962,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
           message,
           "",
           ...(code ? [`Код рекомендації: ${code}`, ""] : []),
-          `Ми відповідаємо протягом ${response ?? 24} годин у робочі дні електронною поштою. За потреби перевірте папку «Спам».`,
+          `${responseSentence} За потреби перевірте папку «Спам».`,
         ].join("\n"),
     },
     programLink: "Як працює програма рекомендацій",

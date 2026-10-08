@@ -17,6 +17,9 @@ Closed shape: pending and retired partners emit exactly {type, slug, status}
 <CHANGE_SUMMARY>
   <item>RFC-1222: created — disclosure twin builder shared by the generated endpoint and the parity validator.</item>
   <item>RFC-1222 pending-landing amendment (operator, 2026-10-07): pending partners emit the nameless closed document — the route exists while consent is unrecorded, identity does not.</item>
+  <item>REVIEW-CODE-2026-10-08-02: closed-doc status union tightened back to the
+  emitted states ("retired" | "pending") — a paused partner never reaches the
+  builder, so the build path returns null instead of minting a paused document.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -36,13 +39,12 @@ export interface ReferralProgramFacts {
 
 /** The retired and pending documents are deliberately closed — three fields,
     no identity. Pending keeps the route alive while consent is unrecorded;
-    retired preserves the historical slug after the active window. `paused` is
-    in the union for completeness — paused partners emit no route, so the
-    document never ships. */
+    retired preserves the historical slug after the active window. Paused
+    partners emit no document at all — the slug is absent from the union. */
 export interface ReferralPartnerClosedDoc {
   readonly type: "referral-partner";
   readonly slug: string;
-  readonly status: "retired" | "pending" | "paused";
+  readonly status: "retired" | "pending";
 }
 
 export interface ReferralPartnerActiveDoc {
@@ -77,6 +79,8 @@ export function buildReferralPartnerDoc(
   facts: ReferralProgramFacts,
 ): ReferralPartnerDoc | null {
   if (partner.status !== "active") {
+    // Paused partners emit no document — the route never reaches the builder.
+    if (partner.status === "paused") return null;
     return { type: "referral-partner", slug: partner.slug, status: partner.status };
   }
   const reward =
