@@ -21,6 +21,7 @@ import { dirname, join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import Ajv2020 from "ajv/dist/2020.js";
 import { funnelPayloadToProcessHint } from "../lagebild-destination-adapter.ts";
+import { captureAcquisition, readAcquisition } from "../acquisition.ts";
 import type { WebsiteIngressPayload } from "../lagebild-contracts.types.generated.ts";
 
 // VID-013: fixtures are validated byte-exact from the vendored snapshots.
@@ -98,7 +99,7 @@ const specDirs = readdirSync(SPECS_ROOT, { withFileTypes: true })
 
 // VID-011 pin for the derived types (PLAN-RFC-1238-01) — the newest vendored
 // snapshot; bump alongside codegen/verbund-contract-types.ts SPEC_VERSION.
-const PIN = "verbund-integration-spec-v0.1.3";
+const PIN = "verbund-integration-spec-v0.1.4";
 const GENERATED_FILE = join(
   dirname(fileURLToPath(import.meta.url)),
   "../lagebild-contracts.types.generated.ts",
@@ -203,6 +204,37 @@ for (const specId of specDirs) {
     ).toBe(true);
   });
 
+  // RFC-1241 (V05): the block the capture/read path actually produces must
+  // validate against acquisition-context.schema.yaml on every snapshot that
+  // ships it (v0.1.3+) — producer and contract drift-check in the same suite.
+  if (schemaIds.has("schemas/acquisition-context.schema.yaml")) {
+    test(`${specId}: emitted acquisition validates against vendored schema (RFC-1241)`, () => {
+      const data: Record<string, string> = {};
+      const storage = {
+        getItem: (k: string) => data[k] ?? null,
+        setItem: (k: string, v: string) => {
+          data[k] = v;
+        },
+      };
+      captureAcquisition(
+        "?utm_source=meta&utm_medium=paid_social&utm_campaign=sit001-bw-v1&utm_id=exp_01",
+        storage,
+      );
+      const block = readAcquisition(storage);
+      expect(block, "UTM-tagged landing must produce an acquisition block").toBeDefined();
+
+      const schemaId = schemaIds.get("schemas/acquisition-context.schema.yaml");
+      const validate = schemaId ? ajv.getSchema(schemaId) : undefined;
+      expect(validate).toBeDefined();
+      expect(
+        validate!(block),
+        `emitted acquisition failed ${specId} schema: ` +
+          `${JSON.stringify(validate!.errors)} — the producer drifted from the ` +
+          `vendored contract; fix acquisition.ts, never patch the snapshot`,
+      ).toBe(true);
+    });
+  }
+
   // PLAN-RFC-1238-01: two payload assertions against the website-ingress
   // schema where the snapshot ships one (v0.1.2+, AMD-WERKSTATT-02):
   //  a) the surface the adapter actually emits validates on every snapshot —
@@ -252,6 +284,22 @@ for (const specId of specDirs) {
           },
           "2026-10-08T10:00:00.000Z",
         )!,
+        // RFC-1241: the adapter now emits acquisition — include it on the
+        // emitted surface where the snapshot ships the schema (v0.1.3+);
+        // earlier snapshots legitimately lack it.
+        ...(schemaIds.has("schemas/acquisition-context.schema.yaml")
+          ? {
+              acquisition: {
+                schema: "acquisition-context/v1" as const,
+                utm_source: "meta",
+                utm_medium: "paid_social",
+                utm_campaign: "sit001-bw-v1",
+                utm_term: "-",
+                utm_content: "cre_b3d8e2f1",
+                utm_id: "exp_7f2a91c4",
+              },
+            }
+          : {}),
       };
       const validate = ajv.getSchema(ingressSchemaId)!;
       expect(

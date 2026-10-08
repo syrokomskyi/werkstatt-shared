@@ -229,6 +229,123 @@ test("no hint when stage equals previousStage, stage absent, or event is not a f
   expect(plainLead["interaction_kind"]).toBe("contact_message");
 });
 
+// ---------------------------------------------------------------------------
+// RFC-1241 / spec v0.1.4 V05: acquisition-context on the wire — adapter
+// pass-through with structural validation; malformed degrades to absent.
+// ---------------------------------------------------------------------------
+
+test("adapter passes a valid payload.acquisition through as the acquisition wire field (RFC-1241, AC-3)", async () => {
+  const body = await captureIngressBody(
+    funnelEvent({
+      funnelVersion: "1.0.0",
+      eventKind: "material.submitted",
+      stage: "materials_requested",
+      contact: { email: "v@example.com" },
+      acquisition: {
+        schema: "acquisition-context/v1",
+        utm_source: "meta",
+        utm_medium: "paid_social",
+        utm_campaign: "sit001-bw-v1",
+        utm_term: "-",
+        utm_content: "cre_b3d8e2f1",
+        utm_id: "exp_7f2a91c4",
+      },
+    }),
+  );
+  expect(body["acquisition"]).toEqual({
+    schema: "acquisition-context/v1",
+    utm_source: "meta",
+    utm_medium: "paid_social",
+    utm_campaign: "sit001-bw-v1",
+    utm_term: "-",
+    utm_content: "cre_b3d8e2f1",
+    utm_id: "exp_7f2a91c4",
+  });
+});
+
+test("adapter omits malformed payload.acquisition without throwing (RFC-1241, AC-3)", async () => {
+  const missingKey = await captureIngressBody(
+    funnelEvent({
+      contact: { email: "v@example.com" },
+      acquisition: { schema: "acquisition-context/v1", utm_source: "meta" },
+    }),
+  );
+  expect("acquisition" in missingKey).toBe(false);
+
+  const extraKey = await captureIngressBody(
+    funnelEvent({
+      contact: { email: "v@example.com" },
+      acquisition: {
+        schema: "acquisition-context/v1",
+        utm_source: "meta",
+        utm_medium: "cpc",
+        utm_campaign: "c",
+        utm_term: "-",
+        utm_content: "-",
+        utm_id: "-",
+        fbclid: "IwAR123", // platform click ids are inexpressible by contract
+      },
+    }),
+  );
+  expect("acquisition" in extraKey).toBe(false);
+
+  const badCharset = await captureIngressBody(
+    funnelEvent({
+      contact: { email: "v@example.com" },
+      acquisition: {
+        schema: "acquisition-context/v1",
+        utm_source: "meta ads", // space violates the contract charset
+        utm_medium: "cpc",
+        utm_campaign: "c",
+        utm_term: "-",
+        utm_content: "-",
+        utm_id: "-",
+      },
+    }),
+  );
+  expect("acquisition" in badCharset).toBe(false);
+});
+
+test("submitIngress serializes input.acquisition verbatim as acquisition (RFC-1241, AC-3)", async () => {
+  const fetchSpy = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValue(
+      new Response(JSON.stringify({ accepted: true, is_replay: false }), { status: 201 }),
+    );
+
+  await submitIngress(baseConfig, {
+    submissionId: "sub_acq00000000000001",
+    idempotencyKey: "ten:acq1",
+    interactionKind: "contact_message",
+    identityClaims: [{ claim_type: "email", value: "t@example.com" }],
+    acquisition: {
+      schema: "acquisition-context/v1",
+      utm_source: "newsletter",
+      utm_medium: "email",
+      utm_campaign: "launch-2026",
+      utm_term: "-",
+      utm_content: "-",
+      utm_id: "-",
+    },
+  });
+
+  const body = JSON.parse(
+    (fetchSpy.mock.calls[0] as [string, RequestInit])[1].body as string,
+  ) as Record<string, unknown>;
+  expect(body["acquisition"]).toEqual({
+    schema: "acquisition-context/v1",
+    utm_source: "newsletter",
+    utm_medium: "email",
+    utm_campaign: "launch-2026",
+    utm_term: "-",
+    utm_content: "-",
+    utm_id: "-",
+  });
+  expect(body["contract_version"]).toBe(1);
+
+  vi.restoreAllMocks();
+});
+
 test("system is the literal werkstatt — personal_agent can never be emitted (AC-3)", () => {
   const hint = funnelPayloadToProcessHint(
     {

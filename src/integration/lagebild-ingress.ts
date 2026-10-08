@@ -12,9 +12,6 @@ built-in via a stable idempotency_key (derived from submission_id + tenant).</pu
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: sweep — tail packages clean
-
-Sweep batch 3: rewrote ~95 purposes across werkstatt-knowledge, werkstatt-shared, godot-game, phaser-game, lifecycle-core, projektarchiv-*, portal-*, billing-*, typescript (CONTRACT-02/PURPOSE-02). Real KEY_DECISIONS on 5 godot utils, non-goals on 5 CONTRACT-03 files, headers on 4 headerless files, CS-07 history literal fix on 2 files. Policy: vitest.config.ts + test-fixtures testPatterns, worker-configuration.d.ts excludedPath. All non-site/engine packages now 0 diagnostics.</item>
   <item>RFC-1198: cookie-free referral attribution — /r/<slug> partner landings + voluntary referrer field
 
 Replace the RFC-1191 wg_ref cookie capture with URL+form attribution:
@@ -39,10 +36,29 @@ website-ingress.schema.yaml in v0.1.2). This file re-exports them for
 compat; only client-side types (IngressSubmitInput, IngressResult,
 LagebildIngressConfig) remain hand-written — they are not contract surfaces.
 Wire behaviour unchanged.</item>
+  <item>RFC-1241: Verbund V05 — emit acquisition-context on website-ingress (first-touch UTM)
+
+RFC-1241: sessionStorage-captured first-touch utm_* flows
+browser -> send-message -> IntegrationEvent.payload.acquisition ->
+lagebild destination adapter -> website-ingress/v1 acquisition field.
+Producer validates the contract shape at every edge; malformed degrades
+to absent, never a dispatch error. contract_version stays 1.
+
+- shared: acquisition.ts (capture/read/isValid, storage-injected)
+- ingress: IngressSubmitInput.acquisition -> wire field
+- adapter: validated pass-through of payload.acquisition
+- site: SendMessageRequestSchema.acquisition + client attach +
+  api re-validation + site-wide capture mount in layout-component
+- codegen repin v0.1.3 -> v0.1.4 (VID-016 republication); generated
+  types unchanged in shape, new sourceHash
+- conformance: emitted acquisition + emitted ingress surface validated
+  per snapshot (82 tests, 5 snapshots)</item>
+  <history>RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
 import type {
+  AcquisitionContext,
   ExplicitPolicyAssertion,
   IdentityClaim,
   IngressInteractionKind,
@@ -52,6 +68,7 @@ import type {
 } from "./lagebild-contracts.types.generated.ts";
 
 export {
+  type AcquisitionContext,
   type ExplicitPolicyAssertion,
   type IdentityClaim,
   type IdentityClaimType,
@@ -97,6 +114,8 @@ export interface IngressSubmitInput {
   readonly disclosureVersion?: string | null;
   /** RFC-1239: already wire-shaped (snake_case) — serialized verbatim. */
   readonly processHint?: IngressProcessHint;
+  /** RFC-1241: already wire-shaped (snake_case) — serialized verbatim. */
+  readonly acquisition?: AcquisitionContext;
 }
 
 /**
@@ -136,6 +155,7 @@ export async function submitIngress(
     ...(input.capturedAt != null ? { captured_at: input.capturedAt } : {}),
     ...(input.disclosureVersion != null ? { disclosure_version: input.disclosureVersion } : {}),
     ...(input.processHint != null ? { process_hint: input.processHint } : {}),
+    ...(input.acquisition != null ? { acquisition: input.acquisition } : {}),
   };
 
   const url = config.apiUrl.replace(/\/$/, "") + "/v1/ingress";

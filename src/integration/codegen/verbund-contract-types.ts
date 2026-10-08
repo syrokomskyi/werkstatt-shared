@@ -30,7 +30,7 @@ import { parse as parseYaml } from "yaml";
 
 // VID-011 pin — bump when a newer verbund-integration-spec snapshot is
 // vendored, then regenerate.
-const SPEC_VERSION = "verbund-integration-spec-v0.1.3";
+const SPEC_VERSION = "verbund-integration-spec-v0.1.4";
 
 const SPECS_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../../../../docs/specs");
 const SCHEMAS_DIR = join(SPECS_ROOT, SPEC_VERSION, "schemas");
