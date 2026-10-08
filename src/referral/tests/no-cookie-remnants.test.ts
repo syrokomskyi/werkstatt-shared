@@ -49,6 +49,20 @@ const BANNED = [
 const SRC_ROOTS = ["packages/werkstatt-shared/src", "packages/werkstatt-site/src"];
 const EXTENSIONS = new Set([".ts", ".astro"]);
 
+// Contract-mirror allowlist (PLAN-RFC-1238-01): the vendored Lagebild
+// website-ingress schema still declares the legacy `attribution` block as a
+// bounded-window tolerant-reader field (Lagebild RFC-0016) for un-migrated
+// sites. The derived wire types and their conformance test must therefore
+// name `referral_code`/`first_touch_at`/`IngressAttribution` — these are the
+// contract surface, not the deleted cookie machinery (no reader, no cookie,
+// no entitlement, no sender path populates them).
+const ALLOWLIST = new Set([
+  "packages/werkstatt-shared/src/integration/codegen/verbund-contract-types.ts",
+  "packages/werkstatt-shared/src/integration/lagebild-contracts.types.generated.ts",
+  "packages/werkstatt-shared/src/integration/tests/verbund-contract.test.ts",
+  "packages/werkstatt-shared/src/integration/index.ts",
+]);
+
 const REPO_ROOT = process.cwd().replace(/packages\/werkstatt-shared$/, "");
 
 function* sourceFiles(dir: string): Generator<string> {
@@ -86,7 +100,10 @@ function scan(literal: string): string[] {
   for (const root of SRC_ROOTS) {
     for (const file of sourceFiles(join(REPO_ROOT, root))) {
       const code = stripComments(readFileSync(file, "utf-8"));
-      if (code.includes(literal)) hits.push(file.replace(REPO_ROOT, ""));
+      if (code.includes(literal)) {
+        const rel = file.replace(REPO_ROOT, "").replace(/^\//, "");
+        if (!ALLOWLIST.has(rel)) hits.push(rel);
+      }
     }
   }
   return hits;

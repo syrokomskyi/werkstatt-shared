@@ -189,7 +189,15 @@ export {
   type ExplicitPolicyAssertion,
   type PolicyAssertionKind,
   type IngressProcessHint,
+  type IngressProcessHintSystem,
 } from "./lagebild-ingress.ts";
+
+// Derived Verbund contract types (PLAN-RFC-1238-01 — generated from the
+// vendored spec snapshot; also reachable via the lagebild-ingress re-exports)
+export {
+  type AcquisitionContext,
+  type IngressAttribution,
+} from "./lagebild-contracts.types.generated.ts";
 
 // Lagebild destination adapter (RFC-0176: wraps submitIngress as a DestinationAdapter)
 export {

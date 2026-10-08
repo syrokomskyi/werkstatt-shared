@@ -14,12 +14,14 @@ code as the conformance mechanism — shared code with Lagebild is forbidden
 */
 
 import { test, expect } from "vitest";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import Ajv2020 from "ajv/dist/2020.js";
 import { funnelPayloadToProcessHint } from "../lagebild-destination-adapter.ts";
+import type { WebsiteIngressPayload } from "../lagebild-contracts.types.generated.ts";
 
 // VID-013: fixtures are validated byte-exact from the vendored snapshots.
 // Resolved via import.meta.url — never process.cwd() (DNA-105).
@@ -93,6 +95,19 @@ const specDirs = readdirSync(SPECS_ROOT, { withFileTypes: true })
   .filter((e) => e.isDirectory() && e.name.startsWith("verbund-integration-spec-"))
   .map((e) => e.name)
   .sort();
+
+// VID-011 pin for the derived types (PLAN-RFC-1238-01) — the newest vendored
+// snapshot; bump alongside codegen/verbund-contract-types.ts SPEC_VERSION.
+const PIN = "verbund-integration-spec-v0.1.3";
+const GENERATED_FILE = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "../lagebild-contracts.types.generated.ts",
+);
+const GENERATED_SCHEMA_FILES = [
+  "process-hint.schema.yaml",
+  "acquisition-context.schema.yaml",
+  "website-ingress.schema.yaml",
+] as const;
 
 expect(
   specDirs.length,
@@ -187,4 +202,152 @@ for (const specId of specDirs) {
         `vendored contract; fix the adapter, never patch the snapshot`,
     ).toBe(true);
   });
+
+  // PLAN-RFC-1238-01: two payload assertions against the website-ingress
+  // schema where the snapshot ships one (v0.1.2+, AMD-WERKSTATT-02):
+  //  a) the surface the adapter actually emits validates on every snapshot —
+  //     wire conformance of what we really send;
+  //  b) the full derived-type surface (incl. acquisition, which arrived in
+  //     v0.1.3) validates only on the PIN — older snapshots legitimately
+  //     reject superset fields via additionalProperties: false.
+  const ingressSchemaId = schemaIds.get("schemas/website-ingress.schema.yaml");
+  if (ingressSchemaId) {
+    test(`${specId}: emitted-surface ingress payload validates against website-ingress schema`, () => {
+      const payload: WebsiteIngressPayload = {
+        contract_version: 1,
+        tenant_id: "ten_warpgogol000001",
+        source_system_id: "site_warpgogol_main",
+        submission_id: "sub_0123456789abcdef",
+        idempotency_key: "ten_warpgogol000001:sub_0123456789abcdef",
+        occurred_at: "2026-10-08T10:00:00.000Z",
+        interaction_kind: "other",
+        identity_claims: [
+          { claim_type: "email", value: "client@example.test", label: "contact" },
+          { claim_type: "other", value: { channel: "telegram", handle: "@client" } },
+        ],
+        message: "hello",
+        origin: { page_uri: "https://warpgogol.example/form", referrer_uri: null, locale: "de" },
+        explicit_policy_assertions: [
+          {
+            kind: "consent",
+            purpose: "contact",
+            channel: "email",
+            value: true,
+            statement_ref: null,
+          },
+        ],
+        correlation_id: "corr_0001",
+        referral_partner_slug: "partner-slug",
+        referral_partner_name: "Partner Name",
+        partner_mode: "referral-fee",
+        policy_effective_from: "2026-01-01",
+        captured_at: "2026-10-08T09:55:00.000Z",
+        disclosure_version: "v1",
+        process_hint: funnelPayloadToProcessHint(
+          {
+            funnelVersion: "1.0.0",
+            eventKind: "qualification.answered",
+            stage: "qualification_company",
+            previousStage: "qualification_priority",
+          },
+          "2026-10-08T10:00:00.000Z",
+        )!,
+      };
+      const validate = ajv.getSchema(ingressSchemaId)!;
+      expect(
+        validate(payload),
+        `emitted ingress surface failed ${specId} website-ingress schema: ` +
+          `${JSON.stringify(validate.errors)} — the wire shape drifted from ` +
+          `the vendored contract; fix the adapter, never patch the snapshot`,
+      ).toBe(true);
+    });
+  }
+
+  if (specId === PIN && ingressSchemaId) {
+    test(`${specId}: full derived-type surface validates on the pinned snapshot`, () => {
+      const payload: WebsiteIngressPayload = {
+        contract_version: 1,
+        tenant_id: "ten_warpgogol000001",
+        source_system_id: "site_warpgogol_main",
+        submission_id: "sub_0123456789abcdef",
+        idempotency_key: "ten_warpgogol000001:sub_0123456789abcdef",
+        occurred_at: "2026-10-08T10:00:00.000Z",
+        interaction_kind: "other",
+        identity_claims: [
+          { claim_type: "email", value: "client@example.test", label: "contact" },
+          { claim_type: "other", value: { channel: "telegram", handle: "@client" } },
+        ],
+        message: "hello",
+        origin: { page_uri: "https://warpgogol.example/form", referrer_uri: null, locale: "de" },
+        acquisition_refs: ["campaign-2026-q4"],
+        explicit_policy_assertions: [
+          {
+            kind: "consent",
+            purpose: "contact",
+            channel: "email",
+            value: true,
+            statement_ref: null,
+          },
+        ],
+        correlation_id: "corr_0001",
+        attribution: { referral_code: "LEGACY42", first_touch_at: "2026-10-01T09:00:00.000Z" },
+        referral_partner_slug: "partner-slug",
+        referral_partner_name: "Partner Name",
+        partner_mode: "referral-fee",
+        policy_effective_from: "2026-01-01",
+        captured_at: "2026-10-08T09:55:00.000Z",
+        disclosure_version: "v1",
+        process_hint: funnelPayloadToProcessHint(
+          {
+            funnelVersion: "1.0.0",
+            eventKind: "qualification.answered",
+            stage: "qualification_company",
+            previousStage: "qualification_priority",
+          },
+          "2026-10-08T10:00:00.000Z",
+        )!,
+        acquisition: {
+          schema: "acquisition-context/v1",
+          utm_source: "newsletter",
+          utm_medium: "email",
+          utm_campaign: "launch-2026",
+          utm_id: "cmp_0001",
+          utm_content: "cta-button",
+          utm_term: "studio",
+        },
+      };
+      const validate = ajv.getSchema(ingressSchemaId)!;
+      expect(
+        validate(payload),
+        `full ingress payload failed ${specId} website-ingress schema: ` +
+          `${JSON.stringify(validate.errors)} — the derived types or the ` +
+          `emitted wire shape drifted from the vendored contract`,
+      ).toBe(true);
+    });
+  }
 }
+
+// Drift gate (PLAN-RFC-1238-01): lagebild-contracts.types.generated.ts must be
+// regenerated whenever the pinned schema bytes change — the sourceHash marker
+// in its header is the only guard, so it is checked here alongside the schemas.
+test("lagebild-contracts.types.generated.ts is in sync with the pinned vendored schemas (drift gate)", () => {
+  const generated = readFileSync(GENERATED_FILE, "utf8");
+  const markerMatch = generated.match(/^\/\/ sourceHash: ([0-9a-f]{64})$/m);
+  expect(
+    markerMatch,
+    "generated types file is missing the sourceHash marker — regenerate via " +
+      "pnpm --filter @warpgogol/werkstatt-shared exec node src/integration/codegen/verbund-contract-types.ts",
+  ).toBeTruthy();
+
+  const hash = createHash("sha256");
+  for (const file of GENERATED_SCHEMA_FILES) {
+    const path = join(SPECS_ROOT, PIN, "schemas", file);
+    expect(existsSync(path), `pinned schema missing: ${path}`).toBe(true);
+    hash.update(readFileSync(path));
+  }
+  expect(
+    markerMatch![1],
+    `vendored ${PIN} schema bytes changed — regenerate the derived types ` +
+      `and update codegen/verbund-contract-types.ts if the construct set grew`,
+  ).toBe(hash.digest("hex"));
+});

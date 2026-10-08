@@ -32,88 +32,38 @@ H02). IngressProcessHint mirrors the vendored process-hint/v1 schema
 byte-for-byte until AMD-WERKSTATT-02 ships a website-ingress schema
 (PLAN-RFC-1238-01). The client serializes the input verbatim; detection and
 mapping live in lagebild-destination-adapter.ts.</item>
+  <item>PLAN-RFC-1238-01 (delivered): hand-written contract types retired —
+all wire types now derive from the vendored verbund-integration-spec-v0.1.3
+schemas via lagebild-contracts.types.generated.ts (AMD-WERKSTATT-02 shipped
+website-ingress.schema.yaml in v0.1.2). This file re-exports them for
+compat; only client-side types (IngressSubmitInput, IngressResult,
+LagebildIngressConfig) remain hand-written — they are not contract surfaces.
+Wire behaviour unchanged.</item>
 </CHANGE_SUMMARY>
 */
 
+import type {
+  ExplicitPolicyAssertion,
+  IdentityClaim,
+  IngressInteractionKind,
+  IngressOrigin,
+  IngressProcessHint,
+  WebsiteIngressPayload,
+} from "./lagebild-contracts.types.generated.ts";
+
+export {
+  type ExplicitPolicyAssertion,
+  type IdentityClaim,
+  type IdentityClaimType,
+  type IngressInteractionKind,
+  type IngressOrigin,
+  type IngressProcessHint,
+  type IngressProcessHintSystem,
+  type PolicyAssertionKind,
+  type WebsiteIngressPayload,
+} from "./lagebild-contracts.types.generated.ts";
+
 export const LAGEBILD_INGRESS_CONTRACT_VERSION = 1 as const;
-
-export type IngressInteractionKind =
-  "inquiry" | "contact_message" | "callback_request" | "appointment_request" | "other";
-
-export type IdentityClaimType =
-  "person_name" | "organization_name" | "email" | "phone" | "website" | "postal_address" | "other";
-
-export interface IdentityClaim {
-  readonly claim_type: IdentityClaimType;
-  readonly value: string;
-  readonly label?: string | null;
-}
-
-export interface IngressOrigin {
-  readonly page_uri?: string | null;
-  readonly referrer_uri?: string | null;
-  readonly locale?: string | null;
-}
-
-export type PolicyAssertionKind = "consent" | "objection" | "preference";
-
-export interface ExplicitPolicyAssertion {
-  readonly kind: PolicyAssertionKind;
-  readonly purpose: string;
-  readonly channel?: string | null;
-  readonly value: boolean;
-  readonly statement_ref?: string | null;
-}
-
-/**
- * RFC-1239: Verbund Seam C — the process-hint/v1 object (H02). Hand-maintained
- * shim mirroring the vendored schemas/process-hint.schema.yaml exactly (snake_case
- * on the wire) until AMD-WERKSTATT-02 ships a website-ingress schema to derive
- * from (PLAN-RFC-1238-01). Non-authoritative — Lagebild stores it as opaque
- * Opportunity.state (VID-004/VID-005).
- */
-export interface IngressProcessHint {
-  readonly schema: "process-hint/v1";
-  readonly system: "werkstatt" | "personal_agent";
-  readonly catalog_ref: string;
-  readonly phase: string;
-  readonly branch?: string | null;
-  readonly previous_phase?: string | null;
-  readonly changed_at: string;
-  readonly reason?: string | null;
-}
-
-export interface WebsiteIngressPayload {
-  readonly contract_version: typeof LAGEBILD_INGRESS_CONTRACT_VERSION;
-  readonly tenant_id: string;
-  readonly source_system_id: string;
-  readonly submission_id: string;
-  readonly idempotency_key: string;
-  readonly occurred_at: string;
-  readonly interaction_kind: IngressInteractionKind;
-  readonly identity_claims: readonly IdentityClaim[];
-  readonly message?: string | null;
-  readonly origin?: IngressOrigin;
-  readonly explicit_policy_assertions?: readonly ExplicitPolicyAssertion[];
-  readonly correlation_id?: string | null;
-  /** RFC-1198: server-resolved active partner slug (site-side resolution against
-      the site's partner collection). Absent when the raw referrer input matches
-      no active partner. */
-  readonly referral_partner_slug?: string | null;
-  /** Partner's public displayName — already public on /r/<slug>. */
-  readonly referral_partner_name?: string | null;
-  /** RFC-1222: the partner's compensation mode (referral-fee | none | steward). */
-  readonly partner_mode?: string | null;
-  /** RFC-1222: partner-program policy governance.effectiveFrom (ISO date). */
-  readonly policy_effective_from?: string | null;
-  /** RFC-1222: server-stamped receipt timestamp (ISO datetime). */
-  readonly captured_at?: string | null;
-  /** RFC-1222: disclosure sentence-structure version (platform constant). */
-  readonly disclosure_version?: string | null;
-  /** RFC-1239: Verbund Seam C — funnel transition hint (H02). Absent on
-      submissions that carry no stage transition. */
-  readonly process_hint?: IngressProcessHint;
-}
 
 export interface IngressResult {
   readonly submission_id: string | null;
