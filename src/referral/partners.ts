@@ -53,9 +53,12 @@ const LocalizedPhraseSchema = z.record(LangCodeSchema, z.string().min(1));
 
 const IsoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
-/** RFC-1222: partner lifecycle. Pending partners exist in the registry but
-    emit nothing public; retired partners emit a nameless status page. */
-export const ReferralPartnerStatusSchema = z.enum(["pending", "active", "retired"]);
+/** RFC-1222 + referral-brief-v1: partner lifecycle. Pending partners emit the
+    landing minus identity while public-name consent is unrecorded; active
+    partners emit the full landing; retired partners keep a nameless status
+    page; paused partners emit nothing public — the slug falls back to the
+    neutral /r/ document (referral-brief-v1 mode D). */
+export const ReferralPartnerStatusSchema = z.enum(["pending", "active", "retired", "paused"]);
 export type ReferralPartnerStatus = z.infer<typeof ReferralPartnerStatusSchema>;
 
 /** RFC-1222: structured consent record aligned with the `pbp/consent@1`
@@ -84,6 +87,25 @@ export const ReferralConsentSchema = z.discriminatedUnion("method", [
 ]);
 export type ReferralConsent = z.infer<typeof ReferralConsentSchema>;
 
+/** Granted-consent subset (document|channel) — used for the quote gate where
+    `none` is meaningless: an unconsented quote simply stays absent. */
+const GrantedConsentSchema = z.discriminatedUnion("method", [
+  z
+    .object({
+      method: z.literal("document"),
+      ref: z.string().min(1),
+      grantedAt: IsoDateSchema,
+    })
+    .strict(),
+  z
+    .object({
+      method: z.literal("channel"),
+      channel: z.enum(["email", "telegram", "whatsapp", "phone", "in-person"]),
+      grantedAt: IsoDateSchema,
+    })
+    .strict(),
+]);
+
 export const ReferralPartnerSchema = z
   .object({
     slug: z
@@ -92,20 +114,33 @@ export const ReferralPartnerSchema = z
       .min(3)
       .max(32)
       .refine((s) => !RESERVED_REFERRAL_SLUGS.includes(s), { message: "reserved slug" }),
-        /** Public display name — consent-gated: withheld while `pending`,
-        never emitted on `retired` pages or nameless JSON docs. */
-    displayName: z.string().min(1),
+    /** Public display name — consent-gated: withheld while `pending`,
+        never emitted on `retired`/`paused` pages or nameless JSON docs.
+        Optional (referral-brief-v1 mode B): a partner may exist with no
+        recorded name — the landing then runs anonymous. */
+    displayName: z.string().min(1).optional(),
     /** Localized public role statement (`{ de: "…", uk: "…" }`). Falls under
         the same consent gate as displayName — it describes the same person. */
     role: LocalizedPhraseSchema.optional(),
+    /** referral-brief-v1: verbatim partner quote (`{ de: "…", uk: "…" }`).
+        Requires `quoteConsent` + `active` — never paraphrased, never emitted
+        without recorded consent. */
+    quote: LocalizedPhraseSchema.optional(),
     compensation: z.enum(["referral-fee", "none", "steward"]),
     /** Language codes for the localized landings. Open set (ISO-639-1) — the
         site's `system.md i18n.supported` decides which of them actually emit;
         the unprefixed `/r/<slug>` canonical landing always emits for active
         partners in the site default language. */
     locales: z.array(LangCodeSchema).min(1),
+    /** referral-brief-v1 `lang_default`: first-display language for the
+        partner's shared link — the worker redirects the unprefixed
+        `/r/<slug>` to this locale's twin when set and ≠ site default. */
+    langDefault: LangCodeSchema.optional(),
     status: ReferralPartnerStatusSchema,
     consent: ReferralConsentSchema,
+    /** referral-brief-v1 `consent_quote_at`: recorded consent covering the
+        verbatim quote. Required iff `quote` is set. */
+    quoteConsent: GrantedConsentSchema.optional(),
     /** Present iff status is "retired" — the status page cites the date. */
     retiredAt: IsoDateSchema.optional(),
   })
@@ -116,6 +151,13 @@ export const ReferralPartnerSchema = z
         code: "custom",
         message: `active partner "${partner.slug}" has consent.method none — consent must be recorded before emission`,
         path: ["consent"],
+      });
+    }
+    if (partner.status === "active" && !partner.displayName) {
+      ctx.addIssue({
+        code: "custom",
+        message: `active partner "${partner.slug}" has no displayName — recorded consent covers a name that must exist`,
+        path: ["displayName"],
       });
     }
     if (partner.status === "retired" && !partner.retiredAt) {
@@ -134,11 +176,50 @@ export const ReferralPartnerSchema = z
     }
     // RFC-1222 slug-privacy guard: the slug must not spell a display-name
     // token — the URL itself would leak the identity it pseudonymizes.
-    if (slugContainsNameToken(partner.slug, partner.displayName)) {
+    if (partner.displayName && slugContainsNameToken(partner.slug, partner.displayName)) {
       ctx.addIssue({
         code: "custom",
         message: `partner slug "${partner.slug}" contains a displayName token — pick a pseudonymous slug`,
         path: ["slug"],
+      });
+    }
+    if (partner.quote) {
+      if (!partner.quoteConsent) {
+        ctx.addIssue({
+          code: "custom",
+          message: `partner "${partner.slug}" carries a quote but no quoteConsent — verbatim quotes need recorded consent`,
+          path: ["quoteConsent"],
+        });
+      }
+      if (partner.status !== "active") {
+        ctx.addIssue({
+          code: "custom",
+          message: `partner "${partner.slug}" carries a quote but is not active — quotes render only on the named landing`,
+          path: ["quote"],
+        });
+      }
+      for (const lang of Object.keys(partner.quote)) {
+        if (!partner.locales.includes(lang)) {
+          ctx.addIssue({
+            code: "custom",
+            message: `partner "${partner.slug}" quote.${lang} is outside declared locales`,
+            path: ["quote", lang],
+          });
+        }
+      }
+    }
+    if (partner.quoteConsent && !partner.quote) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" records quoteConsent but has no quote`,
+        path: ["quoteConsent"],
+      });
+    }
+    if (partner.langDefault && !partner.locales.includes(partner.langDefault)) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" langDefault "${partner.langDefault}" is outside declared locales`,
+        path: ["langDefault"],
       });
     }
     if (partner.role) {
@@ -186,6 +267,16 @@ export const ReferralLandingConfigSchema = z
     /** RFC-1222: open-price line with `{price:<offering>:<charge>}` markers —
         amounts always resolve from PBP offerings, never literal digits. */
     priceLine: LocalizedPhraseSchema.optional(),
+    /** referral-brief-v1: the transparency-card "Gilt für" row — the scope
+        the recommendation covers (e.g. the digital-foundation scope list). */
+    scopeLine: LocalizedPhraseSchema.optional(),
+    /** referral-brief-v1: the transparency-card "Nicht Bestandteil" row —
+        what the recommendation does NOT cover. */
+    exclusionsLine: LocalizedPhraseSchema.optional(),
+    /** referral-brief-v1: AGB section anchors per language for in-copy
+        references — `lang → anchorKey → anchor` (e.g.
+        `{ de: { b2b: "sec-1-4" } }`). */
+    agbAnchors: z.record(LangCodeSchema, z.record(z.string().min(1), z.string().min(1))).optional(),
   })
   .strict();
 
@@ -222,11 +313,14 @@ export type ReferralPartnersFile = z.infer<typeof ReferralPartnersFileSchema>;
 
 /** Partners classified by lifecycle — `active` emits landings and resolves,
     `retired` emits a nameless status page, `pending` emits the landing minus
-    identity (no displayName/role) while public-name consent is unrecorded. */
+    identity (no displayName/role) while public-name consent is unrecorded,
+    `paused` emits nothing public (referral-brief-v1 mode D — the /r/<slug>
+    request falls back to the neutral document). */
 export interface ReferralPartnerLifecycleSets {
   readonly active: ReferralPartner[];
   readonly retired: ReferralPartner[];
   readonly pending: ReferralPartner[];
+  readonly paused: ReferralPartner[];
 }
 
 export type ReferralPartnerWarn = (code: string, data: Record<string, unknown>) => void;
@@ -266,7 +360,7 @@ export function loadReferralPartners(
   globbed: Record<string, string>,
   warn: ReferralPartnerWarn = () => {},
 ): ReferralPartnerLifecycleSets {
-  const sets: ReferralPartnerLifecycleSets = { active: [], retired: [], pending: [] };
+  const sets: ReferralPartnerLifecycleSets = { active: [], retired: [], pending: [], paused: [] };
   const seen = new Set<string>();
   for (const raw of Object.values(globbed)) {
     let parsed: ReferralPartnersFile;

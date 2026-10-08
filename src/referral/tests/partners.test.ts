@@ -158,7 +158,7 @@ describe("loadReferralPartners lifecycle classification", () => {
   });
 
   test("returns empty sets for missing file", () => {
-    expect(loadReferralPartners({})).toEqual({ active: [], retired: [], pending: [] });
+    expect(loadReferralPartners({})).toEqual({ active: [], retired: [], pending: [], paused: [] });
   });
 
   test("rejects duplicate slugs — the whole file fails schema validation", () => {
@@ -180,7 +180,7 @@ describe("loadReferralPartners lifecycle classification", () => {
     const warns: string[] = [];
     expect(
       loadReferralPartners({ "partners.yaml": "partners: [{broken" }, (c) => warns.push(c)),
-    ).toEqual({ active: [], retired: [], pending: [] });
+    ).toEqual({ active: [], retired: [], pending: [], paused: [] });
     expect(warns).toContain("referral.partners.invalid");
   });
 

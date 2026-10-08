@@ -36,11 +36,13 @@ export interface ReferralProgramFacts {
 
 /** The retired and pending documents are deliberately closed — three fields,
     no identity. Pending keeps the route alive while consent is unrecorded;
-    retired preserves the historical slug after the active window. */
+    retired preserves the historical slug after the active window. `paused` is
+    in the union for completeness — paused partners emit no route, so the
+    document never ships. */
 export interface ReferralPartnerClosedDoc {
   readonly type: "referral-partner";
   readonly slug: string;
-  readonly status: "retired" | "pending";
+  readonly status: "retired" | "pending" | "paused";
 }
 
 export interface ReferralPartnerActiveDoc {
@@ -94,7 +96,10 @@ export function buildReferralPartnerDoc(
     ...(facts.benefit ? { referredCustomerBenefit: facts.benefit } : {}),
     customerPriceIncrease: false,
     disclosure: referralDisclosureKind(partner.compensation),
-    referrerDisplayName: partner.displayName,
+    // The schema guarantees displayName on active partners (consent covers a
+    // name that must exist) — the `?? ""` branch is unreachable but keeps the
+    // builder total under the widened optional type.
+    referrerDisplayName: partner.displayName ?? "",
     ...(facts.policyEffectiveFrom ? { policyEffectiveFrom: facts.policyEffectiveFrom } : {}),
     contactUrl: `/r/${partner.slug}`,
   };

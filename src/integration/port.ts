@@ -27,7 +27,7 @@ export interface LeadMessage {
   locale: string;
   /** ISO-8601 submission time. */
   submittedAt: string;
-  contact?: { email?: string; phone?: string };
+  contact?: { name?: string; email?: string; phone?: string };
   /**
    * RFC-1198: referral display text — resolved partner displayName when
    * the slug matched an active partner, else the raw voluntary input.
@@ -143,6 +143,7 @@ export function eventToLeadMessage(event: IntegrationEvent): LeadMessage {
       : typeof event.payload.note === "string"
         ? (event.payload.note as string)
         : "";
+  const name = event.contact?.name;
   const email = event.contact?.email;
   const phone = event.contact?.phone;
   // RFC-1198: resolved partner displayName wins over the raw field input.
@@ -164,8 +165,14 @@ export function eventToLeadMessage(event: IntegrationEvent): LeadMessage {
         : event.source,
     locale: event.locale,
     submittedAt: event.occurredAt,
-    ...(email || phone
-      ? { contact: { ...(email ? { email } : {}), ...(phone ? { phone } : {}) } }
+    ...(name || email || phone
+      ? {
+          contact: {
+            ...(name ? { name } : {}),
+            ...(email ? { email } : {}),
+            ...(phone ? { phone } : {}),
+          },
+        }
       : {}),
     ...(referrer ? { referrer } : {}),
   };

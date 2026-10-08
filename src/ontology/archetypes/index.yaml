@@ -702,7 +702,9 @@ planetImportPaths:
   Miranda: "@warpgogol/werkstatt-site/ui/components/person-profile"
   Eirene: "@warpgogol/werkstatt-site/ui/components/components"
   Despina: "@warpgogol/werkstatt-site/ui/components/pulsar"
+  Autonoe: "@warpgogol/werkstatt-site/ui/components/referral-partner"
   Ersa: "@warpgogol/werkstatt-site/ui/components/referral-partner"
+  Helike: "@warpgogol/werkstatt-site/ui/components/referral-partner"
   Belinda: "@warpgogol/werkstatt-site/ui/components/responsive-image"
   Daphnis: "@warpgogol/werkstatt-site/ui/components/scroll-to-top"
   Praxidike: "@warpgogol/werkstatt-site/ui/components/cards"
@@ -784,7 +786,9 @@ blockTypeToCosmicName:
   person-profile: Miranda
   prose-a11y: Eirene
   pulsar: Despina
+  form.referral-inquiry: Autonoe
   layout.referral-partner-page: Ersa
+  layout.referral-shell: Helike
   responsive-image: Belinda
   scroll-to-top: Daphnis
   section-body-cards: Praxidike
@@ -880,7 +884,9 @@ roleByCosmicName:
   Ferdinand: layout-shell
   Eirene: section-body
   Despina: lang-switcher
+  Autonoe: section-body
   Ersa: layout-shell
+  Helike: layout-shell
   Belinda: section-image
   Daphnis: scroll-to-top
   Praxidike: section-body
