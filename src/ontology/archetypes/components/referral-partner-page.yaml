@@ -9,7 +9,7 @@ version: 1.0.0
 semanticRole: component-layout.referral-partner-page
 description: |
   Functional /r/<slug> landing shell for RFC-1198 referral partners. Static,
-  noindex, zero client JS; rendered only for active partners with written
+  noindex, storage-free with enhancement-only JS; rendered only for active partners with written
   public-name consent.
 expectedIntents:
   - disclose-referral-partnership

@@ -39,6 +39,10 @@ legally binding version; UK is a synced reference translation.
   (Transparenz/Прозорість), closing trimmed to one sentence, disclosure.code slot
   exposes the slug for code-font rendering, privacy label «Політика
   конфіденційності.».</item>
+  <item>warpgogol-m000193: ReferralFormCopy reshaped for the shared send-message
+  section — dedicated emailLabel/nameLabel/optionalHint/emailRequired removed
+  (one field now), contactRequired added for the native error re-render,
+  ReferralNeutralCopy gained a referral-free privacyNote for mode-D.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -195,10 +199,9 @@ export interface ReferralFormCopy {
   heading: string;
   refLabel: string;
   refHelp: string;
-  emailLabel: string;
-  nameLabel: string;
-  optionalHint: string;
+  /** Visible label of the textarea on the native error re-render. */
   messageLabel: string;
+  /** Textarea placeholder — must ask for a reachable contact inside the text. */
   messageHelp: string;
   submitLabel: string;
   sendingLabel: string;
@@ -206,8 +209,9 @@ export interface ReferralFormCopy {
   privacyLinkLabel: string;
   successMessage: string;
   errorSummary: string;
-  /** Per-field errors on the native re-rendered error document. */
-  emailRequired: string;
+  /** Per-field errors on the native re-rendered error document — the
+      one-field form keeps only the message plus the extracted-contact hint. */
+  contactRequired: string;
   messageRequired: string;
 }
 
@@ -223,6 +227,8 @@ export interface ReferralAutoReplyCopy {
 export interface ReferralNeutralCopy {
   title: string;
   lead: string;
+  /** Form privacy sentence — deliberately free of any referral-code mention. */
+  privacyNote: string;
 }
 
 /** RFC-1222: retired-partner status page copy — never carries the name. */
@@ -689,11 +695,9 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       heading: "Situation beschreiben",
       refLabel: "Empfehlungscode",
       refHelp: "Vorausgefüllt. Sie können ihn löschen.",
-      emailLabel: "E-Mail",
-      nameLabel: "Name oder Betrieb",
-      optionalHint: "optional",
       messageLabel: "Nachricht",
-      messageHelp: "Was haben Sie heute, was fehlt, wie erreichen wir Sie am besten?",
+      messageHelp:
+        "Was haben Sie heute, was fehlt — und wie erreichen wir Sie (E-Mail oder Telefon)?",
       submitLabel: `Prüfen lassen, ob ${siteName} passt`,
       sendingLabel: "Wird gesendet …",
       privacyNote:
@@ -701,7 +705,8 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       privacyLinkLabel: "Datenschutzerklärung",
       successMessage: `Danke. Ihre Anfrage ist angekommen. ${responseSentence} Schauen Sie bei Bedarf im Spam-Ordner nach.`,
       errorSummary: "Einige Angaben fehlen oder sind ungültig.",
-      emailRequired: "Bitte geben Sie eine gültige E-Mail-Adresse an.",
+      contactRequired:
+        "Bitte hinterlassen Sie eine E-Mail-Adresse oder Telefonnummer in der Nachricht.",
       messageRequired: "Bitte schreiben Sie eine Nachricht.",
     },
     autoReply: {
@@ -726,6 +731,8 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         response !== undefined
           ? `Beschreiben Sie kurz Ihre Situation — wir antworten innerhalb von ${response} Stunden an Werktagen.`
           : "Beschreiben Sie kurz Ihre Situation — wir antworten an Werktagen.",
+      privacyNote:
+        "Wir nutzen auf dieser Seite keine Cookies und speichern nichts auf Ihrem Gerät.",
     },
     retired: {
       title: "Diese Empfehlung ist nicht mehr aktiv",
@@ -929,11 +936,9 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       heading: "Опишіть Вашу ситуацію",
       refLabel: "Код рекомендації",
       refHelp: "Заповнено автоматично. Ви можете його вилучити.",
-      emailLabel: "Електронна пошта",
-      nameLabel: "Ім'я або бізнес",
-      optionalHint: "необов'язково",
       messageLabel: "Повідомлення",
-      messageHelp: "Що у Вас є сьогодні, чого бракує, як нам найкраще з Вами зв'язатися?",
+      messageHelp:
+        "Що у Вас є сьогодні, чого бракує — і як нам з Вами зв'язатися (електронна пошта або телефон)?",
       submitLabel: `Перевірити, чи підходить ${siteName}`,
       sendingLabel: "Надсилаємо …",
       privacyNote:
@@ -941,7 +946,8 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       privacyLinkLabel: "Політика конфіденційності",
       successMessage: `Дякуємо. Ваш запит надійшов. ${responseSentence} За потреби перевірте папку «Спам».`,
       errorSummary: "Деякі поля не заповнені або містять помилки.",
-      emailRequired: "Будь ласка, вкажіть дійсну адресу електронної пошти.",
+      contactRequired:
+        "Будь ласка, залиште в повідомленні адресу електронної пошти або номер телефону.",
       messageRequired: "Будь ласка, напишіть повідомлення.",
     },
     autoReply: {
@@ -966,6 +972,8 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         response !== undefined
           ? `Коротко опишіть Вашу ситуацію — ми відповідаємо протягом ${response} годин у робочі дні.`
           : "Коротко опишіть Вашу ситуацію — ми відповідаємо в робочі дні.",
+      privacyNote:
+        "Ми не використовуємо на цій сторінці cookie і нічого не зберігаємо на Вашому пристрої.",
     },
     retired: {
       title: "Ця рекомендація більше не активна",
