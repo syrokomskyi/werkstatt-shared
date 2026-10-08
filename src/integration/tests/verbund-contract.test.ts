@@ -1,13 +1,13 @@
 /*
 <MODULE_CONTRACT>
 <purpose>Verbund contract conformance tests (VID-013). Loads the golden
-fixtures from the vendored spec snapshot (docs/specs/verbund-integration-spec-v0.1.0)
+fixtures from every vendored spec snapshot (docs/specs/verbund-integration-spec-*)
 and validates each against its declared JSON Schema. Replaces shared runtime
 code as the conformance mechanism — shared code with Lagebild is forbidden
 (VID-001).</purpose>
 <non-goals>
   <item>Do not read schemas or fixtures from the Lagebild repository — only
-  the vendored snapshot is authoritative (VID-011 pin).</item>
+  the vendored snapshots are authoritative (VID-011 pins are per package).</item>
   <item>Do not send anything to Lagebild — these tests perform no network IO.</item>
 </non-goals>
 </MODULE_CONTRACT>
@@ -20,14 +20,9 @@ import { dirname, join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import Ajv2020 from "ajv/dist/2020.js";
 
-// VID-013: fixtures are validated byte-exact from the vendored snapshot.
+// VID-013: fixtures are validated byte-exact from the vendored snapshots.
 // Resolved via import.meta.url — never process.cwd() (DNA-105).
-const SPEC_DIR = join(
-  dirname(fileURLToPath(import.meta.url)),
-  "../../../../../docs/specs/verbund-integration-spec-v0.1.0",
-);
-const SCHEMAS_DIR = join(SPEC_DIR, "schemas");
-const FIXTURES_DIR = join(SPEC_DIR, "fixtures");
+const SPECS_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../../../../docs/specs");
 
 interface FixtureMeta {
   file: string;
@@ -36,94 +31,115 @@ interface FixtureMeta {
   payload: unknown;
 }
 
-function loadFixture(file: string): FixtureMeta {
-  const raw = readFileSync(join(FIXTURES_DIR, file), "utf8");
+function loadFixture(fixturesDir: string, file: string): FixtureMeta {
+  const raw = readFileSync(join(fixturesDir, file), "utf8");
+  const payload = parseYaml(raw) as Record<string, unknown>;
   const schemaMatch = raw.match(/^# fixture-for:\s*(\S+)/m);
   const expectMatch = raw.match(/^# expect:\s*(\w+)/m);
-  if (!schemaMatch || !expectMatch) {
+  // Some v0.1.1 fixtures (policy-assert.*) ship without the header comments;
+  // fall back to the payload's own `schema` discriminator ("policy-assert/v1"
+  // → schemas/policy-assert.schema.yaml). Header still wins when present.
+  const schemaField = typeof payload?.["schema"] === "string" ? payload["schema"] : undefined;
+  const derived = schemaField?.replace(/\/v\d+$/, "");
+  const schemaPath = schemaMatch?.[1] ?? (derived ? `schemas/${derived}.schema.yaml` : undefined);
+  const expect_ = expectMatch?.[1] ?? "valid";
+  if (!schemaPath) {
     throw new Error(
-      `fixture ${file} lacks "# fixture-for:" or "# expect:" header — ` +
-        `every golden fixture must declare its schema and expectation`,
+      `fixture ${file} declares no schema — no "# fixture-for:" header and ` +
+        `no top-level "schema" field. That is a packaging defect; file an ` +
+        `amendment instead of guessing.`,
     );
   }
-  return {
-    file,
-    schemaPath: schemaMatch[1]!,
-    expect: expectMatch[1]!,
-    payload: parseYaml(raw),
-  };
+  return { file, schemaPath, expect: expect_, payload };
 }
 
-function buildAjv(): { ajv: Ajv2020; schemaIds: Map<string, string> } {
+function buildAjv(schemasDir: string): { ajv: Ajv2020; schemaIds: Map<string, string> } {
   // validateFormats: false — `format` keywords (date-time, uri) are annotations
   // only; ajv-formats is intentionally not a dependency of this package.
   const ajv = new Ajv2020({ strict: false, allErrors: true, validateFormats: false });
   // Register every vendored schema under its $id so relative $refs
   // (e.g. "./party-ref.schema.yaml" inside verbund-event) resolve.
   const schemaIds = new Map<string, string>();
-  for (const file of readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith(".yaml"))) {
-    const schema = parseYaml(readFileSync(join(SCHEMAS_DIR, file), "utf8")) as { $id: string };
+  for (const file of readdirSync(schemasDir).filter((f) => f.endsWith(".yaml"))) {
+    const schema = parseYaml(readFileSync(join(schemasDir, file), "utf8")) as { $id: string };
     ajv.addSchema(schema);
     schemaIds.set(`schemas/${file}`, schema.$id);
   }
   return { ajv, schemaIds };
 }
 
-const fixtureFiles = readdirSync(FIXTURES_DIR)
-  .filter((f) => f.endsWith(".yaml"))
+// One validator per vendored snapshot — schema $ids may collide across
+// spec versions, so packages never share an Ajv instance.
+const specDirs = readdirSync(SPECS_ROOT, { withFileTypes: true })
+  .filter((e) => e.isDirectory() && e.name.startsWith("verbund-integration-spec-"))
+  .map((e) => e.name)
   .sort();
-const fixtures = fixtureFiles.map(loadFixture);
-const { ajv, schemaIds } = buildAjv();
 
-test("vendored snapshot ships a golden fixture for every payload schema (VID-013)", () => {
-  const schemaFiles = readdirSync(SCHEMAS_DIR).filter((f) => f.endsWith(".yaml"));
-  for (const schemaFile of schemaFiles) {
-    const covered = fixtures.some((f) => f.schemaPath === `schemas/${schemaFile}`);
-    expect(
-      covered,
-      `schema ${schemaFile} has no golden fixture — VID-013 requires every ` +
-        `payload schema to ship at least one example in fixtures/`,
-    ).toBe(true);
-  }
-});
+expect(
+  specDirs.length,
+  "no vendored verbund spec snapshots found under docs/specs/ — run fo-spec-ingest",
+).toBeGreaterThan(0);
 
-for (const fixture of fixtures) {
-  test(`fixture ${fixture.file} validates against ${fixture.schemaPath}`, () => {
-    const schemaId = schemaIds.get(fixture.schemaPath);
-    const validate = schemaId ? ajv.getSchema(schemaId) : undefined;
-    expect(
-      validate,
-      `fixture ${fixture.file} points at ${fixture.schemaPath} which is not ` +
-        `registered in schemas/ — check the fixture-for header against the ` +
-        `vendored schema files`,
-    ).toBeDefined();
-    const valid = validate!(fixture.payload);
+for (const specId of specDirs) {
+  const specDir = join(SPECS_ROOT, specId);
+  const schemasDir = join(specDir, "schemas");
+  const fixturesDir = join(specDir, "fixtures");
+  const fixtureFiles = readdirSync(fixturesDir)
+    .filter((f) => f.endsWith(".yaml"))
+    .sort();
+  const fixtures = fixtureFiles.map((f) => loadFixture(fixturesDir, f));
+  const { ajv, schemaIds } = buildAjv(schemasDir);
 
-    if (fixture.expect === "valid") {
+  test(`${specId}: snapshot ships a golden fixture for every payload schema (VID-013)`, () => {
+    const schemaFiles = readdirSync(schemasDir).filter((f) => f.endsWith(".yaml"));
+    for (const schemaFile of schemaFiles) {
+      const covered = fixtures.some((f) => f.schemaPath === `schemas/${schemaFile}`);
       expect(
-        valid,
-        `vendored fixture ${fixture.file} failed ${fixture.schemaPath}: ` +
-          `${JSON.stringify(validate.errors)}. If this fixture passes in ` +
-          `Lagebild, this is a contract defect — file an amendment under ` +
-          `docs/specs/verbund-integration-spec-v0.1.0/amendments/ targeting ` +
-          `the fixture; never patch the snapshot.`,
+        covered,
+        `schema ${schemaFile} has no golden fixture — VID-013 requires every ` +
+          `payload schema to ship at least one example in fixtures/`,
       ).toBe(true);
-    } else {
-      expect(valid).toBe(false);
     }
   });
+
+  for (const fixture of fixtures) {
+    test(`${specId}: fixture ${fixture.file} validates against ${fixture.schemaPath}`, () => {
+      const schemaId = schemaIds.get(fixture.schemaPath);
+      const validate = schemaId ? ajv.getSchema(schemaId) : undefined;
+      expect(
+        validate,
+        `fixture ${fixture.file} points at ${fixture.schemaPath} which is not ` +
+          `registered in schemas/ — check the fixture-for header against the ` +
+          `vendored schema files`,
+      ).toBeDefined();
+      const valid = validate!(fixture.payload);
+
+      if (fixture.expect === "valid") {
+        expect(
+          valid,
+          `vendored fixture ${specId}/fixtures/${fixture.file} failed ` +
+            `${fixture.schemaPath}: ${JSON.stringify(validate.errors)}. ` +
+            `If this fixture passes in Lagebild, this is a contract defect — ` +
+            `file an amendment under docs/specs/${specId}/amendments/ targeting ` +
+            `the fixture; never patch the snapshot.`,
+        ).toBe(true);
+      } else {
+        expect(valid).toBe(false);
+      }
+    });
+  }
+
+  test(`${specId}: werkstatt-facing fixtures prove the surface (party-ref + process-hint)`, () => {
+    // The fixtures the V01 handoff names explicitly. The generic loop above
+    // already covers them; this test documents which ones bind Werkstatt's side.
+    const names = fixtures.map((f) => f.file);
+    expect(names).toContain("party-ref.studio-client.yaml");
+    expect(names).toContain("process-hint.funnel-stage.yaml");
+
+    const hint = fixtures.find((f) => f.file === "process-hint.funnel-stage.yaml");
+    const payload = hint!.payload as Record<string, unknown>;
+    // H02: Werkstatt owns the funnel catalog; the hub must never interpret it.
+    expect(payload["system"]).toBe("werkstatt");
+    expect(payload["catalog_ref"]).toBe("werkstatt:visitor-funnel/v1");
+  });
 }
-
-test("werkstatt-facing fixtures prove the V01 surface (party-ref + process-hint)", () => {
-  // The two fixtures the V01 handoff names explicitly. The generic loop above
-  // already covers them; this test documents which ones bind Werkstatt's side.
-  const names = fixtures.map((f) => f.file);
-  expect(names).toContain("party-ref.studio-client.yaml");
-  expect(names).toContain("process-hint.funnel-stage.yaml");
-
-  const hint = fixtures.find((f) => f.file === "process-hint.funnel-stage.yaml");
-  const payload = hint!.payload as Record<string, unknown>;
-  // H02: Werkstatt owns the funnel catalog; the hub must never interpret it.
-  expect(payload["system"]).toBe("werkstatt");
-  expect(payload["catalog_ref"]).toBe("werkstatt:visitor-funnel/v1");
-});
