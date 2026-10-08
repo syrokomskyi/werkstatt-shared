@@ -20,10 +20,6 @@ legally binding version; UK is a synced reference translation.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1198: created — DE (binding) + UK (reference) landing copy per external brief WP2.</item>
-  <item>RFC-1222: trust-handoff copy — paid/unpaid disclosure badge (§ 5a UWG),
-  proofs/price/no-promises blocks, recommendation receipt rows, retired status
-  copy, REFERRAL_DISCLOSURE_VERSION, and the corrected privacy line.</item>
   <item>warpgogol-m000193: landing v3 rebuild — EMPFEHLUNG label hero with
   calm labelled disclosure (60-day trigger named), fixed leistung list,
   structured price cells, two-column commitments, four-step process, verbatim
@@ -43,6 +39,13 @@ legally binding version; UK is a synced reference translation.
   section — dedicated emailLabel/nameLabel/optionalHint/emailRequired removed
   (one field now), contactRequired added for the native error re-render,
   ReferralNeutralCopy gained a referral-free privacyNote for mode-D.</item>
+  <item>warpgogol-m000193: the rail is now a segmented choice — refLabel/refHelp
+  replaced by refChoiceTitle + refWithLabel/refWithHelp(compensation) +
+  refWithoutLabel/refWithoutHelp + refPrefix; the "with" card states the
+  sourced benefit and the honest compensation clause per partner, "without"
+  states same terms minus the benefit. Checklist labels added so the enhanced
+  section shows the same contact requirement /kontakt does.</item>
+  <history>RFC-1198, RFC-1222</history>
 </CHANGE_SUMMARY>
 */
 
@@ -197,14 +200,29 @@ export interface ReferralTransparencyCopy {
 
 export interface ReferralFormCopy {
   heading: string;
-  refLabel: string;
-  refHelp: string;
+  /** Legend of the segmented Empfehlung choice — the rail is never a
+      free-text code field (warpgogol-m000193). */
+  refChoiceTitle: string;
+  refWithLabel: string;
+  /** "With"-card help — sourced benefit facts plus an honest compensation
+      clause, resolved per partner like `disclosure`. */
+  refWithHelp: (compensation: ReferralCompensation) => string;
+  refWithoutLabel: string;
+  refWithoutHelp: string;
+  /** Prefix the enhanced client's mailto fallback puts before the code. */
+  refPrefix: string;
   /** Visible label of the textarea on the native error re-render. */
   messageLabel: string;
   /** Textarea placeholder — must ask for a reachable contact inside the text. */
   messageHelp: string;
   submitLabel: string;
   sendingLabel: string;
+  /** Live checklist labels (enhanced path) — the contact item mirrors the
+      same requirement `contactRequired` states on the native error doc. */
+  checklistTitle: string;
+  checklistReadyLabel: string;
+  checklistLengthLabel: string;
+  checklistContactLabel: string;
   privacyNote: string;
   privacyLinkLabel: string;
   successMessage: string;
@@ -443,6 +461,46 @@ function priceCellsUk(facts: ReferralLandingFacts): { amount: string; unit: stri
     });
   }
   return cells;
+}
+
+/** warpgogol-m000193: "Mit Empfehlung" card help — the same benefit facts the
+    Vorteil card states (already lang-formatted upstream), shortened to a card
+    clause, plus the honest compensation sentence: a "none"-compensated
+    partner reads "unvergütet", never a hidden fee. */
+function refWithHelpDe(facts: ReferralLandingFacts, compensation: ReferralCompensation): string {
+  const benefit = facts.benefit;
+  const parts: string[] = [];
+  if (benefit?.priorityStart) parts.push("Prioritätsstart");
+  if (benefit?.freePeriod) {
+    const cond =
+      benefit.freePeriodCondition === "active-in-second-month" ? " (aktiv im 2. Monat)" : "";
+    parts.push(`${benefit.freePeriod} Subscription kostenlos${cond}`);
+  }
+  const compensationClause =
+    compensation === "none"
+      ? "Die Empfehlung bleibt unvergütet."
+      : "Ihr Empfehlungsgeber wird vergütet.";
+  return parts.length > 0
+    ? `Ihr Vorteil: ${parts.join(" und ")}. ${compensationClause}`
+    : compensationClause;
+}
+
+function refWithHelpUk(facts: ReferralLandingFacts, compensation: ReferralCompensation): string {
+  const benefit = facts.benefit;
+  const parts: string[] = [];
+  if (benefit?.priorityStart) parts.push("пріоритетний старт");
+  if (benefit?.freePeriod) {
+    const cond =
+      benefit.freePeriodCondition === "active-in-second-month" ? " (активні на 2-й місяць)" : "";
+    parts.push(`${benefit.freePeriod} підписки безкоштовно${cond}`);
+  }
+  const compensationClause =
+    compensation === "none"
+      ? "Рекомендація залишається без винагороди."
+      : "За цю рекомендацію передбачена винагорода.";
+  return parts.length > 0
+    ? `Ваша перевага: ${parts.join(" і ")}. ${compensationClause}`
+    : compensationClause;
 }
 
 function vorteilDe(facts: ReferralLandingFacts, siteName: string): string | null {
@@ -693,13 +751,23 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     },
     form: {
       heading: "Situation beschreiben",
-      refLabel: "Empfehlungscode",
-      refHelp: "Vorausgefüllt. Sie können ihn löschen.",
+      refChoiceTitle: "Empfehlung",
+      refWithLabel: "Mit Empfehlung",
+      refWithHelp: (compensation) => refWithHelpDe(facts, compensation),
+      refWithoutLabel: "Ohne Empfehlung",
+      refWithoutHelp: facts.benefit
+        ? "Gleiche Bedingungen und Preise — ohne den Empfehlungsvorteil."
+        : "Gleiche Bedingungen und Preise — es wird kein Code übermittelt.",
+      refPrefix: "Empfohlen von: ",
       messageLabel: "Nachricht",
       messageHelp:
         "Was haben Sie heute, was fehlt — und wie erreichen wir Sie (E-Mail oder Telefon)?",
       submitLabel: `Prüfen lassen, ob ${siteName} passt`,
       sendingLabel: "Wird gesendet …",
+      checklistTitle: "Zum Senden fehlt:",
+      checklistReadyLabel: "Alles bereit — senden Sie Ihre Anfrage",
+      checklistLengthLabel: "Mindestens 24 Zeichen geschrieben",
+      checklistContactLabel: "E-Mail-Adresse oder Telefonnummer im Text hinterlassen",
       privacyNote:
         "Wir nutzen auf dieser Seite keine Cookies und speichern nichts auf Ihrem Gerät. Der Empfehlungscode wird nur mit Ihrer Anfrage übermittelt.",
       privacyLinkLabel: "Datenschutzerklärung",
@@ -934,13 +1002,23 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     },
     form: {
       heading: "Опишіть Вашу ситуацію",
-      refLabel: "Код рекомендації",
-      refHelp: "Заповнено автоматично. Ви можете його вилучити.",
+      refChoiceTitle: "Рекомендація",
+      refWithLabel: "З рекомендацією",
+      refWithHelp: (compensation) => refWithHelpUk(facts, compensation),
+      refWithoutLabel: "Без рекомендації",
+      refWithoutHelp: facts.benefit
+        ? "Ті самі умови та ціни — без переваги за рекомендацією."
+        : "Ті самі умови та ціни — код не передається.",
+      refPrefix: "Рекомендовано: ",
       messageLabel: "Повідомлення",
       messageHelp:
         "Що у Вас є сьогодні, чого бракує — і як нам з Вами зв'язатися (електронна пошта або телефон)?",
       submitLabel: `Перевірити, чи підходить ${siteName}`,
       sendingLabel: "Надсилаємо …",
+      checklistTitle: "Для відправки не вистачає:",
+      checklistReadyLabel: "Усе готово — надсилайте запит",
+      checklistLengthLabel: "Мінімум 24 символи написано",
+      checklistContactLabel: "Електронну пошту або телефон у тексті повідомлення",
       privacyNote:
         "Ми не використовуємо на цій сторінці cookie і нічого не зберігаємо на Вашому пристрої. Код рекомендації передається лише разом із Вашим запитом.",
       privacyLinkLabel: "Політика конфіденційності",
