@@ -34,6 +34,11 @@ legally binding version; UK is a synced reference translation.
   cancellationDays, downtimeHours, smallChangesPerMonth) interpolate PBP-derived
   facts instead of literals; absent support-response policy no longer fabricates
   a 24h promise — numberless sentence instead.</item>
+  <item>warpgogol-m000193: copy refinement pass — UK visitor address capitalized
+  (Ви/Ваш/Вам/Вас, Клієнт), zusagen rows lowercase, transparency heading shortened
+  (Transparenz/Прозорість), closing trimmed to one sentence, disclosure.code slot
+  exposes the slug for code-font rendering, privacy label «Політика
+  конфіденційності.».</item>
 </CHANGE_SUMMARY>
 */
 
@@ -156,6 +161,10 @@ export interface ReferralCommitmentRow {
 export interface ReferralDisclosureLine {
   readonly label: string;
   readonly text: string;
+  /** The referral code embedded verbatim in `text` (anonymous phrasing only)
+      — the renderer wraps it in <code> so the slug reads as a token, not a
+      name. Absent when a consented display name carries the sentence. */
+  readonly code?: string;
 }
 
 export interface ReferralTransparencyCopy {
@@ -223,23 +232,9 @@ export interface ReferralRetiredCopy {
   home: string;
 }
 
-/** Slim /r/* footer labels — the legal row only. */
-export interface ReferralFooterCopy {
-  /** aria-label for the footer legal nav. */
-  navLabel: string;
-  impressum: string;
-  datenschutz: string;
-  agb: string;
-  partnerbedingungen: string;
-  barrierefreiheit: string;
-  notausgang: string;
-}
-
 export interface ReferralLandingCopy {
-  /** Header CTA → #anfrage. */
+  /** Header CTA → #referral-form. */
   headerCta: string;
-  /** Accessible label for the prominent language switcher. */
-  langSwitchLabel: string;
   heroLabel: string;
   /** Interpolates {displayName, siteName} — mode A only. */
   h1Named: (displayName: string) => string;
@@ -286,7 +281,6 @@ export interface ReferralLandingCopy {
   secondaryNavLabel: string;
   neutral: ReferralNeutralCopy;
   retired: ReferralRetiredCopy;
-  footer: ReferralFooterCopy;
 }
 
 // ---------------------------------------------------------------------------
@@ -341,12 +335,14 @@ function disclosureDe(
       return {
         label: "Vergütete Empfehlung.",
         text: `Wird aus dieser Empfehlung ein Kunde und bleibt dessen Subscription ${qualifyingDaysText(facts.service, "de")}, erhält ${who} ${reward} von ${siteName}. Ihr Listenpreis ändert sich dadurch nicht.`,
+        ...(displayName ? {} : { code: slug }),
       };
     }
     case "none":
       return {
         label: "Empfehlung ohne Geldvergütung.",
         text: `${whoPhrase(displayName, slug, "de", true)} erhält für diese Empfehlung keine Zahlung von ${siteName}.`,
+        ...(displayName ? {} : { code: slug }),
       };
     case "steward": {
       const who = whoPhrase(displayName, slug, "de", true);
@@ -354,6 +350,7 @@ function disclosureDe(
       return {
         label: "Vergütete Empfehlung.",
         text: `${who} ist als ${facts.stewardRole ?? "Partner"} für ${siteName} tätig und erhält dafür eine Vergütung${extra}. Ihr Listenpreis ändert sich dadurch nicht.`,
+        ...(displayName ? {} : { code: slug }),
       };
     }
   }
@@ -372,13 +369,15 @@ function disclosureUk(
       const reward = rewardPhrase(facts, compensation) || "винагороду";
       return {
         label: "Рекомендація з винагородою.",
-        text: `Якщо з цієї рекомендації з'явиться клієнт і його підписка залишатиметься ${qualifyingDaysText(facts.service, "uk")}, ${who} отримає ${reward} від ${siteName}. Ваша ціна за прайсом через це не змінюється.`,
+        text: `Якщо з цієї рекомендації з'явиться Клієнт і його підписка залишатиметься ${qualifyingDaysText(facts.service, "uk")}, ${who} отримає ${reward} від ${siteName}. Ваша ціна за прайсом через це не змінюється.`,
+        ...(displayName ? {} : { code: slug }),
       };
     }
     case "none":
       return {
         label: "Рекомендація без грошової винагороди.",
         text: `${whoPhrase(displayName, slug, "uk", true)} не отримує жодної виплати від ${siteName} за цю рекомендацію.`,
+        ...(displayName ? {} : { code: slug }),
       };
     case "steward": {
       const who = whoPhrase(displayName, slug, "uk", true);
@@ -386,6 +385,7 @@ function disclosureUk(
       return {
         label: "Рекомендація з винагородою.",
         text: `${who} працює для ${siteName} як ${facts.stewardRole ?? "партнер"} і отримує за це винагороду${extra}. Ваша ціна за прайсом через це не змінюється.`,
+        ...(displayName ? {} : { code: slug }),
       };
     }
   }
@@ -482,7 +482,7 @@ function vorteilUk(facts: ReferralLandingFacts, siteName: string): string | null
   if (benefit.freePeriod) {
     const condition =
       benefit.freePeriodCondition === "active-in-second-month"
-        ? ", якщо ви залишаєтесь активними на 2-й місяць"
+        ? ", якщо Ви залишаєтесь активними на 2-й місяць"
         : "";
     parts.push(`отримуєте ${benefit.freePeriod} підписки безкоштовно${condition}`);
   }
@@ -490,7 +490,7 @@ function vorteilUk(facts: ReferralLandingFacts, siteName: string): string | null
     facts.service?.activationPrice !== undefined
       ? ` Внесок за активацію ${referralMoney(facts.service.activationPrice, facts.service.priceCurrency, "uk")} не змінюється.`
       : " Внесок за активацію не змінюється.";
-  return `Як рекомендований бізнес ви ${parts.join(" і ")}.${activation}`;
+  return `Як рекомендований бізнес Ви ${parts.join(" і ")}.${activation}`;
 }
 
 function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingCopy {
@@ -521,7 +521,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
 
   return {
     headerCta: "Situation beschreiben",
-    langSwitchLabel: "Sprache wählen",
     heroLabel: "EMPFEHLUNG",
     h1Named: (name) => `${name} empfiehlt Ihnen ${siteName}.`,
     h1Anonymous: `Man hat Ihnen ${siteName} empfohlen.`,
@@ -577,45 +576,47 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     vorteilText: vorteilDe(facts, siteName),
     riskLine:
       activationMoney !== undefined
-        ? `Die ${activationMoney} werden erst mit der Auftragsbestätigung fällig, nach der Erstprüfung. Lehnen wir Ihr Projekt ab, fallen sie nicht an.`
-        : "Die Aktivierungsgebühr wird erst mit der Auftragsbestätigung fällig, nach der Erstprüfung. Lehnen wir Ihr Projekt ab, fällt sie nicht an.",
+        ? `Die Aktivierungsgebühr von ${activationMoney} zahlen Sie erst nach der Erstprüfung, zusammen mit der Auftragsbestätigung. Lehnen wir Ihr Projekt ab, entfällt sie.`
+        : "Die Aktivierungsgebühr zahlen Sie erst nach der Erstprüfung, zusammen mit der Auftragsbestätigung. Lehnen wir Ihr Projekt ab, entfällt sie.",
     zusagenHeading: "Was verbindlich zugesagt ist",
-    zusagenLeftTitle: `${siteName} übernimmt`,
+    // Lowercase accusative objects under the verb frame — the right column is
+    // lowercase too, and none of these items carries a full stop.
+    zusagenLeftTitle: `${siteName} sagt verbindlich zu`,
     zusagenRightTitle: `${siteName} verspricht nicht`,
     zusagenLeft: [
       {
         text:
           launchDays !== undefined
-            ? `Launch in ${launchDays} Werktagen ab Projektstart${launchDelayClause}`
-            : `Launch ab Projektstart${launchDelayClause}`,
+            ? `den Launch in ${launchDays} Werktagen ab Projektstart${launchDelayClause}`
+            : `den Launch ab Projektstart${launchDelayClause}`,
         anchorKey: "launchWorkdays",
       },
       {
         text:
           sla !== undefined
-            ? `${sla} % Verfügbarkeit pro Monat${downtime !== undefined ? `; über ${downtime} Stunden Ausfall` : "; bei längerem Ausfall"}: nächster Monat kostenlos`
-            : "Verfügbarkeit mit Ausfall-Kulanz",
+            ? `die Einhaltung von ${sla} % Verfügbarkeit pro Monat${downtime !== undefined ? `; bei über ${downtime} Stunden Ausfall` : "; bei längerem Ausfall"} ist der nächste Monat kostenlos`
+            : "die Einhaltung der Verfügbarkeit — bei längerem Ausfall ist der nächste Monat kostenlos",
         anchorKey: "availabilitySla",
       },
       {
         text:
           small !== undefined
-            ? `Kleine Änderungen in ${small} Stunden`
-            : "Kleine Änderungen in kurzer Frist",
+            ? `kleine Änderungen in ${small} Stunden`
+            : "kleine Änderungen in kurzer Frist",
         anchorKey: "smallChangeHours",
       },
       {
         text:
           response !== undefined
-            ? `Antwort in ${response} Stunden an Werktagen`
-            : "Antwort an Werktagen",
+            ? `eine Antwort in ${response} Stunden an Werktagen`
+            : "eine Antwort an Werktagen",
         anchorKey: "responseHours",
       },
       {
         text:
           handover !== undefined
-            ? `Übergabe in ${handover} Stunden nach Vertragsende`
-            : "Vollständige Übergabe nach Vertragsende",
+            ? `die vollständige Übergabe in ${handover} Stunden nach Vertragsende`
+            : "die vollständige Übergabe nach Vertragsende",
         anchorKey: "handoverHours",
       },
     ],
@@ -653,7 +654,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     b2bAnchorKey: "b2b",
     quoteAriaLabel: "Wörtliche Empfehlung",
     transparency: {
-      heading: "Transparenz dieser Empfehlung",
+      heading: "Transparenz",
       labels: {
         code: "Empfehlungscode",
         recommendedBy: "Empfohlen von",
@@ -682,8 +683,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       rulesetLabel: (version) =>
         version ? `AGB, § 3 Abs. 5 und § 12 (Fassung ${version})` : "AGB, § 3 Abs. 5 und § 12",
       partnerbedingungenLabel: "Partnerbedingungen",
-      closing:
-        "Die Empfehlung verpflichtet Sie zu nichts. Den Code können Sie vor dem Absenden löschen.",
+      closing: "Die Empfehlung verpflichtet Sie zu nichts.",
     },
     form: {
       heading: "Situation beschreiben",
@@ -732,15 +732,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       status: `${siteName} können Sie weiterhin unabhängig prüfen.`,
       home: "Zur Startseite",
     },
-    footer: {
-      navLabel: "Rechtliches",
-      impressum: "Impressum",
-      datenschutz: "Datenschutz",
-      agb: "AGB",
-      partnerbedingungen: "Partnerbedingungen",
-      barrierefreiheit: "Barrierefreiheit",
-      notausgang: "Notausgang",
-    },
   };
 }
 
@@ -770,11 +761,10 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
 
   return {
     headerCta: "Описати ситуацію",
-    langSwitchLabel: "Оберіть мову",
     heroLabel: "РЕКОМЕНДАЦІЯ",
-    h1Named: (name) => `${name} рекомендує вам ${siteName}.`,
+    h1Named: (name) => `${name} рекомендує Вам ${siteName}.`,
     h1Anonymous: `Вам рекомендували ${siteName}.`,
-    lead: `${siteName} робить вебсайти для малого бізнесу, ремесла та самозайнятих: на вашому власному домені, з письмовими умовами та передбаченим виходом.`,
+    lead: `${siteName} робить вебсайти для малого бізнесу, ремесла та самозайнятих: на Вашому власному домені, з письмовими умовами та передбаченим виходом.`,
     disclosure: (compensation, displayName, slug) =>
       disclosureUk(facts, compensation, displayName, slug, siteName),
     heroFacts: [
@@ -796,10 +786,10 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     ],
     ctaPrimary: "Описати ситуацію",
     ctaPreis: "Ціна й зобов'язання",
-    leistungHeading: "Що ви отримуєте",
+    leistungHeading: "Що Ви отримуєте",
     leistung: [
       "Вебсайт — розроблений і запущений онлайн",
-      "Домен на ваше ім'я — ви власник із першого дня",
+      "Домен на Ваше ім'я — Ви власник із першого дня",
       sla !== undefined
         ? `Хостинг із доступністю ${sla} % на місяць`
         : "Хостинг із гарантією доступності",
@@ -810,8 +800,8 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         : "Незначна зміна на місяць включно",
       "Квартальний звіт про відвідувачів і джерела трафіку",
       handover !== undefined
-        ? `Повна передача протягом ${handover} годин, якщо ви йдете`
-        : "Повна передача, якщо ви йдете",
+        ? `Повна передача протягом ${handover} годин, якщо Ви йдете`
+        : "Повна передача, якщо Ви йдете",
     ],
     preisHeading: "Ціна — відкрито",
     priceCells: priceCellsUk(facts),
@@ -826,45 +816,47 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     vorteilText: vorteilUk(facts, siteName),
     riskLine:
       activationMoney !== undefined
-        ? `Внесок ${activationMoney} належний лише після первинної перевірки разом із підтвердженням замовлення. Якщо ми відмовимо вашому проєкту, його не стягується.`
-        : "Внесок за активацію належний лише після первинної перевірки разом із підтвердженням замовлення. Якщо ми відмовимо проєкту, його не стягується.",
+        ? `Внесок ${activationMoney} Ви сплачуєте лише після первинної перевірки разом із підтвердженням замовлення. Якщо ми відмовимо Вашому проєкту, внесок не стягуватиметься.`
+        : "Внесок за активацію Ви сплачуєте лише після первинної перевірки разом із підтвердженням замовлення. Якщо ми відмовимо Вашому проєкту, внесок не стягуватиметься.",
     zusagenHeading: "Зобов'язання",
-    zusagenLeftTitle: `${siteName} бере на себе`,
+    // Infinitive items under the verb frame — same lowercase style as the
+    // right column; none of the items ends in a full stop.
+    zusagenLeftTitle: `${siteName} зобов'язується`,
     zusagenRightTitle: `${siteName} не обіцяє`,
     zusagenLeft: [
       {
         text:
           launchDays !== undefined
-            ? `Запуск за ${launchDays} робочих днів від старту проєкту${launchDelayClause}`
-            : `Запуск від старту проєкту${launchDelayClause}`,
+            ? `запустити за ${launchDays} робочих днів від старту проєкту${launchDelayClause}`
+            : `запустити від старту проєкту${launchDelayClause}`,
         anchorKey: "launchWorkdays",
       },
       {
         text:
           sla !== undefined
-            ? `Доступність ${sla} % на місяць; ${downtime !== undefined ? `понад ${downtime} годин простою` : "за тривалого простою"}: наступний місяць безкоштовно`
-            : "Доступність із компенсацією простою",
+            ? `забезпечити доступність ${sla} % на місяць; ${downtime !== undefined ? `за простою понад ${downtime} годин` : "за тривалого простою"} наступний місяць безкоштовний`
+            : "забезпечити доступність із компенсацією простою",
         anchorKey: "availabilitySla",
       },
       {
         text:
           small !== undefined
-            ? `Незначні зміни за ${small} годин`
-            : "Незначні зміни в короткий строк",
+            ? `вносити незначні зміни за ${small} годин`
+            : "вносити незначні зміни в короткий строк",
         anchorKey: "smallChangeHours",
       },
       {
         text:
           response !== undefined
-            ? `Відповідь за ${response} годин у робочі дні`
-            : "Відповідь у робочі дні",
+            ? `відповідати за ${response} годин у робочі дні`
+            : "відповідати в робочі дні",
         anchorKey: "responseHours",
       },
       {
         text:
           handover !== undefined
-            ? `Передача за ${handover} годин після завершення договору`
-            : "Повна передача після завершення договору",
+            ? `передати все за ${handover} годин після завершення договору`
+            : "передати все після завершення договору",
         anchorKey: "handoverHours",
       },
     ],
@@ -872,7 +864,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       { text: "певну позицію в Google" },
       { text: "певну кількість звернень чи замовлень" },
       { text: "продажі чи економічний успіх" },
-      { text: "результат без вашої участі" },
+      { text: "результат без Вашої участі" },
       {
         text: "юридичні консультації, SEO-кампанії, платна реклама",
         anchorKey: "excludedServices",
@@ -889,11 +881,11 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
             : "Ми відповідаємо в робочі дні.",
       },
       {
-        text: "Первинна перевірка: ви отримуєте результат у текстовій формі; ми відмовляємо, наприклад, неправомірній або недоказовій діяльності.",
+        text: "Первинна перевірка: Ви отримуєте результат у текстовій формі; ми відмовляємо, наприклад, неправомірній або недоказовій діяльності.",
         anchorKey: "unsupportedProjects",
       },
       {
-        text: "За позитивного результату: підтвердження замовлення з обсягом, ціною та стартом; лише тоді належний внесок за активацію.",
+        text: "За позитивного результату: підтвердження замовлення з обсягом, ціною та стартом; лише тоді Ви оплачуєте внесок за активацію.",
       },
     ],
     writtenLine: "Ми працюємо письмово.",
@@ -902,7 +894,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     b2bAnchorKey: "b2b",
     quoteAriaLabel: "Дослівна рекомендація",
     transparency: {
-      heading: "Прозорість цієї рекомендації",
+      heading: "Прозорість",
       labels: {
         code: "Код рекомендації",
         recommendedBy: "Рекомендує",
@@ -931,22 +923,22 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       rulesetLabel: (version) =>
         version ? `AGB, § 3 абз. 5 і § 12 (версія ${version})` : "AGB, § 3 абз. 5 і § 12",
       partnerbedingungenLabel: "Партнерські умови",
-      closing: "Рекомендація вас ні до чого не зобов'язує. Код можна вилучити перед надсиланням.",
+      closing: "Рекомендація Вас ні до чого не зобов'язує.",
     },
     form: {
-      heading: "Опишіть вашу ситуацію",
+      heading: "Опишіть Вашу ситуацію",
       refLabel: "Код рекомендації",
       refHelp: "Заповнено автоматично. Ви можете його вилучити.",
       emailLabel: "Електронна пошта",
       nameLabel: "Ім'я або бізнес",
       optionalHint: "необов'язково",
       messageLabel: "Повідомлення",
-      messageHelp: "Що у вас є сьогодні, чого бракує, як нам найкраще з вами зв'язатися?",
+      messageHelp: "Що у Вас є сьогодні, чого бракує, як нам найкраще з Вами зв'язатися?",
       submitLabel: `Перевірити, чи підходить ${siteName}`,
       sendingLabel: "Надсилаємо …",
       privacyNote:
-        "Ми не використовуємо на цій сторінці cookie і нічого не зберігаємо на вашому пристрої. Код рекомендації передається лише разом із вашим запитом.",
-      privacyLinkLabel: "політиці конфіденційності",
+        "Ми не використовуємо на цій сторінці cookie і нічого не зберігаємо на Вашому пристрої. Код рекомендації передається лише разом із Вашим запитом.",
+      privacyLinkLabel: "Політика конфіденційності",
       successMessage: `Дякуємо. Ваш запит надійшов. ${responseSentence} За потреби перевірте папку «Спам».`,
       errorSummary: "Деякі поля не заповнені або містять помилки.",
       emailRequired: "Будь ласка, вкажіть дійсну адресу електронної пошти.",
@@ -956,7 +948,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       subject: `Ваш запит до ${siteName}`,
       body: ({ message, code }) =>
         [
-          `Дякуємо за ваш запит до ${siteName}.`,
+          `Дякуємо за Ваш запит до ${siteName}.`,
           "",
           "Ваше повідомлення (копія):",
           message,
@@ -972,22 +964,13 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       title: `Ваш запит до ${siteName}`,
       lead:
         response !== undefined
-          ? `Коротко опишіть вашу ситуацію — ми відповідаємо протягом ${response} годин у робочі дні.`
-          : "Коротко опишіть вашу ситуацію — ми відповідаємо в робочі дні.",
+          ? `Коротко опишіть Вашу ситуацію — ми відповідаємо протягом ${response} годин у робочі дні.`
+          : "Коротко опишіть Вашу ситуацію — ми відповідаємо в робочі дні.",
     },
     retired: {
       title: "Ця рекомендація більше не активна",
-      status: `${siteName} ви можете надалі перевіряти самостійно.`,
+      status: `${siteName} Ви можете надалі перевіряти самостійно.`,
       home: "На головну",
-    },
-    footer: {
-      navLabel: "Правові документи",
-      impressum: "Вихідні дані",
-      datenschutz: "Конфіденційність",
-      agb: "Умови",
-      partnerbedingungen: "Партнерські умови",
-      barrierefreiheit: "Доступність",
-      notausgang: "Вихід",
     },
   };
 }
