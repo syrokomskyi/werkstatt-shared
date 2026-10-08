@@ -17,6 +17,7 @@
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
+  <item>warpgogol-m000193: prerendered-context guard — skip Host/Authorization reads when context.isPrerendered (static render carries a stub request whose headers getter logs a per-route Astro warning; real static-asset protection lives in worker.ts).</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
@@ -153,6 +154,14 @@ async function resolveAccessPin(): Promise<string | undefined> {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const accessProtectionMiddleware = defineMiddleware(async (context: any, next: any) => {
+  // Prerendered routes carry a stub request — no real Host header exists, and
+  // reading `request.headers` there makes Astro log a per-route warning. Real
+  // protection for static assets runs in worker.ts (checkAccessProtection)
+  // before Astro, so skipping here changes nothing at runtime.
+  if (context.isPrerendered) {
+    return next();
+  }
+
   const host = context.request.headers.get("host") ?? "";
   const isDevOrAlt = host.startsWith("dev.") || host.startsWith("alt.");
 
