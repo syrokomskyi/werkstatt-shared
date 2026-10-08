@@ -27,6 +27,11 @@ the cookie capture module (wg_ref, referral.attribution entitlement,
 payload.attribution).</item>
   <item>RFC-1222: additive receipt-provenance fields on the referral block —
 partner_mode, policy_effective_from, captured_at, disclosure_version.</item>
+  <item>RFC-1239: additive process_hint pass-through — Verbund Seam C (V04,
+H02). IngressProcessHint mirrors the vendored process-hint/v1 schema
+byte-for-byte until AMD-WERKSTATT-02 ships a website-ingress schema
+(PLAN-RFC-1238-01). The client serializes the input verbatim; detection and
+mapping live in lagebild-destination-adapter.ts.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -60,6 +65,24 @@ export interface ExplicitPolicyAssertion {
   readonly statement_ref?: string | null;
 }
 
+/**
+ * RFC-1239: Verbund Seam C — the process-hint/v1 object (H02). Hand-maintained
+ * shim mirroring the vendored schemas/process-hint.schema.yaml exactly (snake_case
+ * on the wire) until AMD-WERKSTATT-02 ships a website-ingress schema to derive
+ * from (PLAN-RFC-1238-01). Non-authoritative — Lagebild stores it as opaque
+ * Opportunity.state (VID-004/VID-005).
+ */
+export interface IngressProcessHint {
+  readonly schema: "process-hint/v1";
+  readonly system: "werkstatt" | "personal_agent";
+  readonly catalog_ref: string;
+  readonly phase: string;
+  readonly branch?: string | null;
+  readonly previous_phase?: string | null;
+  readonly changed_at: string;
+  readonly reason?: string | null;
+}
+
 export interface WebsiteIngressPayload {
   readonly contract_version: typeof LAGEBILD_INGRESS_CONTRACT_VERSION;
   readonly tenant_id: string;
@@ -87,6 +110,9 @@ export interface WebsiteIngressPayload {
   readonly captured_at?: string | null;
   /** RFC-1222: disclosure sentence-structure version (platform constant). */
   readonly disclosure_version?: string | null;
+  /** RFC-1239: Verbund Seam C — funnel transition hint (H02). Absent on
+      submissions that carry no stage transition. */
+  readonly process_hint?: IngressProcessHint;
 }
 
 export interface IngressResult {
@@ -119,6 +145,8 @@ export interface IngressSubmitInput {
   readonly policyEffectiveFrom?: string | null;
   readonly capturedAt?: string | null;
   readonly disclosureVersion?: string | null;
+  /** RFC-1239: already wire-shaped (snake_case) — serialized verbatim. */
+  readonly processHint?: IngressProcessHint;
 }
 
 /**
@@ -157,6 +185,7 @@ export async function submitIngress(
       : {}),
     ...(input.capturedAt != null ? { captured_at: input.capturedAt } : {}),
     ...(input.disclosureVersion != null ? { disclosure_version: input.disclosureVersion } : {}),
+    ...(input.processHint != null ? { process_hint: input.processHint } : {}),
   };
 
   const url = config.apiUrl.replace(/\/$/, "") + "/v1/ingress";

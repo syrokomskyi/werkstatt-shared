@@ -15,6 +15,11 @@ import {
   LAGEBILD_INGRESS_CONTRACT_VERSION,
   type LagebildIngressConfig,
 } from "../lagebild-ingress.ts";
+import {
+  lagebildDestinationAdapter,
+  funnelPayloadToProcessHint,
+} from "../lagebild-destination-adapter.ts";
+import type { IntegrationEvent } from "../port.ts";
 
 const baseConfig: LagebildIngressConfig = {
   apiUrl: "https://lagebild-api.example.workers.dev",
@@ -72,6 +77,170 @@ test("submitIngress sends POST with correct headers and payload", async () => {
   expect(body["interaction_kind"]).toBe("contact_message");
 
   fetchSpy.mockRestore();
+});
+
+test("submitIngress serializes processHint verbatim as process_hint (RFC-1239)", async () => {
+  const fetchSpy = vi
+    .spyOn(globalThis, "fetch")
+    .mockResolvedValue(
+      new Response(JSON.stringify({ accepted: true, is_replay: false }), { status: 201 }),
+    );
+
+  await submitIngress(baseConfig, {
+    submissionId: "sub_hint0000000000001",
+    idempotencyKey: "ten:hint1",
+    interactionKind: "other",
+    identityClaims: [{ claim_type: "email", value: "t@example.com" }],
+    processHint: {
+      schema: "process-hint/v1",
+      system: "werkstatt",
+      catalog_ref: "werkstatt:visitor-funnel/v1",
+      phase: "offer_presented",
+      previous_phase: "qualification_region",
+      changed_at: "2026-10-08T10:00:00.000Z",
+      reason: "qualification.answered",
+    },
+  });
+
+  const body = JSON.parse(
+    (fetchSpy.mock.calls[0] as [string, RequestInit])[1].body as string,
+  ) as Record<string, unknown>;
+  expect(body["process_hint"]).toEqual({
+    schema: "process-hint/v1",
+    system: "werkstatt",
+    catalog_ref: "werkstatt:visitor-funnel/v1",
+    phase: "offer_presented",
+    previous_phase: "qualification_region",
+    changed_at: "2026-10-08T10:00:00.000Z",
+    reason: "qualification.answered",
+  });
+  expect(body["contract_version"]).toBe(1);
+
+  vi.restoreAllMocks();
+});
+
+// ---------------------------------------------------------------------------
+// RFC-1239 / spec v0.1.1 V04 (handoffs.yaml H02): funnel transitions →
+// process_hint on the wire, built by the destination adapter.
+// ---------------------------------------------------------------------------
+
+const secrets = {
+  LAGEBILD_API_URL: "https://lagebild-api.example.workers.dev",
+  LAGEBILD_API_KEY: "lbk_test_key_0001",
+  LAGEBILD_TENANT_ID: "ten_warpgogol000001",
+  LAGEBILD_SOURCE_SYSTEM_ID: "site_warpgogol_com",
+};
+
+function funnelEvent(payload: Record<string, unknown>): IntegrationEvent {
+  return {
+    eventId: "evt-funnel-0000000000000001",
+    kind: "message",
+    source: "uchat",
+    locale: "de",
+    occurredAt: "2026-10-08T10:00:00.000Z",
+    payload,
+  };
+}
+
+async function captureIngressBody(event: IntegrationEvent): Promise<Record<string, unknown>> {
+  const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        submission_id: "sub_evt00000000000000001",
+        accepted: true,
+        is_replay: false,
+      }),
+      { status: 201 },
+    ),
+  );
+  await lagebildDestinationAdapter.route(event, secrets);
+  const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+  vi.restoreAllMocks();
+  return JSON.parse(init.body as string) as Record<string, unknown>;
+}
+
+test("funnel transition emits process_hint with reason=eventKind (AC-1, AC-5)", async () => {
+  const body = await captureIngressBody(
+    funnelEvent({
+      funnelVersion: "1.0.0",
+      eventKind: "qualification.answered",
+      stage: "qualification_company",
+      previousStage: "qualification_priority",
+      contact: { email: "visitor@example.com" },
+    }),
+  );
+
+  expect(body["process_hint"]).toEqual({
+    schema: "process-hint/v1",
+    system: "werkstatt",
+    catalog_ref: "werkstatt:visitor-funnel/v1",
+    phase: "qualification_company",
+    previous_phase: "qualification_priority",
+    changed_at: "2026-10-08T10:00:00.000Z",
+    reason: "qualification.answered",
+  });
+  // Fallback: claims came from payload.contact, not event.contact.
+  expect(body["identity_claims"]).toEqual([{ claim_type: "email", value: "visitor@example.com" }]);
+  // Funnel-only submission (no message) — honest kind, not contact_message.
+  expect(body["interaction_kind"]).toBe("other");
+});
+
+test("first observed stage emits hint without previous_phase", async () => {
+  const body = await captureIngressBody(
+    funnelEvent({
+      funnelVersion: "1.0.0",
+      eventKind: "privacy.acknowledged",
+      stage: "privacy_acknowledged",
+      contact: { email: "v@example.com" },
+    }),
+  );
+
+  const hint = body["process_hint"] as Record<string, unknown>;
+  expect(hint["phase"]).toBe("privacy_acknowledged");
+  expect("previous_phase" in hint).toBe(false);
+});
+
+test("no hint when stage equals previousStage, stage absent, or event is not a funnel payload (AC-3)", async () => {
+  const noTransition = await captureIngressBody(
+    funnelEvent({
+      funnelVersion: "1.0.0",
+      eventKind: "operator.note.added",
+      stage: "operator_review",
+      previousStage: "operator_review",
+    }),
+  );
+  expect("process_hint" in noTransition).toBe(false);
+
+  const noStage = await captureIngressBody(
+    funnelEvent({ funnelVersion: "1.0.0", eventKind: "language.selected" }),
+  );
+  expect("process_hint" in noStage).toBe(false);
+
+  const plainLead = await captureIngressBody({
+    eventId: "evt-lead-00000000000000001",
+    kind: "lead",
+    source: "send-message",
+    locale: "de",
+    occurredAt: "2026-10-08T10:00:00.000Z",
+    contact: { email: "lead@example.com" },
+    payload: { message: "plain contact form" },
+  });
+  expect("process_hint" in plainLead).toBe(false);
+  expect(plainLead["interaction_kind"]).toBe("contact_message");
+});
+
+test("system is the literal werkstatt — personal_agent can never be emitted (AC-3)", () => {
+  const hint = funnelPayloadToProcessHint(
+    {
+      funnelVersion: "1.0.0",
+      eventKind: "operator.won",
+      stage: "won",
+      previousStage: "operator_review",
+    },
+    "2026-10-08T11:00:00.000Z",
+  );
+  expect(hint?.system).toBe("werkstatt");
+  expect(hint?.phase).toBe("won");
 });
 
 test("submitIngress returns accepted=false on network error", async () => {

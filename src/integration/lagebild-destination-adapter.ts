@@ -33,6 +33,13 @@ the cookie capture module (wg_ref, referral.attribution entitlement,
 payload.attribution).</item>
   <item>RFC-1222: pass through the server-resolved receipt provenance —
 partnerMode, policyEffectiveFrom, capturedAt, disclosureVersion.</item>
+  <item>RFC-1239: Verbund Seam C (spec v0.1.1 V04, handoffs.yaml H02) — emit
+process_hint on real funnel transitions (payload.stage ≠ previousStage).
+Detection and mapping live here (the only layer that sees IntegrationEvent);
+serialization lives in lagebild-ingress.ts. Identity claims fall back to
+VisitorFunnelEventPayload.contact so funnel-only checkpoints still resolve
+the party via hub-side contact-value dedup; funnel-only submissions use
+interaction_kind "other" (the wire enum has no "chat").</item>
 </CHANGE_SUMMARY>
 */
 
@@ -42,7 +49,47 @@ import {
   buildIdempotencyKey,
   type IdentityClaim,
   type IngressOrigin,
+  type IngressProcessHint,
 } from "./lagebild-ingress.ts";
+import { isValidFunnelStage } from "./funnel.ts";
+
+/**
+ * RFC-1239 (Verbund V04 / handoffs.yaml H02): map a funnel-carrying
+ * `IntegrationEvent.payload` onto the process-hint/v1 object. Returns
+ * `undefined` when the payload is not a funnel event or carries no real
+ * transition (`stage` absent, invalid, or equal to `previousStage`) — the
+ * submission then goes out without `process_hint`.
+ *
+ * The hint is non-authoritative: Lagebild stores `phase` as opaque
+ * Opportunity.state under `catalog_ref` — the funnel catalog stays
+ * platform-owned (RFC-0188). `system` is the literal "werkstatt"; the hub
+ * rejects `personal_agent` on this path with 400.
+ */
+export function funnelPayloadToProcessHint(
+  payload: Record<string, unknown>,
+  occurredAt: string,
+): IngressProcessHint | undefined {
+  if (typeof payload.funnelVersion !== "string" || typeof payload.eventKind !== "string") {
+    return undefined;
+  }
+  const stage = payload.stage;
+  const previousStage = payload.previousStage;
+  if (typeof stage !== "string" || !isValidFunnelStage(stage)) return undefined;
+  if (typeof previousStage === "string" && previousStage === stage) return undefined;
+  const previous_phase =
+    typeof previousStage === "string" && isValidFunnelStage(previousStage)
+      ? previousStage
+      : undefined;
+  return {
+    schema: "process-hint/v1",
+    system: "werkstatt",
+    catalog_ref: "werkstatt:visitor-funnel/v1",
+    phase: stage,
+    ...(previous_phase !== undefined ? { previous_phase } : {}),
+    changed_at: occurredAt,
+    reason: payload.eventKind,
+  };
+}
 
 /**
  * Lagebild destination adapter (RFC-0176). Self-enables by secret presence:
@@ -74,12 +121,20 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
 
     const submissionId = "sub_" + event.eventId.replace(/-/g, "").slice(0, 24);
 
+    // RFC-1239: funnel payloads carry contact inside `payload.contact`
+    // (VisitorFunnelEventPayload) — funnel-only checkpoints must still resolve
+    // the party via hub-side contact-value dedup.
+    const payloadContact = event.payload.contact as
+      { name?: string; email?: string; phone?: string } | undefined;
+    const contactEmail = event.contact?.email ?? payloadContact?.email;
+    const contactPhone = event.contact?.phone ?? payloadContact?.phone;
+
     const claims: IdentityClaim[] = [];
-    if (event.contact?.email) {
-      claims.push({ claim_type: "email", value: event.contact.email });
+    if (contactEmail) {
+      claims.push({ claim_type: "email", value: contactEmail });
     }
-    if (event.contact?.phone) {
-      claims.push({ claim_type: "phone", value: event.contact.phone });
+    if (contactPhone) {
+      claims.push({ claim_type: "phone", value: contactPhone });
     }
 
     const referrer =
@@ -90,6 +145,17 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
     };
 
     const message = typeof event.payload.message === "string" ? event.payload.message : null;
+
+    // RFC-1239: the hint is built here — this adapter is the only layer that
+    // sees the IntegrationEvent. "other" (not "contact_message") when a funnel
+    // checkpoint carries no message; the wire enum has no "chat" — the hub
+    // derives interaction.kind: chat from the hint itself (H02).
+    const processHint = funnelPayloadToProcessHint(event.payload, event.occurredAt);
+    const isFunnelEvent =
+      typeof event.payload.funnelVersion === "string" &&
+      typeof event.payload.eventKind === "string";
+    const interactionKind =
+      message == null && isFunnelEvent ? ("other" as const) : ("contact_message" as const);
 
     // RFC-1198: server-resolved partner fields pass through verbatim — the site
     // API already matched the raw referrer input against the bundled partner
@@ -126,7 +192,7 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
       {
         submissionId,
         idempotencyKey: buildIdempotencyKey(tenantId, submissionId),
-        interactionKind: "contact_message",
+        interactionKind,
         identityClaims: claims,
         message,
         origin,
@@ -144,6 +210,7 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
         ...(policyEffectiveFrom ? { policyEffectiveFrom } : {}),
         ...(capturedAt ? { capturedAt } : {}),
         ...(disclosureVersion ? { disclosureVersion } : {}),
+        ...(processHint ? { processHint } : {}),
       },
     );
 

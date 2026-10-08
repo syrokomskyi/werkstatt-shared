@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import Ajv2020 from "ajv/dist/2020.js";
+import { funnelPayloadToProcessHint } from "../lagebild-destination-adapter.ts";
 
 // VID-013: fixtures are validated byte-exact from the vendored snapshots.
 // Resolved via import.meta.url — never process.cwd() (DNA-105).
@@ -141,5 +142,31 @@ for (const specId of specDirs) {
     // H02: Werkstatt owns the funnel catalog; the hub must never interpret it.
     expect(payload["system"]).toBe("werkstatt");
     expect(payload["catalog_ref"]).toBe("werkstatt:visitor-funnel/v1");
+  });
+
+  // RFC-1239 (V04, H02): the hint the adapter emits must validate against the
+  // vendored schema of EVERY pinned snapshot — the producer and the contract
+  // drift-check live in the same suite.
+  test(`${specId}: emitted process_hint validates against vendored schema (RFC-1239)`, () => {
+    const hint = funnelPayloadToProcessHint(
+      {
+        funnelVersion: "1.0.0",
+        eventKind: "qualification.answered",
+        stage: "qualification_company",
+        previousStage: "qualification_priority",
+      },
+      "2026-10-08T10:00:00.000Z",
+    );
+    expect(hint, "funnel transition must produce a process_hint").toBeDefined();
+
+    const schemaId = schemaIds.get("schemas/process-hint.schema.yaml");
+    const validate = schemaId ? ajv.getSchema(schemaId) : undefined;
+    expect(validate, `${specId} ships no process-hint schema`).toBeDefined();
+    expect(
+      validate!(hint),
+      `emitted process_hint failed ${specId} schema: ` +
+        `${JSON.stringify(validate!.errors)} — the producer drifted from the ` +
+        `vendored contract; fix the adapter, never patch the snapshot`,
+    ).toBe(true);
   });
 }

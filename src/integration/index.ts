@@ -188,7 +188,11 @@ export {
   type IngressOrigin,
   type ExplicitPolicyAssertion,
   type PolicyAssertionKind,
+  type IngressProcessHint,
 } from "./lagebild-ingress.ts";
 
 // Lagebild destination adapter (RFC-0176: wraps submitIngress as a DestinationAdapter)
-export { lagebildDestinationAdapter } from "./lagebild-destination-adapter.ts";
+export {
+  lagebildDestinationAdapter,
+  funnelPayloadToProcessHint,
+} from "./lagebild-destination-adapter.ts";
