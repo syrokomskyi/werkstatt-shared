@@ -50,8 +50,16 @@ import {
   type IdentityClaim,
   type IngressOrigin,
   type IngressProcessHint,
+  type IngressInteractionKind,
 } from "./lagebild-ingress.ts";
 import { isValidFunnelStage } from "./funnel.ts";
+
+/** RFC-1239: narrows to the funnel-event marker pair (stage fields probed separately). */
+function isFunnelPayload(
+  payload: Record<string, unknown>,
+): payload is Record<string, unknown> & { funnelVersion: string; eventKind: string } {
+  return typeof payload.funnelVersion === "string" && typeof payload.eventKind === "string";
+}
 
 /**
  * RFC-1239 (Verbund V04 / handoffs.yaml H02): map a funnel-carrying
@@ -69,9 +77,7 @@ export function funnelPayloadToProcessHint(
   payload: Record<string, unknown>,
   occurredAt: string,
 ): IngressProcessHint | undefined {
-  if (typeof payload.funnelVersion !== "string" || typeof payload.eventKind !== "string") {
-    return undefined;
-  }
+  if (!isFunnelPayload(payload)) return undefined;
   const stage = payload.stage;
   const previousStage = payload.previousStage;
   if (typeof stage !== "string" || !isValidFunnelStage(stage)) return undefined;
@@ -124,8 +130,10 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
     // RFC-1239: funnel payloads carry contact inside `payload.contact`
     // (VisitorFunnelEventPayload) — funnel-only checkpoints must still resolve
     // the party via hub-side contact-value dedup.
-    const payloadContact = event.payload.contact as
-      { name?: string; email?: string; phone?: string } | undefined;
+    const payloadContact =
+      typeof event.payload.contact === "object" && event.payload.contact !== null
+        ? (event.payload.contact as { name?: string; email?: string; phone?: string })
+        : undefined;
     const contactEmail = event.contact?.email ?? payloadContact?.email;
     const contactPhone = event.contact?.phone ?? payloadContact?.phone;
 
@@ -151,11 +159,8 @@ export const lagebildDestinationAdapter: DestinationAdapter = {
     // checkpoint carries no message; the wire enum has no "chat" — the hub
     // derives interaction.kind: chat from the hint itself (H02).
     const processHint = funnelPayloadToProcessHint(event.payload, event.occurredAt);
-    const isFunnelEvent =
-      typeof event.payload.funnelVersion === "string" &&
-      typeof event.payload.eventKind === "string";
-    const interactionKind =
-      message == null && isFunnelEvent ? ("other" as const) : ("contact_message" as const);
+    const interactionKind: IngressInteractionKind =
+      message == null && isFunnelPayload(event.payload) ? "other" : "contact_message";
 
     // RFC-1198: server-resolved partner fields pass through verbatim — the site
     // API already matched the raw referrer input against the bundled partner
