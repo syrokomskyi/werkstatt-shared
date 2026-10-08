@@ -58,13 +58,31 @@ function buildAjv(schemasDir: string): { ajv: Ajv2020; schemaIds: Map<string, st
   // validateFormats: false — `format` keywords (date-time, uri) are annotations
   // only; ajv-formats is intentionally not a dependency of this package.
   const ajv = new Ajv2020({ strict: false, allErrors: true, validateFormats: false });
-  // Register every vendored schema under its $id so relative $refs
-  // (e.g. "./party-ref.schema.yaml" inside verbund-event) resolve.
+  // Register every vendored schema under its $id. Relative $refs
+  // (e.g. "./party-ref.schema.yaml" inside verbund-event) resolve against the
+  // referrer's $id namespace — but the publisher only bumps $ids of changed
+  // schemas, so a v0.1.2 schema can reference a file whose $id still says
+  // v0.1.1. Alias every schema as <namespace>/<filename> for each namespace
+  // present in the snapshot (file-location semantics); a ref to a file that
+  // does not exist still fails, so this masks nothing.
   const schemaIds = new Map<string, string>();
+  const schemas: { file: string; schema: { $id: string } }[] = [];
   for (const file of readdirSync(schemasDir).filter((f) => f.endsWith(".yaml"))) {
     const schema = parseYaml(readFileSync(join(schemasDir, file), "utf8")) as { $id: string };
-    ajv.addSchema(schema);
+    schemas.push({ file, schema });
     schemaIds.set(`schemas/${file}`, schema.$id);
+  }
+  const namespaces = new Set(
+    schemas.map(({ schema }) => schema.$id.split("/").slice(0, -1).join("/")),
+  );
+  for (const { file, schema } of schemas) {
+    ajv.addSchema(schema);
+    for (const ns of namespaces) {
+      const alias = `${ns}/${file}`;
+      if (alias !== schema.$id && !schemaIds.has(alias)) {
+        ajv.addSchema(schema, alias);
+      }
+    }
   }
   return { ajv, schemaIds };
 }
