@@ -83,10 +83,32 @@ export interface KernelCommandInput {
   flags: Record<string, KernelFlagValue>;
 }
 
+/**
+ * RFC-1243: reachability class consumed by `command.coverage.validate`.
+ * - `operator` — entry point is a runbook, prompt, or manual invocation.
+ * - `ci` — invoked by CI or external automation outside this workspace.
+ * - `delegated` — invoked programmatically by another command through
+ *   dynamic dispatch the literal-invocation scan cannot see.
+ * Absent = undeclared → COVERAGE-01 when no literal invocation exists.
+ */
+export type KernelCommandCoverage = "operator" | "ci" | "delegated";
+
 export interface KernelCommandMetadata {
   description: string;
   scope: KernelCommandScope;
   mutatesState?: boolean;
+  /**
+   * RFC-1243: reachability class — see KernelCommandCoverage. Declared only
+   * when the command has no literal invocation surface; commands reachable
+   * from pipelines, STEPS arrays, or docs leave this unset.
+   */
+  coverage?: KernelCommandCoverage;
+  /**
+   * RFC-1243: names the invocation surface justifying `coverage` (runbook
+   * name, CI workflow, dispatching command). Required when `coverage` is
+   * set — command.coverage.validate emits COVERAGE-03 otherwise.
+   */
+  coverageNote?: string;
   /**
    * RFC-1176: permits `io.exec` on the read-only adapter — the command
    * declares `mutatesState: false` but legitimately shells out for
