@@ -383,6 +383,8 @@ When adding a third-party dependency to `packages/werkstatt-shared/package.json`
 
 Agents MUST NOT automatically replace imports based on validator output — the validator only reports potential issues. Remediation requires human analysis of the package's export structure.
 
+**Lazy imports are gated too (RFC-1248):** a new `import("<pkg>")` in `src/client-scripts/**` (or a `*.client.ts` component) requires an `optimizeDeps.include` (or `exclude`) declaration in `astro.config.template.mjs` — VITE-CLIENT-DEP-02 blocks otherwise. Non-JS asset specifiers (`.css`, `.svg`, …) are exempt — Vite serves them through the asset pipeline.
+
 ### Scroll-spy URL hash updates (RFC-1061)
 
 Location: `packages/werkstatt-shared/src/client-scripts/scroll-spy.ts` — exported via `@warpgogol/werkstatt-shared/client-scripts`.

@@ -12,6 +12,7 @@ and manages the modal lifecycle (open, close, focus trap, body scroll lock).</pu
 <CHANGE_SUMMARY>
   <item>RFC-0932: initial implementation — QR modal lifecycle, dynamic qrcode import, focus trap, body scroll lock.</item>
   <item>RFC-0932: honor the data-external-link-qr="off" opt-out in the delegated click/keydown handlers — opted-out external links (footer review QR, nachweis links) navigate directly instead of opening the QR modal.</item>
+  <item>RFC-1248: VITE-CLIENT-DEP-02 lazy-import gate + SCAN-02 validator reads-root existence check (RFC-1248)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -74,7 +75,8 @@ export function initExternalLinkQr(options?: ExternalLinkQrOptions): void {
     document.body.style.overflow = "hidden";
 
     if (canvas) {
-      generateQr(href).catch(() => {
+      generateQr(href).catch((err) => {
+        console.error(err);
         if (errorEl) {
           errorEl.hidden = false;
         }
