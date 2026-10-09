@@ -338,6 +338,8 @@ for (const specId of specDirs) {
           },
         ],
         correlation_id: "corr_0001",
+        // ADR-0106 bounded window: legacy opaque-code attribution stays in the
+        // contract surface until Lagebild retires its tolerant reader — intentional bridging, not dead weight.
         attribution: { referral_code: "LEGACY42", first_touch_at: "2026-10-01T09:00:00.000Z" },
         referral_partner_slug: "partner-slug",
         referral_partner_name: "Partner Name",
