@@ -105,8 +105,9 @@ export interface KernelCommandMetadata {
   coverage?: KernelCommandCoverage;
   /**
    * RFC-1243: names the invocation surface justifying `coverage` (runbook
-   * name, CI workflow, dispatching command). Required when `coverage` is
-   * set — command.coverage.validate emits COVERAGE-03 otherwise.
+   * name, CI workflow, dispatching command). Required for `delegated` —
+   * command.coverage.validate emits COVERAGE-03 when it is absent or names
+   * no registered caller; recommended for `operator`/`ci`.
    */
   coverageNote?: string;
   /**
