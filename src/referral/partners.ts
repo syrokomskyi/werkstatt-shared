@@ -323,6 +323,15 @@ export interface ReferralPartnerLifecycleSets {
   readonly paused: ReferralPartner[];
 }
 
+/** Lifecycle statuses that emit a referral route twin (landing and/or
+    /r/<slug>.json). `paused` is deliberately absent — emitters and the parity
+    gate must stay locked on this single set even if the enum grows. */
+export const REFERRAL_ROUTE_EMITTING_STATUSES: ReadonlySet<string> = new Set([
+  "active",
+  "pending",
+  "retired",
+]);
+
 export type ReferralPartnerWarn = (code: string, data: Record<string, unknown>) => void;
 
 /** RFC-1222: strict source validation for `referral.partners.validate` —
