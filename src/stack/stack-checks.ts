@@ -15,6 +15,7 @@ KernelCommandResult or register commands themselves.</purpose>
   <item>RFC-1100: initial spec-driven check harness — StackCheckSpec, StackCheckViolation, StackCheckData, defineStackChecks returning commands + runCheckGate + invariantRows.</item>
   <item>RFC-1100: step 1 — shared tool/fs/check seams (walkFiles, runTool, defineStackChecks)</item>
   <item>RFC-1173: declare mutatesState on all kernel commands — collectDeclarationDiagnostics emits error-severity MUTATES-STATE-DECLARED, command.manifest.validate is the blocking consumer in packages.check, sweep declares the flag on every command definition (factories hardcode false for read-only check specs)</item>
+  <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
 </CHANGE_SUMMARY>
 */
 
@@ -84,7 +85,7 @@ function toCommand(spec: StackCheckSpec): KernelCommandDefinition<StackCheckData
       return {
         data: { command: spec.name, status, violations },
         exitCode: status === "pass" ? 0 : 1,
-        summary: `${spec.name}: ${status} (${violations.length} violations)`,
+        summary: `[stack.checks] ${spec.name}: ${status} (${violations.length} violations)`,
       };
     },
   };

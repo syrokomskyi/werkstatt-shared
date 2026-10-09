@@ -20,16 +20,6 @@ legally binding version; UK is a synced reference translation.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>warpgogol-m000193: landing v3 rebuild — EMPFEHLUNG label hero with
-  calm labelled disclosure (60-day trigger named), fixed leistung list,
-  structured price cells, two-column commitments, four-step process, verbatim
-  quote block, transparency card (code/art/preis/scope/exclusions/regelwerk),
-  referral form strings (email/name/message/ref), neutral mode-D copy, and
-  visitor auto-reply templates.</item>
-  <item>REVIEW-CODE-2026-10-08-02: endpreise/SLA/leistung numbers (priceFixMonths,
-  cancellationDays, downtimeHours, smallChangesPerMonth) interpolate PBP-derived
-  facts instead of literals; absent support-response policy no longer fabricates
-  a 24h promise — numberless sentence instead.</item>
   <item>warpgogol-m000193: copy refinement pass — UK visitor address capitalized
   (Ви/Ваш/Вам/Вас, Клієнт), zusagen rows lowercase, transparency heading shortened
   (Transparenz/Прозорість), closing trimmed to one sentence, disclosure.code slot
@@ -47,7 +37,8 @@ legally binding version; UK is a synced reference translation.
   section shows the same contact requirement /kontakt does.</item>
   <item>warpgogol-m000193: freePeriod condition on the with-card rephrased —
   uk "(активується на 2-й місяць)", de "(aktiviert im 2. Monat)".</item>
-  <history>RFC-1198, RFC-1222</history>
+  <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
+  <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, warpgogol-m000193</history>
 </CHANGE_SUMMARY>
 */
 

@@ -1,7 +1,7 @@
 {
   "_generated": "// GENERATED. Do not change this line unless the file contains project specific changes.",
   "schemaVersion": "1.0.0",
-  "totalCount": 66,
+  "totalCount": 79,
   "entries": [
     {
       "id": "agent-surface-overview",
@@ -25,6 +25,18 @@
         "Titan"
       ],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/approach.yaml",
+      "layer": "section"
+    },
+    {
+      "id": "article-header",
+      "displayName": "Article header",
+      "semanticRole": "article-metadata-header",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Himalia"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/article-header.yaml",
       "layer": "section"
     },
     {
@@ -73,6 +85,18 @@
         "Thebe"
       ],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/breadcrumbs.yaml",
+      "layer": "section"
+    },
+    {
+      "id": "changelog",
+      "displayName": "Changelog",
+      "semanticRole": "changelog-history",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Prometheus"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/changelog.yaml",
       "layer": "section"
     },
     {
@@ -218,6 +242,18 @@
       ],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/exit-diagram.yaml",
       "layer": "section"
+    },
+    {
+      "id": "external-link-qr-modal",
+      "displayName": "External link QR modal",
+      "semanticRole": "component-external-link-qr-modal",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Prospero"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/external-link-qr-modal.yaml",
+      "layer": "component"
     },
     {
       "id": "faq-list",
@@ -385,6 +421,18 @@
         "Ersa"
       ],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/referral-partner-page.yaml",
+      "layer": "component"
+    },
+    {
+      "id": "layout.referral-shell",
+      "displayName": "Referral shell",
+      "semanticRole": "component-layout.referral-shell",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Helike"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/referral-shell.yaml",
       "layer": "component"
     },
     {
@@ -640,6 +688,18 @@
       "layer": "section"
     },
     {
+      "id": "prose-a11y",
+      "displayName": "Prose a11y",
+      "semanticRole": "component-prose-a11y",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Eirene"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/prose-a11y.yaml",
+      "layer": "component"
+    },
+    {
       "id": "pulsar",
       "displayName": "Pulsar",
       "semanticRole": "component-pulsar",
@@ -712,6 +772,90 @@
       "layer": "section"
     },
     {
+      "id": "shell.agent-webmcp",
+      "displayName": "Shell Agent WebMCP",
+      "semanticRole": "component-shell.agent-webmcp",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Desdemona"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/shell/agent-webmcp.yaml",
+      "layer": "component"
+    },
+    {
+      "id": "shell.breadcrumbs",
+      "displayName": "Shell Breadcrumbs",
+      "semanticRole": "component-shell.breadcrumbs",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Ariel"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/shell/breadcrumbs.yaml",
+      "layer": "component"
+    },
+    {
+      "id": "shell.footer",
+      "displayName": "Shell Footer",
+      "semanticRole": "component-shell.footer",
+      "version": "1.0.0",
+      "layoutHint": "horizontal-row",
+      "acceptedCosmicNames": [
+        "Titania"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/shell/footer.yaml",
+      "layer": "component"
+    },
+    {
+      "id": "shell.header",
+      "displayName": "Shell Header",
+      "semanticRole": "component-shell.header",
+      "version": "1.0.0",
+      "layoutHint": "horizontal-row",
+      "acceptedCosmicNames": [
+        "Oberon"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/shell/header.yaml",
+      "layer": "component"
+    },
+    {
+      "id": "shell.page-renderer",
+      "displayName": "Shell Page Renderer",
+      "semanticRole": "component-shell.page-renderer",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Caliban"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/shell/page-renderer.yaml",
+      "layer": "component"
+    },
+    {
+      "id": "shell.portal-view",
+      "displayName": "Shell Portal View",
+      "semanticRole": "component-shell.portal-view",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Ferdinand"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/shell/portal-view.yaml",
+      "layer": "component"
+    },
+    {
+      "id": "shell.site-background",
+      "displayName": "Site Background",
+      "semanticRole": "component-shell.site-background",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Hermippe"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/shell/site-background.yaml",
+      "layer": "component"
+    },
+    {
       "id": "social-meta",
       "displayName": "Social meta",
       "semanticRole": "component-social-meta",
@@ -746,6 +890,18 @@
       ],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/structured-data.yaml",
       "layer": "component"
+    },
+    {
+      "id": "toc",
+      "displayName": "Table of contents",
+      "semanticRole": "table-of-contents",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Metis"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/toc.yaml",
+      "layer": "section"
     },
     {
       "id": "transparency",
@@ -799,8 +955,10 @@
   "sectionRoles": [
     "approach",
     "article-index",
+    "article-metadata-header",
     "audience-self-identification",
     "breadcrumbs",
+    "changelog-history",
     "client-gratitude",
     "client-ownership-disclosure",
     "consent-gated-chat-launcher",
@@ -828,6 +986,7 @@
     "scope-of-responsibility-disclosure",
     "side-by-side-comparison",
     "social-proof",
+    "table-of-contents",
     "transparency",
     "trust-evidence-row",
     "video-feature",
@@ -838,6 +997,7 @@
     "component-copyright",
     "component-currency-aware-price-display",
     "component-cycle-toggle",
+    "component-external-link-qr-modal",
     "component-footer-promo",
     "component-lang-switcher",
     "component-layout",
@@ -846,6 +1006,7 @@
     "component-layout.referral-landing-document",
     "component-layout.referral-neutral-document",
     "component-layout.referral-partner-page",
+    "component-layout.referral-shell",
     "component-live-photo",
     "component-material-credit",
     "component-media",
@@ -854,10 +1015,18 @@
     "component-passport-score-grid",
     "component-passport-star-map",
     "component-person-profile",
+    "component-prose-a11y",
     "component-pulsar",
     "component-responsive-image",
     "component-scroll-to-top",
     "component-section-body.offer-capacity",
+    "component-shell.agent-webmcp",
+    "component-shell.breadcrumbs",
+    "component-shell.footer",
+    "component-shell.header",
+    "component-shell.page-renderer",
+    "component-shell.portal-view",
+    "component-shell.site-background",
     "component-social-meta",
     "component-structured-data",
     "trust-card",

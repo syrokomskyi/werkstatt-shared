@@ -17,6 +17,7 @@ injected so the module stays runtime-agnostic and node-testable.</purpose>
   <item>Do not enumerate campaign semantics — utm_* values are opaque
         producer data; metads owns the phase→outcome interpretation.</item>
 </non-goals>
+</MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1241: initial implementation — capture/read/validate for the
         optional `acquisition` field on website-ingress/v1.</item>
@@ -37,6 +38,7 @@ to absent, never a dispatch error. contract_version stays 1.
   types unchanged in shape, new sourceHash
 - conformance: emitted acquisition + emitted ingress surface validated
   per snapshot (82 tests, 5 snapshots)</item>
+  <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
 </CHANGE_SUMMARY>
 */
 

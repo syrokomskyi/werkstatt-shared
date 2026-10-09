@@ -4,6 +4,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0899: Initial middleware unit tests.</item>
+  <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
 </CHANGE_SUMMARY>
 */
 
@@ -19,7 +20,7 @@ vi.mock("astro:middleware", () => ({
 
 describe("RFC-0899: access protection middleware", () => {
   async function loadMiddleware() {
-    return (await import("../access-protection")).accessProtectionMiddleware as (
+    return (await import("../access-protection.ts")).accessProtectionMiddleware as (
       context: unknown,
       next: () => Promise<Response>,
     ) => Promise<Response>;

@@ -13,6 +13,7 @@ contents in bulk, so validators never import node:fs directly.</purpose>
 <CHANGE_SUMMARY>
   <item>RFC-1100: initial shared walker — walkFiles plus readTextFile/readTextFiles/readBinaryFiles companions; replaces per-validator private readdir walkers in stack plugins.</item>
   <item>RFC-1100: step 1 — shared tool/fs/check seams (walkFiles, runTool, defineStackChecks)</item>
+  <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
 </CHANGE_SUMMARY>
 */
 
@@ -36,6 +37,7 @@ export async function walkFiles(dir: string, options: WalkFilesOptions = {}): Pr
   const { recursive = true, filter } = options;
   const results: string[] = [];
 
+  // fs.walk.lint: allow — canonical WorkspaceIO-based walker (walkFiles) — collectFiles uses node readdir, not io
   async function walk(
     current: string,
     relPrefix: string,

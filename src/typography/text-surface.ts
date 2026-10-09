@@ -13,6 +13,7 @@ parse errors and maps them to a structured yamlError field.</purpose>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1068: initial creation.</item>
+  <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
 </CHANGE_SUMMARY>
 */
 
@@ -152,6 +153,7 @@ function extractFrontmatterStrings(
 ): FrontmatterStringEntry[] {
   const results: FrontmatterStringEntry[] = [];
 
+  // fs.walk.lint: allow — walks a frontmatter object graph, not the filesystem
   function walk(value: unknown, currentPath: string, parent: string | null): void {
     if (typeof value === "string") {
       // Check if this key is technical
