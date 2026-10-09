@@ -4,7 +4,7 @@
 # Edit instead: the archetype.registry.build generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 schemaVersion: 1.0.0
-totalCount: 63
+totalCount: 66
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
@@ -257,6 +257,33 @@ entries:
     acceptedCosmicNames:
       - Cressida
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/not-found.yaml
+    layer: component
+  - id: layout.not-found-document
+    displayName: Not-found document
+    semanticRole: component-layout.not-found-document
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Pallene
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/not-found-document.yaml
+    layer: component
+  - id: layout.referral-landing-document
+    displayName: Referral landing document
+    semanticRole: component-layout.referral-landing-document
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Narvi
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/referral-landing-document.yaml
+    layer: component
+  - id: layout.referral-neutral-document
+    displayName: Referral neutral document
+    semanticRole: component-layout.referral-neutral-document
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Paaliaq
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/referral-neutral-document.yaml
     layer: component
   - id: layout.referral-partner-page
     displayName: Referral partner page
@@ -618,6 +645,9 @@ componentRoles:
   - component-lang-switcher
   - component-layout
   - component-layout.not-found
+  - component-layout.not-found-document
+  - component-layout.referral-landing-document
+  - component-layout.referral-neutral-document
   - component-layout.referral-partner-page
   - component-live-photo
   - component-material-credit
@@ -695,6 +725,7 @@ planetImportPaths:
   Hydra: "@warpgogol/werkstatt-site/ui/components/nachweis-list"
   Styx: "@warpgogol/werkstatt-site/ui/components/nachweis-verify"
   Cressida: "@warpgogol/werkstatt-site/ui/components/not-found"
+  Pallene: "@warpgogol/werkstatt-site/ui/components/not-found"
   Methone: "@warpgogol/werkstatt-site/ui/components/passport-header"
   Bianca: "@warpgogol/werkstatt-site/ui/components/passport-provenance"
   Klarissa: "@warpgogol/werkstatt-site/ui/components/passport-score-grid"
@@ -702,6 +733,8 @@ planetImportPaths:
   Miranda: "@warpgogol/werkstatt-site/ui/components/person-profile"
   Eirene: "@warpgogol/werkstatt-site/ui/components/components"
   Despina: "@warpgogol/werkstatt-site/ui/components/pulsar"
+  Narvi: "@warpgogol/werkstatt-site/ui/components/referral-partner"
+  Paaliaq: "@warpgogol/werkstatt-site/ui/components/referral-partner"
   Ersa: "@warpgogol/werkstatt-site/ui/components/referral-partner"
   Helike: "@warpgogol/werkstatt-site/ui/components/referral-partner"
   Belinda: "@warpgogol/werkstatt-site/ui/components/responsive-image"
@@ -778,6 +811,7 @@ blockTypeToCosmicName:
   nachweis-list: Hydra
   nachweis-verify: Styx
   layout.not-found: Cressida
+  layout.not-found-document: Pallene
   passport-header: Methone
   passport-provenance: Bianca
   passport-score-grid: Klarissa
@@ -785,6 +819,8 @@ blockTypeToCosmicName:
   person-profile: Miranda
   prose-a11y: Eirene
   pulsar: Despina
+  layout.referral-landing-document: Narvi
+  layout.referral-neutral-document: Paaliaq
   layout.referral-partner-page: Ersa
   layout.referral-shell: Helike
   responsive-image: Belinda
@@ -873,6 +909,7 @@ roleByCosmicName:
   Hydra: section-body
   Styx: section-body
   Cressida: layout-shell
+  Pallene: layout-shell
   Caliban: layout-shell
   Methone: header
   Bianca: footer-promo
@@ -882,6 +919,8 @@ roleByCosmicName:
   Ferdinand: layout-shell
   Eirene: section-body
   Despina: lang-switcher
+  Narvi: layout-shell
+  Paaliaq: layout-shell
   Ersa: layout-shell
   Helike: layout-shell
   Belinda: section-image
