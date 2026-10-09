@@ -52,7 +52,8 @@ const EXTENSIONS = new Set([".ts", ".astro"]);
 // Contract-mirror allowlist (PLAN-RFC-1238-01): the vendored Lagebild
 // website-ingress schema still declares the legacy `attribution` block as a
 // bounded-window tolerant-reader field (Lagebild RFC-0016) for un-migrated
-// sites. The derived wire types and their conformance test must therefore
+// sites — the removal condition is owned by ADR-0106. The derived wire types
+// and their conformance test must therefore
 // name `referral_code`/`first_touch_at`/`IngressAttribution` — these are the
 // contract surface, not the deleted cookie machinery (no reader, no cookie,
 // no entitlement, no sender path populates them).
