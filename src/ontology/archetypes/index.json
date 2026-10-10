@@ -1,7 +1,7 @@
 {
   "_generated": "// GENERATED. Do not change this line unless the file contains project specific changes.",
   "schemaVersion": "1.0.0",
-  "totalCount": 79,
+  "totalCount": 82,
   "entries": [
     {
       "id": "agent-surface-overview",
@@ -110,6 +110,30 @@
       ],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/chat-widget.yaml",
       "layer": "section"
+    },
+    {
+      "id": "check-questions",
+      "displayName": "Check Questions",
+      "semanticRole": "component-check-questions",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Orthosie"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/check-questions.yaml",
+      "layer": "component"
+    },
+    {
+      "id": "commitment-table",
+      "displayName": "Commitment Table",
+      "semanticRole": "component-commitment-table",
+      "version": "1.0.0",
+      "layoutHint": "single-column",
+      "acceptedCosmicNames": [
+        "Portia"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/commitment-table.yaml",
+      "layer": "component"
     },
     {
       "id": "comparison-cards",
@@ -928,6 +952,18 @@
       "layer": "section"
     },
     {
+      "id": "verifiable-case",
+      "displayName": "Verifiable Case",
+      "semanticRole": "component-verifiable-case",
+      "version": "1.0.0",
+      "layoutHint": "card-grid",
+      "acceptedCosmicNames": [
+        "Ferdinand"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/verifiable-case.yaml",
+      "layer": "component"
+    },
+    {
       "id": "video-section",
       "displayName": "Video section",
       "semanticRole": "video-feature",
@@ -994,6 +1030,8 @@
   ],
   "componentRoles": [
     "component-brand-label",
+    "component-check-questions",
+    "component-commitment-table",
     "component-copyright",
     "component-currency-aware-price-display",
     "component-cycle-toggle",
@@ -1029,6 +1067,7 @@
     "component-shell.site-background",
     "component-social-meta",
     "component-structured-data",
+    "component-verifiable-case",
     "trust-card",
     "trust-detail",
     "trust-list",
@@ -1075,6 +1114,8 @@
     "Quaoar": "@warpgogol/werkstatt-site/ui/sections/video-section",
     "Iapetus": "@warpgogol/werkstatt-site/ui/sections/women",
     "Proteus": "@warpgogol/werkstatt-site/ui/components/brand-label",
+    "Orthosie": "@warpgogol/werkstatt-site/ui/components/check-questions",
+    "Portia": "@warpgogol/werkstatt-site/ui/components/commitment-table",
     "Charon": "@warpgogol/werkstatt-site/ui/components/copyright",
     "Rosalind": "@warpgogol/werkstatt-site/ui/components/currency-aware-price-display",
     "Cupid": "@warpgogol/werkstatt-site/ui/components/cycle-toggle",
@@ -1120,7 +1161,8 @@
     "Taygete": "@warpgogol/werkstatt-site/ui/components/section-image",
     "Ananke": "@warpgogol/werkstatt-site/ui/components/section-shell",
     "Naiad": "@warpgogol/werkstatt-site/ui/components/social-meta",
-    "Triton": "@warpgogol/werkstatt-site/ui/components/structured-data"
+    "Triton": "@warpgogol/werkstatt-site/ui/components/structured-data",
+    "Ferdinand": "@warpgogol/werkstatt-site/ui/components/verifiable-case"
   },
   "blockTypeToCosmicName": {
     "agent-surface-overview": "Varuna",
@@ -1163,6 +1205,8 @@
     "video-section": "Quaoar",
     "women": "Iapetus",
     "brand-label": "Proteus",
+    "check-questions": "Orthosie",
+    "commitment-table": "Portia",
     "copyright": "Charon",
     "currency-aware-price-display": "Rosalind",
     "cycle-toggle": "Cupid",
@@ -1206,7 +1250,8 @@
     "section-header": "Pasiphae",
     "section-image": "Taygete",
     "social-meta": "Naiad",
-    "structured-data": "Triton"
+    "structured-data": "Triton",
+    "verifiable-case": "Ferdinand"
   },
   "moonImportPaths": {
     "Desdemona": "@warpgogol/werkstatt-site/ui/components/agent-webmcp",
@@ -1260,6 +1305,8 @@
     "Desdemona": "layout-shell",
     "Proteus": "brand-label",
     "Ariel": "breadcrumbs",
+    "Orthosie": "section-body",
+    "Portia": "section-body",
     "Charon": "copyright",
     "Rosalind": "price-display",
     "Cupid": "cycle-toggle",
