@@ -34,7 +34,7 @@ output:
   properties:
     ready:
       type: boolean
-      description: "true when the input validated and the preview draft is usable; false when fields are missing or invalid — never a 422 on this path"
+      description: true when the input validated and the preview draft is usable; false when fields are missing or invalid — never a 422 on this path
     draftId:
       type: string
       minLength: 71
@@ -44,7 +44,7 @@ output:
       type: array
       items:
         type: string
-      description: "Present when ready is false — names of absent required input fields"
+      description: Present when ready is false — names of absent required input fields
     problems:
       type: array
       items:
@@ -65,7 +65,7 @@ output:
       description: "Present when ready — the validated input echoed back so the caller can show the user what would be sent. Contains the caller's own PII — do not log beyond request scope"
     nextAction:
       type: string
-      description: "Present when ready — the submit-sibling capability id to call once the user confirms"
+      description: Present when ready — the submit-sibling capability id to call once the user confirms
     sideEffect:
       type: string
       description: "Present when ready — human+model readable consequence of nextAction"

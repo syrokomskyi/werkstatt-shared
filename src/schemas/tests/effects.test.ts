@@ -11,7 +11,7 @@ import {
   hasEnabledGlassEffect,
 } from "../effects.ts";
 import type { EffectAssignment } from "../effects.ts";
-import { z } from "zod";
+import type { z } from "zod";
 
 type ParsedEffect = z.infer<typeof effectSchema>;
 
