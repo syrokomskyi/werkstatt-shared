@@ -17,14 +17,12 @@
 
 import { test, expect } from "vitest";
 import {
-  AGENT_ACTION_DEPRECATION,
   AGENT_SURFACE_SCHEMA_ID,
   AGENT_SURFACE_VERSION,
   buildAgentSurfaceManifest,
   computeAgentManifestContentHash,
   computeSignedContentHash,
   canonicalJson,
-  validateManifestDeprecations,
 } from "../manifest.ts";
 
 const baseInput = {
