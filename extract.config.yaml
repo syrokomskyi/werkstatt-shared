@@ -33,6 +33,10 @@ excludePathSegments:
   - .npmrc
   - pnpm-lock.yaml
   - create-dev-props-validator.test.ts
+  # verbund-contract.test.ts reads vendored spec snapshots from the monorepo
+  # root (docs/specs/verbund-integration-spec-*/) — outside the package dir,
+  # never shipped standalone; the scandir would ENOENT in the extracted repo.
+  - verbund-contract.test.ts
 
 postProcess:
   - action: delete
