@@ -958,7 +958,7 @@
       "version": "1.0.0",
       "layoutHint": "card-grid",
       "acceptedCosmicNames": [
-        "Ferdinand"
+        "Mneme"
       ],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/verifiable-case.yaml",
       "layer": "component"
@@ -1162,7 +1162,7 @@
     "Ananke": "@warpgogol/werkstatt-site/ui/components/section-shell",
     "Naiad": "@warpgogol/werkstatt-site/ui/components/social-meta",
     "Triton": "@warpgogol/werkstatt-site/ui/components/structured-data",
-    "Ferdinand": "@warpgogol/werkstatt-site/ui/components/verifiable-case"
+    "Mneme": "@warpgogol/werkstatt-site/ui/components/verifiable-case"
   },
   "blockTypeToCosmicName": {
     "agent-surface-overview": "Varuna",
@@ -1251,7 +1251,7 @@
     "section-image": "Taygete",
     "social-meta": "Naiad",
     "structured-data": "Triton",
-    "verifiable-case": "Ferdinand"
+    "verifiable-case": "Mneme"
   },
   "moonImportPaths": {
     "Desdemona": "@warpgogol/werkstatt-site/ui/components/agent-webmcp",
@@ -1357,6 +1357,7 @@
     "Ananke": "section-shell",
     "Naiad": "header",
     "Triton": "header",
-    "Hermippe": "site-background"
+    "Hermippe": "site-background",
+    "Mneme": "section-body"
   }
 }

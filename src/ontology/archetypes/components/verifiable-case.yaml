@@ -43,5 +43,5 @@ propsSchema:
       footer: z.string().optional(),
     }).passthrough()
 acceptedCosmicNames:
-  - Ferdinand
+  - Mneme
 constraints: {}

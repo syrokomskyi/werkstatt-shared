@@ -9,6 +9,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0208: registered extractors for warpgogol-com block types.</item>
   <item>RFC-0372: added video-section, donation-card, credits, passport no-op extractors; people extractor now extracts heading; all extractors return heading (possibly empty) for unified SemanticBlock.</item>
+  <item>warpgogol-m000196: added commitment-table, check-questions, verifiable-case extractors for the semantic home sections.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -532,6 +533,70 @@ BLOCK_EXTRACTORS.register<Record<string, unknown>>({
     const heading = safeString(safeGet(props, "header.heading"));
     const lead = safeString(safeGet(props, "intro"));
     return { heading, lead };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// commitment-table — condition → consequence rows (no struck left column)
+// ---------------------------------------------------------------------------
+BLOCK_EXTRACTORS.register<Record<string, unknown>>({
+  blockType: "commitment-table",
+  extract(props) {
+    const heading = safeString(safeGet(props, "header.heading"));
+    const rows = safeArray(safeGet(props, "rows"), (row) => {
+      const left = safeString(safeGet(row, "left"));
+      const right = safeString(safeGet(row, "right"));
+      if (!left || !right) return undefined;
+      return { title: `${left} → ${right}` };
+    });
+    const note = safeString(safeGet(props, "note"));
+    const items = rows ? [...rows] : [];
+    if (note) items.push({ title: note });
+    return { heading, items: items.length ? items : undefined };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// check-questions — check question → provider standard rows
+// ---------------------------------------------------------------------------
+BLOCK_EXTRACTORS.register<Record<string, unknown>>({
+  blockType: "check-questions",
+  extract(props) {
+    const heading = safeString(safeGet(props, "header.heading"));
+    const rows = safeArray(safeGet(props, "rows"), (row) => {
+      const left = safeString(safeGet(row, "left"));
+      const right = safeString(safeGet(row, "right"));
+      if (!left || !right) return undefined;
+      return { title: `${left} → ${right}` };
+    });
+    return { heading, items: rows };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// verifiable-case — numbered steps + business link + disclaimer footer
+// ---------------------------------------------------------------------------
+BLOCK_EXTRACTORS.register<Record<string, unknown>>({
+  blockType: "verifiable-case",
+  extract(props) {
+    const heading = safeString(safeGet(props, "header.heading"));
+    const steps = safeArray(safeGet(props, "steps"), (step) => {
+      const title = safeString(safeGet(step, "title"));
+      const description = safeString(safeGet(step, "description"));
+      if (!title) return undefined;
+      return { title, description };
+    });
+    const items = steps ? [...steps] : [];
+    const linkLabel = safeString(safeGet(props, "businessLink.label"));
+    const linkHref = safeString(safeGet(props, "businessLink.href"));
+    if (linkLabel)
+      items.push({
+        title: linkHref ? `${linkLabel} (${linkHref})` : linkLabel,
+        description: undefined,
+      });
+    const footer = safeString(safeGet(props, "footer"));
+    if (footer) items.push({ title: footer, description: undefined });
+    return { heading, items: items.length ? items : undefined };
   },
 });
 
