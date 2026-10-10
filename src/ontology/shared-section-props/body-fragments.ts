@@ -161,6 +161,7 @@ export const BODY_COMPARISON_FRAGMENT: JsonSchemaFragment = {
         },
         align: ALIGN_ENUM,
         effects: EFFECTS_ARRAY_SCHEMA,
+        note: { type: "string" },
       },
     },
   },
