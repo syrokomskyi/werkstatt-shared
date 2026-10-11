@@ -294,6 +294,10 @@ export interface ReferralLandingCopy {
   zusagenLeft: readonly ReferralCommitmentRow[];
   zusagenRight: readonly { text: string; anchorKey?: ReferralAgbAnchorKey }[];
   zusagenFootnote: string;
+  /** RFC-1258: the honest "wann passt nicht" section — the studio's real
+      constraint (e-commerce with stock, incl. small shops), AGB-anchored. */
+  passtNichtHeading: string;
+  passtNicht: readonly { text: string; anchorKey?: ReferralAgbAnchorKey }[];
   stepsHeading: string;
   steps: readonly { text: string; anchorKey?: ReferralAgbAnchorKey }[];
   writtenLine: string;
@@ -311,15 +315,21 @@ export interface ReferralLandingCopy {
     left: readonly string[];
     right: readonly string[];
   };
-  /** RFC-1258: dated wave-capacity line — rendered only when the PBP
-      capacity fact exists and is fresh. */
-  capacityLine: (month: string, free: number, total: number) => string;
+  /** RFC-1258: dated wave-capacity line — pre-rendered from the PBP capacity
+      fact; null when the fact is absent (the landing then shows the static
+      waveSlots range line only). Freshness is the validator's job. */
+  capacityText: string | null;
   /** RFC-1258: expiry line — "Empfehlung gültig bis …". */
   validUntilLine: (isoDate: string) => string;
   /** RFC-1258: "Erst selbst prüfen" secondary links — labels + registry
       pageIds; the route handler resolves localized hrefs. */
   verifyHeading: string;
   verifyLinks: readonly { label: string; pageId: string }[];
+  /** RFC-1258: headings of the recommender's own fit lists (scope data). */
+  scopeFitsHeading: string;
+  scopeDoesNotFitHeading: string;
+  /** RFC-1258: label of the consent-gated link to the recommender's website. */
+  recommenderWebsiteLabel: (displayName: string) => string;
   transparency: ReferralTransparencyCopy;
   form: ReferralFormCopy;
   autoReply: ReferralAutoReplyCopy;
@@ -721,6 +731,25 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       },
     ],
     zusagenFootnote: "Fristen gelten unter den Voraussetzungen der AGB.",
+    passtNichtHeading: "Wann Warpgogol nicht passt",
+    passtNicht: [
+      {
+        text: "bei Onlineshops mit Artikelpositionen und Lagerbeständen — auch kleinen",
+        anchorKey: "unsupportedProjects",
+      },
+      {
+        text: "bei Portalen mit Tausenden Seiten oder komplexen Integrationen",
+        anchorKey: "unsupportedProjects",
+      },
+      {
+        text: "bei aggressiven SEO-Zielen und Positionsgarantien",
+        anchorKey: "excludedServices",
+      },
+      {
+        text: "wenn ein Marketing-Motor gebraucht wird, kein grundsolider Webauftritt",
+        anchorKey: "excludedServices",
+      },
+    ],
     stepsHeading: "So geht es weiter",
     steps: [
       { text: "Sie beschreiben Ihre Situation schriftlich." },
@@ -758,14 +787,18 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         "die Richtigkeit jeder einzelnen Angabe des Studios",
       ],
     },
-    capacityLine: (month, free, total) =>
-      `Nächste Welle: ${month}, ${free} von ${total} Plätzen frei.`,
+    capacityText: s?.capacity
+      ? `Nächste Welle: ${s.capacity.month}, ${s.capacity.free} von ${s.capacity.total} Plätzen frei.`
+      : null,
     validUntilLine: (isoDate) => `Diese Empfehlung gilt bis ${referralLocalDate(isoDate, "de")}.`,
     verifyHeading: "Erst selbst prüfen",
     verifyLinks: [
       { label: "Nachweise ansehen", pageId: "nachweise" },
       { label: "Notausgang ansehen", pageId: "notausgang" },
     ],
+    scopeFitsHeading: "Wofür das aus ihrer Sicht passt",
+    scopeDoesNotFitHeading: "Wofür das aus ihrer Sicht nicht passt",
+    recommenderWebsiteLabel: (name) => `${name}s Website`,
     transparency: {
       heading: "Transparenz",
       labels: {
@@ -997,6 +1030,25 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       },
     ],
     zusagenFootnote: "Строки діють за умов AGB.",
+    passtNichtHeading: "Коли Warpgogol не підходить",
+    passtNicht: [
+      {
+        text: "для інтернет-магазинів з товарними позиціями та залишками — навіть малих",
+        anchorKey: "unsupportedProjects",
+      },
+      {
+        text: "для порталів із тисячами сторінок чи складними інтеграціями",
+        anchorKey: "unsupportedProjects",
+      },
+      {
+        text: "для агресивних SEO-цілей і гарантій позицій",
+        anchorKey: "excludedServices",
+      },
+      {
+        text: "коли потрібен маркетинговий мотор, а не ґрунтовна вебприсутність",
+        anchorKey: "excludedServices",
+      },
+    ],
     stepsHeading: "Що буде далі",
     steps: [
       { text: "Ви описуєте свою ситуацію письмово." },
@@ -1034,14 +1086,18 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         "правильності кожної окремої умови студії",
       ],
     },
-    capacityLine: (month, free, total) =>
-      `Наступна хвиля: ${month}, ${free} з ${total} місць вільно.`,
+    capacityText: s?.capacity
+      ? `Наступна хвиля: ${s.capacity.month}, ${s.capacity.free} з ${s.capacity.total} місць вільно.`
+      : null,
     validUntilLine: (isoDate) => `Ця рекомендація діє до ${referralLocalDate(isoDate, "uk")}.`,
     verifyHeading: "Спочатку перевірте самі",
     verifyLinks: [
       { label: "Переглянути докази", pageId: "nachweise" },
       { label: "Переглянути Notausgang", pageId: "notausgang" },
     ],
+    scopeFitsHeading: "Кому це підходить — на її думку",
+    scopeDoesNotFitHeading: "Кому не підходить — на її думку",
+    recommenderWebsiteLabel: (name) => `Сайт ${name}`,
     transparency: {
       heading: "Прозорість",
       labels: {
