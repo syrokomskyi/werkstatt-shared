@@ -12,14 +12,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>warpgogol-m000185: pillarSchema gains optional `faq` array (localized question/answer items) — depth-0 pillar hubs can emit a faq-list block.</item>
   <item>RFC-0496: add BlueprintServiceConfig + ServicePublicationGate for website-service depth-1 service dossier configuration; add BlueprintLinkingParent for cross-surface parent linking.</item>
   <item>RFC-0497: add BlueprintIntersectionConfig + IntersectionGate + IntersectionSimilarity for website-local depth-5 intersection gate configuration.</item>
   <item>RFC-0500: add BlueprintHubConfig for depth-0 editorial knowledge hub configuration; add BlueprintStatusGate for record status filtering.</item>
   <item>RFC-1106: step 5 — merge blueprint triplet
 
 surface/blueprint.ts now holds the blueprintSchema (sole declaration), all ~30 contract type names derived via z.infer, parseBlueprint, and the pure helpers. Deleted satellites blueprint-types.ts + blueprint-schema.ts, their package.json export entries, and the zero-consumer site shims (domain/surface/blueprint{,-types,-schema}.ts + 2 load-verification tests). All barrel consumers unchanged.</item>
-  <history>RFC-0192, RFC-0199</history>
+  <item>RFC-1257: structured CtaTarget + scenario-plumbed contact links</item>
+  <history>RFC-0192, RFC-0199, warpgogol-m000185</history>
 </CHANGE_SUMMARY>
 */
 
@@ -42,6 +42,7 @@ import type {
 } from "./types.ts";
 
 import { z } from "zod";
+import { ctaTargetSchema } from "../schemas/section-cta.ts";
 
 // ---------------------------------------------------------------------------
 // Blueprint schema — RFC-1106: the sole declaration of the Blueprint contract.
@@ -54,9 +55,12 @@ const localizedString = z.record(z.string(), z.string());
 const intRecord = z.record(z.string(), z.number().int());
 
 // RFC-0490: pillar-hub configuration for depth-0 hub pages.
+// RFC-1257: pillar CTA targets use the canonical CtaTarget union — the same
+// grammar the baked section props carry, so no string→struct conversion ever
+// happens at the bake seam.
 const pillarCtaSchema = z.object({
   label: localizedString,
-  target: z.string().min(1),
+  target: ctaTargetSchema,
 });
 
 const pillarHeroSchema = z.object({

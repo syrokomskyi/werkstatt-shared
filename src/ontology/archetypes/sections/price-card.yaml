@@ -43,6 +43,26 @@ propsSchema:
           size: z.number().optional(),
         }).optional(),
       })).optional(),
+      cta: z.object({
+        label: z.string().min(2),
+        target: z.discriminatedUnion("kind", [
+          z.object({
+            kind: z.literal("internal"),
+            pageId: z.string().min(1),
+            query: z.record(z.string().regex(/^[a-zA-Z0-9_-]{1,32}$/), z.string().regex(/^[a-zA-Z0-9_%.-]{0,128}$/)).optional(),
+            anchor: z.string().optional(),
+          }).strict(),
+          z.object({
+            kind: z.literal("external"),
+            href: z.string().min(1),
+            rel: z.string().optional(),
+          }).strict(),
+          z.object({
+            kind: z.literal("anchor"),
+            anchor: z.string().min(1),
+          }).strict(),
+        ]),
+      }).optional(),
     }).strict()
 acceptedCosmicNames:
   - Pan

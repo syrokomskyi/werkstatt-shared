@@ -14,11 +14,13 @@ fields, lifecycle statuses, consent records for humans, and public/private visib
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0508: initial creation — Participant schema with six types, statuses, relationships, consent, and type-specific fields.</item>
+  <item>RFC-1257: structured CtaTarget + scenario-plumbed contact links</item>
 </CHANGE_SUMMARY>
 */
 
 import { z } from "zod";
 import { PERSON_AFFILIATIONS } from "./person.ts";
+import { ctaTargetSchema } from "./section-cta.ts";
 
 export const PARTICIPANT_TYPES = [
   "human",
@@ -218,7 +220,9 @@ export const participantSchema = z
     lifespan: lifespanSchema.optional(),
     statement: z.string().optional(),
     stats: z.array(z.object({ label: z.string(), value: z.string() }).strict()).optional(),
-    cta: z.object({ label: z.string(), target: z.string() }).strict().optional(),
+    // RFC-1257: participant CTA target is the canonical CtaTarget union —
+    // internal targets may carry a bounded query map (e.g. ?scenario=).
+    cta: z.object({ label: z.string(), target: ctaTargetSchema }).strict().optional(),
     sameAs: z.array(z.string().url()).optional(),
     page: z
       .object({ enabled: z.boolean().default(false) })

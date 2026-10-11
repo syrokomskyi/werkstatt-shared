@@ -59,12 +59,16 @@ levels:
           label:
             de: Gewerbe auswählen
             uk: Обрати галузь
-          target: "#industry-catalog"
+          target:
+            kind: anchor
+            anchor: industry-catalog
         secondaryCta:
           label:
             de: Digitales Fundament verstehen
             uk: Зрозуміти Цифровий фундамент
-          target: digitalesFundament
+          target:
+            kind: internal
+            pageId: digitalesFundament
       adaptation:
         heading:
           de: Was sich je nach Gewerbe verändert
@@ -104,7 +108,19 @@ levels:
         body:
           de: "Die Branche verändert nicht automatisch den Basispreis. Zusätzliche Seiten, Sprachen, Buchungsfunktionen oder Integrationen werden gesondert vereinbart."
           uk: "Галузь не змінює автоматично базову ціну. Додаткові сторінки, мови, функції бронювання чи інтеграції узгоджуються окремо."
-        priceRef: business-profile.offerings/digital-foundation.presentation.price
+      faq:
+        - question:
+            de: Meine Branche ist nicht aufgeführt – kann ich trotzdem anfragen?
+            uk: Моєї галузі немає в списку – чи можна все одно надіслати запит?
+          answer:
+            de: "Ja. Das Digitale Fundament ist nicht an eine Branche gebunden — die aufgeführten Branchenseiten zeigen beispielhaft, wie Aufbau und Inhalte angepasst werden. Ob es zu Ihrem Betrieb passt, klärt eine unverbindliche Anfrage."
+            uk: "Так. Цифровий фундамент не прив'язаний до галузі — перелічені галузеві сторінки показують на прикладах, як адаптуються структура та контент. Чи підходить він вашому бізнесу, з'ясовує необов'язковий запит."
+        - question:
+            de: Betreuen Sie Betriebe außerhalb von Baden-Württemberg?
+            uk: Чи обслуговуєте ви бізнес за межами Баден-Вюртемберга?
+          answer:
+            de: "Das Digitale Fundament wird remote aufgebaut und betreut — der Standort des Betriebs spielt dabei keine Rolle. Die Regionenseiten auf dieser Website zeigen beispielhafte Einsatzgebiete, keine geografische Begrenzung."
+            uk: "Цифровий фундамент створюється та обслуговується віддалено — розташування бізнесу не має значення. Регіональні сторінки цього сайту показують приклади зон роботи, а не географічне обмеження."
       finalCta:
         heading:
           de: Ihr Gewerbe ist noch nicht aufgeführt?
@@ -116,20 +132,24 @@ levels:
           label:
             de: Unverbindliche Anfrage starten
             uk: "Почати необов'язковий запит"
-          target: contact
+          target:
+            kind: internal
+            pageId: contact
         secondaryCta:
           label:
             de: Preis ansehen
             uk: Переглянути ціну
-          target: pricing
+          target:
+            kind: internal
+            pageId: pricing
   - depth: 1
     slug: { de: "website/{industry}", uk: "sait/{industry}" }
     constellation: website-industry
     geo: full
     titleTemplate:
       {
-        de: "Website für {industry.name} erstellen lassen | Warpgogol",
-        uk: "Сайт для напрямку: {industry.name} | Warpgogol",
+        de: "Website für {industry.name} erstellen lassen",
+        uk: "Сайт для напрямку: {industry.name}",
       }
     # RFC-0492: industry dossier configuration
     dossier:
@@ -158,8 +178,8 @@ levels:
     geo: full
     titleTemplate:
       {
-        de: "Website für {industry.name} in {country.name} | Warpgogol",
-        uk: "{industry.name}: сайт у {country.name} | Warpgogol",
+        de: "Website für {industry.name} in {country.name}",
+        uk: "{industry.name}: сайт у {country.name}",
       }
   - depth: 3
     slug: { de: "website/{industry}/{region}", uk: "sait/{industry}/{region}" }
@@ -167,8 +187,8 @@ levels:
     geo: full
     titleTemplate:
       {
-        de: "Website für {industry.name} in {region.name} | Warpgogol",
-        uk: "{industry.name}: сайт у регіоні {region.name} | Warpgogol",
+        de: "Website für {industry.name} in {region.name}",
+        uk: "{industry.name}: сайт у регіоні {region.name}",
       }
   - depth: 4
     slug: { de: "website/{industry}/{city}", uk: "sait/{industry}/{city}" }
@@ -176,8 +196,8 @@ levels:
     geo: full
     titleTemplate:
       {
-        de: "Website für {industry.name} in {city.name} | Warpgogol",
-        uk: "{industry.name}: сайт у місті {city.name} | Warpgogol",
+        de: "Website für {industry.name} in {city.name}",
+        uk: "{industry.name}: сайт у місті {city.name}",
       }
   - depth: 5
     slug: { de: "website/{industry}/{city}/{demand}", uk: "sait/{industry}/{city}/{demand}" }
@@ -185,8 +205,8 @@ levels:
     geo: full
     titleTemplate:
       {
-        de: "{demand.name} für {industry.name} in {city.name} | Warpgogol",
-        uk: "{demand.name} для {industry.name} у {city.name} | Warpgogol",
+        de: "{demand.name} für {industry.name} in {city.name}",
+        uk: "{demand.name} для {industry.name} у {city.name}",
       }
     # RFC-0497: intersection gate — depth-5 pages require explicit intersection records
     intersection:

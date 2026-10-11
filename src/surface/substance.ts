@@ -15,6 +15,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0194: initial scorer.</item>
   <item>RFC-0274: walk nested visible props so substance/duplicate checks see rendered semantic text.</item>
+  <item>RFC-1257: structured CtaTarget + scenario-plumbed contact links</item>
 </CHANGE_SUMMARY>
 */
 
@@ -106,8 +107,18 @@ function countLinkTargets(page: PageEntry): number {
     }
     if (Array.isArray(value)) {
       for (const item of value) visit(item);
-    } else if (value && typeof value === "object") {
-      for (const v of Object.values(value as Record<string, unknown>)) visit(v);
+      return;
+    }
+    if (value && typeof value === "object") {
+      const record = value as Record<string, unknown>;
+      // RFC-1257: structured CtaTarget nodes — an internal target counts its
+      // pageId as a link destination; external hrefs fall through to the
+      // string visitor below.
+      if (record.kind === "internal" && typeof record.pageId === "string") {
+        targets.add(record.pageId);
+        return;
+      }
+      for (const v of Object.values(record)) visit(v);
     }
   };
   for (const block of page.blocks) visit(block.props);

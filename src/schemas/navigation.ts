@@ -14,10 +14,12 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1257: structured CtaTarget + scenario-plumbed contact links</item>
 </CHANGE_SUMMARY>
 */
 
 import { z } from "zod";
+import { TARGET_QUERY_KEY_PATTERN, TARGET_QUERY_VALUE_PATTERN } from "../referral/patterns.ts";
 
 /**
  * Creates a Zod enum for navigation groups from an array of allowed group names.
@@ -50,6 +52,13 @@ export const navigationTargetSchema = (groupEnum: z.ZodEnum<Record<string, strin
         // RFC-0048: anchor may be a plain string (language-neutral) or a
         // language-keyed record (e.g. { de: "unser-ansatz", en: "our-approach" })
         anchor: z.union([z.string(), z.record(z.string(), z.string())]).optional(),
+        // RFC-1257: bounded query map — emitted as path?k=v before #anchor.
+        query: z
+          .record(
+            z.string().regex(TARGET_QUERY_KEY_PATTERN),
+            z.string().regex(TARGET_QUERY_VALUE_PATTERN),
+          )
+          .optional(),
       }),
       z.object({
         kind: z.literal("external"),

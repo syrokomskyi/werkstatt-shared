@@ -11,12 +11,14 @@ shapes that lived on hero / final-cta / hero-decision-card / notausgang-block.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
+  <item>RFC-1257: structured CtaTarget + scenario-plumbed contact links</item>
 </CHANGE_SUMMARY>
 */
 
 import { z } from "zod";
 import { horizontalAlignSchema } from "./horizontal-align.ts";
 import { vendorIconConfigSchema } from "./standard-list-item.ts";
+import { TARGET_QUERY_KEY_PATTERN, TARGET_QUERY_VALUE_PATTERN } from "../referral/patterns.ts";
 
 export const ctaVariantSchema = z.enum(["primary", "secondary", "ghost", "danger"]);
 export type CtaVariant = z.infer<typeof ctaVariantSchema>;
@@ -32,6 +34,13 @@ export const ctaTargetSchema = z.discriminatedUnion("kind", [
     .object({
       kind: z.literal("internal"),
       pageId: z.string().min(1),
+      // RFC-1257: bounded query map — emitted as path?k=v before #anchor.
+      query: z
+        .record(
+          z.string().regex(TARGET_QUERY_KEY_PATTERN),
+          z.string().regex(TARGET_QUERY_VALUE_PATTERN),
+        )
+        .optional(),
       anchor: z.string().optional(),
     })
     .strict(),
