@@ -20,6 +20,7 @@ consumers read this module; client-safe constants stay in ./patterns.ts.
   <item>RFC-1198 fo-fix: extracted client-safe constants to ./patterns.ts (Zod + RESERVED_REFERRAL_SLUGS leaked into the send-message client chunk).</item>
   <item>RFC-1222: schema v2 — `status` lifecycle replaces `active`, structured `consent` union (none|document|channel) replaces `publicNameConsentRef`, `role` + `retiredAt` added, schema enforces active⇒consent granted and retired⇒retiredAt, slug-PII guard exported; forward-only, no v1 acceptance.</item>
   <item>RFC-1258: schema v3 — `quote`/`quoteConsent` replaced forward-only by `statement`/`statementConsent`/`statementConfirmedAt`; `basis[]` (claim+verifiedBy+date), per-partner `scope`, `validUntil` (required on active), consent-gated `website`/`photo`, `relationToClientWorld`; expiry is data + validator, the lifecycle enum stays closed (DNA-19).</item>
+  <item>REVIEW-CODE-2026-10-11-01 fixes: uk phrase-guard patterns + explicit-delimiter uk negation (JS \b is ASCII-only), lang-aware sentence splitting, thousands-separator-safe money parsing, confirms aria-label, photo leading-slash contract, sectionNavItems statement/passtnicht anchors.</item>
 </CHANGE_SUMMARY>
 */
 
