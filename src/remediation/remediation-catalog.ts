@@ -11,6 +11,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>warpgogol-m000196: remediation entries for the LAYOUT-RHYTHM-01/02 rule family (post-hero density guard).</item>
   <item>ADR-0105: remediation entries for the DIST-LEAK-01..05 rule family (serialization-leak guard).</item>
   <item>RFC-1201: remediation entry for PARITY-MD-CONSTRUCT-COUNT (inline-construct parity).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
@@ -550,6 +551,20 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       'An "@name" issuer reference does not resolve against src/content/agent/trusted-issuers.yaml — add the named set or fix the reference.',
     docRef:
       "docs/rfcs/rfc-1213-verifier-side-verifiable-credential-readiness-for-gated-capabilities.md",
+  },
+  {
+    ruleId: "LAYOUT-RHYTHM-01",
+    action:
+      "Set `density: normal` (or `spacious`) on the block that directly follows the hero — a compact follower collapses the post-hero gap below the site-wide section rhythm.",
+    docRef: "docs/authoring/block-declarative-pages.md",
+    targetFiles: ["src/content/pages/**/*.md"],
+  },
+  {
+    ruleId: "LAYOUT-RHYTHM-02",
+    action:
+      "`density: flush` directly after a hero merges the two sections visually — keep it only when the seam-free join is deliberate.",
+    docRef: "docs/authoring/block-declarative-pages.md",
+    targetFiles: ["src/content/pages/**/*.md"],
   },
 ];
 
