@@ -386,6 +386,8 @@ Agents MUST NOT automatically replace imports based on validator output — the 
 
 **Lazy imports are gated too (RFC-1248):** a new `import("<pkg>")` in `src/client-scripts/**` (or a `*.client.ts` component) requires an `optimizeDeps.include` (or `exclude`) declaration in `astro.config.template.mjs` — VITE-CLIENT-DEP-02 blocks otherwise. Non-JS asset specifiers (`.css`, `.svg`, …) are exempt — Vite serves them through the asset pipeline.
 
+**Client scripts MUST NOT fetch third-party origins at runtime.** The axiom certification capture blocks external origins — any runtime `fetch`/request a library makes to a foreign host (CDN sprites, fonts, telemetry beacons) surfaces as `net::ERR_BLOCKED_BY_CLIENT` console errors and fails the certify gate (`runtime-health.console-error`). Serve all runtime assets same-origin: vendor the file into `src/client-scripts/assets/` and import it via `?url` (Vite asset pipeline). Example precedent: Plyr defaults its icon sprite to `cdn.plyr.io` — `video-player.ts` passes a bundled `iconUrl` instead. `runtime.console.probe` (build.post) catches regressions on every route before certify. Discovered during warpgogol-m000196.
+
 ### Scroll-spy URL hash updates (RFC-1061)
 
 Location: `packages/werkstatt-shared/src/client-scripts/scroll-spy.ts` — exported via `@warpgogol/werkstatt-shared/client-scripts`.
