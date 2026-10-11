@@ -38,6 +38,7 @@ legally binding version; UK is a synced reference translation.
   <item>warpgogol-m000193: freePeriod condition on the with-card rephrased —
   uk "(активується на 2-й місяць)", de "(aktiviert im 2. Monat)".</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
+  <item>RFC-1258: two-voice copy — statement/basis/confirms sections, capacityLine + validUntilLine (dated facts), transparency learns row (site-authored recommenderLearnsLine), verifyLinks (nachweise/notausgang); recommenderLearnsLine fact plumbed through resolveReferralLandingFacts.</item>
   <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, warpgogol-m000193</history>
 </CHANGE_SUMMARY>
 */
@@ -117,6 +118,10 @@ export interface ReferralLandingFacts {
   readonly service?: ReferralServiceFacts;
   /** Site-authored AGB section anchors for this language. */
   readonly anchors?: ReferralAgbAnchors;
+  /** RFC-1258: site-authored "Was der Empfehlende erfährt" line — the
+      disclosure of what the recommender learns about the client, grounded in
+      AGB § 12 Abs. 3 / Datenschutz § 5.4. Studio-specific process truth. */
+  readonly recommenderLearnsLine?: string;
 }
 
 /**
@@ -139,6 +144,7 @@ export function resolveReferralLandingFacts(
     stewardRole: pick(config.stewardRole),
     scopeLine: pick(config.scopeLine),
     exclusionsLine: pick(config.exclusionsLine),
+    recommenderLearnsLine: pick(config.recommenderLearnsLine),
     ...(referralFee || steward ? { reward: { "referral-fee": referralFee, steward } } : {}),
     ...(anchorsRaw ? { anchors: anchorsRaw as ReferralAgbAnchors } : {}),
   };
@@ -177,6 +183,9 @@ export interface ReferralTransparencyCopy {
     scope: string;
     excluded: string;
     ruleset: string;
+    /** RFC-1258: "Was der Empfehlende erfährt" — what the recommender learns
+        about the client (AGB § 12 Abs. 3 / Datenschutz § 5.4). */
+    learns: string;
   };
   /** "vergütet (70 €, nach 60 Tagen aktiver, bezahlter Subscription)" /
       "ohne Geldvergütung" — resolved per compensation + facts. */
@@ -184,6 +193,8 @@ export interface ReferralTransparencyCopy {
   yourPrice: string;
   scope: string;
   excluded: string;
+  /** RFC-1258: site-authored learns line — absent → the row is omitted. */
+  learns: string;
   /** "AGB, § 3 Abs. 5 und § 12 (Fassung 4.2)" — the version arrives from the
       AGB document metadata, never hardcoded. */
   rulesetLabel: (version: string | undefined) => string;
@@ -289,6 +300,26 @@ export interface ReferralLandingCopy {
   b2bLine: string;
   b2bAnchorKey: ReferralAgbAnchorKey;
   quoteAriaLabel: string;
+  /** RFC-1258: the recommender's voice section headings. */
+  statementHeading: string;
+  basisHeading: string;
+  /** RFC-1258: the bounded-assertion block — what the recommender confirms
+      and does not confirm (platform-fixed sentences, name interpolated). */
+  confirms: {
+    leftTitle: (displayName: string) => string;
+    rightTitle: (displayName: string) => string;
+    left: readonly string[];
+    right: readonly string[];
+  };
+  /** RFC-1258: dated wave-capacity line — rendered only when the PBP
+      capacity fact exists and is fresh. */
+  capacityLine: (month: string, free: number, total: number) => string;
+  /** RFC-1258: expiry line — "Empfehlung gültig bis …". */
+  validUntilLine: (isoDate: string) => string;
+  /** RFC-1258: "Erst selbst prüfen" secondary links — labels + registry
+      pageIds; the route handler resolves localized hrefs. */
+  verifyHeading: string;
+  verifyLinks: readonly { label: string; pageId: string }[];
   transparency: ReferralTransparencyCopy;
   form: ReferralFormCopy;
   autoReply: ReferralAutoReplyCopy;
@@ -712,6 +743,29 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       "Dieses Angebot gilt für Unternehmer, Selbständige und Freiberufler (§ 14 BGB), nicht für Verbraucher.",
     b2bAnchorKey: "b2b",
     quoteAriaLabel: "Wörtliche Empfehlung",
+    statementHeading: "Warum ich das empfehle",
+    basisHeading: "Was ich selbst geprüft habe",
+    confirms: {
+      leftTitle: (name) => `Das bestätigt ${name}`,
+      rightTitle: (name) => `Das bestätigt ${name} nicht`,
+      left: [
+        "dass sie die schriftlichen Bedingungen des Studios kennt",
+        "dass sie das Angebot für eine Aufgabe wie Ihre für passend hält",
+      ],
+      right: [
+        "bestimmte Ergebnisse, Positionen in der Suche oder Anfragen",
+        "dass Sie etwas unterschreiben oder buchen müssen",
+        "die Richtigkeit jeder einzelnen Angabe des Studios",
+      ],
+    },
+    capacityLine: (month, free, total) =>
+      `Nächste Welle: ${month}, ${free} von ${total} Plätzen frei.`,
+    validUntilLine: (isoDate) => `Diese Empfehlung gilt bis ${referralLocalDate(isoDate, "de")}.`,
+    verifyHeading: "Erst selbst prüfen",
+    verifyLinks: [
+      { label: "Nachweise ansehen", pageId: "nachweise" },
+      { label: "Notausgang ansehen", pageId: "notausgang" },
+    ],
     transparency: {
       heading: "Transparenz",
       labels: {
@@ -722,6 +776,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         scope: "Gilt für",
         excluded: "Nicht Bestandteil der Empfehlung",
         ruleset: "Regelwerk",
+        learns: "Was der Empfehlende erfährt",
       },
       kind: (compensation) => {
         if (compensation === "none") return "ohne Geldvergütung";
@@ -739,6 +794,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       yourPrice: "Listenpreis unverändert; Vorteil siehe Preisblock",
       scope: facts.scopeLine ?? "",
       excluded: facts.exclusionsLine ?? "",
+      learns: facts.recommenderLearnsLine ?? "",
       rulesetLabel: (version) =>
         version ? `AGB, § 3 Abs. 5 und § 12 (Fassung ${version})` : "AGB, § 3 Abs. 5 und § 12",
       partnerbedingungenLabel: "Partnerbedingungen",
@@ -963,6 +1019,29 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       "Ця пропозиція діє для підприємців, самозайнятих і вільних професій (§ 14 BGB), не для споживачів.",
     b2bAnchorKey: "b2b",
     quoteAriaLabel: "Дослівна рекомендація",
+    statementHeading: "Чому я це рекомендую",
+    basisHeading: "Що я перевірила особисто",
+    confirms: {
+      leftTitle: (name) => `Це підтверджує ${name}`,
+      rightTitle: (name) => `Це НЕ підтверджує ${name}`,
+      left: [
+        "що вона знає письмові умови студії",
+        "що вона вважає пропозицію придатною для завдання, схожого на Ваше",
+      ],
+      right: [
+        "певних результатів, позицій у пошуку чи звернень",
+        "що Ви мусите щось підписати чи забронювати",
+        "правильності кожної окремої умови студії",
+      ],
+    },
+    capacityLine: (month, free, total) =>
+      `Наступна хвиля: ${month}, ${free} з ${total} місць вільно.`,
+    validUntilLine: (isoDate) => `Ця рекомендація діє до ${referralLocalDate(isoDate, "uk")}.`,
+    verifyHeading: "Спочатку перевірте самі",
+    verifyLinks: [
+      { label: "Переглянути докази", pageId: "nachweise" },
+      { label: "Переглянути Notausgang", pageId: "notausgang" },
+    ],
     transparency: {
       heading: "Прозорість",
       labels: {
@@ -973,6 +1052,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         scope: "Діє для",
         excluded: "Не входить у рекомендацію",
         ruleset: "Регламент",
+        learns: "Що дізнається рекомендувач",
       },
       kind: (compensation) => {
         if (compensation === "none") return "без грошової винагороди";
@@ -990,6 +1070,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       yourPrice: "Ціна за прайсом незмінна; перевагу див. у блоці ціни",
       scope: facts.scopeLine ?? "",
       excluded: facts.exclusionsLine ?? "",
+      learns: facts.recommenderLearnsLine ?? "",
       rulesetLabel: (version) =>
         version ? `AGB, § 3 абз. 5 і § 12 (версія ${version})` : "AGB, § 3 абз. 5 і § 12",
       partnerbedingungenLabel: "Партнерські умови",

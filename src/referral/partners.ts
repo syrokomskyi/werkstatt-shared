@@ -29,6 +29,26 @@ import { REFERRAL_SLUG_PATTERN, REF_PARAM_PATTERN, REFERRER_MAX_LENGTH } from ".
 
 export { REFERRAL_SLUG_PATTERN, REF_PARAM_PATTERN, REFERRER_MAX_LENGTH };
 
+/** RFC-1258 phrase guard — closed denylist of unverifiable claim patterns for
+    authored referral copy (brief §9: "garantiert", "der beste", "viele
+    zufriedene Kunden", …). The validator flags a sentence matching a pattern
+    unless the same sentence also carries a negation token (nicht/kein/ohne) —
+    negated forms ("Wir garantieren nicht") are legitimate. Extend via RFC,
+    never silently. */
+export const REFERRAL_PHRASE_GUARD_PATTERNS: readonly {
+  readonly label: string;
+  readonly pattern: RegExp;
+}[] = [
+  { label: "garantiert", pattern: /\bgarantiert\w*\b/i },
+  { label: "der/die/das beste", pattern: /\bder\s+beste\b|\bdie\s+beste\b|\bdas\s+beste\b/i },
+  { label: "viele zufriedene Kunden", pattern: /\bviele\s+zufriedene\s+Kunden\b/i },
+  { label: "Platz 1 bei Google", pattern: /\bPlatz\s*1\b|\bPosition\s*1\b/i },
+  { label: "Nummer 1", pattern: /\bNummer\s*1\b/i },
+];
+
+/** Negation tokens that legitimize a sentence carrying a guard pattern. */
+export const REFERRAL_PHRASE_NEGATION_PATTERN = /\bnicht\b|\bkein\w*\b|\bohne\b|\bnie\b/i;
+
 /** Slugs that may never name a partner — platform-owned namespaces only.
     Partner slugs live under the `/r/` prefix and cannot collide with authored
     routes; this list guards only against names that would mimic platform
@@ -449,6 +469,10 @@ export const ReferralLandingConfigSchema = z
     /** referral-brief-v1: the transparency-card "Nicht Bestandteil" row —
         what the recommendation does NOT cover. */
     exclusionsLine: LocalizedPhraseSchema.optional(),
+    /** RFC-1258: the transparency-card "Was der Empfehlende erfährt" line —
+        what the recommender learns about the client, grounded in AGB
+        § 12 Abs. 3 / Datenschutz § 5.4. Studio-specific process truth. */
+    recommenderLearnsLine: LocalizedPhraseSchema.optional(),
     /** referral-brief-v1: AGB section anchors per language for in-copy
         references — `lang → anchorKey → anchor` (e.g.
         `{ de: { b2b: "sec-1-4" } }`). */

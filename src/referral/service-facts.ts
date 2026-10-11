@@ -19,6 +19,7 @@ truthfully rather than invent digits (DNA-103).
   priceFixMonths, cancellationDays, smallChangesPerMonth so every numeric claim
   the copy cites resolves from a PBP policy — no digits invented at the copy
   layer when a policy is absent.</item>
+  <item>RFC-1258: capacity fact (month/free/total/updatedAt) from the PBP partner-program capacity block — the dated wave counter; absent → static range line.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -85,6 +86,15 @@ export interface ReferralServiceFacts {
   readonly qualifyingDays?: number;
   /** Studio intake wave slots (digital-foundation availability.slotRange). */
   readonly waveSlots?: { readonly min: number; readonly max: number };
+  /** RFC-1258: dated wave-capacity fact (partner-program capacity block) —
+      the "Nächste Welle: n von m Plätzen frei" line. Absent → the landing
+      degrades to the static waveSlots range line. */
+  readonly capacity?: {
+    readonly month: string;
+    readonly free: number;
+    readonly total: number;
+    readonly updatedAt: string;
+  };
   /** AGB document version (documents/terms presentation.version). */
   readonly termsVersion?: string;
   /** AGB document effective date (documents/terms governance.effectiveFrom). */
