@@ -32,9 +32,9 @@ export { REFERRAL_SLUG_PATTERN, REF_PARAM_PATTERN, REFERRER_MAX_LENGTH };
 /** RFC-1258 phrase guard — closed denylist of unverifiable claim patterns for
     authored referral copy (brief §9: "garantiert", "der beste", "viele
     zufriedene Kunden", …). The validator flags a sentence matching a pattern
-    unless the same sentence also carries a negation token (nicht/kein/ohne) —
-    negated forms ("Wir garantieren nicht") are legitimate. Extend via RFC,
-    never silently. */
+    unless the same sentence also carries a negation token (de: nicht/kein/
+    ohne; uk: не/без/жодного) — negated forms ("Wir garantieren nicht") are
+    legitimate. Extend via RFC, never silently. */
 export const REFERRAL_PHRASE_GUARD_PATTERNS: readonly {
   readonly label: string;
   readonly pattern: RegExp;
@@ -47,10 +47,20 @@ export const REFERRAL_PHRASE_GUARD_PATTERNS: readonly {
   { label: "viele zufriedene Kunden", pattern: /\bviele\s+zufriedene\s+Kunden\b/i },
   { label: "Platz 1 bei Google", pattern: /\bPlatz\s*1\b|\bPosition\s*1\b/i },
   { label: "Nummer 1", pattern: /\bNummer\s*1\b/i },
+  { label: "гарантія", pattern: /гарант[а-яіїєґ]*/i },
+  { label: "найкращий", pattern: /найкращ[а-яіїєґ]*/i },
+  {
+    label: "багато задоволених клієнтів",
+    pattern: /багато\s+задоволених\s+клієнтів/i,
+  },
 ];
 
-/** Negation tokens that legitimize a sentence carrying a guard pattern. */
-export const REFERRAL_PHRASE_NEGATION_PATTERN = /\bnicht\b|\bkein\w*\b|\bohne\b|\bnie\b/i;
+/** Negation tokens that legitimize a sentence carrying a guard pattern —
+    German and Ukrainian (the registry's two locales). Cyrillic needs explicit
+    delimiters: JS `\b` is ASCII-only (`\w` = [A-Za-z0-9_]), so `\bне\b` never
+    matches — the negation word is matched with punctuation/space delimiters. */
+export const REFERRAL_PHRASE_NEGATION_PATTERN =
+  /\bnicht\b|\bkein\w*\b|\bohne\b|\bnie\b|(^|[\s,.!?;:«»„"'\-])не([\s,.!?;:«»„"']|$)|(^|[\s,.!?;:«»„"'\-])без([\s,.!?;:«»„"']|$)|жодн[а-яіїєґ]*/i;
 
 /** Slugs that may never name a partner — platform-owned namespaces only.
     Partner slugs live under the `/r/` prefix and cannot collide with authored
@@ -188,9 +198,15 @@ export const ReferralPartnerSchema = z
     /** RFC-1258: the recommender's website — consent-gated like the name. */
     website: z.string().url().optional(),
     websiteConsent: GrantedConsentSchema.optional(),
-    /** RFC-1258: the recommender's photo — content-local asset token,
-        consent-gated like the name. */
-    photo: z.string().min(1).optional(),
+    /** RFC-1258: the recommender's photo — a site-root-relative public path
+        (e.g. "/r/assets/ostpost/portrait.jpg" under `public/`; the landing is
+        static and outside the content-collection image pipeline), consent-
+        gated like the name. */
+    photo: z
+      .string()
+      .min(1)
+      .regex(/^\//, "photo must be a site-root-relative path starting with /")
+      .optional(),
     photoConsent: GrantedConsentSchema.optional(),
     /** RFC-1258: one phrase about the recommender's relation to the client's
         world ("Ich begleite Betriebe, die …") — consent-gated like role. */

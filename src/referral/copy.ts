@@ -310,6 +310,7 @@ export interface ReferralLandingCopy {
   /** RFC-1258: the bounded-assertion block — what the recommender confirms
       and does not confirm (platform-fixed sentences, name interpolated). */
   confirms: {
+    ariaLabel: string;
     leftTitle: (displayName: string) => string;
     rightTitle: (displayName: string) => string;
     left: readonly string[];
@@ -775,6 +776,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     statementHeading: "Warum ich das empfehle",
     basisHeading: "Was ich selbst geprüft habe",
     confirms: {
+      ariaLabel: "Was diese Empfehlung bedeutet — und was nicht",
       leftTitle: (name) => `Das bestätigt ${name}`,
       rightTitle: (name) => `Das bestätigt ${name} nicht`,
       left: [
@@ -1074,6 +1076,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     statementHeading: "Чому я це рекомендую",
     basisHeading: "Що я перевірила особисто",
     confirms: {
+      ariaLabel: "Що означає ця рекомендація — і що ні",
       leftTitle: (name) => `Це підтверджує ${name}`,
       rightTitle: (name) => `Це НЕ підтверджує ${name}`,
       left: [

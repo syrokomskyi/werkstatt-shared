@@ -107,7 +107,7 @@ describe("ReferralPartnerSchema v2", () => {
         channel: "email" as const,
         grantedAt: "2026-10-05",
       },
-      photo: "luba-portrait",
+      photo: "/r/assets/ostpost/portrait.jpg",
       photoConsent: {
         method: "document" as const,
         ref: "trust/consents/ostpost-photo",
