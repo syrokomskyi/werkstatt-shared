@@ -39,8 +39,11 @@ export const REFERRAL_PHRASE_GUARD_PATTERNS: readonly {
   readonly label: string;
   readonly pattern: RegExp;
 }[] = [
-  { label: "garantiert", pattern: /\bgarantiert\w*\b/i },
-  { label: "der/die/das beste", pattern: /\bder\s+beste\b|\bdie\s+beste\b|\bdas\s+beste\b/i },
+  { label: "garantiert", pattern: /\bgarant\w*\b/i },
+  {
+    label: "der/die/das beste",
+    pattern: /\bbeste\b|\bbesten\b|\bbester\b|\bbestes\b|\bbestem\b/i,
+  },
   { label: "viele zufriedene Kunden", pattern: /\bviele\s+zufriedene\s+Kunden\b/i },
   { label: "Platz 1 bei Google", pattern: /\bPlatz\s*1\b|\bPosition\s*1\b/i },
   { label: "Nummer 1", pattern: /\bNummer\s*1\b/i },
