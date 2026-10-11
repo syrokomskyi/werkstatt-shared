@@ -49,6 +49,8 @@ vi.mock("plyr", () => ({ default: mockPlyr }));
 
 vi.mock("plyr/dist/plyr.css?inline", () => ({ default: "/* plyr css */" }));
 
+vi.mock("../assets/plyr.sprite.svg?url", () => ({ default: "/_astro/plyr.sprite.svg" }));
+
 vi.mock("hls.js/light", () => {
   const hlsRef = { current: null as MockHlsInstance | null };
   const fn = vi.fn(function Hls() {
@@ -144,7 +146,16 @@ test("upgrade: data-controls='false' configures Plyr with only ['mute']", async 
   const video = createMockVideo({ controls: "false" });
   await triggerUpgrade(video);
 
-  expect(mockPlyr).toHaveBeenCalledWith(video, expect.objectContaining({ controls: ["mute"] }));
+  expect(mockPlyr).toHaveBeenCalledWith(
+    video,
+    expect.objectContaining({
+      controls: ["mute"],
+      // warpgogol-m000196: the icon sprite must be same-origin — Plyr's
+      // cdn.plyr.io default is blocked by the axiom capture network policy
+      // (console-error → certify gate fail).
+      iconUrl: "/_astro/plyr.sprite.svg",
+    }),
+  );
 });
 
 test("upgrade: without data-controls uses full Plyr controls list", async () => {

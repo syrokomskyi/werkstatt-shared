@@ -19,6 +19,7 @@
   <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
   <item>RFC-1175 AC-5: plyr.css moved from top-level import into the Plyr branch — keeps the stylesheet lazy so the orchestrator single-chunk import carries no feature-player CSS.</item>
   <item>warpgogol-m000170: plyr.css via ?inline + &lt;style&gt; injection — the plain css import emitted a preload to an asset inlineStylesheets:'always' never writes, so Plyr init threw and silently fell back to native controls on prod.</item>
+  <item>warpgogol-m000196: icon sprite served same-origin — `plyr/dist/plyr.svg?url` + `iconUrl` replaces Plyr's cdn.plyr.io default, whose third-party request the axiom capture policy blocks (console-error → certify gate fail).</item>
   <history>RFC-0210</history>
 </CHANGE_SUMMARY>
 */
@@ -111,7 +112,15 @@ async function upgrade(video: HTMLVideoElement, options: VideoPlayersOptions = {
           "captions",
           "fullscreen",
         ];
-    const player = new Plyr(video, { controls: plyrControls });
+    // warpgogol-m000196: Plyr's default icon sprite lives on a third-party CDN
+    // (https://cdn.plyr.io/<version>/plyr.svg) — a runtime third-party request
+    // the axiom capture network policy blocks (ERR_BLOCKED_BY_CLIENT →
+    // runtime-health.console-error finding → certify gate fail). The sprite is
+    // vendored (plyr/dist/plyr.svg, MIT — see open-source-registry) and served
+    // as a same-origin hashed asset via Vite `?url`; a relative import is
+    // required because plyr's exports map does not expose ./dist/plyr.svg.
+    const { default: plyrIconSprite } = await import("./assets/plyr.sprite.svg?url");
+    const player = new Plyr(video, { controls: plyrControls, iconUrl: plyrIconSprite });
     // Keep hls.js bound across Plyr's internal media swaps.
     void player;
     void hlsInstance;
