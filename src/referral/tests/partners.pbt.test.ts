@@ -43,6 +43,7 @@ const arbPartner = (slug: string): ReferralPartner => ({
   locales: ["de"],
   status: "active",
   consent: { method: "channel", channel: "email", grantedAt: "2026-01-01" },
+  validUntil: "2027-01-01",
 });
 
 describe("ReferralPartnerSchema PBT", () => {

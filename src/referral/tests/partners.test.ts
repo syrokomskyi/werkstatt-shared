@@ -13,6 +13,7 @@ resolveReferralPartner normalization, and the slug-PII guard.
 <CHANGE_SUMMARY>
   <item>RFC-1198: created.</item>
   <item>RFC-1222: rewritten for schema v2 — lifecycle sets, consent union (none|document|channel), active⇒consent and retired⇒retiredAt refinements, slugContainsNameToken; v1 field rejection asserted (forward-only).</item>
+  <item>RFC-1258: v3 coverage — statement/basis/scope/validUntil/website/photo/relationToClientWorld consent gates, active⇒validUntil, locale membership; fixtures carry validUntil.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -37,6 +38,7 @@ const ACTIVE: ReferralPartner = {
   locales: ["de", "uk"],
   status: "active",
   consent: { method: "document", ref: "trust/consents/ostpost", grantedAt: "2026-10-01" },
+  validUntil: "2027-04-01",
 };
 
 const PENDING: ReferralPartner = {
@@ -62,11 +64,57 @@ const partnerYaml = (extra = "") => `partners:
     locales: ["de", "uk"]
     status: "active"
     consent: { method: "document", ref: "trust/consents/ostpost", grantedAt: "2026-10-01" }
+    validUntil: "2027-04-01"
 ${extra}`;
 
 describe("ReferralPartnerSchema v2", () => {
   test("accepts a fully-specified active partner", () => {
     expect(ReferralPartnerSchema.parse(ACTIVE)).toEqual(ACTIVE);
+  });
+
+  test("accepts a fully-specified v3 partner with voice, basis, scope, and consents (RFC-1258)", () => {
+    const p = {
+      ...ACTIVE,
+      role: { de: "Coach", uk: "Коуч" },
+      relationToClientWorld: {
+        de: "Ich begleite Betriebe, die sichtbar werden wollen.",
+        uk: "Супроводжую бізнеси, які хочуть бути помітними.",
+      },
+      statement: {
+        de: "Ich habe die Bedingungen schriftlich gelesen.",
+        uk: "Я читала умови в письмовій формі.",
+      },
+      statementConsent: {
+        method: "channel" as const,
+        channel: "email" as const,
+        grantedAt: "2026-10-05",
+      },
+      statementConfirmedAt: "2026-10-05",
+      basis: [
+        {
+          claim: { de: "AGB gelesen", uk: "Прочитала AGB" },
+          verifiedBy: "recommender" as const,
+          date: "2026-10-03",
+        },
+      ],
+      scope: {
+        fits: [{ de: "Handwerk", uk: "Ремесло" }],
+        doesNotFit: [{ de: "Onlineshops", uk: "Інтернет-магазини" }],
+      },
+      website: "https://example.com",
+      websiteConsent: {
+        method: "channel" as const,
+        channel: "email" as const,
+        grantedAt: "2026-10-05",
+      },
+      photo: "luba-portrait",
+      photoConsent: {
+        method: "document" as const,
+        ref: "trust/consents/ostpost-photo",
+        grantedAt: "2026-10-05",
+      },
+    };
+    expect(ReferralPartnerSchema.parse(p)).toEqual(p);
   });
 
   test("accepts pending with consent.method none", () => {
@@ -96,6 +144,64 @@ describe("ReferralPartnerSchema v2", () => {
       { ...ACTIVE, consent: { method: "none", grantedAt: "2026-10-01" } },
     ],
     ["role locale outside locales", { ...ACTIVE, role: { fr: "Rôle" } }],
+    ["active without validUntil (RFC-1258)", { ...ACTIVE, validUntil: undefined }],
+    [
+      "statement without statementConsent (RFC-1258)",
+      { ...ACTIVE, statement: { de: "Ich empfehle." } },
+    ],
+    [
+      "statement without statementConfirmedAt (RFC-1258)",
+      { ...ACTIVE, statement: { de: "Ich empfehle." }, statementConsent: ACTIVE.consent },
+    ],
+    [
+      "statement on pending partner (RFC-1258)",
+      {
+        ...PENDING,
+        statement: { de: "Ich empfehle." },
+        statementConsent: ACTIVE.consent,
+        statementConfirmedAt: "2026-10-01",
+      },
+    ],
+    [
+      "statementConsent without statement (RFC-1258)",
+      { ...ACTIVE, statementConsent: ACTIVE.consent },
+    ],
+    [
+      "basis item without date (RFC-1258)",
+      {
+        ...ACTIVE,
+        statement: { de: "Ich empfehle." },
+        statementConsent: ACTIVE.consent,
+        statementConfirmedAt: "2026-10-01",
+        basis: [{ claim: { de: "AGB gelesen" }, verifiedBy: "recommender" }],
+      },
+    ],
+    [
+      "basis without statement (RFC-1258)",
+      {
+        ...ACTIVE,
+        basis: [{ claim: { de: "AGB gelesen" }, verifiedBy: "recommender", date: "2026-10-01" }],
+      },
+    ],
+    [
+      "scope without statement (RFC-1258)",
+      { ...ACTIVE, scope: { fits: [{ de: "Handwerk" }], doesNotFit: [{ de: "Shops" }] } },
+    ],
+    ["website without websiteConsent (RFC-1258)", { ...ACTIVE, website: "https://example.com" }],
+    ["photo without photoConsent (RFC-1258)", { ...ACTIVE, photo: "luba" }],
+    [
+      "relationToClientWorld without statementConsent (RFC-1258)",
+      { ...ACTIVE, relationToClientWorld: { de: "Ich begleite Betriebe." } },
+    ],
+    [
+      "statement locale outside locales (RFC-1258)",
+      {
+        ...ACTIVE,
+        statement: { fr: "Je recommande." },
+        statementConsent: ACTIVE.consent,
+        statementConfirmedAt: "2026-10-01",
+      },
+    ],
   ])("rejects %s", (_label, partner) => {
     const result = ReferralPartnerSchema.safeParse(partner);
     expect(
@@ -131,6 +237,7 @@ describe("loadReferralPartners lifecycle classification", () => {
     locales: ["de"]
     status: "active"
     consent: { method: "channel", channel: "email", grantedAt: "2026-09-15" }
+    validUntil: "2027-03-15"
   - slug: "alt-werk"
     displayName: "Peter P."
     compensation: "none"

@@ -19,6 +19,7 @@ consumers read this module; client-safe constants stay in ./patterns.ts.
   <item>RFC-1198: created — schema + loader + resolver.</item>
   <item>RFC-1198 fo-fix: extracted client-safe constants to ./patterns.ts (Zod + RESERVED_REFERRAL_SLUGS leaked into the send-message client chunk).</item>
   <item>RFC-1222: schema v2 — `status` lifecycle replaces `active`, structured `consent` union (none|document|channel) replaces `publicNameConsentRef`, `role` + `retiredAt` added, schema enforces active⇒consent granted and retired⇒retiredAt, slug-PII guard exported; forward-only, no v1 acceptance.</item>
+  <item>RFC-1258: schema v3 — `quote`/`quoteConsent` replaced forward-only by `statement`/`statementConsent`/`statementConfirmedAt`; `basis[]` (claim+verifiedBy+date), per-partner `scope`, `validUntil` (required on active), consent-gated `website`/`photo`, `relationToClientWorld`; expiry is data + validator, the lifecycle enum stays closed (DNA-19).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -122,10 +123,55 @@ export const ReferralPartnerSchema = z
     /** Localized public role statement (`{ de: "…", uk: "…" }`). Falls under
         the same consent gate as displayName — it describes the same person. */
     role: LocalizedPhraseSchema.optional(),
-    /** referral-brief-v1: verbatim partner quote (`{ de: "…", uk: "…" }`).
-        Requires `quoteConsent` + `active` — never paraphrased, never emitted
-        without recorded consent. */
-    quote: LocalizedPhraseSchema.optional(),
+    /** RFC-1258 (replaces RFC-1222 `quote`): the recommender's own voice —
+        2–4 first-person sentences, consent-gated, dated. Never authored by
+        an agent; the content carries the recommender's questionnaire answers. */
+    statement: LocalizedPhraseSchema.optional(),
+    /** RFC-1258: recorded consent covering the statement (same union shape
+        the former `quoteConsent` used). Required iff `statement` is set. */
+    statementConsent: GrantedConsentSchema.optional(),
+    /** RFC-1258: the date the statement was confirmed with the recommender —
+        rendered as the signature date under the statement. Required iff
+        `statement` is set. */
+    statementConfirmedAt: IsoDateSchema.optional(),
+    /** RFC-1258: "Was ich selbst geprüft habe" — each item: claim (localized)
+        + who verified it + the date. Items the recommender did not verify are
+        simply absent; requires `statement`. */
+    basis: z
+      .array(
+        z
+          .object({
+            claim: LocalizedPhraseSchema,
+            verifiedBy: z.enum(["recommender", "warpgogol"]),
+            date: IsoDateSchema,
+          })
+          .strict(),
+      )
+      .optional(),
+    /** RFC-1258: the recommender's own fit view — localized lists. Requires
+        `statement`; renders in the recommender's voice section, never in the
+        studio's transparency card (two voices, two scopes). */
+    scope: z
+      .object({
+        fits: z.array(LocalizedPhraseSchema).min(1),
+        doesNotFit: z.array(LocalizedPhraseSchema).min(1),
+      })
+      .strict()
+      .optional(),
+    /** RFC-1258: the recommendation holds until this date — required on
+        `active` partners (validator enforces future-at-validate-time; the
+        schema stays time-free per DNA-105). */
+    validUntil: IsoDateSchema.optional(),
+    /** RFC-1258: the recommender's website — consent-gated like the name. */
+    website: z.string().url().optional(),
+    websiteConsent: GrantedConsentSchema.optional(),
+    /** RFC-1258: the recommender's photo — content-local asset token,
+        consent-gated like the name. */
+    photo: z.string().min(1).optional(),
+    photoConsent: GrantedConsentSchema.optional(),
+    /** RFC-1258: one phrase about the recommender's relation to the client's
+        world ("Ich begleite Betriebe, die …") — consent-gated like role. */
+    relationToClientWorld: LocalizedPhraseSchema.optional(),
     compensation: z.enum(["referral-fee", "none", "steward"]),
     /** Language codes for the localized landings. Open set (ISO-639-1) — the
         site's `system.md i18n.supported` decides which of them actually emit;
@@ -138,9 +184,6 @@ export const ReferralPartnerSchema = z
     langDefault: LangCodeSchema.optional(),
     status: ReferralPartnerStatusSchema,
     consent: ReferralConsentSchema,
-    /** referral-brief-v1 `consent_quote_at`: recorded consent covering the
-        verbatim quote. Required iff `quote` is set. */
-    quoteConsent: GrantedConsentSchema.optional(),
     /** Present iff status is "retired" — the status page cites the date. */
     retiredAt: IsoDateSchema.optional(),
   })
@@ -183,37 +226,170 @@ export const ReferralPartnerSchema = z
         path: ["slug"],
       });
     }
-    if (partner.quote) {
-      if (!partner.quoteConsent) {
+    // RFC-1258 statement gate (replaces the RFC-1222 quote rules): the
+    // recommender's voice needs recorded consent, active status, a confirmed
+    // date, and locale membership.
+    if (partner.statement) {
+      if (!partner.statementConsent) {
         ctx.addIssue({
           code: "custom",
-          message: `partner "${partner.slug}" carries a quote but no quoteConsent — verbatim quotes need recorded consent`,
-          path: ["quoteConsent"],
+          message: `partner "${partner.slug}" carries a statement but no statementConsent — the recommender's voice needs recorded consent`,
+          path: ["statementConsent"],
+        });
+      }
+      if (!partner.statementConfirmedAt) {
+        ctx.addIssue({
+          code: "custom",
+          message: `partner "${partner.slug}" carries a statement but no statementConfirmedAt — a dated claim requires its confirmation date`,
+          path: ["statementConfirmedAt"],
         });
       }
       if (partner.status !== "active") {
         ctx.addIssue({
           code: "custom",
-          message: `partner "${partner.slug}" carries a quote but is not active — quotes render only on the named landing`,
-          path: ["quote"],
+          message: `partner "${partner.slug}" carries a statement but is not active — the voice renders only on the named landing`,
+          path: ["statement"],
         });
       }
-      for (const lang of Object.keys(partner.quote)) {
+      for (const lang of Object.keys(partner.statement)) {
         if (!partner.locales.includes(lang)) {
           ctx.addIssue({
             code: "custom",
-            message: `partner "${partner.slug}" quote.${lang} is outside declared locales`,
-            path: ["quote", lang],
+            message: `partner "${partner.slug}" statement.${lang} is outside declared locales`,
+            path: ["statement", lang],
           });
         }
       }
     }
-    if (partner.quoteConsent && !partner.quote) {
+    if (partner.statementConsent && !partner.statement) {
       ctx.addIssue({
         code: "custom",
-        message: `partner "${partner.slug}" records quoteConsent but has no quote`,
-        path: ["quoteConsent"],
+        message: `partner "${partner.slug}" records statementConsent but has no statement`,
+        path: ["statementConsent"],
       });
+    }
+    if (partner.statementConfirmedAt && !partner.statement) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" records statementConfirmedAt but has no statement`,
+        path: ["statementConfirmedAt"],
+      });
+    }
+    if (partner.basis) {
+      if (!partner.statement) {
+        ctx.addIssue({
+          code: "custom",
+          message: `partner "${partner.slug}" carries basis but no statement — the checked-facts list belongs to the recommender's voice`,
+          path: ["basis"],
+        });
+      }
+      partner.basis.forEach((item, index) => {
+        if (!item.date || !item.verifiedBy) {
+          ctx.addIssue({
+            code: "custom",
+            message: `partner "${partner.slug}" basis[${index}] lacks date or verifiedBy — every basis item carries fact + verifier + date`,
+            path: ["basis", index],
+          });
+        }
+        for (const lang of Object.keys(item.claim)) {
+          if (!partner.locales.includes(lang)) {
+            ctx.addIssue({
+              code: "custom",
+              message: `partner "${partner.slug}" basis[${index}].claim.${lang} is outside declared locales`,
+              path: ["basis", index, "claim", lang],
+            });
+          }
+        }
+      });
+    }
+    if (partner.scope) {
+      if (!partner.statement) {
+        ctx.addIssue({
+          code: "custom",
+          message: `partner "${partner.slug}" carries scope but no statement — the fit view belongs to the recommender's voice`,
+          path: ["scope"],
+        });
+      }
+      for (const list of ["fits", "doesNotFit"] as const) {
+        for (const phrase of partner.scope[list]) {
+          for (const lang of Object.keys(phrase)) {
+            if (!partner.locales.includes(lang)) {
+              ctx.addIssue({
+                code: "custom",
+                message: `partner "${partner.slug}" scope.${list} phrase.${lang} is outside declared locales`,
+                path: ["scope", list],
+              });
+            }
+          }
+        }
+      }
+    }
+    if (partner.status === "active" && !partner.validUntil) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" is active without validUntil — a dated recommendation expires; set the term the recommender agreed to`,
+        path: ["validUntil"],
+      });
+    }
+    if (partner.website && !partner.websiteConsent) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" carries a website but no websiteConsent — independent verification paths are consent-gated`,
+        path: ["websiteConsent"],
+      });
+    }
+    if (partner.websiteConsent && !partner.website) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" records websiteConsent but has no website`,
+        path: ["websiteConsent"],
+      });
+    }
+    if (partner.website && partner.status !== "active") {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" carries a website but is not active — verification paths render only on the named landing`,
+        path: ["website"],
+      });
+    }
+    if (partner.photo && !partner.photoConsent) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" carries a photo but no photoConsent — the portrait is consent-gated like the name`,
+        path: ["photoConsent"],
+      });
+    }
+    if (partner.photoConsent && !partner.photo) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" records photoConsent but has no photo`,
+        path: ["photoConsent"],
+      });
+    }
+    if (partner.photo && partner.status !== "active") {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" carries a photo but is not active — the portrait renders only on the named landing`,
+        path: ["photo"],
+      });
+    }
+    if (partner.relationToClientWorld) {
+      if (!partner.statementConsent) {
+        ctx.addIssue({
+          code: "custom",
+          message: `partner "${partner.slug}" carries relationToClientWorld but no statementConsent — the relation phrase is part of the recommender's voice`,
+          path: ["statementConsent"],
+        });
+      }
+      for (const lang of Object.keys(partner.relationToClientWorld)) {
+        if (!partner.locales.includes(lang)) {
+          ctx.addIssue({
+            code: "custom",
+            message: `partner "${partner.slug}" relationToClientWorld.${lang} is outside declared locales`,
+            path: ["relationToClientWorld", lang],
+          });
+        }
+      }
     }
     if (partner.langDefault && !partner.locales.includes(partner.langDefault)) {
       ctx.addIssue({
