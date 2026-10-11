@@ -12,6 +12,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>warpgogol-m000196: remediation entries for the LAYOUT-RHYTHM-01/02 rule family (post-hero density guard).</item>
+  <item>warpgogol-m000196: remediation entries for the RUNTIME-CONSOLE-01/02 rule family (runtime console/page-error probe).</item>
   <item>ADR-0105: remediation entries for the DIST-LEAK-01..05 rule family (serialization-leak guard).</item>
   <item>RFC-1201: remediation entry for PARITY-MD-CONSTRUCT-COUNT (inline-construct parity).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
@@ -565,6 +566,26 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "`density: flush` directly after a hero merges the two sections visually — keep it only when the seam-free join is deliberate.",
     docRef: "docs/authoring/block-declarative-pages.md",
     targetFiles: ["src/content/pages/**/*.md"],
+  },
+  {
+    ruleId: "RUNTIME-CONSOLE-01",
+    action:
+      "Fix the console error the route emits at cold load — when the message is a blocked third-party runtime fetch (net::ERR_BLOCKED_BY_CLIENT), serve the resource same-origin (vendor the asset / configure the library's asset URL) instead of relying on a third-party CDN.",
+    docRef: "docs/authoring/block-declarative-pages.md",
+    targetFiles: [
+      "packages/werkstatt-site/src/domain/ui/**",
+      "packages/werkstatt-shared/src/client-scripts/**",
+    ],
+  },
+  {
+    ruleId: "RUNTIME-CONSOLE-02",
+    action:
+      "Fix the uncaught page error (TypeError/ReferenceError at cold load) — trace the throwing chunk, guard the failing init, or remove the dead code path; an uncaught error can silently disable the feature that threw.",
+    docRef: "docs/authoring/block-declarative-pages.md",
+    targetFiles: [
+      "packages/werkstatt-site/src/domain/ui/**",
+      "packages/werkstatt-shared/src/client-scripts/**",
+    ],
   },
 ];
 
