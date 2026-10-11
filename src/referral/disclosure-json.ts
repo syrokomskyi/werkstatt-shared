@@ -20,6 +20,7 @@ Closed shape: pending and retired partners emit exactly {type, slug, status}
   <item>REVIEW-CODE-2026-10-08-02: closed-doc status union tightened back to the
   emitted states ("retired" | "pending") — a paused partner never reaches the
   builder, so the build path returns null instead of minting a paused document.</item>
+  <item>RFC-1258: active doc gains statement/statementConfirmedAt/validUntil/basis/scope — absent rather than invented; closed docs stay {type, slug, status}.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -66,6 +67,21 @@ export interface ReferralPartnerActiveDoc {
   readonly referrerDisplayName: string;
   readonly policyEffectiveFrom?: string;
   readonly contactUrl: string;
+  /** RFC-1258: the recommender's dated voice — absent rather than invented
+      when unset; mirrors the partner record (statement {de,uk}, dates flat,
+      basis/scope verbatim). */
+  readonly statement?: { readonly de?: string; readonly uk?: string };
+  readonly statementConfirmedAt?: string;
+  readonly validUntil?: string;
+  readonly basis?: readonly {
+    readonly claim: { readonly de?: string; readonly uk?: string };
+    readonly verifiedBy: "recommender" | "warpgogol";
+    readonly date: string;
+  }[];
+  readonly scope?: {
+    readonly fits: readonly Record<string, string>[];
+    readonly doesNotFit: readonly Record<string, string>[];
+  };
 }
 
 export type ReferralPartnerDoc = ReferralPartnerActiveDoc | ReferralPartnerClosedDoc;
@@ -106,5 +122,11 @@ export function buildReferralPartnerDoc(
     referrerDisplayName: partner.displayName ?? "",
     ...(facts.policyEffectiveFrom ? { policyEffectiveFrom: facts.policyEffectiveFrom } : {}),
     contactUrl: `/r/${partner.slug}`,
+    // RFC-1258: the recommender's dated voice — absent rather than invented.
+    ...(partner.statement ? { statement: partner.statement } : {}),
+    ...(partner.statementConfirmedAt ? { statementConfirmedAt: partner.statementConfirmedAt } : {}),
+    ...(partner.validUntil ? { validUntil: partner.validUntil } : {}),
+    ...(partner.basis?.length ? { basis: partner.basis } : {}),
+    ...(partner.scope ? { scope: partner.scope } : {}),
   };
 }
