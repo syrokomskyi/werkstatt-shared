@@ -11,9 +11,6 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>ADR-0089: kernel and shared code must not depend on ambient process state
-
-KernelRuntimeContext is the explicit-context carrier (workspaceRoot, site, workpieceEnv) — command handlers and shared code must not fall back to process.cwd() or process.env.NODE_ENV for correctness; callers pass roots and modes explicitly.</item>
   <item>RFC-1144: run read-only steps to completion in collect-errors pipeline mode
 
 Scheduler: collectErrors option on executeScheduledSteps — read-only steps (ScheduledStep.readOnly, executor-resolved from mutatesState === false) run after dependency failures with ranAfterFailedDependency annotation; ranTainted set propagates taint transitively so mutating dependents still skip. Executor: mergeCollectErrorsOption OR-merges PipelineDeclaration.collectErrors with the CLI flag at registry resolution; readOnly annotated post-buildSchedule; taint flag copied to step reports; tainted failures marked in pretty output. Contracts: PipelineDeclaration.collectErrors, KernelExecutionReport.ranAfterFailedDependency, pipelines maps store full declarations. Declarations: collectErrors on validation-gate registrations (build.post, check, build.check, compass, integrity.release in the workpiece template; packages.check in checks module). Tests: 10 new cases covering AC-1..AC-6 plus transitive taint.</item>
@@ -25,7 +22,8 @@ Mechanical sweep: the field only ever gated --all argv acceptance; fan-out
 follows the parsed selector. Guard renamed assertAllSitesAllowed ->
 assertAllFlagAccepted, message updated. 417 declaration sites + type
 surfaces (KernelCommandMetadata, ForgeCommandMetadata) in one atomic pass.</item>
-  <history>RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133</history>
+  <item>RFC-1260: resolve cache clones via system-config.yaml — package.json gate left the RFC-1025 fallback dead for every real clone; executor-guard mutating commands against mirror targets</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133</history>
 </CHANGE_SUMMARY>
 */
 
@@ -47,6 +45,13 @@ export interface DiscoveredSiteWorkspace {
   toolsDirectory: string;
   configPath?: string;
   packageName?: string;
+  /**
+   * Resolution source — set by the engine site-workspace resolver. Absent on
+   * workspaces synthesized by other paths (e.g. closed-mission audits).
+   * Read-only commands may target any source; mutating commands are
+   * executor-guarded to mission workpieces (RFC-1260, COPS-07 class).
+   */
+  source?: "apps" | "mission" | "cache-clone";
 }
 
 export interface KernelLogEvent {
