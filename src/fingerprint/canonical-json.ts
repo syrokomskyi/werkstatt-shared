@@ -1,18 +1,20 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-0849: Bounded canonical JSON identity bytes — object-only opaque snapshot, strict RFC 8785 JCS encoder, and SHA-256 hash delegation.</purpose>
+<purpose>RFC-0849: Bounded canonical JSON identity bytes — object-only opaque snapshot, strict RFC 8785 JCS encoder.</purpose>
 <non-goals>
-  <item>Do not import node:crypto, stableJsonHash, or any plugin module — delegate to byteHash only.</item>
+  <item>Do not import node:*, Buffer, primitives.ts, or any node-bound module — this module MUST stay runtime-agnostic (workerd-safe); SHA-256 hashing lives in canonical-json-hash.ts.</item>
   <item>Do not define certification schemas, Diagnostic, or persistence — those belong to later packets.</item>
   <item>Do not change stableJsonHash or its consumers.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0849: initial implementation of werkstatt/canonical-json@1 — bounded object-root profile of RFC 8785 JCS.</item>
+  <item>RFC-1267 (REVIEW-RFC-1267-01): made node-free — Buffer replaced by TextEncoder/TextDecoder, canonicalJsonHashV1 moved to canonical-json-hash.ts so runtime-agnostic consumers (werkstatt-journal under workerd) can import this module directly via the ./fingerprint/canonical-json subpath.</item>
 </CHANGE_SUMMARY>
 */
 
-import { byteHash, type Sha256Digest } from "./primitives.ts";
+const utf8Encoder = new TextEncoder();
+const utf8Decoder = new TextDecoder();
 
 export const CANONICAL_JSON_V1 = "werkstatt/canonical-json@1" as const;
 
@@ -111,7 +113,7 @@ function hasLoneSurrogate(str: string): boolean {
 }
 
 function utf8ByteLength(str: string): number {
-  return Buffer.byteLength(str, "utf8");
+  return utf8Encoder.encode(str).length;
 }
 
 // ---------------------------------------------------------------------------
@@ -267,7 +269,7 @@ function buildSnapshot(input: unknown): CanonicalJsonObjectSnapshotResultV1 {
   if (result) return result;
 
   const outputStr = state.output.join("");
-  const outputBytes = Buffer.byteLength(outputStr, "utf8");
+  const outputBytes = utf8Encoder.encode(outputStr).length;
   if (outputBytes > MAX_BYTES) {
     return failLimit("bytes", [], 0, outputBytes, MAX_BYTES);
   }
@@ -616,9 +618,9 @@ function pushPath(
 // ---------------------------------------------------------------------------
 
 function truncateMessage(msg: string): string {
-  const buf = Buffer.from(msg, "utf8");
+  const buf = utf8Encoder.encode(msg);
   if (buf.length <= MAX_MESSAGE_BYTES) return msg;
-  return buf.subarray(0, MAX_MESSAGE_BYTES).toString("utf8");
+  return utf8Decoder.decode(buf.subarray(0, MAX_MESSAGE_BYTES));
 }
 
 function fail(
@@ -677,13 +679,10 @@ export function canonicalJsonBytesV1(value: CanonicalJsonObjectV1): Uint8Array {
   const output: string[] = [];
   encodeValue(value, output);
   const str = output.join("");
-  return Buffer.from(str, "utf8");
+  return utf8Encoder.encode(str);
 }
 
-export function canonicalJsonHashV1(value: CanonicalJsonObjectV1): Sha256Digest {
-  const bytes = canonicalJsonBytesV1(value);
-  return byteHash(bytes);
-}
+
 
 // ---------------------------------------------------------------------------
 // Encoder (operates on detached frozen copy — no caller mutation possible)

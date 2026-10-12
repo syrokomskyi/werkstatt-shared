@@ -114,6 +114,10 @@
       "types": "./src/fingerprint/index.ts",
       "default": "./src/fingerprint/index.ts"
     },
+    "./fingerprint/canonical-json": {
+      "types": "./src/fingerprint/canonical-json.ts",
+      "default": "./src/fingerprint/canonical-json.ts"
+    },
     "./ontology": {
       "types": "./src/ontology/index.ts",
       "default": "./src/ontology/index.ts"

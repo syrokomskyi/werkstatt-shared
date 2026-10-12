@@ -11,4 +11,5 @@
 */
 
 export * from "./canonical-json.ts";
+export * from "./canonical-json-hash.ts";
 export * from "./primitives.ts";
