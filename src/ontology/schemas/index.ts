@@ -88,6 +88,24 @@ export type {
   SystemCollectionData,
 } from "./system.ts";
 
+// RFC-1259: content-authority model — schema + types for system.md authority block.
+export {
+  camFieldClassSchema,
+  camLevelSchema,
+  camSubjectSchema,
+  camGateSchema,
+  camGrantSchema,
+  camAuthoritySchema,
+} from "./system.ts";
+export type {
+  CamFieldClass,
+  CamLevel,
+  CamSubject,
+  CamGate,
+  CamGrant,
+  CamAuthority,
+} from "./system.ts";
+
 // RFC-1229: shell contract — schema + types for system.md shellContract block.
 export {
   shellRegionNameSchema,

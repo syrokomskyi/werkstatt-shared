@@ -40,6 +40,7 @@ import { systemTextSchema, systemTypographySchema } from "./text.ts";
 import { systemIntegrationsSchema } from "./integrations.ts";
 import { systemVerificationSchema } from "./verification.ts";
 import { systemShellContractSchema } from "./shell-contract.ts";
+import { camAuthoritySchema } from "./authority.ts";
 import { resourceBudgetConfigSchema } from "../../../policy/resource-budget.ts";
 import { semanticPageTypeSchema, articleMetadataSchema, pageOutputSchema } from "./page-output.ts";
 
@@ -177,6 +178,16 @@ export const systemManifestSchema = z.object({
    * Validated by client.edit.validate at deploy time.
    */
   clientEditable: z.array(z.string().min(1)).optional().default([]),
+
+  /**
+   * RFC-1259: optional Content-Authority Model block. When present, it is the
+   * single authorization model consulted by write paths — `clientEditable[]`
+   * becomes its `studio-gate-client` projection, pseo autonomy scopes its
+   * `pseo-generator` instance, and approval gates first-class declarations.
+   * Absent ⇒ legacy behavior (no CAM consultation). Validated by
+   * `authority.model.validate` (CAM-01..05).
+   */
+  authority: camAuthoritySchema.optional(),
 
   sharedContext: systemSharedContextSchema.optional(),
 
@@ -413,7 +424,41 @@ export const systemManifestSchema = z.object({
    * apply (and blueprint.validate requires their datasets). When omitted, the engine falls back to
    * implicit opt-in by datasets (a Blueprint applies if the app ships its dataset collection).
    */
-  surface: z.object({ blueprints: z.array(z.string().min(1)).optional() }).optional(),
+  surface: z
+    .object({
+      blueprints: z.array(z.string().min(1)).optional(),
+      /**
+       * RFC-1259: per-module authored surface config — kept through parse so
+       * RFC-0278 `autonomy.scopes[]` reaches consumers (previously stripped as
+       * an undeclared key). Loose: modules may carry additional keys.
+       */
+      modules: z
+        .record(
+          z.string(),
+          z.looseObject({
+            masterLocale: z.string().min(1).optional(),
+            publishedLocales: z.array(z.string().min(1)).optional(),
+            autonomy: z
+              .looseObject({
+                scopes: z
+                  .array(
+                    z.looseObject({
+                      fieldClass: z.string().min(1),
+                      locale: z.string().min(1),
+                      level: z.string().min(1).optional(),
+                      ceiling: z.string().min(1).optional(),
+                      sinceAt: z.string().min(1).optional(),
+                      evidenceRef: z.string().min(1).optional(),
+                    }),
+                  )
+                  .optional(),
+              })
+              .optional(),
+          }),
+        )
+        .optional(),
+    })
+    .optional(),
 
   /**
    * RFC-0211..0218: Content Knowledge Lifecycle policy. `freshness.soonWindowDays`

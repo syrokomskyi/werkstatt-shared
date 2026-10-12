@@ -71,6 +71,23 @@ export type {
   SystemShellContract,
 } from "./system/shell-contract.ts";
 
+export {
+  camFieldClassSchema,
+  camLevelSchema,
+  camSubjectSchema,
+  camGateSchema,
+  camGrantSchema,
+  camAuthoritySchema,
+} from "./system/authority.ts";
+export type {
+  CamFieldClass,
+  CamLevel,
+  CamSubject,
+  CamGate,
+  CamGrant,
+  CamAuthority,
+} from "./system/authority.ts";
+
 export { systemManifestSchema, systemCollectionSchema } from "./system/manifest.ts";
 export type {
   SystemManifest,
