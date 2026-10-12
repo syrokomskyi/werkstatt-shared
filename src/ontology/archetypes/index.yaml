@@ -4,7 +4,7 @@
 # Edit instead: the archetype.registry.build generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 schemaVersion: 1.0.0
-totalCount: 82
+totalCount: 83
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
@@ -276,6 +276,15 @@ entries:
       - Ganymede
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/impact.yaml
     layer: section
+  - id: journal-receipt-verifier
+    displayName: Journal Receipt Verifier
+    semanticRole: component-journal-receipt-verifier
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Praxidike
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/journal-receipt-verifier.yaml
+    layer: component
   - id: lang-switcher
     displayName: Lang Switcher
     semanticRole: component-lang-switcher
@@ -792,6 +801,7 @@ componentRoles:
   - component-cycle-toggle
   - component-external-link-qr-modal
   - component-footer-promo
+  - component-journal-receipt-verifier
   - component-lang-switcher
   - component-layout
   - component-layout.not-found
@@ -877,6 +887,7 @@ planetImportPaths:
   Puck: "@warpgogol/werkstatt-site/ui/components/effects"
   Prospero: "@warpgogol/werkstatt-site/ui/components/external-link-qr-modal"
   Nereid: "@warpgogol/werkstatt-site/ui/components/footer-promo"
+  Praxidike: "@warpgogol/werkstatt-site/ui/components/journal-receipt-verifier"
   Ophelia: "@warpgogol/werkstatt-site/ui/components/lang-switcher"
   Umbriel: "@warpgogol/werkstatt-site/ui/components/layout"
   Aegaeon: "@warpgogol/werkstatt-site/ui/components/live-photo"
@@ -901,7 +912,6 @@ planetImportPaths:
   Helike: "@warpgogol/werkstatt-site/ui/components/referral-partner"
   Belinda: "@warpgogol/werkstatt-site/ui/components/responsive-image"
   Daphnis: "@warpgogol/werkstatt-site/ui/components/scroll-to-top"
-  Praxidike: "@warpgogol/werkstatt-site/ui/components/cards"
   Aitne: "@warpgogol/werkstatt-site/ui/components/comparison"
   Sinope: "@warpgogol/werkstatt-site/ui/components/list"
   Thalassa: "@warpgogol/werkstatt-site/ui/components/offer-capacity"
@@ -966,6 +976,7 @@ blockTypeToCosmicName:
   section-shell: Puck
   external-link-qr-modal: Prospero
   footer-promo: Nereid
+  journal-receipt-verifier: Praxidike
   lang-switcher: Ophelia
   layout: Umbriel
   live-photo: Aegaeon
@@ -1067,6 +1078,7 @@ roleByCosmicName:
   Titania: footer
   Nereid: footer-promo
   Oberon: header
+  Praxidike: section-body
   Ophelia: lang-switcher
   Umbriel: layout-shell
   Aegaeon: section-image
@@ -1093,7 +1105,6 @@ roleByCosmicName:
   Helike: layout-shell
   Belinda: section-image
   Daphnis: scroll-to-top
-  Praxidike: section-body
   Aitne: section-body
   Sinope: section-body
   Thalassa: section-body
