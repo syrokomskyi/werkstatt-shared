@@ -14,6 +14,10 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
+    "./authority": {
+      "types": "./src/authority/index.ts",
+      "default": "./src/authority/index.ts"
+    },
     "./plugin": {
       "types": "./src/plugin/plugin-contract.ts",
       "default": "./src/plugin/plugin-contract.ts"
@@ -1167,10 +1171,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "src",
-    "tsconfig.json"
-  ],
+  "files": ["src", "tsconfig.json"],
   "dependencies": {
     "@lordicon/element": "^2.3.1",
     "@noble/ed25519": "^3.2.0",

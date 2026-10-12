@@ -7,7 +7,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0706: add nachweis-record and nachweis-consent kinds for Nachweisregister trust lifecycle (ADR-0028).</item>
   <item>RFC-0715: add nachweis-signed and nachweis-timestamped kinds for N3 cryptographic verification.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
@@ -16,7 +15,8 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
-  <history>RFC-0355, RFC-0473, RFC-0479, RFC-0480, RFC-0517</history>
+  <item>RFC-1263</item>
+  <history>RFC-0355, RFC-0473, RFC-0479, RFC-0480, RFC-0517, RFC-0706</history>
 </CHANGE_SUMMARY>
 */
 
@@ -45,6 +45,26 @@ export const missionManifestSchema = z.object({
   releaseId: z.string().nullable(),
   rfcId: z.string().nullable().default(null),
   operationId: z.string().min(1),
+  // RFC-1263: declared mission lane — "content" marks a mission opened for the
+  // content fast lane (`mission.open --lane content` / `mission.content-edit`).
+  lane: z.enum(["content", "full"]).optional(),
+  // RFC-1263: composite gate record written by mission.content-edit once the
+  // fast-lane gate set has run. `green: true` satisfies the reconcile/close
+  // coverage precondition in place of a green mission.validate report — the
+  // fast lane never writes validation-report.json itself.
+  fastLane: z
+    .object({
+      green: z.boolean(),
+      gates: z.array(
+        z.object({
+          gate: z.string().min(1),
+          status: z.enum(["pass", "fail", "advisory"]),
+          violations: z.number().optional(),
+        }),
+      ),
+      recordedAt: z.string().datetime(),
+    })
+    .optional(),
 });
 
 // When renaming or removing a value from this enum, add the old value to
