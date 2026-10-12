@@ -23,6 +23,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten â
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1204: effectsParity flag on section manifests + resolver lookup</item>
+  <item>RFC-1261</item>
 </CHANGE_SUMMARY>
 */
 
@@ -297,6 +298,17 @@ export const sectionManifestSchema = manifestBaseSchema.extend({
    * variant). If present, only the literal `strict` is accepted.
    */
   effectsParity: z.enum(["strict"]).optional(),
+
+  /**
+   * RFC-1261: per-props-path locale policy for mirror ops (content.*).
+   * Maps a props path (e.g. `props.header.heading` or `header`) to its mirror
+   * policy: `structural` (identical across locales), `localized` (per-locale
+   * slots required), `locale-locked` (provider-verbatim, never localized).
+   * Undeclared paths resolve `structural` â€” the fail-safe under DNA-11.
+   */
+  localePolicy: z
+    .record(z.string(), z.enum(["structural", "localized", "locale-locked"]))
+    .optional(),
 });
 
 /**
