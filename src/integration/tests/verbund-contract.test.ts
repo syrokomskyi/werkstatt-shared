@@ -11,6 +11,8 @@ code as the conformance mechanism — shared code with Lagebild is forbidden
   <item>Do not send anything to Lagebild — these tests perform no network IO.</item>
 </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY><item>RFC-1269: PIN bump to
+verbund-integration-spec-v0.1.5 (AMD-WERKSTATT-05 accepted, ADR-0009).</item></CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";
@@ -99,7 +101,7 @@ const specDirs = readdirSync(SPECS_ROOT, { withFileTypes: true })
 
 // VID-011 pin for the derived types (PLAN-RFC-1238-01) — the newest vendored
 // snapshot; bump alongside codegen/verbund-contract-types.ts SPEC_VERSION.
-const PIN = "verbund-integration-spec-v0.1.4";
+const PIN = "verbund-integration-spec-v0.1.5";
 const GENERATED_FILE = join(
   dirname(fileURLToPath(import.meta.url)),
   "../lagebild-contracts.types.generated.ts",

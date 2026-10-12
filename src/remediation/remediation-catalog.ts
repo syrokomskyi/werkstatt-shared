@@ -11,14 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>warpgogol-m000196: remediation entries for the LAYOUT-RHYTHM-01/02 rule family (post-hero density guard).</item>
-  <item>warpgogol-m000196: remediation entries for the RUNTIME-CONSOLE-01/02 rule family (runtime console/page-error probe).</item>
   <item>ADR-0105: remediation entries for the DIST-LEAK-01..05 rule family (serialization-leak guard).</item>
   <item>RFC-1201: remediation entry for PARITY-MD-CONSTRUCT-COUNT (inline-construct parity).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
-  <history>RFC-1027, RFC-1185</history>
+  <history>RFC-1027, RFC-1185, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 

@@ -16,6 +16,9 @@ snapshots (VID-014).</purpose>
   Werkstatt-internal, not contract surfaces.</item>
 </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY><item>RFC-1238: initial generator (v0.1.4
+pin).</item><item>RFC-1269: pin bump to verbund-integration-spec-v0.1.5 —
+AMD-WERKSTATT-05 accepted and shipped by Lagebild (ADR-0009).</item></CHANGE_SUMMARY>
 */
 
 // Run: pnpm --filter @warpgogol/werkstatt-shared exec node \
@@ -30,7 +33,7 @@ import { parse as parseYaml } from "yaml";
 
 // VID-011 pin — bump when a newer verbund-integration-spec snapshot is
 // vendored, then regenerate.
-const SPEC_VERSION = "verbund-integration-spec-v0.1.4";
+const SPEC_VERSION = "verbund-integration-spec-v0.1.5";
 
 const SPECS_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../../../../docs/specs");
 const SCHEMAS_DIR = join(SPECS_ROOT, SPEC_VERSION, "schemas");

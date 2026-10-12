@@ -20,15 +20,6 @@ legally binding version; UK is a synced reference translation.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>warpgogol-m000193: copy refinement pass — UK visitor address capitalized
-  (Ви/Ваш/Вам/Вас, Клієнт), zusagen rows lowercase, transparency heading shortened
-  (Transparenz/Прозорість), closing trimmed to one sentence, disclosure.code slot
-  exposes the slug for code-font rendering, privacy label «Політика
-  конфіденційності.».</item>
-  <item>warpgogol-m000193: ReferralFormCopy reshaped for the shared send-message
-  section — dedicated emailLabel/nameLabel/optionalHint/emailRequired removed
-  (one field now), contactRequired added for the native error re-render,
-  ReferralNeutralCopy gained a referral-free privacyNote for mode-D.</item>
   <item>warpgogol-m000193: the rail is now a segmented choice — refLabel/refHelp
   replaced by refChoiceTitle + refWithLabel/refWithHelp(compensation) +
   refWithoutLabel/refWithoutHelp + refPrefix; the "with" card states the
