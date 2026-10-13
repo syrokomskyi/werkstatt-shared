@@ -282,7 +282,8 @@ export interface ReferralLandingCopy {
       full offer list lives on the Digitales-Fundament page (leistungMoreLink). */
   leistungSummary: readonly string[];
   /** Label of the single link to the Digitales-Fundament page under the
-      summary lines (href = standardHref, resolved by the route handler). */
+      summary lines (href = leistungMoreHref → the Digitales-Fundament page,
+      resolved by the route handler). */
   leistungMoreLink: string;
   preisHeading: string;
   /** Three resolved price cells; a missing PBP charge renders "—"… no wait —
