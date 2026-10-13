@@ -113,7 +113,23 @@ export const serviceEntrySchema = z.object({
 
 // RFC-0790: Convention-based discovery schemas (replaces fleet registry)
 
-export const systemConfigSchema = z.object({
+// RFC-1275: `integrations` declares sternsystem-level service integrations
+// (integrations.journal → CLIENT_JOURNAL [[services]] binding + JOURNAL_TENANT_ID
+// var in the generated wrangler config). Loose objects at every level —
+// system-config.yaml is the persisted source of truth and schema-driven
+// read→write passes (auto-pin, state writes) must preserve extension keys
+// declared by newer platform versions rather than silently stripping them.
+export const systemConfigIntegrationsSchema = z.looseObject({
+  journal: z
+    .looseObject({
+      service: z.string().min(1, "integrations.journal.service must be non-empty"),
+      tenantId: z.string().min(1, "integrations.journal.tenantId must be non-empty"),
+    })
+    .optional()
+    .describe("RFC-1275: client-journal service binding declaration"),
+});
+
+export const systemConfigSchema = z.looseObject({
   schemaVersion: z.string().min(1),
   id: z.string().regex(kebabRe, "id must be kebab-case, lowercase, latin-only, no TLD suffix"),
   cosmicStar: starNameSchema,
@@ -121,6 +137,9 @@ export const systemConfigSchema = z.object({
   pinnedPlatform: z.string().regex(semverRe, "pinnedPlatform must be x.y.z"),
   status: z.enum(["registered", "active", "paused", "archived"]),
   registeredAt: z.string().datetime(),
+  integrations: systemConfigIntegrationsSchema
+    .optional()
+    .describe("RFC-1275: sternsystem-level service integrations (journal binding, ...)"),
   deployment: deploymentStaticConfigSchema.optional(),
   cloudflareZoneId: z
     .string()
@@ -141,7 +160,10 @@ export const systemConfigSchema = z.object({
     .describe("RFC-0964: fleet wave orchestration config"),
 });
 
-export const systemStateSchema = z.object({
+// Loose for the same reason as systemConfigSchema — system-state.yaml is
+// rewritten by writeSystemState* on every state transition; undeclared
+// extension keys must round-trip rather than be eaten by parse→write.
+export const systemStateSchema = z.looseObject({
   schemaVersion: z.string().min(1),
   systemId: z
     .string()
