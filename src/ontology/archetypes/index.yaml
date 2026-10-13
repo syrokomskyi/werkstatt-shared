@@ -887,7 +887,13 @@ planetImportPaths:
   Puck: "@warpgogol/werkstatt-site/ui/components/effects"
   Prospero: "@warpgogol/werkstatt-site/ui/components/external-link-qr-modal"
   Nereid: "@warpgogol/werkstatt-site/ui/components/footer-promo"
-  Praxidike: "@warpgogol/werkstatt-site/ui/components/journal-receipt-verifier"
+  Philophrosyne: "@warpgogol/werkstatt-site/ui/components/journal-portal-have-list"
+  Sponde: "@warpgogol/werkstatt-site/ui/components/journal-portal-overview"
+  Themisto: "@warpgogol/werkstatt-site/ui/components/journal-portal-receipt-download"
+  Kale: "@warpgogol/werkstatt-site/ui/components/journal-portal-request-items"
+  Thyone: "@warpgogol/werkstatt-site/ui/components/journal-portal-timeline"
+  Herse: "@warpgogol/werkstatt-site/ui/components/journal-portal-upload-drop-zone"
+  Kallichore: "@warpgogol/werkstatt-site/ui/components/journal-receipt-verifier"
   Ophelia: "@warpgogol/werkstatt-site/ui/components/lang-switcher"
   Umbriel: "@warpgogol/werkstatt-site/ui/components/layout"
   Aegaeon: "@warpgogol/werkstatt-site/ui/components/live-photo"
@@ -912,6 +918,7 @@ planetImportPaths:
   Helike: "@warpgogol/werkstatt-site/ui/components/referral-partner"
   Belinda: "@warpgogol/werkstatt-site/ui/components/responsive-image"
   Daphnis: "@warpgogol/werkstatt-site/ui/components/scroll-to-top"
+  Praxidike: "@warpgogol/werkstatt-site/ui/components/cards"
   Aitne: "@warpgogol/werkstatt-site/ui/components/comparison"
   Sinope: "@warpgogol/werkstatt-site/ui/components/list"
   Thalassa: "@warpgogol/werkstatt-site/ui/components/offer-capacity"
@@ -976,7 +983,13 @@ blockTypeToCosmicName:
   section-shell: Puck
   external-link-qr-modal: Prospero
   footer-promo: Nereid
-  journal-receipt-verifier: Praxidike
+  journal-portal-have-list: Philophrosyne
+  journal-portal-overview: Sponde
+  journal-portal-receipt-download: Themisto
+  journal-portal-request-items: Kale
+  journal-portal-timeline: Thyone
+  journal-portal-upload-drop-zone: Herse
+  journal-receipt-verifier: Kallichore
   lang-switcher: Ophelia
   layout: Umbriel
   live-photo: Aegaeon
@@ -1078,7 +1091,13 @@ roleByCosmicName:
   Titania: footer
   Nereid: footer-promo
   Oberon: header
-  Praxidike: section-body
+  Philophrosyne: section-body
+  Sponde: section-body
+  Themisto: section-body
+  Kale: section-body
+  Thyone: section-body
+  Herse: section-body
+  Kallichore: section-body
   Ophelia: lang-switcher
   Umbriel: layout-shell
   Aegaeon: section-image
@@ -1105,6 +1124,7 @@ roleByCosmicName:
   Helike: layout-shell
   Belinda: section-image
   Daphnis: scroll-to-top
+  Praxidike: section-body
   Aitne: section-body
   Sinope: section-body
   Thalassa: section-body
