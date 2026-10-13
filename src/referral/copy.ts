@@ -2,9 +2,12 @@
 <MODULE_CONTRACT>
 <purpose>
 [referral-brief-v1] Platform-owned locale copy for the referral-partner
-landing page (/r/<slug>), v3 — hero with calm labelled disclosure, leistung/
-preis/zusagen/schritte sections, the transparency card before the form, the
-referral form strings, the neutral mode-D variant, and the visitor auto-reply.
+landing page (/r/<slug>), v5 — recommendation-first order: hero with calm
+labelled disclosure (no CTA row), statement/confirms (consent-gated),
+vorteil, raised verify block with the free-choice line and the CTA pair,
+compressed leistung summary, preis, zusagen, passt-nicht, steps, the
+person-first transparency card, and the referral form strings; plus the
+neutral mode-D variant and the visitor auto-reply.
 The disclosure sentences are legal text — the platform owns the sentence
 structure so the same disclosure shape ships on every site; site-varying
 phrases (reward amount, scope/exclusion lines, AGB anchor map) arrive via
@@ -32,6 +35,7 @@ legally binding version; UK is a synced reference translation.
   <item>RFC-1258: two-voice copy — statement/basis/confirms sections, capacityLine + validUntilLine (dated facts), transparency learns row (site-authored recommenderLearnsLine), verifyLinks (nachweise/notausgang); recommenderLearnsLine fact plumbed through resolveReferralLandingFacts.</item>
   <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, warpgogol-m000193</history>
   <item>REVIEW-CODE-2026-10-11-01 fixes: uk phrase-guard patterns + explicit-delimiter uk negation (JS \b is ASCII-only), lang-aware sentence splitting, thousands-separator-safe money parsing, confirms aria-label, photo leading-slash contract, sectionNavItems statement/passtnicht anchors.</item>
+  <item>RFC-1273: v5 recommendation-first copy — leistungSummary (≤3 PBP-interpolated lines) + leistungMoreLink replace the 8-item leistung; freedomLine for the raised verify section; refWithLabel becomes (displayName | null) => string; transparency code label demoted to "(technisch)"; secondaryNavLabel removed (verify is a section now).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -199,7 +203,10 @@ export interface ReferralFormCopy {
   /** Legend of the segmented Empfehlung choice — the rail is never a
       free-text code field (warpgogol-m000193). */
   refChoiceTitle: string;
-  refWithLabel: string;
+  /** RFC-1273: name-aware "with" label — a consented display name leads
+      ("Mit Empfehlung von {name}"), anonymous falls back to the bare
+      "Mit Empfehlung" (the slug stays the submitted value, not the label). */
+  refWithLabel: (displayName: string | null) => string;
   /** "With"-card help — sourced benefit facts plus an honest compensation
       clause, resolved per partner like `disclosure`. */
   refWithHelp: (compensation: ReferralCompensation) => string;
@@ -271,7 +278,12 @@ export interface ReferralLandingCopy {
   ctaPrimary: string;
   ctaPreis: string;
   leistungHeading: string;
-  leistung: readonly string[];
+  /** RFC-1273: compressed offer — ≤3 PBP-interpolated summary lines; the
+      full offer list lives on the Digitales-Fundament page (leistungMoreLink). */
+  leistungSummary: readonly string[];
+  /** Label of the single link to the Digitales-Fundament page under the
+      summary lines (href = standardHref, resolved by the route handler). */
+  leistungMoreLink: string;
   preisHeading: string;
   /** Three resolved price cells; a missing PBP charge renders "—"… no wait —
       a missing charge omits the cell entirely. */
@@ -315,8 +327,13 @@ export interface ReferralLandingCopy {
   /** RFC-1258: expiry line — "Empfehlung gültig bis …". */
   validUntilLine: (isoDate: string) => string;
   /** RFC-1258: "Erst selbst prüfen" secondary links — labels + registry
-      pageIds; the route handler resolves localized hrefs. */
+      pageIds; the route handler resolves localized hrefs. RFC-1273: the
+      block is a raised section between vorteil and leistung, carrying the
+      free-choice line and the CTA pair. */
   verifyHeading: string;
+  /** RFC-1273: explicit free-choice sentence inside the verify section —
+      "Sie müssen nichts davon annehmen …". */
+  freedomLine: string;
   verifyLinks: readonly { label: string; pageId: string }[];
   /** RFC-1258: headings of the recommender's own fit lists (scope data). */
   scopeFitsHeading: string;
@@ -328,8 +345,6 @@ export interface ReferralLandingCopy {
   autoReply: ReferralAutoReplyCopy;
   programLink: string;
   standardLink: string;
-  /** aria-label of the secondary-links nav under the form. */
-  secondaryNavLabel: string;
   neutral: ReferralNeutralCopy;
   retired: ReferralRetiredCopy;
 }
@@ -640,22 +655,19 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     ctaPrimary: "Situation beschreiben",
     ctaPreis: "Preis und Zusagen ansehen",
     leistungHeading: "Was Sie bekommen",
-    leistung: [
-      "Website, entwickelt und online gestellt",
-      "Domain auf Ihren Namen — Sie sind von Beginn an Inhaber",
-      sla !== undefined
-        ? `Hosting mit ${sla} % Verfügbarkeit pro Monat`
-        : "Hosting mit Verfügbarkeitszusage",
-      "Technische Umsetzung von Impressum und Datenschutz (keine Rechtsberatung)",
-      "Auffindbarkeit für KI-Systeme (strukturierte Daten)",
+    // RFC-1273: compressed offer — three lines cover "what / whose / what
+    // next" (operator decision Q-4); SLA/handover/per-month stay PBP-
+    // interpolated, the full list lives on the Digitales-Fundament page.
+    leistungSummary: [
+      launchDays !== undefined
+        ? `Website — entwickelt und online gestellt, Launch in ${launchDays} Werktagen ab Projektstart`
+        : "Website — entwickelt und online gestellt",
+      `Domain und Hosting inklusive${sla !== undefined ? ` (${sla} % Verfügbarkeit pro Monat)` : ""} — die Website gehört Ihnen${handover !== undefined ? `, beim Ausstieg übergeben wir sie vollständig in ${handover} Stunden` : ""}`,
       perMonth !== undefined
-        ? `${perMonth} kleine ${perMonth === 1 ? "Änderung" : "Änderungen"} pro Monat inklusive`
-        : "Kleine Änderung pro Monat inklusive",
-      "Quartalsauswertung zu Besuchern und Traffic-Quellen",
-      handover !== undefined
-        ? `Vollständige Übergabe innerhalb von ${handover} Stunden, wenn Sie gehen`
-        : "Vollständige Übergabe, wenn Sie gehen",
+        ? `${perMonth} kleine ${perMonth === 1 ? "Änderung" : "Änderungen"} pro Monat und eine Quartalsauswertung inklusive`
+        : "Kleine Änderungen pro Monat und eine Quartalsauswertung inklusive",
     ],
+    leistungMoreLink: "Den vollständigen Standard ansehen",
     preisHeading: "Preis — offen",
     priceCells: priceCellsDe(facts),
     endpreiseLine: [
@@ -786,6 +798,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       : null,
     validUntilLine: (isoDate) => `Diese Empfehlung gilt bis ${referralLocalDate(isoDate, "de")}.`,
     verifyHeading: "Erst selbst prüfen",
+    freedomLine: `Sie müssen nichts davon annehmen. Sie dürfen ${siteName} selbst prüfen, andere Angebote vergleichen und jederzeit jemand anderen wählen.`,
     verifyLinks: [
       { label: "Nachweise ansehen", pageId: "nachweise" },
       { label: "Notausgang ansehen", pageId: "notausgang" },
@@ -796,7 +809,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     transparency: {
       heading: "Transparenz",
       labels: {
-        code: "Empfehlungscode",
+        code: "Empfehlungscode (technisch)",
         recommendedBy: "Empfohlen von",
         kind: "Art",
         yourPrice: "Ihr Preis",
@@ -830,7 +843,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     form: {
       heading: "Situation beschreiben",
       refChoiceTitle: "Empfehlung",
-      refWithLabel: "Mit Empfehlung",
+      refWithLabel: (name) => (name ? `Mit Empfehlung von ${name}` : "Mit Empfehlung"),
       refWithHelp: (compensation) => refWithHelpDe(facts, compensation),
       refWithoutLabel: "Ohne Empfehlung",
       refWithoutHelp: facts.benefit
@@ -870,7 +883,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     },
     programLink: "Wie das Empfehlungsprogramm funktioniert",
     standardLink: `Den ${siteName}-Standard ansehen`,
-    secondaryNavLabel: "Weiterführende Links",
     neutral: {
       title: `Ihre Anfrage an ${siteName}`,
       lead:
@@ -940,22 +952,19 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     ctaPrimary: "Описати ситуацію",
     ctaPreis: "Ціна й зобов'язання",
     leistungHeading: "Що Ви отримуєте",
-    leistung: [
-      "Вебсайт — розроблений і запущений онлайн",
-      "Домен на Ваше ім'я — Ви власник із першого дня",
-      sla !== undefined
-        ? `Хостинг із доступністю ${sla} % на місяць`
-        : "Хостинг із гарантією доступності",
-      "Технічна реалізація Impressum і Datenschutz (без юридичної консультації)",
-      "Доступність для ШІ-систем (структуровані дані)",
+    // RFC-1273: стиснута пропозиція — три рядки «що / чиє / що далі»
+    // (рішення оператора Q-4); SLA/передача/зміни лишаються
+    // PBP-інтерпольованими, повний перелік — на сторінці стандарту.
+    leistungSummary: [
+      launchDays !== undefined
+        ? `Вебсайт — розроблений і запущений онлайн, запуск за ${launchDays} робочих днів від старту проєкту`
+        : "Вебсайт — розроблений і запущений онлайн",
+      `Домен і хостинг включно${sla !== undefined ? ` (доступність ${sla} % на місяць)` : ""} — вебсайт належить Вам${handover !== undefined ? `, на виході ми передаємо його повністю за ${handover} годин` : ""}`,
       perMonth !== undefined
-        ? `${perMonth} ${perMonth === 1 ? "незначна зміна" : "незначні зміни"} на місяць включно`
-        : "Незначна зміна на місяць включно",
-      "Квартальний звіт про відвідувачів і джерела трафіку",
-      handover !== undefined
-        ? `Повна передача протягом ${handover} годин, якщо Ви йдете`
-        : "Повна передача, якщо Ви йдете",
+        ? `${perMonth} ${perMonth === 1 ? "незначна зміна" : "незначні зміни"} на місяць і квартальний звіт включно`
+        : "Незначні зміни на місяць і квартальний звіт включно",
     ],
+    leistungMoreLink: "Переглянути повний стандарт",
     preisHeading: "Ціна — відкрито",
     priceCells: priceCellsUk(facts),
     endpreiseLine: [
@@ -1086,6 +1095,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       : null,
     validUntilLine: (isoDate) => `Ця рекомендація діє до ${referralLocalDate(isoDate, "uk")}.`,
     verifyHeading: "Спочатку перевірте самі",
+    freedomLine: `Ви нічого не мусите приймати. Ви можете самі перевірити ${siteName}, порівняти інші пропозиції та будь-коли обрати когось іншого.`,
     verifyLinks: [
       { label: "Переглянути докази", pageId: "nachweise" },
       { label: "Переглянути Notausgang", pageId: "notausgang" },
@@ -1096,7 +1106,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     transparency: {
       heading: "Прозорість",
       labels: {
-        code: "Код рекомендації",
+        code: "Код рекомендації (технічний)",
         recommendedBy: "Рекомендує",
         kind: "Тип",
         yourPrice: "Ваша ціна",
@@ -1130,7 +1140,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     form: {
       heading: "Опишіть Вашу ситуацію",
       refChoiceTitle: "Рекомендація",
-      refWithLabel: "З рекомендацією",
+      refWithLabel: (name) => (name ? `З рекомендацією від ${name}` : "З рекомендацією"),
       refWithHelp: (compensation) => refWithHelpUk(facts, compensation),
       refWithoutLabel: "Без рекомендації",
       refWithoutHelp: facts.benefit
@@ -1170,7 +1180,6 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     },
     programLink: "Як працює програма рекомендацій",
     standardLink: `Переглянути стандарт ${siteName}`,
-    secondaryNavLabel: "Додаткові посилання",
     neutral: {
       title: `Ваш запит до ${siteName}`,
       lead:
