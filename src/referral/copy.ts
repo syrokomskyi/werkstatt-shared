@@ -35,11 +35,11 @@ legally binding version; UK is a synced reference translation.
   <item>RFC-1258: two-voice copy — statement/basis/confirms sections, capacityLine + validUntilLine (dated facts), transparency learns row (site-authored recommenderLearnsLine), verifyLinks (nachweise/notausgang); recommenderLearnsLine fact plumbed through resolveReferralLandingFacts.</item>
   <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, warpgogol-m000193</history>
   <item>REVIEW-CODE-2026-10-11-01 fixes: uk phrase-guard patterns + explicit-delimiter uk negation (JS \b is ASCII-only), lang-aware sentence splitting, thousands-separator-safe money parsing, confirms aria-label, photo leading-slash contract, sectionNavItems statement/passtnicht anchors.</item>
-  <item>RFC-1273: v5 recommendation-first copy — leistungSummary (≤3 PBP-interpolated lines) + leistungMoreLink replace the 8-item leistung; freedomLine for the raised verify section; refWithLabel becomes (displayName | null) => string; transparency code label demoted to "(technisch)"; secondaryNavLabel removed (verify is a section now).</item>
+  <item>RFC-1273: v5 recommendation-first copy — leistungSummary (≤3 PBP-interpolated lines) + leistungMoreLink replace the 8-item leistung; freedomLine for the raised verify section; refWithLabel becomes (displayName | null) => string; transparency code label demoted to "(technisch)"; secondaryNavLabel removed (verify is a section now). fo-review F6/F7: referralNameVisible/referralVorteilVisible/referralVerifyVisible — the section-visibility predicates shared by the component and the route handler's nav.</item>
 </CHANGE_SUMMARY>
 */
 
-import type { ReferralLandingConfig } from "./partners.ts";
+import type { ReferralLandingConfig, ReferralPartner } from "./partners.ts";
 import type {
   ReferralAgbAnchorKey,
   ReferralAgbAnchors,
@@ -1211,4 +1211,40 @@ export function referralLandingCopy(
   facts: ReferralLandingFacts = {},
 ): ReferralLandingCopy {
   return lang === "uk" ? ukCopy(siteName, facts) : deCopy(siteName, facts);
+}
+
+/** RFC-1273: public-name consent gate — every identity-bearing render site
+    (h1, role, statement, confirms titles, website/photo, the transparency
+    recommendedBy row, the name-aware form label) reads this predicate. */
+export function referralNameVisible(partner: ReferralPartner): boolean {
+  return partner.status === "active" && !!partner.displayName;
+}
+
+/** The vorteil section renders only when at least one of its facts exists —
+    an empty heading would disclose nothing. */
+export function referralVorteilVisible(
+  partner: ReferralPartner,
+  copy: ReferralLandingCopy,
+): boolean {
+  return (
+    copy.vorteilText !== null ||
+    copy.capacityText !== null ||
+    (partner.status === "active" && partner.validUntil !== undefined)
+  );
+}
+
+/** The raised verify section renders when at least one verification path
+    exists (program explainer, standard page, consented recommender website,
+    or any registry-resolved verify link). */
+export function referralVerifyVisible(
+  partner: ReferralPartner,
+  copy: ReferralLandingCopy,
+  links: { programHref?: string; standardHref?: string },
+): boolean {
+  return (
+    links.programHref !== undefined ||
+    links.standardHref !== undefined ||
+    (referralNameVisible(partner) && partner.website !== undefined) ||
+    copy.verifyLinks.length > 0
+  );
 }
