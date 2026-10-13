@@ -23,19 +23,11 @@ legally binding version; UK is a synced reference translation.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>warpgogol-m000193: the rail is now a segmented choice — refLabel/refHelp
-  replaced by refChoiceTitle + refWithLabel/refWithHelp(compensation) +
-  refWithoutLabel/refWithoutHelp + refPrefix; the "with" card states the
-  sourced benefit and the honest compensation clause per partner, "without"
-  states same terms minus the benefit. Checklist labels added so the enhanced
-  section shows the same contact requirement /kontakt does.</item>
-  <item>warpgogol-m000193: freePeriod condition on the with-card rephrased —
-  uk "(активується на 2-й місяць)", de "(aktiviert im 2. Monat)".</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
   <item>RFC-1258: two-voice copy — statement/basis/confirms sections, capacityLine + validUntilLine (dated facts), transparency learns row (site-authored recommenderLearnsLine), verifyLinks (nachweise/notausgang); recommenderLearnsLine fact plumbed through resolveReferralLandingFacts.</item>
-  <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, warpgogol-m000193</history>
   <item>REVIEW-CODE-2026-10-11-01 fixes: uk phrase-guard patterns + explicit-delimiter uk negation (JS \b is ASCII-only), lang-aware sentence splitting, thousands-separator-safe money parsing, confirms aria-label, photo leading-slash contract, sectionNavItems statement/passtnicht anchors.</item>
   <item>RFC-1273: v5 recommendation-first copy — leistungSummary (≤3 PBP-interpolated lines) + leistungMoreLink replace the 8-item leistung; freedomLine for the raised verify section; refWithLabel becomes (displayName | null) => string; transparency code label demoted to "(technisch)"; secondaryNavLabel removed (verify is a section now). fo-review F6/F7: referralNameVisible/referralVorteilVisible/referralVerifyVisible — the section-visibility predicates shared by the component and the route handler's nav.</item>
+  <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, warpgogol-m000193</history>
 </CHANGE_SUMMARY>
 */
 
