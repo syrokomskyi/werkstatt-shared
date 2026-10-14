@@ -574,8 +574,8 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       : null,
     validUntilLine: (isoDate) =>
       `Diese Empfehlung gilt bis ${referralSentenceDate(isoDate, "de")}.`,
-    scopeFitsHeading: "Wofür das passt",
-    scopeDoesNotFitHeading: "Wofür das nicht passt",
+    scopeFitsHeading: "Wem das passt",
+    scopeDoesNotFitHeading: "Wem das nicht passt",
     recommenderLinksLabel: "Die Empfehlungsgeberin prüfen",
     recommenderWebsiteLabel: "Website",
     recommenderInstagramLabel: "Instagram",
@@ -663,7 +663,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     heroLabel: "РЕКОМЕНДАЦІЯ",
     h1Named: (name) => `${name} рекомендує Вам ${siteName}`,
     h1Anonymous: `Вам рекомендували ${siteName}`,
-    lead: `${siteName} робить вебсайти для малого бізнесу, ремесла та самозайнятих: на Вашому власному домені, з письмовими умовами та передбаченим виходом.`,
+    lead: `${siteName} робить вебсайти для малого бізнесу, ремісничих підприємств та самозайнятих: на Вашому власному домені, з письмовими умовами та передбаченим виходом.`,
     disclosure: (compensation, displayName, slug) =>
       disclosureUk(facts, compensation, displayName, slug, siteName),
     vorteilHeading: "Ваша перевага за рекомендацією",
@@ -677,27 +677,27 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       {
         text:
           launchDays !== undefined
-            ? `запуск за ${launchDays} робочих днів від старту проєкту${launchDelayClause}`
+            ? `запуск протягом ${launchDays} робочих днів від старту проєкту${launchDelayClause}`
             : `запуск від старту проєкту${launchDelayClause}`,
         anchorKey: "launchWorkdays",
       },
       {
         text:
           handover !== undefined
-            ? `повна передача за ${handover} годин після завершення договору`
+            ? `повна передача протягом ${handover} годин після завершення договору`
             : "повна передача після завершення договору",
         anchorKey: "handoverHours",
       },
       {
         text:
           response !== undefined
-            ? `відповідь за ${response} годин у робочі дні`
+            ? `відповідь протягом ${response} годин у робочі дні`
             : "відповідь у робочі дні",
         anchorKey: "responseHours",
       },
     ],
     conditionsNotFor: {
-      text: "Не підходить: інтернет-магазини з товарними позиціями та залишками, портали, SEO-гарантії",
+      text: "Не підходить: інтернет-магазини з товарними позиціями та залишками, портали, гарантії SEO",
       anchorKey: "unsupportedProjects",
     },
     b2bLine:
@@ -717,8 +717,8 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       : null,
     validUntilLine: (isoDate) => `Ця рекомендація діє до ${referralSentenceDate(isoDate, "uk")}.`,
     scopeFitsHeading: "Кому це підходить",
-    scopeDoesNotFitHeading: "Кому не підходить",
-    recommenderLinksLabel: "Перевірити автора рекомендації",
+    scopeDoesNotFitHeading: "Кому це не підходить",
+    recommenderLinksLabel: "Перевірити авторку рекомендації",
     recommenderWebsiteLabel: "Сайт",
     recommenderInstagramLabel: "Instagram",
     agbBindingNote: "Обов'язковою є німецька версія AGB.",
@@ -737,7 +737,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     },
     form: {
       heading: "Опишіть Вашу ситуацію",
-      refPrefix: "Рекомендовано: ",
+      refPrefix: "Рекомендація від: ",
       messageLabel: "Повідомлення",
       messageHelp:
         "Що у Вас є сьогодні, чого бракує — і як нам з Вами зв'язатися (електронна пошта або телефон)?",
