@@ -23,6 +23,7 @@ legally binding version; UK is a synced reference translation.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1278: agbLinkLabel — the "(AGB)" conditions-commitment anchor label moved out of referral-partner-page.astro markup into the copy contract (shared-ui.thin-copy now scans ui/components).</item>
   <item>RFC-1258: two-voice copy — statement/basis/confirms sections, capacityLine + validUntilLine (dated facts), transparency learns row (site-authored recommenderLearnsLine), verifyLinks (nachweise/notausgang); recommenderLearnsLine fact plumbed through resolveReferralLandingFacts.</item>
   <item>REVIEW-CODE-2026-10-11-01 fixes: uk phrase-guard patterns + explicit-delimiter uk negation (JS \b is ASCII-only), lang-aware sentence splitting, thousands-separator-safe money parsing, confirms aria-label, photo leading-slash contract, sectionNavItems statement/passtnicht anchors.</item>
   <item>RFC-1273: v5 recommendation-first copy — leistungSummary (≤3 PBP-interpolated lines) + leistungMoreLink replace the 8-item leistung; freedomLine for the raised verify section; refWithLabel becomes (displayName | null) => string; transparency code label demoted to "(technisch)"; secondaryNavLabel removed (verify is a section now). fo-review F6/F7: referralNameVisible/referralVorteilVisible/referralVerifyVisible — the section-visibility predicates shared by the component and the route handler's nav.</item>
@@ -278,6 +279,9 @@ export interface ReferralLandingCopy {
   conditionsFullLink: string;
   b2bLine: string;
   b2bAnchorKey: ReferralAgbAnchorKey;
+  /** RFC-1278: "(AGB)" — the conditions-commitment anchor link label; a law
+      document abbreviation, identical in de/uk, but never a markup literal. */
+  agbLinkLabel: string;
   quoteAriaLabel: string;
   /** RFC-1258: the recommender's voice section headings. */
   statementHeading: string;
@@ -696,6 +700,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     b2bLine:
       "Dieses Angebot gilt für Unternehmer, Selbständige und Freiberufler (§ 14 BGB), nicht für Verbraucher.",
     b2bAnchorKey: "b2b",
+    agbLinkLabel: "(AGB)",
     quoteAriaLabel: "Wörtliche Empfehlung",
     statementHeading: "Warum ich das empfehle",
     basisHeading: "Was ich selbst geprüft habe",
@@ -902,6 +907,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     b2bLine:
       "Ця пропозиція діє для підприємців, самозайнятих і вільних професій (§ 14 BGB), не для споживачів.",
     b2bAnchorKey: "b2b",
+    agbLinkLabel: "(AGB)",
     quoteAriaLabel: "Дослівна рекомендація",
     statementHeading: "Чому я це рекомендую",
     basisHeading: "Що я перевірила особисто",
