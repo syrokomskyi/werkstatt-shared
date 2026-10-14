@@ -252,9 +252,6 @@ export interface ReferralLandingCopy {
   conditionsCommitments: readonly ReferralCommitmentRow[];
   /** The single not-a-fit line — anchored to the AGB exclusions section. */
   conditionsNotFor: { text: string; anchorKey: ReferralAgbAnchorKey };
-  /** Link label to the full Digitales-Fundament page (href = the former
-      leistungMoreHref target). */
-  conditionsFullLink: string;
   b2bLine: string;
   b2bAnchorKey: ReferralAgbAnchorKey;
   /** RFC-1278: "(AGB)" — the conditions-commitment anchor link label; a law
@@ -560,7 +557,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       text: "Nicht für Onlineshops mit Warenpositionen und Lagerbeständen, Portale und SEO-Garantien",
       anchorKey: "unsupportedProjects",
     },
-    conditionsFullLink: "Vollständiger Standard und alle Bedingungen",
     b2bLine:
       "Dieses Angebot gilt für Unternehmer, Selbständige und Freiberufler (§ 14 BGB), nicht für Verbraucher.",
     b2bAnchorKey: "b2b",
@@ -704,7 +700,6 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       text: "Не підходить: інтернет-магазини з товарними позиціями та залишками, портали, SEO-гарантії",
       anchorKey: "unsupportedProjects",
     },
-    conditionsFullLink: "Повний стандарт і всі умови",
     b2bLine:
       "Ця пропозиція діє для підприємців, самозайнятих і вільних професій (§ 14 BGB), не для споживачів.",
     b2bAnchorKey: "b2b",
