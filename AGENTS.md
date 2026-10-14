@@ -436,6 +436,8 @@ Location: `packages/werkstatt-shared/src/referral/` — exported via `@warpgogol
 | `resolveReferralLandingFacts(config, lang, fallbackLang?)` | Resolves the `landing` block's lang→phrase maps to one language (with fallback chain) — call it once per landing render |
 | `referralStatementVisible` / `referralBasisVisible` / `referralFitsVisible` / `referralHeroAboutVisible` / `referralLinksVisible` / `referralPhotoVisible` / `referralNameVisible` / `referralVorteilVisible` | Shared visibility predicates — the single source for what the page, the document, the section nav, and the `/r/<slug>.json` twin publish. A `display.*: false` switch may only hide, never reveal; data + consent are always required first |
 
+**DE/UK pair sync:** a copy edit landing in one referral locale implies the parallel minimal edit in the twin — DE is the legally binding version, UK the synced reference translation (`referralLandingCopy` builders). Never leave the pair drifting; flag interpretive choices (e.g. typo corrections) instead of asking or silently diverging.
+
 **No-client-storage invariant:** referral attribution carries NO cookies, `localStorage`, `sessionStorage`, or IndexedDB — the chain is `/r/<slug>` → `?ref=<slug>` URL → voluntary form field → server-side slug resolution → `referralPartnerSlug`/`referralPartnerName` on the Lagebild ingress contract. `src/referral/tests/no-cookie-remnants.test.ts` is the enforcement guard; keep the banned-literal list intact.
 
 ## Test coverage
