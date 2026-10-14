@@ -152,6 +152,27 @@ describe("allowedKindsForTarget", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts the generic surface pair on component-defined slot targets", () => {
+    const kinds = allowedKindsForTarget("slot:footer-below");
+    expect(kinds).toEqual(["glass", "shadow"]);
+  });
+
+  it("accepts a shadow assignment on a slot target via effectAssignmentSchema", () => {
+    const result = effectAssignmentSchema.safeParse({
+      target: "slot:footer-below",
+      stack: [{ kind: "shadow", enabled: true, offsetY: 24, blur: 48, spread: -16 }],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects typographic kinds on slot targets", () => {
+    const result = effectAssignmentSchema.safeParse({
+      target: "slot:card-title",
+      stack: [{ kind: "glow", enabled: true }],
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("resolveEffectsForTarget", () => {

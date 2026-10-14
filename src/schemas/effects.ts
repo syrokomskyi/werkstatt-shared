@@ -17,6 +17,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>warpgogol-m000200: slot:* effect targets admit the generic surface pair (glass, shadow) — component-defined slots such as the footer's slot:footer-below pass strict effectAssignmentSchema validation.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -187,8 +188,18 @@ export const TARGET_ALLOWED_KINDS: Record<string, readonly EffectKind[]> = {
 
 const DEFAULT_ALLOWED_KINDS: readonly EffectKind[] = ["glass"];
 
+/**
+ * Component-defined named slots (`slot:*`) are surface attachment points
+ * owned by the component contract (RFC-0134) — e.g. the footer's
+ * `slot:footer-below` carries a second cast layer. They accept the generic
+ * surface pair, same as `section`; the component declares which named slots
+ * it resolves.
+ */
+const SLOT_ALLOWED_KINDS: readonly EffectKind[] = ["glass", "shadow"];
+
 /** RFC-0151 — kinds accepted by a target, falling back to the glass-only default. */
 export function allowedKindsForTarget(target: EffectTarget): readonly EffectKind[] {
+  if (target.startsWith("slot:")) return SLOT_ALLOWED_KINDS;
   return TARGET_ALLOWED_KINDS[target] ?? DEFAULT_ALLOWED_KINDS;
 }
 
