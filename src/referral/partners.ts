@@ -21,6 +21,7 @@ consumers read this module; client-safe constants stay in ./patterns.ts.
   <item>RFC-1222: schema v2 — `status` lifecycle replaces `active`, structured `consent` union (none|document|channel) replaces `publicNameConsentRef`, `role` + `retiredAt` added, schema enforces active⇒consent granted and retired⇒retiredAt, slug-PII guard exported; forward-only, no v1 acceptance.</item>
   <item>RFC-1258: schema v3 — `quote`/`quoteConsent` replaced forward-only by `statement`/`statementConsent`/`statementConfirmedAt`; `basis[]` (claim+verifiedBy+date), per-partner `scope`, `validUntil` (required on active), consent-gated `website`/`photo`, `relationToClientWorld`; expiry is data + validator, the lifecycle enum stays closed (DNA-19).</item>
   <item>REVIEW-CODE-2026-10-11-01 fixes: uk phrase-guard patterns + explicit-delimiter uk negation (JS \b is ASCII-only), lang-aware sentence splitting, thousands-separator-safe money parsing, confirms aria-label, photo leading-slash contract, sectionNavItems statement/passtnicht anchors.</item>
+  <item>RFC-1277: schema v4 — isClient, instagram/instagramConsent, approval audit record, per-block display switches (hide a block without deleting data or consent); gates mirror the website/photo pattern.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -212,6 +213,48 @@ export const ReferralPartnerSchema = z
     /** RFC-1258: one phrase about the recommender's relation to the client's
         world ("Ich begleite Betriebe, die …") — consent-gated like role. */
     relationToClientWorld: LocalizedPhraseSchema.optional(),
+    /** RFC-1277 (brief v3 p.3): is the recommender a Warpgogol client —
+        her own answer. `false` renders an explicit "not a client" line in
+        the basis block; absent = unanswered, nothing renders. */
+    isClient: z.boolean().optional(),
+    /** RFC-1277 (brief v3 1.2): the recommender's Instagram — consent-gated
+        like `website`; renders as a second verification link in the hero. */
+    instagram: z.string().url().optional(),
+    instagramConsent: GrantedConsentSchema.optional(),
+    /** RFC-1277 (brief v3 1.3/§4): the recommender's written approval of the
+        final preview page — the audit record, not a render gate (consent
+        gates stay `statementConsent` + `statementConfirmedAt`). */
+    approval: z
+      .object({
+        approvedOn: IsoDateSchema,
+        /** Mail id / file reference of the approval letter. */
+        evidence: z.string().min(1),
+      })
+      .strict()
+      .optional(),
+    /** RFC-1277 (operator decision): per-block display switches — hide a
+        rendered voice block without deleting data or consent. Absent flag
+        = shown; `false` may only hide, never reveal — every block still
+        requires its data and consent. */
+    display: z
+      .object({
+        /** brief 3.1 — statement text + signature (gates confirms too). */
+        statement: z.boolean().optional(),
+        /** brief 3.2 — basis list + the isClient line. */
+        basis: z.boolean().optional(),
+        /** brief 3.3 — her fits / does-not-fit view (scope). */
+        fits: z.boolean().optional(),
+        /** brief 3.4 — the fixed confirms/not-confirms block. */
+        confirms: z.boolean().optional(),
+        /** relationToClientWorld line under the hero role. */
+        heroAbout: z.boolean().optional(),
+        /** website + instagram verification links in the hero. */
+        links: z.boolean().optional(),
+        /** the consent-gated portrait. */
+        photo: z.boolean().optional(),
+      })
+      .strict()
+      .optional(),
     compensation: z.enum(["referral-fee", "none", "steward"]),
     /** Language codes for the localized landings. Open set (ISO-639-1) — the
         site's `system.md i18n.supported` decides which of them actually emit;
@@ -411,6 +454,42 @@ export const ReferralPartnerSchema = z
         code: "custom",
         message: `partner "${partner.slug}" carries a photo but is not active — the portrait renders only on the named landing`,
         path: ["photo"],
+      });
+    }
+    // RFC-1277 gates — mirror the website/photo pattern.
+    if (partner.instagram && !partner.instagramConsent) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" carries an instagram link but no instagramConsent — verification paths are consent-gated`,
+        path: ["instagramConsent"],
+      });
+    }
+    if (partner.instagramConsent && !partner.instagram) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" records instagramConsent but has no instagram`,
+        path: ["instagramConsent"],
+      });
+    }
+    if (partner.instagram && partner.status !== "active") {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" carries an instagram link but is not active — verification paths render only on the named landing`,
+        path: ["instagram"],
+      });
+    }
+    if (partner.isClient !== undefined && !partner.statement) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" carries isClient but no statement — the client-status fact belongs to the recommender's voice`,
+        path: ["isClient"],
+      });
+    }
+    if (partner.approval && !partner.statement) {
+      ctx.addIssue({
+        code: "custom",
+        message: `partner "${partner.slug}" records approval but has no statement — approval covers the published voice`,
+        path: ["approval"],
       });
     }
     if (partner.relationToClientWorld) {

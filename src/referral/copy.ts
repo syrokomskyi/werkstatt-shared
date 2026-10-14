@@ -27,6 +27,7 @@ legally binding version; UK is a synced reference translation.
   <item>RFC-1258: two-voice copy — statement/basis/confirms sections, capacityLine + validUntilLine (dated facts), transparency learns row (site-authored recommenderLearnsLine), verifyLinks (nachweise/notausgang); recommenderLearnsLine fact plumbed through resolveReferralLandingFacts.</item>
   <item>REVIEW-CODE-2026-10-11-01 fixes: uk phrase-guard patterns + explicit-delimiter uk negation (JS \b is ASCII-only), lang-aware sentence splitting, thousands-separator-safe money parsing, confirms aria-label, photo leading-slash contract, sectionNavItems statement/passtnicht anchors.</item>
   <item>RFC-1273: v5 recommendation-first copy — leistungSummary (≤3 PBP-interpolated lines) + leistungMoreLink replace the 8-item leistung; freedomLine for the raised verify section; refWithLabel becomes (displayName | null) => string; transparency code label demoted to "(technisch)"; secondaryNavLabel removed (verify is a section now). fo-review F6/F7: referralNameVisible/referralVorteilVisible/referralVerifyVisible — the section-visibility predicates shared by the component and the route handler's nav.</item>
+  <item>RFC-1277: v6 copy — brief v3 phase 1 removes the five generic sections (leistung/preis/zusagen/passtnicht/steps) in favour of one "conditions" block (studio paragraph + interpolated price line + three AGB-anchored commitments + not-for line + full-standard link); transparency keeps exactly five rows; ctaPreis removed (single CTA); new keys: conditions*, fitsHeading, statementDisclosure, clientStatusLine, recommenderInstagramLabel, agbBindingNote (uk-only non-empty); referralSentenceDate fixes the uk "р.." double period; display-aware voice predicates (statement/basis/fits/confirms/heroAbout/links/photo).</item>
   <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, warpgogol-m000193</history>
 </CHANGE_SUMMARY>
 */
@@ -61,6 +62,14 @@ export function referralLocalDate(isoDate: string, lang: string): string {
     dateStyle: "long",
     timeZone: "UTC",
   }).format(date);
+}
+
+/** RFC-1277 (brief v3 2.2): sentence-safe date — some locales end the long
+    form with their own period (uk-UA: "13 квітня 2027 р."), so templates
+    that append a sentence period would double it ("р.."). Strips the
+    terminal dot for mid- and end-of-sentence interpolation. */
+export function referralSentenceDate(isoDate: string, lang: string): string {
+  return referralLocalDate(isoDate, lang).replace(/\.$/, "");
 }
 
 /** Localized money phrase — "200 €" (integer amounts stay fraction-free). */
@@ -163,26 +172,20 @@ export interface ReferralDisclosureLine {
 
 export interface ReferralTransparencyCopy {
   heading: string;
+  /** RFC-1277: exactly five rows — the scope/excluded/learns rows moved
+      into the conditions section resp. stay on the Datenschutz page
+      (operator decision, brief v3 2.6). */
   labels: {
     code: string;
     recommendedBy: string;
     kind: string;
     yourPrice: string;
-    scope: string;
-    excluded: string;
     ruleset: string;
-    /** RFC-1258: "Was der Empfehlende erfährt" — what the recommender learns
-        about the client (AGB § 12 Abs. 3 / Datenschutz § 5.4). */
-    learns: string;
   };
   /** "vergütet (70 €, nach 60 Tagen aktiver, bezahlter Subscription)" /
       "ohne Geldvergütung" — resolved per compensation + facts. */
   kind: (compensation: ReferralCompensation) => string;
   yourPrice: string;
-  scope: string;
-  excluded: string;
-  /** RFC-1258: site-authored learns line — absent → the row is omitted. */
-  learns: string;
   /** "AGB, § 3 Abs. 5 und § 12 (Fassung 4.2)" — the version arrives from the
       AGB document metadata, never hardcoded. */
   rulesetLabel: (version: string | undefined) => string;
@@ -268,42 +271,43 @@ export interface ReferralLandingCopy {
   ) => ReferralDisclosureLine;
   heroFacts: readonly ReferralHeroFact[];
   ctaPrimary: string;
-  ctaPreis: string;
-  leistungHeading: string;
-  /** RFC-1273: compressed offer — ≤3 PBP-interpolated summary lines; the
-      full offer list lives on the Digitales-Fundament page (leistungMoreLink). */
-  leistungSummary: readonly string[];
-  /** Label of the single link to the Digitales-Fundament page under the
-      summary lines (href = leistungMoreHref → the Digitales-Fundament page,
-      resolved by the route handler). */
-  leistungMoreLink: string;
-  preisHeading: string;
-  /** Three resolved price cells; a missing PBP charge renders "—"… no wait —
-      a missing charge omits the cell entirely. */
-  priceCells: readonly { amount: string; unit: string }[];
-  endpreiseLine: string;
   vorteilHeading: string;
   vorteilText: string | null;
-  riskLine: string;
-  zusagenHeading: string;
-  zusagenLeftTitle: string;
-  zusagenRightTitle: string;
-  zusagenLeft: readonly ReferralCommitmentRow[];
-  zusagenRight: readonly { text: string; anchorKey?: ReferralAgbAnchorKey }[];
-  zusagenFootnote: string;
-  /** RFC-1258: the honest "wann passt nicht" section — the studio's real
-      constraint (e-commerce with stock, incl. small shops), AGB-anchored. */
-  passtNichtHeading: string;
-  passtNicht: readonly { text: string; anchorKey?: ReferralAgbAnchorKey }[];
-  stepsHeading: string;
-  steps: readonly { text: string; anchorKey?: ReferralAgbAnchorKey }[];
-  writtenLine: string;
+  /** RFC-1277 (brief v3 2.5): the single generic-terms section replacing the
+      five former blocks (leistung/preis/zusagen/passtnicht/steps) — the
+      studio paragraph is the former hero `lead`, prices/commitments stay
+      PBP- and AGB-anchored. */
+  conditionsHeading: string;
+  /** One interpolated price line: activation + monthly (+ yearly option),
+      UStG note, cancellation term. Missing facts drop their clause. */
+  conditionsPriceLine: string;
+  /** Exactly three anchored commitments: launch window, handover, response. */
+  conditionsCommitments: readonly ReferralCommitmentRow[];
+  /** The single not-a-fit line — anchored to the AGB exclusions section. */
+  conditionsNotFor: { text: string; anchorKey: ReferralAgbAnchorKey };
+  /** Link label to the full Digitales-Fundament page (href = the former
+      leistungMoreHref target). */
+  conditionsFullLink: string;
   b2bLine: string;
   b2bAnchorKey: ReferralAgbAnchorKey;
   quoteAriaLabel: string;
   /** RFC-1258: the recommender's voice section headings. */
   statementHeading: string;
   basisHeading: string;
+  /** RFC-1277 (brief v3 3.3): heading of the standalone fits block —
+      first-person voice like the statement heading. */
+  fitsHeading: string;
+  /** RFC-1277 (brief v3 3.1): the compensation disclosure line rendered
+      directly under her statement — "… erhält 70 € von X, wenn daraus ein
+      Kunde wird (Details oben)". null for compensation "none". */
+  statementDisclosure: (
+    compensation: ReferralCompensation,
+    displayName: string | null,
+    slug: string,
+  ) => string | null;
+  /** RFC-1277 (brief v3 3.2): the basis-block client-status line — renders
+      for both answers ("… ist (k)ein Kunde von …"), absent data = no line. */
+  clientStatusLine: (displayName: string, isClient: boolean) => string;
   /** RFC-1258: the bounded-assertion block — what the recommender confirms
       and does not confirm (platform-fixed sentences, name interpolated). */
   confirms: {
@@ -333,6 +337,13 @@ export interface ReferralLandingCopy {
   scopeDoesNotFitHeading: string;
   /** RFC-1258: label of the consent-gated link to the recommender's website. */
   recommenderWebsiteLabel: (displayName: string) => string;
+  /** RFC-1277: label of the consent-gated Instagram link (hero). */
+  recommenderInstagramLabel: (displayName: string) => string;
+  /** RFC-1277 (brief v3 2.8): the note under the transparency card naming
+      the binding AGB language version — non-empty only on locales whose
+      AGB is a reference translation (UK: "Обов'язковою є німецька версія
+      AGB."). DE stays empty — the German page IS the binding version. */
+  agbBindingNote: string;
   transparency: ReferralTransparencyCopy;
   form: ReferralFormCopy;
   autoReply: ReferralAutoReplyCopy;
@@ -450,52 +461,74 @@ function disclosureUk(
   }
 }
 
-function priceCellsDe(facts: ReferralLandingFacts): { amount: string; unit: string }[] {
+/** RFC-1277 (brief v3 2.5): the one-line price clause — activation +
+    monthly (+ yearly alternative), UStG note, cancellation term. Every
+    amount is PBP-derived; a missing fact drops its clause instead of
+    inventing a number. */
+function conditionsPriceLineDe(facts: ReferralLandingFacts): string {
   const s = facts.service;
-  const cells: { amount: string; unit: string }[] = [];
-  if (s?.activationPrice !== undefined) {
-    cells.push({
-      amount: referralMoney(s.activationPrice, s.priceCurrency, "de"),
-      unit: "einmalig (Aktivierung)",
-    });
-  }
-  if (s?.monthlyPrice !== undefined) {
-    cells.push({
-      amount: referralMoney(s.monthlyPrice, s.priceCurrency, "de"),
-      unit: "pro Monat",
-    });
-  }
-  if (s?.yearlyPrice !== undefined) {
-    cells.push({
-      amount: referralMoney(s.yearlyPrice, s.priceCurrency, "de"),
-      unit: "pro Jahr — Alternative zum Monatspreis",
-    });
-  }
-  return cells;
+  const cur = s?.priceCurrency;
+  const activation =
+    s?.activationPrice !== undefined ? referralMoney(s.activationPrice, cur, "de") : undefined;
+  const monthly =
+    s?.monthlyPrice !== undefined ? referralMoney(s.monthlyPrice, cur, "de") : undefined;
+  const yearly = s?.yearlyPrice !== undefined ? referralMoney(s.yearlyPrice, cur, "de") : undefined;
+  const price =
+    activation && monthly
+      ? `${activation} Aktivierung + ${monthly} im Monat${yearly ? ` (oder ${yearly} im Jahr)` : ""}`
+      : monthly
+        ? `${monthly} im Monat`
+        : "Preise nach dem veröffentlichten Standard";
+  const cancel =
+    s?.cancellationDays !== undefined
+      ? ` Kündigung: ${s.cancellationDays} Tage zum Monatsende.`
+      : "";
+  return `${price}, Endpreise ohne Umsatzsteuer (§ 19 UStG).${cancel}`;
 }
 
-function priceCellsUk(facts: ReferralLandingFacts): { amount: string; unit: string }[] {
+function conditionsPriceLineUk(facts: ReferralLandingFacts): string {
   const s = facts.service;
-  const cells: { amount: string; unit: string }[] = [];
-  if (s?.activationPrice !== undefined) {
-    cells.push({
-      amount: referralMoney(s.activationPrice, s.priceCurrency, "uk"),
-      unit: "одноразово (активація)",
-    });
+  const cur = s?.priceCurrency;
+  const activation =
+    s?.activationPrice !== undefined ? referralMoney(s.activationPrice, cur, "uk") : undefined;
+  const monthly =
+    s?.monthlyPrice !== undefined ? referralMoney(s.monthlyPrice, cur, "uk") : undefined;
+  const yearly = s?.yearlyPrice !== undefined ? referralMoney(s.yearlyPrice, cur, "uk") : undefined;
+  const price =
+    activation && monthly
+      ? `${activation} активація + ${monthly} на місяць${yearly ? ` (або ${yearly} на рік)` : ""}`
+      : monthly
+        ? `${monthly} на місяць`
+        : "ціни за опублікованим стандартом";
+  const cancel =
+    s?.cancellationDays !== undefined
+      ? ` Розірвання: за ${s.cancellationDays} днів до кінця місяця.`
+      : "";
+  return `${price}, без ПДВ (§ 19 UStG).${cancel}`;
+}
+
+/** RFC-1277 (brief v3 3.1): the short disclosure sentence under her
+    statement — one line, same facts as the hero disclosure, plain text
+    (the bold label stays in the hero). null for compensation "none". */
+function statementDisclosureLine(
+  facts: ReferralLandingFacts,
+  compensation: ReferralCompensation,
+  displayName: string | null,
+  slug: string,
+  siteName: string,
+  lang: "de" | "uk",
+): string | null {
+  if (compensation === "none") return null;
+  const who = whoPhrase(displayName, slug, lang, true);
+  const reward = rewardPhrase(facts, compensation);
+  if (compensation === "steward") {
+    return lang === "uk"
+      ? `${who} отримує винагороду від ${siteName} за свою роботу (деталі вище).`
+      : `${who} wird von ${siteName} für ihre Tätigkeit vergütet (Details oben).`;
   }
-  if (s?.monthlyPrice !== undefined) {
-    cells.push({
-      amount: referralMoney(s.monthlyPrice, s.priceCurrency, "uk"),
-      unit: "на місяць",
-    });
-  }
-  if (s?.yearlyPrice !== undefined) {
-    cells.push({
-      amount: referralMoney(s.yearlyPrice, s.priceCurrency, "uk"),
-      unit: "на рік — альтернатива місячній оплаті",
-    });
-  }
-  return cells;
+  return lang === "uk"
+    ? `${who} отримає ${reward || "винагороду"} від ${siteName}, якщо Ви станете клієнтом (деталі вище).`
+    : `${who} erhält ${reward || "eine Vergütung"} von ${siteName}, wenn daraus ein Kunde wird (Details oben).`;
 }
 
 /** warpgogol-m000193: "Mit Empfehlung" card help — the same benefit facts the
@@ -597,12 +630,6 @@ function vorteilUk(facts: ReferralLandingFacts, siteName: string): string | null
 function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingCopy {
   const s = facts.service;
   const launchDays = s?.launchWorkdays;
-  const sla = s?.availabilityPercent;
-  const downtime = s?.downtimeHours;
-  const priceFix = s?.priceFixMonths;
-  const cancel = s?.cancellationDays;
-  const perMonth = s?.smallChangesPerMonth;
-  const small = s?.smallChangeHours;
   const response = s?.responseHours;
   const handover = s?.handoverHours;
   // REVIEW-CODE-2026-10-08-02: no invented digits — an absent support-response
@@ -615,10 +642,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     s?.launchRemedy === "continued-performance"
       ? "; bei Verzug durch uns arbeiten wir kostenlos weiter bis zum Launch"
       : "";
-  const activationMoney =
-    s?.activationPrice !== undefined
-      ? referralMoney(s.activationPrice, s.priceCurrency, "de")
-      : undefined;
 
   return {
     headerCta: "Situation beschreiben",
@@ -646,132 +669,55 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       },
     ],
     ctaPrimary: "Situation beschreiben",
-    ctaPreis: "Preis und Zusagen ansehen",
-    leistungHeading: "Was Sie bekommen",
-    // RFC-1273: compressed offer — three lines cover "what / whose / what
-    // next" (operator decision Q-4); SLA/handover/per-month stay PBP-
-    // interpolated, the full list lives on the Digitales-Fundament page.
-    leistungSummary: [
-      launchDays !== undefined
-        ? `Website — entwickelt und online gestellt, Launch in ${launchDays} Werktagen ab Projektstart`
-        : "Website — entwickelt und online gestellt",
-      `Domain und Hosting inklusive${sla !== undefined ? ` (${sla} % Verfügbarkeit pro Monat)` : ""} — die Website gehört Ihnen${handover !== undefined ? `, beim Ausstieg übergeben wir sie vollständig in ${handover} Stunden` : ""}`,
-      perMonth !== undefined
-        ? `${perMonth} kleine ${perMonth === 1 ? "Änderung" : "Änderungen"} pro Monat und eine Quartalsauswertung inklusive`
-        : "Kleine Änderungen pro Monat und eine Quartalsauswertung inklusive",
-    ],
-    leistungMoreLink: "Den vollständigen Standard ansehen",
-    preisHeading: "Preis — offen",
-    priceCells: priceCellsDe(facts),
-    endpreiseLine: [
-      "Endpreise, keine Umsatzsteuer (Kleinunternehmer, § 19 UStG).",
-      priceFix !== undefined ? `Preis ${priceFix} Monate festgeschrieben.` : "",
-      cancel !== undefined ? `Kündigung: ${cancel} Tage zum Monatsende.` : "",
-    ]
-      .filter((p) => p.length > 0)
-      .join(" "),
     vorteilHeading: "Ihr Empfehlungsvorteil",
     vorteilText: vorteilDe(facts, siteName),
-    riskLine:
-      activationMoney !== undefined
-        ? `Die Aktivierungsgebühr von ${activationMoney} zahlen Sie erst nach der Erstprüfung, zusammen mit der Auftragsbestätigung. Lehnen wir Ihr Projekt ab, entfällt sie.`
-        : "Die Aktivierungsgebühr zahlen Sie erst nach der Erstprüfung, zusammen mit der Auftragsbestätigung. Lehnen wir Ihr Projekt ab, entfällt sie.",
-    zusagenHeading: "Was verbindlich zugesagt ist",
-    // Lowercase accusative objects under the verb frame — the right column is
-    // lowercase too, and none of these items carries a full stop.
-    zusagenLeftTitle: `${siteName} sagt verbindlich zu`,
-    zusagenRightTitle: `${siteName} verspricht nicht`,
-    zusagenLeft: [
+    // RFC-1277 (brief v3 2.5): the single conditions section — the studio
+    // paragraph (former hero lead) renders in the component, the price line
+    // and commitments stay PBP/AGB-anchored; the launch delay clause keeps
+    // its home in the launch commitment row.
+    conditionsHeading: "Die Konditionen kurz",
+    conditionsPriceLine: conditionsPriceLineDe(facts),
+    conditionsCommitments: [
       {
         text:
           launchDays !== undefined
-            ? `den Launch in ${launchDays} Werktagen ab Projektstart${launchDelayClause}`
-            : `den Launch ab Projektstart${launchDelayClause}`,
+            ? `Launch in ${launchDays} Werktagen ab Projektstart${launchDelayClause}`
+            : `Launch ab Projektstart${launchDelayClause}`,
         anchorKey: "launchWorkdays",
       },
       {
         text:
-          sla !== undefined
-            ? `die Einhaltung von ${sla} % Verfügbarkeit pro Monat${downtime !== undefined ? `; bei über ${downtime} Stunden Ausfall` : "; bei längerem Ausfall"} ist der nächste Monat kostenlos`
-            : "die Einhaltung der Verfügbarkeit — bei längerem Ausfall ist der nächste Monat kostenlos",
-        anchorKey: "availabilitySla",
-      },
-      {
-        text:
-          small !== undefined
-            ? `kleine Änderungen in ${small} Stunden`
-            : "kleine Änderungen in kurzer Frist",
-        anchorKey: "smallChangeHours",
-      },
-      {
-        text:
-          response !== undefined
-            ? `eine Antwort in ${response} Stunden an Werktagen`
-            : "eine Antwort an Werktagen",
-        anchorKey: "responseHours",
-      },
-      {
-        text:
           handover !== undefined
-            ? `die vollständige Übergabe in ${handover} Stunden nach Vertragsende`
-            : "die vollständige Übergabe nach Vertragsende",
+            ? `vollständige Übergabe in ${handover} Stunden nach Vertragsende`
+            : "vollständige Übergabe nach Vertragsende",
         anchorKey: "handoverHours",
       },
-    ],
-    zusagenRight: [
-      { text: "eine bestimmte Position bei Google" },
-      { text: "eine bestimmte Zahl von Anfragen oder Aufträgen" },
-      { text: "Umsatz oder wirtschaftlichen Erfolg" },
-      { text: "Ergebnisse ohne Ihre Mitwirkung" },
-      {
-        text: "Rechtsberatung, SEO-Kampagnen, bezahlte Werbung",
-        anchorKey: "excludedServices",
-      },
-    ],
-    zusagenFootnote: "Fristen gelten unter den Voraussetzungen der AGB.",
-    passtNichtHeading: "Wann Warpgogol nicht passt",
-    passtNicht: [
-      {
-        text: "bei Onlineshops mit Artikelpositionen und Lagerbeständen — auch kleinen",
-        anchorKey: "unsupportedProjects",
-      },
-      {
-        text: "bei Portalen mit Tausenden Seiten oder komplexen Integrationen",
-        anchorKey: "unsupportedProjects",
-      },
-      {
-        text: "bei aggressiven SEO-Zielen und Positionsgarantien",
-        anchorKey: "excludedServices",
-      },
-      {
-        text: "wenn ein Marketing-Motor gebraucht wird, kein grundsolider Webauftritt",
-        anchorKey: "excludedServices",
-      },
-    ],
-    stepsHeading: "So geht es weiter",
-    steps: [
-      { text: "Sie beschreiben Ihre Situation schriftlich." },
       {
         text:
           response !== undefined
-            ? `Wir antworten innerhalb von ${response} Stunden an Werktagen.`
-            : "Wir antworten an Werktagen.",
-      },
-      {
-        text: "Erstprüfung: Sie erhalten das Ergebnis in Textform; wir lehnen z. B. rechtswidrige oder nicht belegbare Tätigkeiten ab.",
-        anchorKey: "unsupportedProjects",
-      },
-      {
-        text: "Bei positivem Ergebnis: Auftragsbestätigung mit Umfang, Preis und Start; erst dann ist die Aktivierungsgebühr fällig.",
+            ? `Antwort in ${response} Stunden an Werktagen`
+            : "Antwort an Werktagen",
+        anchorKey: "responseHours",
       },
     ],
-    writtenLine: "Wir arbeiten schriftlich.",
+    conditionsNotFor: {
+      text: "Nicht für Onlineshops mit Warenpositionen und Lagerbeständen, Portale und SEO-Garantien",
+      anchorKey: "unsupportedProjects",
+    },
+    conditionsFullLink: "Vollständiger Standard und alle Bedingungen",
     b2bLine:
       "Dieses Angebot gilt für Unternehmer, Selbständige und Freiberufler (§ 14 BGB), nicht für Verbraucher.",
     b2bAnchorKey: "b2b",
     quoteAriaLabel: "Wörtliche Empfehlung",
     statementHeading: "Warum ich das empfehle",
     basisHeading: "Was ich selbst geprüft habe",
+    fitsHeading: "Wem ich das empfehle — und wem nicht",
+    statementDisclosure: (compensation, displayName, slug) =>
+      statementDisclosureLine(facts, compensation, displayName, slug, siteName, "de"),
+    clientStatusLine: (displayName, isClient) =>
+      isClient
+        ? `${displayName} ist Kunde von ${siteName}.`
+        : `${displayName} ist kein Kunde von ${siteName}.`,
     confirms: {
       ariaLabel: "Was diese Empfehlung bedeutet — und was nicht",
       leftTitle: (name) => `Das bestätigt ${name}`,
@@ -789,7 +735,8 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     capacityText: s?.capacity
       ? `Nächste Welle: ${s.capacity.month}, ${s.capacity.free} von ${s.capacity.total} Plätzen frei.`
       : null,
-    validUntilLine: (isoDate) => `Diese Empfehlung gilt bis ${referralLocalDate(isoDate, "de")}.`,
+    validUntilLine: (isoDate) =>
+      `Diese Empfehlung gilt bis ${referralSentenceDate(isoDate, "de")}.`,
     verifyHeading: "Erst selbst prüfen",
     freedomLine: `Sie müssen nichts davon annehmen. Sie dürfen ${siteName} selbst prüfen, andere Angebote vergleichen und jederzeit jemand anderen wählen.`,
     verifyLinks: [
@@ -799,6 +746,8 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     scopeFitsHeading: "Wofür das aus ihrer Sicht passt",
     scopeDoesNotFitHeading: "Wofür das aus ihrer Sicht nicht passt",
     recommenderWebsiteLabel: (name) => `${name}s Website`,
+    recommenderInstagramLabel: (name) => `${name} auf Instagram`,
+    agbBindingNote: "",
     transparency: {
       heading: "Transparenz",
       labels: {
@@ -806,10 +755,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         recommendedBy: "Empfohlen von",
         kind: "Art",
         yourPrice: "Ihr Preis",
-        scope: "Gilt für",
-        excluded: "Nicht Bestandteil der Empfehlung",
         ruleset: "Regelwerk",
-        learns: "Was der Empfehlende erfährt",
       },
       kind: (compensation) => {
         if (compensation === "none") return "ohne Geldvergütung";
@@ -824,10 +770,7 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
             ? `vergütet (${reward})`
             : "vergütet";
       },
-      yourPrice: "Listenpreis unverändert; Vorteil siehe Preisblock",
-      scope: facts.scopeLine ?? "",
-      excluded: facts.exclusionsLine ?? "",
-      learns: facts.recommenderLearnsLine ?? "",
+      yourPrice: "Listenpreis unverändert; Vorteil siehe Bedingungen",
       rulesetLabel: (version) =>
         version ? `AGB, § 3 Abs. 5 und § 12 (Fassung ${version})` : "AGB, § 3 Abs. 5 und § 12",
       partnerbedingungenLabel: "Partnerbedingungen",
@@ -896,12 +839,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
 function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingCopy {
   const s = facts.service;
   const launchDays = s?.launchWorkdays;
-  const sla = s?.availabilityPercent;
-  const downtime = s?.downtimeHours;
-  const priceFix = s?.priceFixMonths;
-  const cancel = s?.cancellationDays;
-  const perMonth = s?.smallChangesPerMonth;
-  const small = s?.smallChangeHours;
   const response = s?.responseHours;
   const handover = s?.handoverHours;
   const responseSentence =
@@ -912,10 +849,6 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     s?.launchRemedy === "continued-performance"
       ? "; при зволіканні з нашого боку працюємо безкоштовно до запуску"
       : "";
-  const activationMoney =
-    s?.activationPrice !== undefined
-      ? referralMoney(s.activationPrice, s.priceCurrency, "uk")
-      : undefined;
 
   return {
     headerCta: "Описати ситуацію",
@@ -943,132 +876,54 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       },
     ],
     ctaPrimary: "Описати ситуацію",
-    ctaPreis: "Ціна й зобов'язання",
-    leistungHeading: "Що Ви отримуєте",
-    // RFC-1273: стиснута пропозиція — три рядки «що / чиє / що далі»
-    // (рішення оператора Q-4); SLA/передача/зміни лишаються
-    // PBP-інтерпольованими, повний перелік — на сторінці стандарту.
-    leistungSummary: [
-      launchDays !== undefined
-        ? `Вебсайт — розроблений і запущений онлайн, запуск за ${launchDays} робочих днів від старту проєкту`
-        : "Вебсайт — розроблений і запущений онлайн",
-      `Домен і хостинг включно${sla !== undefined ? ` (доступність ${sla} % на місяць)` : ""} — вебсайт належить Вам${handover !== undefined ? `, на виході ми передаємо його повністю за ${handover} годин` : ""}`,
-      perMonth !== undefined
-        ? `${perMonth} ${perMonth === 1 ? "незначна зміна" : "незначні зміни"} на місяць і квартальний звіт включно`
-        : "Незначні зміни на місяць і квартальний звіт включно",
-    ],
-    leistungMoreLink: "Переглянути повний стандарт",
-    preisHeading: "Ціна — відкрито",
-    priceCells: priceCellsUk(facts),
-    endpreiseLine: [
-      "Кінцеві ціни, без ПДВ (малий підприємець, § 19 UStG).",
-      priceFix !== undefined ? `Ціна зафіксована на ${priceFix} місяців.` : "",
-      cancel !== undefined ? `Розірвання: за ${cancel} днів до кінця місяця.` : "",
-    ]
-      .filter((p) => p.length > 0)
-      .join(" "),
     vorteilHeading: "Ваша перевага за рекомендацією",
     vorteilText: vorteilUk(facts, siteName),
-    riskLine:
-      activationMoney !== undefined
-        ? `Внесок ${activationMoney} Ви сплачуєте лише після первинної перевірки разом із підтвердженням замовлення. Якщо ми відмовимо Вашому проєкту, внесок не стягуватиметься.`
-        : "Внесок за активацію Ви сплачуєте лише після первинної перевірки разом із підтвердженням замовлення. Якщо ми відмовимо Вашому проєкту, внесок не стягуватиметься.",
-    zusagenHeading: "Зобов'язання",
-    // Infinitive items under the verb frame — same lowercase style as the
-    // right column; none of the items ends in a full stop.
-    zusagenLeftTitle: `${siteName} зобов'язується`,
-    zusagenRightTitle: `${siteName} не обіцяє`,
-    zusagenLeft: [
+    // RFC-1277 (brief v3 2.5): одна секція «Умови коротко» замість п'яти
+    // колишніх блоків — абзац про студію (колишній hero lead) рендерить
+    // компонент; ціни й зобов'язання лишаються PBP/AGB-заякореними.
+    conditionsHeading: "Умови коротко",
+    conditionsPriceLine: conditionsPriceLineUk(facts),
+    conditionsCommitments: [
       {
         text:
           launchDays !== undefined
-            ? `запустити за ${launchDays} робочих днів від старту проєкту${launchDelayClause}`
-            : `запустити від старту проєкту${launchDelayClause}`,
+            ? `запуск за ${launchDays} робочих днів від старту проєкту${launchDelayClause}`
+            : `запуск від старту проєкту${launchDelayClause}`,
         anchorKey: "launchWorkdays",
       },
       {
         text:
-          sla !== undefined
-            ? `забезпечити доступність ${sla} % на місяць; ${downtime !== undefined ? `за простою понад ${downtime} годин` : "за тривалого простою"} наступний місяць безкоштовний`
-            : "забезпечити доступність із компенсацією простою",
-        anchorKey: "availabilitySla",
-      },
-      {
-        text:
-          small !== undefined
-            ? `вносити незначні зміни за ${small} годин`
-            : "вносити незначні зміни в короткий строк",
-        anchorKey: "smallChangeHours",
-      },
-      {
-        text:
-          response !== undefined
-            ? `відповідати за ${response} годин у робочі дні`
-            : "відповідати в робочі дні",
-        anchorKey: "responseHours",
-      },
-      {
-        text:
           handover !== undefined
-            ? `передати все за ${handover} годин після завершення договору`
-            : "передати все після завершення договору",
+            ? `повна передача за ${handover} годин після завершення договору`
+            : "повна передача після завершення договору",
         anchorKey: "handoverHours",
       },
-    ],
-    zusagenRight: [
-      { text: "певну позицію в Google" },
-      { text: "певну кількість звернень чи замовлень" },
-      { text: "продажі чи економічний успіх" },
-      { text: "результат без Вашої участі" },
-      {
-        text: "юридичні консультації, SEO-кампанії, платна реклама",
-        anchorKey: "excludedServices",
-      },
-    ],
-    zusagenFootnote: "Строки діють за умов AGB.",
-    passtNichtHeading: "Коли Warpgogol не підходить",
-    passtNicht: [
-      {
-        text: "для інтернет-магазинів з товарними позиціями та залишками — навіть малих",
-        anchorKey: "unsupportedProjects",
-      },
-      {
-        text: "для порталів із тисячами сторінок чи складними інтеграціями",
-        anchorKey: "unsupportedProjects",
-      },
-      {
-        text: "для агресивних SEO-цілей і гарантій позицій",
-        anchorKey: "excludedServices",
-      },
-      {
-        text: "коли потрібен маркетинговий мотор, а не ґрунтовна вебприсутність",
-        anchorKey: "excludedServices",
-      },
-    ],
-    stepsHeading: "Що буде далі",
-    steps: [
-      { text: "Ви описуєте свою ситуацію письмово." },
       {
         text:
           response !== undefined
-            ? `Ми відповідаємо протягом ${response} годин у робочі дні.`
-            : "Ми відповідаємо в робочі дні.",
-      },
-      {
-        text: "Первинна перевірка: Ви отримуєте результат у текстовій формі; ми відмовляємо, наприклад, неправомірній або недоказовій діяльності.",
-        anchorKey: "unsupportedProjects",
-      },
-      {
-        text: "За позитивного результату: підтвердження замовлення з обсягом, ціною та стартом; лише тоді Ви оплачуєте внесок за активацію.",
+            ? `відповідь за ${response} годин у робочі дні`
+            : "відповідь у робочі дні",
+        anchorKey: "responseHours",
       },
     ],
-    writtenLine: "Ми працюємо письмово.",
+    conditionsNotFor: {
+      text: "Не підходить: інтернет-магазини з товарними позиціями та залишками, портали, SEO-гарантії",
+      anchorKey: "unsupportedProjects",
+    },
+    conditionsFullLink: "Повний стандарт і всі умови",
     b2bLine:
       "Ця пропозиція діє для підприємців, самозайнятих і вільних професій (§ 14 BGB), не для споживачів.",
     b2bAnchorKey: "b2b",
     quoteAriaLabel: "Дослівна рекомендація",
     statementHeading: "Чому я це рекомендую",
     basisHeading: "Що я перевірила особисто",
+    fitsHeading: "Кому я це раджу — і кому ні",
+    statementDisclosure: (compensation, displayName, slug) =>
+      statementDisclosureLine(facts, compensation, displayName, slug, siteName, "uk"),
+    clientStatusLine: (displayName, isClient) =>
+      isClient
+        ? `${displayName} — клієнт ${siteName}.`
+        : `${displayName} не є клієнтом ${siteName}.`,
     confirms: {
       ariaLabel: "Що означає ця рекомендація — і що ні",
       leftTitle: (name) => `Це підтверджує ${name}`,
@@ -1086,7 +941,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     capacityText: s?.capacity
       ? `Наступна хвиля: ${s.capacity.month}, ${s.capacity.free} з ${s.capacity.total} місць вільно.`
       : null,
-    validUntilLine: (isoDate) => `Ця рекомендація діє до ${referralLocalDate(isoDate, "uk")}.`,
+    validUntilLine: (isoDate) => `Ця рекомендація діє до ${referralSentenceDate(isoDate, "uk")}.`,
     verifyHeading: "Спочатку перевірте самі",
     freedomLine: `Ви нічого не мусите приймати. Ви можете самі перевірити ${siteName}, порівняти інші пропозиції та будь-коли обрати когось іншого.`,
     verifyLinks: [
@@ -1096,6 +951,8 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     scopeFitsHeading: "Кому це підходить — на її думку",
     scopeDoesNotFitHeading: "Кому не підходить — на її думку",
     recommenderWebsiteLabel: (name) => `Сайт ${name}`,
+    recommenderInstagramLabel: (name) => `${name} в Instagram`,
+    agbBindingNote: "Обов'язковою є німецька версія AGB.",
     transparency: {
       heading: "Прозорість",
       labels: {
@@ -1103,10 +960,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         recommendedBy: "Рекомендує",
         kind: "Тип",
         yourPrice: "Ваша ціна",
-        scope: "Діє для",
-        excluded: "Не входить у рекомендацію",
         ruleset: "Регламент",
-        learns: "Що дізнається рекомендувач",
       },
       kind: (compensation) => {
         if (compensation === "none") return "без грошової винагороди";
@@ -1121,10 +975,7 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
             ? `з винагородою (${reward})`
             : "з винагородою";
       },
-      yourPrice: "Ціна за прайсом незмінна; перевагу див. у блоці ціни",
-      scope: facts.scopeLine ?? "",
-      excluded: facts.exclusionsLine ?? "",
-      learns: facts.recommenderLearnsLine ?? "",
+      yourPrice: "Ціна за прайсом незмінна; перевагу див. в умовах",
       rulesetLabel: (version) =>
         version ? `AGB, § 3 абз. 5 і § 12 (версія ${version})` : "AGB, § 3 абз. 5 і § 12",
       partnerbedingungenLabel: "Партнерські умови",
@@ -1226,8 +1077,9 @@ export function referralVorteilVisible(
 }
 
 /** The raised verify section renders when at least one verification path
-    exists (program explainer, standard page, consented recommender website,
-    or any registry-resolved verify link). */
+    exists (program explainer, standard page, or any registry-resolved
+    verify link). RFC-1277: the recommender's own links moved into the hero
+    (brief 3.5) — they no longer feed this predicate. */
 export function referralVerifyVisible(
   partner: ReferralPartner,
   copy: ReferralLandingCopy,
@@ -1236,7 +1088,67 @@ export function referralVerifyVisible(
   return (
     links.programHref !== undefined ||
     links.standardHref !== undefined ||
-    (referralNameVisible(partner) && partner.website !== undefined) ||
     copy.verifyLinks.length > 0
+  );
+}
+
+/** RFC-1277: the recommender's voice block — data + recorded consent +
+    confirmation date + active status, AND the operator's display switch.
+    Every gated block reads through this chain so a `display` flag can only
+    hide, never reveal. */
+export function referralStatementVisible(partner: ReferralPartner): boolean {
+  return (
+    partner.status === "active" &&
+    !!partner.statement &&
+    !!partner.statementConsent &&
+    !!partner.statementConfirmedAt &&
+    partner.display?.statement !== false
+  );
+}
+
+/** brief 3.2 — the basis block renders when the statement does AND at
+    least one item exists (a basis fact or the answered isClient status). */
+export function referralBasisVisible(partner: ReferralPartner): boolean {
+  return (
+    referralStatementVisible(partner) &&
+    partner.display?.basis !== false &&
+    ((partner.basis?.length ?? 0) > 0 || partner.isClient !== undefined)
+  );
+}
+
+/** brief 3.3 — her own fit view (scope.fits/doesNotFit). */
+export function referralFitsVisible(partner: ReferralPartner): boolean {
+  return referralStatementVisible(partner) && partner.display?.fits !== false && !!partner.scope;
+}
+
+/** brief 3.4 — the fixed confirms/not-confirms block. */
+export function referralConfirmsVisible(partner: ReferralPartner): boolean {
+  return referralStatementVisible(partner) && partner.display?.confirms !== false;
+}
+
+/** brief 1.2 — the relation phrase under the hero role (voice data — gated
+    on statementConsent like the rest of her answers). */
+export function referralHeroAboutVisible(partner: ReferralPartner): boolean {
+  return (
+    referralNameVisible(partner) &&
+    !!partner.relationToClientWorld &&
+    !!partner.statementConsent &&
+    partner.display?.heroAbout !== false
+  );
+}
+
+/** brief 3.5 — the consented verification links (website/instagram) in the
+    hero. Per-link consent is checked separately at the render site. */
+export function referralLinksVisible(partner: ReferralPartner): boolean {
+  return referralNameVisible(partner) && partner.display?.links !== false;
+}
+
+/** brief 3.5 — the consent-gated portrait. */
+export function referralPhotoVisible(partner: ReferralPartner): boolean {
+  return (
+    referralNameVisible(partner) &&
+    !!partner.photo &&
+    !!partner.photoConsent &&
+    partner.display?.photo !== false
   );
 }
