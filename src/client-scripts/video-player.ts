@@ -14,6 +14,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>Fix plyr import typing — plyr@3.8 d.ts ends in `export = Plyr` (types import as the class) while dist/plyr.mjs is a real ESM namespace with the class on `.default`; cast pins the runtime shape.</item>
   <item>RFC-1175: autoplay capability gate — prefers-reduced-motion / navigator.connection.saveData suppress data-autoplay playback (poster stays; manual play unaffected).</item>
   <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
   <item>RFC-1175 AC-5: plyr.css moved from top-level import into the Plyr branch — keeps the stylesheet lazy so the orchestrator single-chunk import carries no feature-player CSS.</item>
@@ -98,7 +99,13 @@ async function upgrade(video: HTMLVideoElement, options: VideoPlayersOptions = {
     const style = document.createElement("style");
     style.textContent = plyrCss;
     document.head.appendChild(style);
-    const { default: Plyr } = await import("plyr");
+    // plyr@3.8 typings end in `export = Plyr`, so `await import("plyr")` types
+    // as the class itself — but the ESM build (dist/plyr.mjs) really returns a
+    // namespace exposing the class on `.default`. The cast pins the runtime
+    // shape the bundler actually serves.
+    const { default: Plyr } = (await import("plyr")) as unknown as {
+      default: typeof import("plyr");
+    };
     const plyrControls = controlsDisabled
       ? ["mute"]
       : [
