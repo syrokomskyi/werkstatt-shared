@@ -491,7 +491,7 @@ function vorteilUk(facts: ReferralLandingFacts, siteName: string): string | null
   if (benefit.freePeriod) {
     const condition =
       benefit.freePeriodCondition === "active-in-second-month"
-        ? ", якщо Ви залишаєтесь активними на 2-й місяць"
+        ? ", якщо Ви залишаєтесь активними у 2-му місяці"
         : "";
     parts.push(`отримуєте ${benefit.freePeriod} підписки безкоштовно${condition}`);
   }
