@@ -438,6 +438,8 @@ Location: `packages/werkstatt-shared/src/referral/` — exported via `@warpgogol
 
 **DE/UK pair sync:** a copy edit landing in one referral locale implies the parallel minimal edit in the twin — DE is the legally binding version, UK the synced reference translation (`referralLandingCopy` builders). Never leave the pair drifting; flag interpretive choices (e.g. typo corrections) instead of asking or silently diverging.
 
+**UK numeral-case in interpolated copy:** a `за ${n} <noun>` template is unsafe — the noun form depends on the numeral's last digit (24 години vs 25 годин), so a constant suffix silently renders wrong for the site's actual policy values. Prefer `протягом ${n} <genitive plural>` (safe for every value except endings in 1≠11) or `formatDuration`/`formatBusinessDays` with `grammaticalCase` (`@warpgogol/werkstatt-shared/offers/duration`). Two shipped violations ("за 72 годин", "за 24 годин") were caught by grammar audit, not by any validator. The same blind spot applies to **mixed-script tokens** (`SEO-гарантії`) in copy modules — TYPO-LOCALE-01 scans `src/content/**`, not `src/**/copy.ts`; rendered uk strings need the same pure-script discipline by review. Discovered during warpgogol-m000200.
+
 **No-client-storage invariant:** referral attribution carries NO cookies, `localStorage`, `sessionStorage`, or IndexedDB — the chain is `/r/<slug>` → `?ref=<slug>` URL → voluntary form field → server-side slug resolution → `referralPartnerSlug`/`referralPartnerName` on the Lagebild ingress contract. `src/referral/tests/no-cookie-remnants.test.ts` is the enforcement guard; keep the banned-literal list intact.
 
 ## Test coverage
