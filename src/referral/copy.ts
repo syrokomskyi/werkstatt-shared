@@ -2,12 +2,13 @@
 <MODULE_CONTRACT>
 <purpose>
 [referral-brief-v1] Platform-owned locale copy for the referral-partner
-landing page (/r/<slug>), v5 — recommendation-first order: hero with calm
-labelled disclosure (no CTA row), statement/confirms (consent-gated),
-vorteil, raised verify block with the free-choice line and the CTA pair,
-compressed leistung summary, preis, zusagen, passt-nicht, steps, the
-person-first transparency card, and the referral form strings; plus the
-neutral mode-D variant and the visitor auto-reply.
+landing page (/r/<slug>), v7 — recommendation-first order: hero (label,
+name, about line, consented links — no CTA row, no chips, no disclosure
+block), statement/confirms (consent-gated), vorteil, the single conditions
+section, the person-first transparency card, and the referral form strings
+— the § 5a UWG disclosure is the closing footnote under the submit button
+(warpgogol-m000200); plus the neutral mode-D variant and the visitor
+auto-reply.
 The disclosure sentences are legal text — the platform owns the sentence
 structure so the same disclosure shape ships on every site; site-varying
 phrases (reward amount, scope/exclusion lines, AGB anchor map) arrive via
@@ -136,13 +137,6 @@ export function resolveReferralLandingFacts(
   };
 }
 
-/** One hero fact chip — `anchorKey` resolves against `facts.anchors`; absent
-    anchor → the chip renders unlinked. */
-export interface ReferralHeroFact {
-  readonly label: string;
-  readonly anchorKey: ReferralAgbAnchorKey;
-}
-
 /** One left-column commitment row — anchored to the owning AGB section. */
 export interface ReferralCommitmentRow {
   readonly text: string;
@@ -161,41 +155,24 @@ export interface ReferralDisclosureLine {
 
 export interface ReferralTransparencyCopy {
   heading: string;
-  /** RFC-1277: exactly five rows — the scope/excluded/learns rows moved
-      into the conditions section resp. stay on the Datenschutz page
-      (operator decision, brief v3 2.6). */
+  /** warpgogol-m000200: exactly four rows — recommendedBy + yourPrice +
+      ruleset + code (the kind row is gone; the compensation disclosure
+      lives in the closing footnote under the form). */
   labels: {
     code: string;
     recommendedBy: string;
-    kind: string;
     yourPrice: string;
     ruleset: string;
   };
-  /** "vergütet (70 €, nach 60 Tagen aktiver, bezahlter Subscription)" /
-      "ohne Geldvergütung" — resolved per compensation + facts. */
-  kind: (compensation: ReferralCompensation) => string;
   yourPrice: string;
   /** "AGB, § 3 Abs. 5 und § 12 (Fassung 4.2)" — the version arrives from the
       AGB document metadata, never hardcoded. */
   rulesetLabel: (version: string | undefined) => string;
-  partnerbedingungenLabel: string;
   closing: string;
 }
 
 export interface ReferralFormCopy {
   heading: string;
-  /** Legend of the segmented Empfehlung choice — the rail is never a
-      free-text code field (warpgogol-m000193). */
-  refChoiceTitle: string;
-  /** RFC-1273: name-aware "with" label — a consented display name leads
-      ("Mit Empfehlung von {name}"), anonymous falls back to the bare
-      "Mit Empfehlung" (the slug stays the submitted value, not the label). */
-  refWithLabel: (displayName: string | null) => string;
-  /** "With"-card help — sourced benefit facts plus an honest compensation
-      clause, resolved per partner like `disclosure`. */
-  refWithHelp: (compensation: ReferralCompensation) => string;
-  refWithoutLabel: string;
-  refWithoutHelp: string;
   /** Prefix the enhanced client's mailto fallback puts before the code. */
   refPrefix: string;
   /** Visible label of the textarea on the native error re-render. */
@@ -252,14 +229,14 @@ export interface ReferralLandingCopy {
   /** Modes B/C — name-free. */
   h1Anonymous: string;
   lead: string;
-  /** The disclosure line — label + text resolved per compensation and identity. */
+  /** The disclosure line — label + text resolved per compensation and identity.
+      warpgogol-m000200: renders as the closing footnote under the submit
+      button, no longer as the hero block. */
   disclosure: (
     compensation: ReferralCompensation,
     displayName: string | null,
     slug: string,
   ) => ReferralDisclosureLine;
-  heroFacts: readonly ReferralHeroFact[];
-  ctaPrimary: string;
   vorteilHeading: string;
   vorteilText: string | null;
   /** RFC-1277 (brief v3 2.5): the single generic-terms section replacing the
@@ -289,14 +266,6 @@ export interface ReferralLandingCopy {
   /** RFC-1277 (brief v3 3.3): heading of the standalone fits block —
       first-person voice like the statement heading. */
   fitsHeading: string;
-  /** RFC-1277 (brief v3 3.1): the compensation disclosure line rendered
-      directly under her statement — "… erhält 70 € von X, wenn daraus ein
-      Kunde wird (Details oben)". null for compensation "none". */
-  statementDisclosure: (
-    compensation: ReferralCompensation,
-    displayName: string | null,
-    slug: string,
-  ) => string | null;
   /** RFC-1277 (brief v3 3.2): the basis-block client-status line — renders
       for both answers ("… ist (k)ein Kunde von …"), absent data = no line. */
   clientStatusLine: (displayName: string, isClient: boolean) => string;
@@ -315,18 +284,13 @@ export interface ReferralLandingCopy {
   capacityText: string | null;
   /** RFC-1258: expiry line — "Empfehlung gültig bis …". */
   validUntilLine: (isoDate: string) => string;
-  /** RFC-1258: "Erst selbst prüfen" secondary links — labels + registry
-      pageIds; the route handler resolves localized hrefs. RFC-1273: the
-      block is a raised section between vorteil and leistung, carrying the
-      free-choice line and the CTA pair. */
-  verifyHeading: string;
-  /** RFC-1273: explicit free-choice sentence inside the verify section —
-      "Sie müssen nichts davon annehmen …". */
-  freedomLine: string;
-  verifyLinks: readonly { label: string; pageId: string }[];
   /** RFC-1258: headings of the recommender's own fit lists (scope data). */
   scopeFitsHeading: string;
   scopeDoesNotFitHeading: string;
+  /** aria-label of the hero nav wrapping the recommender's consented
+      external links (website/instagram). warpgogol-m000200: own key —
+      the former verify-heading reuse is gone with the verify section. */
+  recommenderLinksLabel: string;
   /** RFC-1258: label of the consent-gated link to the recommender's website. */
   recommenderWebsiteLabel: (displayName: string) => string;
   /** RFC-1277: label of the consent-gated Instagram link (hero). */
@@ -339,8 +303,6 @@ export interface ReferralLandingCopy {
   transparency: ReferralTransparencyCopy;
   form: ReferralFormCopy;
   autoReply: ReferralAutoReplyCopy;
-  programLink: string;
-  standardLink: string;
   neutral: ReferralNeutralCopy;
   retired: ReferralRetiredCopy;
 }
@@ -499,72 +461,6 @@ function conditionsPriceLineUk(facts: ReferralLandingFacts): string {
   return `${price}, без ПДВ (§ 19 UStG).${cancel}`;
 }
 
-/** RFC-1277 (brief v3 3.1): the short disclosure sentence under her
-    statement — one line, same facts as the hero disclosure, plain text
-    (the bold label stays in the hero). null for compensation "none". */
-function statementDisclosureLine(
-  facts: ReferralLandingFacts,
-  compensation: ReferralCompensation,
-  displayName: string | null,
-  slug: string,
-  siteName: string,
-  lang: "de" | "uk",
-): string | null {
-  if (compensation === "none") return null;
-  const who = whoPhrase(displayName, slug, lang, true);
-  const reward = rewardPhrase(facts, compensation);
-  if (compensation === "steward") {
-    return lang === "uk"
-      ? `${who} отримує винагороду від ${siteName} за свою роботу (деталі вище).`
-      : `${who} wird von ${siteName} für ihre Tätigkeit vergütet (Details oben).`;
-  }
-  return lang === "uk"
-    ? `${who} отримає ${reward || "винагороду"} від ${siteName}, якщо Ви станете клієнтом (деталі вище).`
-    : `${who} erhält ${reward || "eine Vergütung"} von ${siteName}, wenn daraus ein Kunde wird (Details oben).`;
-}
-
-/** warpgogol-m000193: "Mit Empfehlung" card help — the same benefit facts the
-    Vorteil card states (already lang-formatted upstream), shortened to a card
-    clause, plus the honest compensation sentence: a "none"-compensated
-    partner reads "unvergütet", never a hidden fee. */
-function refWithHelpDe(facts: ReferralLandingFacts, compensation: ReferralCompensation): string {
-  const benefit = facts.benefit;
-  const parts: string[] = [];
-  if (benefit?.priorityStart) parts.push("Prioritätsstart");
-  if (benefit?.freePeriod) {
-    const cond =
-      benefit.freePeriodCondition === "active-in-second-month" ? " (aktiviert im 2. Monat)" : "";
-    parts.push(`${benefit.freePeriod} Subscription kostenlos${cond}`);
-  }
-  const compensationClause =
-    compensation === "none"
-      ? "Die Empfehlung bleibt unvergütet."
-      : "Ihr Empfehlungsgeber wird vergütet.";
-  return parts.length > 0
-    ? `Ihr Vorteil: ${parts.join(" und ")}. ${compensationClause}`
-    : compensationClause;
-}
-
-function refWithHelpUk(facts: ReferralLandingFacts, compensation: ReferralCompensation): string {
-  const benefit = facts.benefit;
-  const parts: string[] = [];
-  if (benefit?.priorityStart) parts.push("пріоритетний старт");
-  if (benefit?.freePeriod) {
-    const cond =
-      benefit.freePeriodCondition === "active-in-second-month"
-        ? " (активується на 2-й місяць)"
-        : "";
-    parts.push(`${benefit.freePeriod} підписки безкоштовно${cond}`);
-  }
-  const compensationClause =
-    compensation === "none"
-      ? "Рекомендація залишається без винагороди."
-      : "За цю рекомендацію передбачена винагорода.";
-  return parts.length > 0
-    ? `Ваша перевага: ${parts.join(" і ")}. ${compensationClause}`
-    : compensationClause;
-}
-
 function vorteilDe(facts: ReferralLandingFacts, siteName: string): string | null {
   const benefit = facts.benefit;
   if (!benefit || (!benefit.freePeriod && !benefit.priorityStart)) return null;
@@ -638,29 +534,11 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
   return {
     headerCta: "Situation beschreiben",
     heroLabel: "EMPFEHLUNG",
-    h1Named: (name) => `${name} empfiehlt Ihnen ${siteName}.`,
-    h1Anonymous: `Man hat Ihnen ${siteName} empfohlen.`,
+    h1Named: (name) => `${name} empfiehlt Ihnen ${siteName}`,
+    h1Anonymous: `Man hat Ihnen ${siteName} empfohlen`,
     lead: `${siteName} baut Websites für kleine Unternehmen, Handwerksbetriebe und Selbständige: auf Ihrer eigenen Domain, mit schriftlichen Bedingungen und einem festen Ausstieg.`,
     disclosure: (compensation, displayName, slug) =>
       disclosureDe(facts, compensation, displayName, slug, siteName),
-    heroFacts: [
-      { label: "Anfrage unverbindlich", anchorKey: "inquiryNonBinding" },
-      {
-        label:
-          response !== undefined
-            ? `Antwort in ${response} Stunden (Werktage)`
-            : "Antwort an Werktagen",
-        anchorKey: "responseHours",
-      },
-      {
-        label:
-          launchDays !== undefined
-            ? `Launch in ${launchDays} Werktagen ab Projektstart`
-            : "Launch ab Projektstart",
-        anchorKey: "launchWorkdays",
-      },
-    ],
-    ctaPrimary: "Situation beschreiben",
     vorteilHeading: "Ihr Empfehlungsvorteil",
     vorteilText: vorteilDe(facts, siteName),
     // RFC-1277 (brief v3 2.5): the single conditions section — the studio
@@ -705,8 +583,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     statementHeading: "Warum ich das empfehle",
     basisHeading: "Was ich selbst geprüft habe",
     fitsHeading: "Wem ich das empfehle — und wem nicht",
-    statementDisclosure: (compensation, displayName, slug) =>
-      statementDisclosureLine(facts, compensation, displayName, slug, siteName, "de"),
     clientStatusLine: (displayName, isClient) =>
       isClient
         ? `${displayName} ist Kunde von ${siteName}.`
@@ -730,14 +606,9 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       : null,
     validUntilLine: (isoDate) =>
       `Diese Empfehlung gilt bis ${referralSentenceDate(isoDate, "de")}.`,
-    verifyHeading: "Erst selbst prüfen",
-    freedomLine: `Sie müssen nichts davon annehmen. Sie dürfen ${siteName} selbst prüfen, andere Angebote vergleichen und jederzeit jemand anderen wählen.`,
-    verifyLinks: [
-      { label: "Nachweise ansehen", pageId: "nachweise" },
-      { label: "Notausgang ansehen", pageId: "notausgang" },
-    ],
     scopeFitsHeading: "Wofür das aus ihrer Sicht passt",
     scopeDoesNotFitHeading: "Wofür das aus ihrer Sicht nicht passt",
+    recommenderLinksLabel: "Die Empfehlungsgeberin prüfen",
     recommenderWebsiteLabel: (name) => `${name}s Website`,
     recommenderInstagramLabel: (name) => `${name} auf Instagram`,
     agbBindingNote: "",
@@ -746,38 +617,16 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       labels: {
         code: "Empfehlungscode (technisch)",
         recommendedBy: "Empfohlen von",
-        kind: "Art",
         yourPrice: "Ihr Preis",
         ruleset: "Regelwerk",
-      },
-      kind: (compensation) => {
-        if (compensation === "none") return "ohne Geldvergütung";
-        const reward = rewardPhrase(facts, compensation);
-        const days = s?.qualifyingDays;
-        if (compensation === "steward") {
-          return reward ? `vergütet (Tätigkeit, ${reward})` : "vergütet (Tätigkeit)";
-        }
-        return reward && days !== undefined
-          ? `vergütet (${reward}, nach ${days} Tagen aktiver, bezahlter Subscription)`
-          : reward
-            ? `vergütet (${reward})`
-            : "vergütet";
       },
       yourPrice: "Listenpreis unverändert; Vorteil siehe Bedingungen",
       rulesetLabel: (version) =>
         version ? `AGB, § 3 Abs. 5 und § 12 (Fassung ${version})` : "AGB, § 3 Abs. 5 und § 12",
-      partnerbedingungenLabel: "Partnerbedingungen",
       closing: "Die Empfehlung verpflichtet Sie zu nichts.",
     },
     form: {
       heading: "Situation beschreiben",
-      refChoiceTitle: "Empfehlung",
-      refWithLabel: (name) => (name ? `Mit Empfehlung von ${name}` : "Mit Empfehlung"),
-      refWithHelp: (compensation) => refWithHelpDe(facts, compensation),
-      refWithoutLabel: "Ohne Empfehlung",
-      refWithoutHelp: facts.benefit
-        ? "Gleiche Bedingungen und Preise — ohne den Empfehlungsvorteil."
-        : "Gleiche Bedingungen und Preise — es wird kein Code übermittelt.",
       refPrefix: "Empfohlen von: ",
       messageLabel: "Nachricht",
       messageHelp:
@@ -810,8 +659,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
           `${responseSentence} Schauen Sie bei Bedarf im Spam-Ordner nach.`,
         ].join("\n"),
     },
-    programLink: "Wie das Empfehlungsprogramm funktioniert",
-    standardLink: `Den ${siteName}-Standard ansehen`,
     neutral: {
       title: `Ihre Anfrage an ${siteName}`,
       lead:
@@ -846,29 +693,11 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
   return {
     headerCta: "Описати ситуацію",
     heroLabel: "РЕКОМЕНДАЦІЯ",
-    h1Named: (name) => `${name} рекомендує Вам ${siteName}.`,
-    h1Anonymous: `Вам рекомендували ${siteName}.`,
+    h1Named: (name) => `${name} рекомендує Вам ${siteName}`,
+    h1Anonymous: `Вам рекомендували ${siteName}`,
     lead: `${siteName} робить вебсайти для малого бізнесу, ремесла та самозайнятих: на Вашому власному домені, з письмовими умовами та передбаченим виходом.`,
     disclosure: (compensation, displayName, slug) =>
       disclosureUk(facts, compensation, displayName, slug, siteName),
-    heroFacts: [
-      { label: "Запит необов'язковий", anchorKey: "inquiryNonBinding" },
-      {
-        label:
-          response !== undefined
-            ? `Відповідь за ${response} години (робочі дні)`
-            : "Відповідь у робочі дні",
-        anchorKey: "responseHours",
-      },
-      {
-        label:
-          launchDays !== undefined
-            ? `Запуск за ${launchDays} робочих днів від старту проєкту`
-            : "Запуск від старту проєкту",
-        anchorKey: "launchWorkdays",
-      },
-    ],
-    ctaPrimary: "Описати ситуацію",
     vorteilHeading: "Ваша перевага за рекомендацією",
     vorteilText: vorteilUk(facts, siteName),
     // RFC-1277 (brief v3 2.5): одна секція «Умови коротко» замість п'яти
@@ -912,8 +741,6 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
     statementHeading: "Чому я це рекомендую",
     basisHeading: "Що я перевірила особисто",
     fitsHeading: "Кому я це раджу — і кому ні",
-    statementDisclosure: (compensation, displayName, slug) =>
-      statementDisclosureLine(facts, compensation, displayName, slug, siteName, "uk"),
     clientStatusLine: (displayName, isClient) =>
       isClient
         ? `${displayName} — клієнт ${siteName}.`
@@ -936,14 +763,9 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       ? `Наступна хвиля: ${s.capacity.month}, ${s.capacity.free} з ${s.capacity.total} місць вільно.`
       : null,
     validUntilLine: (isoDate) => `Ця рекомендація діє до ${referralSentenceDate(isoDate, "uk")}.`,
-    verifyHeading: "Спочатку перевірте самі",
-    freedomLine: `Ви нічого не мусите приймати. Ви можете самі перевірити ${siteName}, порівняти інші пропозиції та будь-коли обрати когось іншого.`,
-    verifyLinks: [
-      { label: "Переглянути докази", pageId: "nachweise" },
-      { label: "Переглянути Notausgang", pageId: "notausgang" },
-    ],
     scopeFitsHeading: "Кому це підходить — на її думку",
     scopeDoesNotFitHeading: "Кому не підходить — на її думку",
+    recommenderLinksLabel: "Перевірити автора рекомендації",
     recommenderWebsiteLabel: (name) => `Сайт ${name}`,
     recommenderInstagramLabel: (name) => `${name} в Instagram`,
     agbBindingNote: "Обов'язковою є німецька версія AGB.",
@@ -952,38 +774,16 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       labels: {
         code: "Код рекомендації (технічний)",
         recommendedBy: "Рекомендує",
-        kind: "Тип",
         yourPrice: "Ваша ціна",
         ruleset: "Регламент",
-      },
-      kind: (compensation) => {
-        if (compensation === "none") return "без грошової винагороди";
-        const reward = rewardPhrase(facts, compensation);
-        const days = s?.qualifyingDays;
-        if (compensation === "steward") {
-          return reward ? `з винагородою (діяльність, ${reward})` : "з винагородою (діяльність)";
-        }
-        return reward && days !== undefined
-          ? `з винагородою (${reward}, після ${days} днів активної оплаченої підписки)`
-          : reward
-            ? `з винагородою (${reward})`
-            : "з винагородою";
       },
       yourPrice: "Ціна за прайсом незмінна; перевагу див. в умовах",
       rulesetLabel: (version) =>
         version ? `AGB, § 3 абз. 5 і § 12 (версія ${version})` : "AGB, § 3 абз. 5 і § 12",
-      partnerbedingungenLabel: "Партнерські умови",
       closing: "Рекомендація Вас ні до чого не зобов'язує.",
     },
     form: {
       heading: "Опишіть Вашу ситуацію",
-      refChoiceTitle: "Рекомендація",
-      refWithLabel: (name) => (name ? `З рекомендацією від ${name}` : "З рекомендацією"),
-      refWithHelp: (compensation) => refWithHelpUk(facts, compensation),
-      refWithoutLabel: "Без рекомендації",
-      refWithoutHelp: facts.benefit
-        ? "Ті самі умови та ціни — без переваги за рекомендацією."
-        : "Ті самі умови та ціни — код не передається.",
       refPrefix: "Рекомендовано: ",
       messageLabel: "Повідомлення",
       messageHelp:
@@ -1016,8 +816,6 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
           `${responseSentence} За потреби перевірте папку «Спам».`,
         ].join("\n"),
     },
-    programLink: "Як працює програма рекомендацій",
-    standardLink: `Переглянути стандарт ${siteName}`,
     neutral: {
       title: `Ваш запит до ${siteName}`,
       lead:
@@ -1067,21 +865,6 @@ export function referralVorteilVisible(
     copy.vorteilText !== null ||
     copy.capacityText !== null ||
     (partner.status === "active" && partner.validUntil !== undefined)
-  );
-}
-
-/** The raised verify section renders when at least one verification path
-    exists (program explainer, standard page, or any registry-resolved
-    verify link). RFC-1277: the recommender's own links moved into the hero
-    (brief 3.5) — they no longer feed this predicate. */
-export function referralVerifyVisible(
-  copy: ReferralLandingCopy,
-  links: { programHref?: string; standardHref?: string },
-): boolean {
-  return (
-    links.programHref !== undefined ||
-    links.standardHref !== undefined ||
-    copy.verifyLinks.length > 0
   );
 }
 
