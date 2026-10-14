@@ -18,6 +18,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>warpgogol-m000200: slot:* effect targets admit the generic surface pair (glass, shadow) — component-defined slots such as the footer's slot:footer-below pass strict effectAssignmentSchema validation.</item>
+  <item>warpgogol-m000200: shadow effect gains `inset` — an inward cast for bottom-edge surfaces (e.g. slot:footer-below) that must not reserve document space below the element; box-shadow ink overflow never extends the scroll area, so outward bottom casts are unrenderable there.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -75,6 +76,10 @@ export const shadowEffectSchema = z
     blur: z.number().min(0).max(64).optional(),
     /** Box-shadow spread — only meaningful for the surface (section) render. */
     spread: z.number().min(-64).max(64).optional(),
+    /** Paint the cast INSIDE the surface edge instead of outside it — used by
+        bottom-edge casts (e.g. slot:footer-below) that must not reserve page
+        space below the element. Text-shadow strategy ignores inset. */
+    inset: z.boolean().optional(),
     color: effectColorSchema.optional(),
     opacity: z.number().min(0).max(1).optional(),
   })

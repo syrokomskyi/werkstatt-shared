@@ -62,6 +62,16 @@ describe("effectSchema (discriminated union)", () => {
     expect(result.success).toBe(true);
   });
 
+  it("accepts inset shadow effect", () => {
+    const result = effectSchema.safeParse({
+      kind: "shadow",
+      enabled: true,
+      inset: true,
+      offsetY: -24,
+    });
+    expect(result.success).toBe(true);
+  });
+
   it("accepts fade effect", () => {
     const result = effectSchema.safeParse({ kind: "fade", enabled: true });
     expect(result.success).toBe(true);
