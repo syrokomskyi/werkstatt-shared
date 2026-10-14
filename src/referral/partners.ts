@@ -238,14 +238,12 @@ export const ReferralPartnerSchema = z
         requires its data and consent. */
     display: z
       .object({
-        /** brief 3.1 — statement text + signature (gates confirms too). */
+        /** brief 3.1 — statement text + signature (gates basis/fits too). */
         statement: z.boolean().optional(),
         /** brief 3.2 — basis list + the isClient line. */
         basis: z.boolean().optional(),
         /** brief 3.3 — her fits / does-not-fit view (scope). */
         fits: z.boolean().optional(),
-        /** brief 3.4 — the fixed confirms/not-confirms block. */
-        confirms: z.boolean().optional(),
         /** relationToClientWorld line under the hero role. */
         heroAbout: z.boolean().optional(),
         /** website + instagram verification links in the hero. */

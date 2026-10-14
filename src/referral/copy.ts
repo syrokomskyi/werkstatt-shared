@@ -4,11 +4,11 @@
 [referral-brief-v1] Platform-owned locale copy for the referral-partner
 landing page (/r/<slug>), v7 — recommendation-first order: hero (label,
 name, about line, consented links — no CTA row, no chips, no disclosure
-block), statement/confirms (consent-gated), vorteil, the single conditions
-section, the person-first transparency card, and the referral form strings
-— the § 5a UWG disclosure is the closing footnote under the submit button
-(warpgogol-m000200); plus the neutral mode-D variant and the visitor
-auto-reply.
+block), the consent-gated statement/basis/fits voice blocks, vorteil, the
+single conditions section, the person-first transparency card, and the
+referral form strings — the § 5a UWG disclosure is the closing footnote
+under the submit button (warpgogol-m000200); plus the neutral mode-D
+variant and the visitor auto-reply.
 The disclosure sentences are legal text — the platform owns the sentence
 structure so the same disclosure shape ships on every site; site-varying
 phrases (reward amount, scope/exclusion lines, AGB anchor map) arrive via
@@ -30,6 +30,7 @@ legally binding version; UK is a synced reference translation.
   <item>RFC-1273: v5 recommendation-first copy — leistungSummary (≤3 PBP-interpolated lines) + leistungMoreLink replace the 8-item leistung; freedomLine for the raised verify section; refWithLabel becomes (displayName | null) => string; transparency code label demoted to "(technisch)"; secondaryNavLabel removed (verify is a section now). fo-review F6/F7: referralNameVisible/referralVorteilVisible/referralVerifyVisible — the section-visibility predicates shared by the component and the route handler's nav.</item>
   <item>RFC-1277: v6 copy — brief v3 phase 1 removes the five generic sections (leistung/preis/zusagen/passtnicht/steps) in favour of one "conditions" block (studio paragraph + interpolated price line + three AGB-anchored commitments + not-for line + full-standard link); transparency keeps exactly five rows; ctaPreis removed (single CTA); new keys: conditions*, fitsHeading, statementDisclosure, clientStatusLine, recommenderInstagramLabel, agbBindingNote (uk-only non-empty); referralSentenceDate fixes the uk "р.." double period; display-aware voice predicates (statement/basis/fits/confirms/heroAbout/links/photo).</item>
   <item>RFC-1277: review fixes: JSON-twin honors display.*; drop orphaned landing: copy facts; heroAbout requires statement gate; CSS class + dead ghost CTA; v6 wording in validators/docs; REVIEW_TOKENS word boundaries; schema-gate tests (81+73 green)</item>
+  <item>warpgogol-m000200: confirms block retired — the platform-fixed "what this recommendation means / does not mean" check/cross columns, the `confirms` copy object, the `referralConfirmsVisible` predicate, and the `display.confirms` switch are removed; voice order becomes statement → basis → fits → vorteil. Website/instagram labels are short fixed strings; scope headings shortened.</item>
   <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, RFC-1249, warpgogol-m000193</history>
 </CHANGE_SUMMARY>
 */
@@ -269,15 +270,6 @@ export interface ReferralLandingCopy {
   /** RFC-1277 (brief v3 3.2): the basis-block client-status line — renders
       for both answers ("… ist (k)ein Kunde von …"), absent data = no line. */
   clientStatusLine: (displayName: string, isClient: boolean) => string;
-  /** RFC-1258: the bounded-assertion block — what the recommender confirms
-      and does not confirm (platform-fixed sentences). warpgogol-m000200:
-      the per-column name titles are gone — the check/cross list markers
-      carry the contrast, the section aria-label names the frame. */
-  confirms: {
-    ariaLabel: string;
-    left: readonly string[];
-    right: readonly string[];
-  };
   /** RFC-1258: dated wave-capacity line — pre-rendered from the PBP capacity
       fact; null when the fact is absent (the landing then shows the static
       waveSlots range line only). Freshness is the validator's job. */
@@ -589,18 +581,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       isClient
         ? `${displayName} ist Kunde von ${siteName}.`
         : `${displayName} ist kein Kunde von ${siteName}.`,
-    confirms: {
-      ariaLabel: "Was diese Empfehlung bedeutet — und was nicht",
-      left: [
-        "dass sie die schriftlichen Bedingungen des Studios kennt",
-        "dass sie das Angebot für eine Aufgabe wie Ihre für passend hält",
-      ],
-      right: [
-        "bestimmte Ergebnisse, Positionen in der Suche oder Anfragen",
-        "dass Sie etwas unterschreiben oder buchen müssen",
-        "die Richtigkeit jeder einzelnen Angabe des Studios",
-      ],
-    },
     capacityText: s?.capacity
       ? `Nächste Welle: ${s.capacity.month}, ${s.capacity.free} von ${s.capacity.total} Plätzen frei.`
       : null,
@@ -745,18 +725,6 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       isClient
         ? `${displayName} — клієнт ${siteName}.`
         : `${displayName} не є клієнтом ${siteName}.`,
-    confirms: {
-      ariaLabel: "Що означає ця рекомендація — і що ні",
-      left: [
-        "що вона знає письмові умови студії",
-        "що вона вважає пропозицію придатною для завдання, схожого на Ваше",
-      ],
-      right: [
-        "певних результатів, позицій у пошуку чи звернень",
-        "що Ви мусите щось підписати чи забронювати",
-        "правильності кожної окремої умови студії",
-      ],
-    },
     capacityText: s?.capacity
       ? `Наступна хвиля: ${s.capacity.month}, ${s.capacity.free} з ${s.capacity.total} місць вільно.`
       : null,
@@ -893,11 +861,6 @@ export function referralBasisVisible(partner: ReferralPartner): boolean {
 /** brief 3.3 — her own fit view (scope.fits/doesNotFit). */
 export function referralFitsVisible(partner: ReferralPartner): boolean {
   return referralStatementVisible(partner) && partner.display?.fits !== false && !!partner.scope;
-}
-
-/** brief 3.4 — the fixed confirms/not-confirms block. */
-export function referralConfirmsVisible(partner: ReferralPartner): boolean {
-  return referralStatementVisible(partner) && partner.display?.confirms !== false;
 }
 
 /** brief 1.2 — the relation phrase under the hero role (voice data — her

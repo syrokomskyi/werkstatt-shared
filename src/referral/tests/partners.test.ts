@@ -21,7 +21,6 @@ resolveReferralPartner normalization, and the slug-PII guard.
 import { describe, expect, test } from "vitest";
 import {
   referralBasisVisible,
-  referralConfirmsVisible,
   referralFitsVisible,
   referralHeroAboutVisible,
   referralLinksVisible,
@@ -305,7 +304,6 @@ describe("RFC-1277 display switches + publication predicates", () => {
     expect(referralStatementVisible(VOICED)).toBe(true);
     expect(referralBasisVisible(VOICED)).toBe(true);
     expect(referralFitsVisible(VOICED)).toBe(true);
-    expect(referralConfirmsVisible(VOICED)).toBe(true);
     expect(referralHeroAboutVisible(VOICED)).toBe(true);
     expect(referralLinksVisible(VOICED)).toBe(true);
     expect(referralPhotoVisible(VOICED)).toBe(true);
@@ -316,7 +314,6 @@ describe("RFC-1277 display switches + publication predicates", () => {
     expect(referralStatementVisible(p)).toBe(false);
     expect(referralBasisVisible(p)).toBe(false);
     expect(referralFitsVisible(p)).toBe(false);
-    expect(referralConfirmsVisible(p)).toBe(false);
     expect(referralHeroAboutVisible(p)).toBe(false);
     // links/photo carry their own switches — untouched.
     expect(referralLinksVisible(p)).toBe(true);
