@@ -270,11 +270,11 @@ export interface ReferralLandingCopy {
       for both answers ("… ist (k)ein Kunde von …"), absent data = no line. */
   clientStatusLine: (displayName: string, isClient: boolean) => string;
   /** RFC-1258: the bounded-assertion block — what the recommender confirms
-      and does not confirm (platform-fixed sentences, name interpolated). */
+      and does not confirm (platform-fixed sentences). warpgogol-m000200:
+      the per-column name titles are gone — the check/cross list markers
+      carry the contrast, the section aria-label names the frame. */
   confirms: {
     ariaLabel: string;
-    leftTitle: (displayName: string) => string;
-    rightTitle: (displayName: string) => string;
     left: readonly string[];
     right: readonly string[];
   };
@@ -291,10 +291,12 @@ export interface ReferralLandingCopy {
       external links (website/instagram). warpgogol-m000200: own key —
       the former verify-heading reuse is gone with the verify section. */
   recommenderLinksLabel: string;
-  /** RFC-1258: label of the consent-gated link to the recommender's website. */
-  recommenderWebsiteLabel: (displayName: string) => string;
+  /** RFC-1258: label of the consent-gated link to the recommender's website.
+      warpgogol-m000200: plain short label — the nav's aria-label already
+      names the recommender. */
+  recommenderWebsiteLabel: string;
   /** RFC-1277: label of the consent-gated Instagram link (hero). */
-  recommenderInstagramLabel: (displayName: string) => string;
+  recommenderInstagramLabel: string;
   /** RFC-1277 (brief v3 2.8): the note under the transparency card naming
       the binding AGB language version — non-empty only on locales whose
       AGB is a reference translation (UK: "Обов'язковою є німецька версія
@@ -589,8 +591,6 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         : `${displayName} ist kein Kunde von ${siteName}.`,
     confirms: {
       ariaLabel: "Was diese Empfehlung bedeutet — und was nicht",
-      leftTitle: (name) => `Das bestätigt ${name}`,
-      rightTitle: (name) => `Das bestätigt ${name} nicht`,
       left: [
         "dass sie die schriftlichen Bedingungen des Studios kennt",
         "dass sie das Angebot für eine Aufgabe wie Ihre für passend hält",
@@ -606,11 +606,11 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       : null,
     validUntilLine: (isoDate) =>
       `Diese Empfehlung gilt bis ${referralSentenceDate(isoDate, "de")}.`,
-    scopeFitsHeading: "Wofür das aus ihrer Sicht passt",
-    scopeDoesNotFitHeading: "Wofür das aus ihrer Sicht nicht passt",
+    scopeFitsHeading: "Wofür das passt",
+    scopeDoesNotFitHeading: "Wofür das nicht passt",
     recommenderLinksLabel: "Die Empfehlungsgeberin prüfen",
-    recommenderWebsiteLabel: (name) => `${name}s Website`,
-    recommenderInstagramLabel: (name) => `${name} auf Instagram`,
+    recommenderWebsiteLabel: "Website",
+    recommenderInstagramLabel: "Instagram",
     agbBindingNote: "",
     transparency: {
       heading: "Transparenz",
@@ -747,8 +747,6 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
         : `${displayName} не є клієнтом ${siteName}.`,
     confirms: {
       ariaLabel: "Що означає ця рекомендація — і що ні",
-      leftTitle: (name) => `Це підтверджує ${name}`,
-      rightTitle: (name) => `Це НЕ підтверджує ${name}`,
       left: [
         "що вона знає письмові умови студії",
         "що вона вважає пропозицію придатною для завдання, схожого на Ваше",
@@ -763,11 +761,11 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       ? `Наступна хвиля: ${s.capacity.month}, ${s.capacity.free} з ${s.capacity.total} місць вільно.`
       : null,
     validUntilLine: (isoDate) => `Ця рекомендація діє до ${referralSentenceDate(isoDate, "uk")}.`,
-    scopeFitsHeading: "Кому це підходить — на її думку",
-    scopeDoesNotFitHeading: "Кому не підходить — на її думку",
+    scopeFitsHeading: "Кому це підходить",
+    scopeDoesNotFitHeading: "Кому не підходить",
     recommenderLinksLabel: "Перевірити автора рекомендації",
-    recommenderWebsiteLabel: (name) => `Сайт ${name}`,
-    recommenderInstagramLabel: (name) => `${name} в Instagram`,
+    recommenderWebsiteLabel: "Сайт",
+    recommenderInstagramLabel: "Instagram",
     agbBindingNote: "Обов'язковою є німецька версія AGB.",
     transparency: {
       heading: "Прозорість",
@@ -849,7 +847,7 @@ export function referralLandingCopy(
 }
 
 /** RFC-1273: public-name consent gate — every identity-bearing render site
-    (h1, role, statement, confirms titles, website/photo, the transparency
+    (h1, role, statement attribution, website/photo, the transparency
     recommendedBy row, the name-aware form label) reads this predicate. */
 export function referralNameVisible(partner: ReferralPartner): boolean {
   return partner.status === "active" && !!partner.displayName;
