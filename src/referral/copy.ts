@@ -475,11 +475,7 @@ function vorteilDe(facts: ReferralLandingFacts, siteName: string): string | null
         : "";
     parts.push(`erhalten ${benefit.freePeriod} Subscription kostenlos${condition}`);
   }
-  const activation =
-    facts.service?.activationPrice !== undefined
-      ? ` Die Aktivierungsgebühr von ${referralMoney(facts.service.activationPrice, facts.service.priceCurrency, "de")} bleibt unverändert.`
-      : " Die Aktivierungsgebühr bleibt unverändert.";
-  return `Als empfohlener Betrieb ${parts.join(" und ")}.${activation}`;
+  return `Als empfohlener Betrieb ${parts.join(" und ")}.`;
 }
 
 function vorteilUk(facts: ReferralLandingFacts, siteName: string): string | null {
@@ -502,11 +498,7 @@ function vorteilUk(facts: ReferralLandingFacts, siteName: string): string | null
         : "";
     parts.push(`отримуєте ${benefit.freePeriod} підписки безкоштовно${condition}`);
   }
-  const activation =
-    facts.service?.activationPrice !== undefined
-      ? ` Внесок за активацію ${referralMoney(facts.service.activationPrice, facts.service.priceCurrency, "uk")} не змінюється.`
-      : " Внесок за активацію не змінюється.";
-  return `Як рекомендований бізнес Ви ${parts.join(" і ")}.${activation}`;
+  return `Як рекомендований бізнес Ви ${parts.join(" і ")}.`;
 }
 
 function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingCopy {
