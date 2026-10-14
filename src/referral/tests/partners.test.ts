@@ -1,7 +1,7 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-[RFC-1222] Unit tests for the referral-partner contract: v2 schema boundaries
+[RFC-1222] Unit tests for the referral-partner contract: v4 schema boundaries
 (status lifecycle, structured consent union, role, retiredAt), loader
 classification (pending|active|retired, malformed, reserved, duplicate),
 resolveReferralPartner normalization, and the slug-PII guard.
@@ -14,10 +14,21 @@ resolveReferralPartner normalization, and the slug-PII guard.
   <item>RFC-1198: created.</item>
   <item>RFC-1222: rewritten for schema v2 — lifecycle sets, consent union (none|document|channel), active⇒consent and retired⇒retiredAt refinements, slugContainsNameToken; v1 field rejection asserted (forward-only).</item>
   <item>RFC-1258: v3 coverage — statement/basis/scope/validUntil/website/photo/relationToClientWorld consent gates, active⇒validUntil, locale membership; fixtures carry validUntil.</item>
+  <item>RFC-1277: review fixes: JSON-twin honors display.*; drop orphaned landing: copy facts; heroAbout requires statement gate; CSS class + dead ghost CTA; v6 wording in validators/docs; REVIEW_TOKENS word boundaries; schema-gate tests (81+73 green)</item>
 </CHANGE_SUMMARY>
 */
 
 import { describe, expect, test } from "vitest";
+import {
+  referralBasisVisible,
+  referralConfirmsVisible,
+  referralFitsVisible,
+  referralHeroAboutVisible,
+  referralLinksVisible,
+  referralPhotoVisible,
+  referralStatementVisible,
+} from "../copy.ts";
+import { buildReferralPartnerDoc } from "../disclosure-json.ts";
 import {
   loadActiveReferralPartners,
   loadReferralLandingConfig,
@@ -67,7 +78,7 @@ const partnerYaml = (extra = "") => `partners:
     validUntil: "2027-04-01"
 ${extra}`;
 
-describe("ReferralPartnerSchema v2", () => {
+describe("ReferralPartnerSchema v4", () => {
   test("accepts a fully-specified active partner", () => {
     expect(ReferralPartnerSchema.parse(ACTIVE)).toEqual(ACTIVE);
   });
@@ -113,6 +124,29 @@ describe("ReferralPartnerSchema v2", () => {
         ref: "trust/consents/ostpost-photo",
         grantedAt: "2026-10-05",
       },
+    };
+    expect(ReferralPartnerSchema.parse(p)).toEqual(p);
+  });
+
+  test("accepts a v4 partner with isClient, instagram, approval, and display (RFC-1277)", () => {
+    const p = {
+      ...ACTIVE,
+      statement: { de: "Ich empfehle.", uk: "Я рекомендую." },
+      statementConsent: {
+        method: "channel" as const,
+        channel: "email" as const,
+        grantedAt: "2026-10-05",
+      },
+      statementConfirmedAt: "2026-10-05",
+      isClient: false,
+      instagram: "https://www.instagram.com/ostpost/",
+      instagramConsent: {
+        method: "channel" as const,
+        channel: "email" as const,
+        grantedAt: "2026-10-05",
+      },
+      approval: { approvedOn: "2026-10-14", evidence: "mail-2026-10-14" },
+      display: { statement: true, basis: false, fits: true },
     };
     expect(ReferralPartnerSchema.parse(p)).toEqual(p);
   });
@@ -202,11 +236,33 @@ describe("ReferralPartnerSchema v2", () => {
         statementConfirmedAt: "2026-10-01",
       },
     ],
+    [
+      "instagram without instagramConsent (RFC-1277)",
+      { ...ACTIVE, instagram: "https://www.instagram.com/ostpost/" },
+    ],
+    [
+      "instagramConsent without instagram (RFC-1277)",
+      { ...ACTIVE, instagramConsent: ACTIVE.consent },
+    ],
+    [
+      "instagram on pending partner (RFC-1277)",
+      {
+        ...PENDING,
+        instagram: "https://www.instagram.com/ostpost/",
+        instagramConsent: ACTIVE.consent,
+      },
+    ],
+    ["isClient without statement (RFC-1277)", { ...ACTIVE, isClient: false }],
+    [
+      "approval without statement (RFC-1277)",
+      { ...ACTIVE, approval: { approvedOn: "2026-10-14", evidence: "mail-1" } },
+    ],
+    ["display with unknown key (RFC-1277)", { ...ACTIVE, display: { unknown: true } }],
   ])("rejects %s", (_label, partner) => {
     const result = ReferralPartnerSchema.safeParse(partner);
     expect(
       result.success,
-      "v2 schema must reject this shape — check ReferralPartnerSchema superRefine/strict members",
+      "v4 schema must reject this shape — check ReferralPartnerSchema superRefine/strict members",
     ).toBe(false);
   });
 
@@ -219,6 +275,86 @@ describe("ReferralPartnerSchema v2", () => {
     ["reserved", "admin"],
   ])("rejects invalid slug: %s", (_label, slug) => {
     expect(ReferralPartnerSchema.safeParse({ ...ACTIVE, slug }).success).toBe(false);
+  });
+});
+
+describe("RFC-1277 display switches + publication predicates", () => {
+  const VOICED: ReferralPartner = {
+    ...ACTIVE,
+    relationToClientWorld: { de: "Ich begleite Betriebe.", uk: "Супроводжую бізнеси." },
+    statement: { de: "Ich empfehle.", uk: "Я рекомендую." },
+    statementConsent: { method: "channel", channel: "email", grantedAt: "2026-10-05" },
+    statementConfirmedAt: "2026-10-05",
+    basis: [
+      {
+        claim: { de: "AGB gelesen", uk: "Прочитала AGB" },
+        verifiedBy: "recommender",
+        date: "2026-10-03",
+      },
+    ],
+    scope: { fits: [{ de: "Handwerk" }], doesNotFit: [{ de: "Shops" }] },
+    website: "https://example.com",
+    websiteConsent: { method: "channel", channel: "email", grantedAt: "2026-10-05" },
+    instagram: "https://www.instagram.com/ostpost/",
+    instagramConsent: { method: "channel", channel: "email", grantedAt: "2026-10-05" },
+    photo: "/r/assets/ostpost/portrait.jpg",
+    photoConsent: { method: "document", ref: "x", grantedAt: "2026-10-05" },
+  };
+
+  test("all predicates publish when every display flag is absent (default = shown)", () => {
+    expect(referralStatementVisible(VOICED)).toBe(true);
+    expect(referralBasisVisible(VOICED)).toBe(true);
+    expect(referralFitsVisible(VOICED)).toBe(true);
+    expect(referralConfirmsVisible(VOICED)).toBe(true);
+    expect(referralHeroAboutVisible(VOICED)).toBe(true);
+    expect(referralLinksVisible(VOICED)).toBe(true);
+    expect(referralPhotoVisible(VOICED)).toBe(true);
+  });
+
+  test("display.statement:false hides statement AND the blocks that ride its gate", () => {
+    const p = { ...VOICED, display: { statement: false } };
+    expect(referralStatementVisible(p)).toBe(false);
+    expect(referralBasisVisible(p)).toBe(false);
+    expect(referralFitsVisible(p)).toBe(false);
+    expect(referralConfirmsVisible(p)).toBe(false);
+    expect(referralHeroAboutVisible(p)).toBe(false);
+    // links/photo carry their own switches — untouched.
+    expect(referralLinksVisible(p)).toBe(true);
+    expect(referralPhotoVisible(p)).toBe(true);
+  });
+
+  test("per-block switches hide independently without deleting data", () => {
+    const p = { ...VOICED, display: { fits: false, links: false } };
+    expect(referralFitsVisible(p)).toBe(false);
+    expect(referralLinksVisible(p)).toBe(false);
+    expect(referralStatementVisible(p)).toBe(true);
+    expect(referralBasisVisible(p)).toBe(true);
+    expect(p.scope).toBeDefined();
+    expect(p.websiteConsent).toBeDefined();
+  });
+
+  test("a display flag can never reveal — absent data stays hidden", () => {
+    const bare: ReferralPartner = { ...ACTIVE, display: { statement: true, fits: true } };
+    expect(referralStatementVisible(bare)).toBe(false);
+    expect(referralFitsVisible(bare)).toBe(false);
+  });
+
+  test("the /r/<slug>.json twin honors the same display gates", () => {
+    const doc = buildReferralPartnerDoc(VOICED, {});
+    expect(doc).toMatchObject({
+      status: "active",
+      statement: VOICED.statement,
+      basis: VOICED.basis,
+      scope: VOICED.scope,
+    });
+    const hidden = buildReferralPartnerDoc({ ...VOICED, display: { fits: false } }, {});
+    expect(hidden).toMatchObject({ status: "active", statement: VOICED.statement });
+    expect(hidden).not.toHaveProperty("scope");
+    const noStatement = buildReferralPartnerDoc({ ...VOICED, display: { statement: false } }, {});
+    expect(noStatement).not.toHaveProperty("statement");
+    expect(noStatement).not.toHaveProperty("statementConfirmedAt");
+    expect(noStatement).not.toHaveProperty("basis");
+    expect(noStatement).not.toHaveProperty("scope");
   });
 });
 
@@ -313,14 +449,12 @@ describe("loadReferralLandingConfig", () => {
   rewardPhrases:
     referral-fee: { de: "70 €", uk: "70 €" }
   stewardRole: { de: "Markt-Steward" }
-  audiencePhrase: { de: "Firmenwebsites", uk: "вебсайти" }
-  conditionsNote: { de: "(AGB § 3 Abs. 5)" }
+  agbAnchors: { de: { b2b: "sec-1-4" } }
 ${partnerYaml()}`;
     const config = loadReferralLandingConfig({ "partners.yaml": raw });
     expect(config?.stewardRole?.de).toBe("Markt-Steward");
     expect(config?.rewardPhrases?.["referral-fee"]?.uk).toBe("70 €");
-    expect(config?.audiencePhrase?.de).toBe("Firmenwebsites");
-    expect(config?.conditionsNote?.de).toBe("(AGB § 3 Abs. 5)");
+    expect(config?.agbAnchors?.de?.b2b).toBe("sec-1-4");
   });
 
   test("returns null when the block is absent or malformed", () => {

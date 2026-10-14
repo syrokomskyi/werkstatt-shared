@@ -16,12 +16,12 @@ consumers read this module; client-safe constants stay in ./patterns.ts.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1198: created — schema + loader + resolver.</item>
-  <item>RFC-1198 fo-fix: extracted client-safe constants to ./patterns.ts (Zod + RESERVED_REFERRAL_SLUGS leaked into the send-message client chunk).</item>
   <item>RFC-1222: schema v2 — `status` lifecycle replaces `active`, structured `consent` union (none|document|channel) replaces `publicNameConsentRef`, `role` + `retiredAt` added, schema enforces active⇒consent granted and retired⇒retiredAt, slug-PII guard exported; forward-only, no v1 acceptance.</item>
   <item>RFC-1258: schema v3 — `quote`/`quoteConsent` replaced forward-only by `statement`/`statementConsent`/`statementConfirmedAt`; `basis[]` (claim+verifiedBy+date), per-partner `scope`, `validUntil` (required on active), consent-gated `website`/`photo`, `relationToClientWorld`; expiry is data + validator, the lifecycle enum stays closed (DNA-19).</item>
   <item>REVIEW-CODE-2026-10-11-01 fixes: uk phrase-guard patterns + explicit-delimiter uk negation (JS \b is ASCII-only), lang-aware sentence splitting, thousands-separator-safe money parsing, confirms aria-label, photo leading-slash contract, sectionNavItems statement/passtnicht anchors.</item>
   <item>RFC-1277: schema v4 — isClient, instagram/instagramConsent, approval audit record, per-block display switches (hide a block without deleting data or consent); gates mirror the website/photo pattern.</item>
+  <item>RFC-1277: review fixes: JSON-twin honors display.*; drop orphaned landing: copy facts; heroAbout requires statement gate; CSS class + dead ghost CTA; v6 wording in validators/docs; REVIEW_TOKENS word boundaries; schema-gate tests (81+73 green)</item>
+  <history>RFC-1198</history>
 </CHANGE_SUMMARY>
 */
 
@@ -548,30 +548,6 @@ export const ReferralLandingConfigSchema = z
       .optional(),
     /** Role term for the steward disclosure variant (e.g. "Markt-Steward"). */
     stewardRole: LocalizedPhraseSchema.optional(),
-    /** Audience/product clause for the lead sentence (e.g. "Firmenwebsites
-        für Handwerk und lokales Gewerbe"). Absent → generic "Websites". */
-    audiencePhrase: LocalizedPhraseSchema.optional(),
-    /** Legal pointer appended to the referred-customer benefit sentence
-        (e.g. "(AGB § 3 Abs. 5)"). The platform must not hardcode document
-        section numbers — they are site-text decisions. */
-    conditionsNote: LocalizedPhraseSchema.optional(),
-    /** RFC-1222: proof points shown before the CTA (e.g. Eigene Domain /
-        Schriftliche Verantwortung / Betreuter Betrieb / Vorgesehener
-        Ausstieg) — lang → list of authored phrases. */
-    proofs: z.record(LangCodeSchema, z.array(z.string().min(1)).min(1)).optional(),
-    /** RFC-1222: open-price line with `{price:<offering>:<charge>}` markers —
-        amounts always resolve from PBP offerings, never literal digits. */
-    priceLine: LocalizedPhraseSchema.optional(),
-    /** referral-brief-v1: the transparency-card "Gilt für" row — the scope
-        the recommendation covers (e.g. the digital-foundation scope list). */
-    scopeLine: LocalizedPhraseSchema.optional(),
-    /** referral-brief-v1: the transparency-card "Nicht Bestandteil" row —
-        what the recommendation does NOT cover. */
-    exclusionsLine: LocalizedPhraseSchema.optional(),
-    /** RFC-1258: the transparency-card "Was der Empfehlende erfährt" line —
-        what the recommender learns about the client, grounded in AGB
-        § 12 Abs. 3 / Datenschutz § 5.4. Studio-specific process truth. */
-    recommenderLearnsLine: LocalizedPhraseSchema.optional(),
     /** referral-brief-v1: AGB section anchors per language for in-copy
         references — `lang → anchorKey → anchor` (e.g.
         `{ de: { b2b: "sec-1-4" } }`). */
@@ -589,8 +565,8 @@ export const ReferralPartnersFileSchema = z
     /** Optional per-language slug of the site's pricing/scope page — target of
         the landing's "Leistungsumfang prüfen →" link next to the open price. */
     pricingRoutes: z.record(LangCodeSchema, z.string().min(1)).optional(),
-    /** Optional site-authored landing copy facts (reward phrase, steward role
-        term, audience clause, legal pointer, proofs, open-price line). */
+    /** Optional site-authored landing copy facts (reward phrases, steward
+        role term, AGB anchors). */
     landing: ReferralLandingConfigSchema.optional(),
     partners: z.array(ReferralPartnerSchema).default([]),
   })

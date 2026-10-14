@@ -23,12 +23,12 @@ legally binding version; UK is a synced reference translation.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
   <item>RFC-1258: two-voice copy — statement/basis/confirms sections, capacityLine + validUntilLine (dated facts), transparency learns row (site-authored recommenderLearnsLine), verifyLinks (nachweise/notausgang); recommenderLearnsLine fact plumbed through resolveReferralLandingFacts.</item>
   <item>REVIEW-CODE-2026-10-11-01 fixes: uk phrase-guard patterns + explicit-delimiter uk negation (JS \b is ASCII-only), lang-aware sentence splitting, thousands-separator-safe money parsing, confirms aria-label, photo leading-slash contract, sectionNavItems statement/passtnicht anchors.</item>
   <item>RFC-1273: v5 recommendation-first copy — leistungSummary (≤3 PBP-interpolated lines) + leistungMoreLink replace the 8-item leistung; freedomLine for the raised verify section; refWithLabel becomes (displayName | null) => string; transparency code label demoted to "(technisch)"; secondaryNavLabel removed (verify is a section now). fo-review F6/F7: referralNameVisible/referralVorteilVisible/referralVerifyVisible — the section-visibility predicates shared by the component and the route handler's nav.</item>
   <item>RFC-1277: v6 copy — brief v3 phase 1 removes the five generic sections (leistung/preis/zusagen/passtnicht/steps) in favour of one "conditions" block (studio paragraph + interpolated price line + three AGB-anchored commitments + not-for line + full-standard link); transparency keeps exactly five rows; ctaPreis removed (single CTA); new keys: conditions*, fitsHeading, statementDisclosure, clientStatusLine, recommenderInstagramLabel, agbBindingNote (uk-only non-empty); referralSentenceDate fixes the uk "р.." double period; display-aware voice predicates (statement/basis/fits/confirms/heroAbout/links/photo).</item>
-  <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, warpgogol-m000193</history>
+  <item>RFC-1277: review fixes: JSON-twin honors display.*; drop orphaned landing: copy facts; heroAbout requires statement gate; CSS class + dead ghost CTA; v6 wording in validators/docs; REVIEW_TOKENS word boundaries; schema-gate tests (81+73 green)</item>
+  <history>REVIEW-CODE-2026, RFC-1198, RFC-1222, RFC-1249, warpgogol-m000193</history>
 </CHANGE_SUMMARY>
 */
 
@@ -103,11 +103,6 @@ export interface ReferralLandingFacts {
   readonly reward?: { readonly "referral-fee"?: string; readonly steward?: string };
   /** Steward role term (e.g. "Markt-Steward"). Fallback: "Partner". */
   readonly stewardRole?: string;
-  /** Site-authored "Gilt für" line — the scope of the recommendation
-      (e.g. "Digitales Fundament: Website, Domain, Hosting, Betrieb"). */
-  readonly scopeLine?: string;
-  /** Site-authored "Nicht Bestandteil" line — the exclusion list. */
-  readonly exclusionsLine?: string;
   /** Referred-customer benefit from the PBP partner-program policy. */
   readonly benefit?: ReferralBenefitFacts;
   /** PBP-derived service facts (prices, commitments, qualifying period,
@@ -115,10 +110,6 @@ export interface ReferralLandingFacts {
   readonly service?: ReferralServiceFacts;
   /** Site-authored AGB section anchors for this language. */
   readonly anchors?: ReferralAgbAnchors;
-  /** RFC-1258: site-authored "Was der Empfehlende erfährt" line — the
-      disclosure of what the recommender learns about the client, grounded in
-      AGB § 12 Abs. 3 / Datenschutz § 5.4. Studio-specific process truth. */
-  readonly recommenderLearnsLine?: string;
 }
 
 /**
@@ -139,9 +130,6 @@ export function resolveReferralLandingFacts(
   const anchorsRaw = config.agbAnchors?.[lang] ?? config.agbAnchors?.[fallbackLang];
   return {
     stewardRole: pick(config.stewardRole),
-    scopeLine: pick(config.scopeLine),
-    exclusionsLine: pick(config.exclusionsLine),
-    recommenderLearnsLine: pick(config.recommenderLearnsLine),
     ...(referralFee || steward ? { reward: { "referral-fee": referralFee, steward } } : {}),
     ...(anchorsRaw ? { anchors: anchorsRaw as ReferralAgbAnchors } : {}),
   };
@@ -1081,7 +1069,6 @@ export function referralVorteilVisible(
     verify link). RFC-1277: the recommender's own links moved into the hero
     (brief 3.5) — they no longer feed this predicate. */
 export function referralVerifyVisible(
-  partner: ReferralPartner,
   copy: ReferralLandingCopy,
   links: { programHref?: string; standardHref?: string },
 ): boolean {
@@ -1126,13 +1113,14 @@ export function referralConfirmsVisible(partner: ReferralPartner): boolean {
   return referralStatementVisible(partner) && partner.display?.confirms !== false;
 }
 
-/** brief 1.2 — the relation phrase under the hero role (voice data — gated
-    on statementConsent like the rest of her answers). */
+/** brief 1.2 — the relation phrase under the hero role (voice data — her
+    authored words publish only under the full statement bar: data + consent
+    + confirmation + display.statement, plus its own display.heroAbout
+    switch). */
 export function referralHeroAboutVisible(partner: ReferralPartner): boolean {
   return (
-    referralNameVisible(partner) &&
+    referralStatementVisible(partner) &&
     !!partner.relationToClientWorld &&
-    !!partner.statementConsent &&
     partner.display?.heroAbout !== false
   );
 }

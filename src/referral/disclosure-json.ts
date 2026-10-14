@@ -21,10 +21,17 @@ Closed shape: pending and retired partners emit exactly {type, slug, status}
   emitted states ("retired" | "pending") — a paused partner never reaches the
   builder, so the build path returns null instead of minting a paused document.</item>
   <item>RFC-1258: active doc gains statement/statementConfirmedAt/validUntil/basis/scope — absent rather than invented; closed docs stay {type, slug, status}.</item>
+  <item>RFC-1277: review fixes: JSON-twin honors display.*; drop orphaned landing: copy facts; heroAbout requires statement gate; CSS class + dead ghost CTA; v6 wording in validators/docs; REVIEW_TOKENS word boundaries; schema-gate tests (81+73 green)</item>
 </CHANGE_SUMMARY>
 */
 
-import { referralDisclosureKind, type ReferralCompensation } from "./copy.ts";
+import {
+  referralBasisVisible,
+  referralDisclosureKind,
+  referralFitsVisible,
+  referralStatementVisible,
+  type ReferralCompensation,
+} from "./copy.ts";
 import type { ReferralPartner } from "./partners.ts";
 
 /** Program economics resolved from PBP entities — every field is absent
@@ -123,10 +130,17 @@ export function buildReferralPartnerDoc(
     ...(facts.policyEffectiveFrom ? { policyEffectiveFrom: facts.policyEffectiveFrom } : {}),
     contactUrl: `/r/${partner.slug}`,
     // RFC-1258: the recommender's dated voice — absent rather than invented.
-    ...(partner.statement ? { statement: partner.statement } : {}),
-    ...(partner.statementConfirmedAt ? { statementConfirmedAt: partner.statementConfirmedAt } : {}),
+    // RFC-1277: the same publication predicates gate the JSON twin as the
+    // page — a `display` switch hides a block from publication everywhere,
+    // it only never deletes the registry data or consent.
+    ...(referralStatementVisible(partner) && partner.statement
+      ? { statement: partner.statement }
+      : {}),
+    ...(referralStatementVisible(partner) && partner.statementConfirmedAt
+      ? { statementConfirmedAt: partner.statementConfirmedAt }
+      : {}),
     ...(partner.validUntil ? { validUntil: partner.validUntil } : {}),
-    ...(partner.basis?.length ? { basis: partner.basis } : {}),
-    ...(partner.scope ? { scope: partner.scope } : {}),
+    ...(referralBasisVisible(partner) && partner.basis?.length ? { basis: partner.basis } : {}),
+    ...(referralFitsVisible(partner) && partner.scope ? { scope: partner.scope } : {}),
   };
 }
