@@ -8,6 +8,7 @@ brief parsing utilities (RFC-0868).</purpose>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0868: extracted from werkstatt-site/src/onboarding/brief.ts.</item>
+  <item>RFC-1281: intake contract and onboarding.intake.validate</item>
 </CHANGE_SUMMARY>
 */
 
@@ -18,4 +19,5 @@ export {
   parseMarkdownAsYaml,
 } from "./brief.ts";
 export type { Brief } from "./brief.ts";
+export * from "./intake.ts";
 export * from "./yaml.ts";
