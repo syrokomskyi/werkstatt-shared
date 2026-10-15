@@ -28,6 +28,11 @@ closed-set region names, profile shape (regions + document-level script
 policy + breadcrumbsScope), routeProfiles closed-set reference check via
 superRefine, mode default report. Wire shellContract into
 systemManifestSchema and profile into pages[].shell.</item>
+  <item>RFC-1283: step 1 — publication.gate in systemManifestSchema
+
+Per-site PBP publication gate mode (warn | enforce, absent = warn) consumed
+by PUBGATE-01 in pbp.content.validate and PUBGATE-02 in
+dist.content-references.validate.</item>
   <history>ADR-0062, RFC-0303, RFC-0377</history>
 </CHANGE_SUMMARY>
 */
@@ -159,6 +164,22 @@ export const systemManifestSchema = z.object({
       default: z.string().min(1),
       supported: z.record(z.string(), z.any()),
     })
+    .optional(),
+
+  /**
+   * RFC-1283: PBP publication gate mode; absent = "warn".
+   * `enforce` turns references into non-published business-profile entities
+   * into PUBGATE-01 violations (pbp.content.validate) and makes distinctive
+   * draft-entity values in built output fail PUBGATE-02
+   * (dist.content-references.validate); `warn` logs the same findings as
+   * warnings. Register-from-intake writes `enforce` for new sites; legacy
+   * sites stay on `warn` until a cleanup mission.
+   */
+  publication: z
+    .object({
+      gate: z.enum(["warn", "enforce"]),
+    })
+    .strict()
     .optional(),
 
   /**
