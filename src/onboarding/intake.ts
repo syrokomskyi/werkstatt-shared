@@ -13,11 +13,13 @@ export that producers vendor byte-exact
 </non-goals>
 <KEY_DECISIONS>
   <item>pbp[] entities are checked at envelope level only — DNA-103 keeps entity shapes single-sourced in @warpgogol/pbp; AMD-001 §1 places the PBP-level check (INTAKE-03) in the engine, which may depend on both packages.</item>
+  <item>Entity JSON Schemas are injected by the engine (RFC-1301) as $defs of the same export — one file, one contractSnapshot hash.</item>
   <item>Zod is the source of truth (spec D2) — the JSON Schema export producers vendor is derived via z.toJSONSchema, never hand-maintained.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1281: created — envelope Zod model of werkstatt:intake/v1 (envelope, gap, asset) + renderIntakeSchemaExport().</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>
+  <item>RFC-1301: export PBP entity JSON Schemas in werkstatt:intake/v1 (RFC-1301)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -464,18 +466,62 @@ export type IntakeAsset = z.infer<typeof intakeAssetSchema>;
 const INTAKE_EXPORT_ID =
   "https://werkstatt.local/specs/onboarding/v0.1.0/werkstatt-intake.schema.yaml";
 
+/** JSON Schema (draft 2020-12) fragment for one allow-listed PBP entity type. */
+export type IntakePbpEntityJsonSchemas = Partial<
+  Record<(typeof INTAKE_PBP_SCHEMA_ALLOWLIST)[number], Record<string, unknown>>
+>;
+
+/** `$defs` key for a PBP schema id: `pbp/legal-identity@1` → `pbp-legal-identity-1`. */
+export function intakePbpDefKey(schemaId: string): string {
+  return schemaId.replace("/", "-").replace("@", "-");
+}
+
 /**
  * Render the JSON Schema (draft 2020-12) producers vendor byte-exact — the
  * RFC-0336 `#` header is added by the owning command, not here.
+ *
+ * RFC-1301: when `pbpEntitySchemas` is supplied (rendered by the engine from
+ * the canonical @warpgogol/pbp Zod schemas — this package cannot import pbp),
+ * each fragment lands under `$defs/<intakePbpDefKey(id)>` and `pbp.items`
+ * dispatches to it by `schema` const, so the single exported file validates
+ * the full entity shapes and one sha256 (provenance.contractSnapshot) covers
+ * envelope and entities alike.
  */
-export function renderIntakeSchemaExport(): string {
+export function renderIntakeSchemaExport(
+  options: { pbpEntitySchemas?: IntakePbpEntityJsonSchemas } = {},
+): string {
   const jsonSchema = z.toJSONSchema(intakeEnvelopeSchema, {
     target: "draft-2020-12",
     unrepresentable: "any",
-  });
+  }) as Record<string, unknown>;
+  const entities = options.pbpEntitySchemas;
+  if (entities === undefined) {
+    return YAML.stringify({
+      $id: INTAKE_EXPORT_ID,
+      title: "Werkstatt Intake v1 envelope",
+      ...jsonSchema,
+    });
+  }
+  const $defs: Record<string, unknown> = {};
+  const dispatch: Record<string, unknown>[] = [];
+  for (const id of INTAKE_PBP_SCHEMA_ALLOWLIST) {
+    const fragment = entities[id];
+    if (fragment === undefined) {
+      throw new Error(`renderIntakeSchemaExport: missing JSON Schema for allow-listed ${id}`);
+    }
+    $defs[intakePbpDefKey(id)] = fragment;
+    dispatch.push({
+      if: { properties: { schema: { const: id } }, required: ["schema"] },
+      then: { $ref: `#/$defs/${intakePbpDefKey(id)}` },
+    });
+  }
+  const properties = jsonSchema["properties"] as Record<string, Record<string, unknown>>;
+  const pbp = properties["pbp"] as { items: Record<string, unknown> };
+  pbp.items = { ...pbp.items, allOf: dispatch };
   return YAML.stringify({
     $id: INTAKE_EXPORT_ID,
     title: "Werkstatt Intake v1 envelope",
     ...jsonSchema,
+    $defs,
   });
 }
