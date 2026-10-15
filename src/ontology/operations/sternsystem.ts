@@ -183,6 +183,16 @@ export const systemStateSchema = z.looseObject({
     .regex(/^\d{4}$/, "accessPin must be a 4-digit numeric string")
     .nullable()
     .default(null),
+  // RFC-1284: transient suspension of access protection. Present only while
+  // protection is suspended; accessPin keeps the desired value throughout.
+  accessPinSuspended: z
+    .object({
+      at: z.string(), // ISO-8601 suspension timestamp
+      by: z.string(), // invoker, e.g. "leitstand.certify"
+      operationId: z.string().nullable().default(null),
+    })
+    .nullable()
+    .default(null),
   // RFC-0966: Controls PASSPORT-01 warning vs blocking. false during rollout,
   // set to true by sternsystem.passport.generate after first successful generation.
   passportRequired: z.boolean().default(false),
