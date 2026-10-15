@@ -14,6 +14,16 @@ describe("isHtmlRedirectPage", () => {
   it("returns false for normal pages", () => {
     expect(isHtmlRedirectPage("<html><body>Hello</body></html>")).toBe(false);
   });
+
+  // RFC-1285: bundled scripts that read window.location are not redirects —
+  // pins the single-owner predicate against the broad duplicate it replaces.
+  it("returns false for pages whose bundled scripts read window.location", () => {
+    expect(
+      isHtmlRedirectPage(
+        '<main>x</main><script>if (new URL(window.location.href).searchParams.has("print")) {}</script>',
+      ),
+    ).toBe(false);
+  });
 });
 
 describe("isSyntheticPreviewUrl", () => {
