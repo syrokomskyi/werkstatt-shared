@@ -9,14 +9,16 @@ import { test, expect, describe } from "vitest";
 import {
   resolvePriceMarkersForSemantic,
   formatSourcePrice,
-  OFFERING_URI_PREFIX,
   PRICE_MARKER_RE,
   type DerivedPriceEntry,
 } from "../price-marker-resolver.ts";
 import { loadDerivedPrices } from "../../node/semantic/derived-prices-loader.ts";
 
+// RFC-1288: OFFERING_URI_PREFIX is gone — fixtures key by an arbitrary host.
+const TEST_OFFERINGS_PREFIX = "https://test.example/id/offerings/";
+
 const fixturePrices: Record<string, DerivedPriceEntry[]> = {
-  [`${OFFERING_URI_PREFIX}referral-fee`]: [
+  [`${TEST_OFFERINGS_PREFIX}referral-fee`]: [
     {
       chargeRef: "activation",
       targetCurrency: "USD",
@@ -27,7 +29,7 @@ const fixturePrices: Record<string, DerivedPriceEntry[]> = {
       },
     },
   ],
-  [`${OFFERING_URI_PREFIX}pilot-steward`]: [
+  [`${TEST_OFFERINGS_PREFIX}pilot-steward`]: [
     {
       chargeRef: "monthlySubscription",
       targetCurrency: "USD",
@@ -58,28 +60,28 @@ describe("resolvePriceMarkersForSemantic", () => {
     expect(result).toBe("70\u00A0€ і 300\u00A0€");
   });
 
-  test("4. unknown offering ID resolves to 0 € with non-breaking space", () => {
+  test("4. unknown offering ID leaves the marker verbatim (RFC-1288)", () => {
     const text = "{price:unknown-offering:activation}";
     const result = resolvePriceMarkersForSemantic(text, "de", fixturePrices);
-    expect(result).toBe("0\u00A0€");
+    expect(result).toBe(text);
   });
 
-  test("5. unknown chargeRef resolves to 0 € with non-breaking space", () => {
+  test("5. unknown chargeRef leaves the marker verbatim (RFC-1288)", () => {
     const text = "{price:referral-fee:unknown-charge}";
     const result = resolvePriceMarkersForSemantic(text, "de", fixturePrices);
-    expect(result).toBe("0\u00A0€");
+    expect(result).toBe(text);
   });
 
-  test("6. derivedPrices === null resolves all markers to 0 €", () => {
+  test("6. derivedPrices === null leaves all markers verbatim (RFC-1288)", () => {
     const text = "{price:referral-fee:activation}";
     const result = resolvePriceMarkersForSemantic(text, "de", null);
-    expect(result).toBe("0\u00A0€");
+    expect(result).toBe(text);
   });
 
-  test("7. derivedPrices === undefined resolves all markers to 0 €", () => {
+  test("7. derivedPrices === undefined leaves all markers verbatim (RFC-1288)", () => {
     const text = "{price:referral-fee:activation}";
     const result = resolvePriceMarkersForSemantic(text, "de", undefined);
-    expect(result).toBe("0\u00A0€");
+    expect(result).toBe(text);
   });
 
   test("8. empty string is returned unchanged", () => {

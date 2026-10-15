@@ -11,10 +11,13 @@ import {
   type SemanticContentReader,
   type SemanticBuildProfile,
 } from "../build-page.ts";
-import { OFFERING_URI_PREFIX, type DerivedPriceEntry } from "../price-marker-resolver.ts";
+import type { DerivedPriceEntry } from "../price-marker-resolver.ts";
+
+// RFC-1288: OFFERING_URI_PREFIX is gone — fixtures key by an arbitrary host.
+const TEST_OFFERINGS_PREFIX = "https://test.example/id/offerings/";
 
 const fixturePrices: Record<string, DerivedPriceEntry[]> = {
-  [`${OFFERING_URI_PREFIX}referral-fee`]: [
+  [`${TEST_OFFERINGS_PREFIX}referral-fee`]: [
     {
       chargeRef: "activation",
       targetCurrency: "USD",
@@ -96,7 +99,7 @@ describe("buildSemanticPageModelWith with price markers", () => {
     expect(model!.heading).not.toContain("{price:");
   });
 
-  test("14. heading with price marker and null derived prices resolves to 0 € fallback", async () => {
+  test("14. heading with price marker and null derived prices leaves the marker verbatim (RFC-1288)", async () => {
     const reader = createMockReader(
       {
         title: "Test Page",
@@ -125,9 +128,7 @@ describe("buildSemanticPageModelWith with price markers", () => {
     });
 
     expect(model).not.toBeNull();
-    expect(model!.heading).toContain("0");
-    expect(model!.heading).toContain("€");
-    expect(model!.heading).not.toContain("{price:");
+    expect(model!.heading).toBe("Отримайте {price:referral-fee:activation}");
   });
 
   test("15. page without price markers has unchanged model", async () => {

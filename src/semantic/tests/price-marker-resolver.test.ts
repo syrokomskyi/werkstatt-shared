@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  OFFERING_URI_PREFIX,
   PRICE_MARKER_RE,
   formatSourcePrice,
   resolveAmountMarkersForSemantic,
@@ -8,11 +7,10 @@ import {
   type DerivedPriceEntry,
 } from "../price-marker-resolver.ts";
 
-describe("constants", () => {
-  it("OFFERING_URI_PREFIX is warpgogol offerings URL", () => {
-    expect(OFFERING_URI_PREFIX).toBe("https://warpgogol.com/id/offerings/");
-  });
+// RFC-1288: OFFERING_URI_PREFIX is gone — fixtures key by an arbitrary host.
+const TEST_OFFERINGS_PREFIX = "https://test.example/id/offerings/";
 
+describe("constants", () => {
   it("PRICE_MARKER_RE matches price markers", () => {
     const text = "{price:hosting:monthly}";
     PRICE_MARKER_RE.lastIndex = 0;
@@ -37,7 +35,7 @@ describe("formatSourcePrice", () => {
 
 describe("resolvePriceMarkersForSemantic", () => {
   const derivedPrices: Record<string, DerivedPriceEntry[]> = {
-    [`${OFFERING_URI_PREFIX}hosting`]: [
+    [`${TEST_OFFERINGS_PREFIX}hosting`]: [
       {
         chargeRef: "monthly",
         targetCurrency: "USD",
@@ -61,14 +59,13 @@ describe("resolvePriceMarkersForSemantic", () => {
     expect(result).not.toContain("{price:");
   });
 
-  it("returns 0 € for unknown offering", () => {
+  it("leaves the marker verbatim for unknown offering (RFC-1288 — no 0 € fallback)", () => {
     const result = resolvePriceMarkersForSemantic(
       "Price: {price:unknown:charge}",
       "de",
       derivedPrices,
     );
-    expect(result).toContain("0");
-    expect(result).toContain("€");
+    expect(result).toBe("Price: {price:unknown:charge}");
   });
 
   it("returns text unchanged when no markers", () => {

@@ -10,10 +10,26 @@
   <item>RFC-0208: registered extractors for warpgogol-com block types.</item>
   <item>RFC-0372: added video-section, donation-card, credits, passport no-op extractors; people extractor now extracts heading; all extractors return heading (possibly empty) for unified SemanticBlock.</item>
   <item>warpgogol-m000196: added commitment-table, check-questions, verifiable-case extractors for the semantic home sections.</item>
+  <item>RFC-1288: Resolve price markers through one resolver for every projection</item>
 </CHANGE_SUMMARY>
 */
 
 import { BLOCK_EXTRACTORS } from "../block-extraction.ts";
+import { offeringIdFromRef } from "../price-marker-resolver.ts";
+
+// RFC-1288: the {price:chargeRef} shorthand is scoped to blocks that bind an
+// offering via props.offeringRef (ownership-block). Extraction expands it to
+// the canonical {price:<offeringId>:<chargeRef>} form so one resolver serves
+// every projection. The char class excludes ":" so full-form markers pass
+// through untouched; without offeringRef the marker stays verbatim — it does
+// not match PRICE_MARKER_RE, so it bypasses PRICE-RESOLVE-01 and is caught by
+// DIST-LEAK-06 residue scanning downstream.
+const SHORTHAND_PRICE_MARKER_RE = /\{price:([a-zA-Z0-9_.-]+)\}/g;
+
+function expandShorthandPriceMarkers(text: string, offeringId: string | undefined): string {
+  if (!offeringId) return text;
+  return text.replace(SHORTHAND_PRICE_MARKER_RE, `{price:${offeringId}:$1}`);
+}
 
 function safeGet(obj: unknown, path: string): unknown {
   return path.split(".").reduce((acc: unknown, key: string) => {
@@ -121,11 +137,13 @@ BLOCK_EXTRACTORS.register<Record<string, unknown>>({
 BLOCK_EXTRACTORS.register<Record<string, unknown>>({
   blockType: "ownership-block",
   extract(props) {
+    const offeringRef = safeString(safeGet(props, "offeringRef"));
+    const offeringId = offeringRef ? offeringIdFromRef(offeringRef) : undefined;
     const heading = safeString(safeGet(props, "header.heading"));
     const items = safeArray(safeGet(props, "body.items"), (item) => {
       const text = safeString(safeGet(item, "text"));
       if (!text) return undefined;
-      return { title: text };
+      return { title: expandShorthandPriceMarkers(text, offeringId) };
     });
     return { heading, items };
   },
