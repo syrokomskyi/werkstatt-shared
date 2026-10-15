@@ -10,6 +10,7 @@
   <item>RFC-0372: Unified SemanticBlock type replaces SemanticAnswerBlock + SemanticContentBlock; SemanticPageModel.blocks replaces answerBlocks/contentBlocks/bodyText.</item>
   <item>RFC-0912: Added VideoSeoData type and optional SemanticBlock.video field for opted-in content video structured data.</item>
   <item>RFC-1254: drain latent lint debt — dead imports/vars, no-as-any casts, restricted imports</item>
+  <item>RFC-1282: SemanticPageModel.htmlLang — the BCP 47 tag emitted as <html lang> (falls back to the lang segment when unset).</item>
   <history>RFC-0133, RFC-0165, RFC-0328, RFC-0490, RFC-0508</history>
 </CHANGE_SUMMARY>
 */
@@ -331,6 +332,11 @@ export type SemanticPageModel = {
   ogType?: OgType;
   /** RFC-0162: Open Graph locale in `xx_XX` form (from system.md i18n hreflang). */
   ogLocale?: string;
+  /**
+   * RFC-1282: BCP 47 language tag for the `<html lang>` attribute — resolved from
+   * `i18n.supported.<segment>.tag`, falling back to the lang segment when absent.
+   */
+  htmlLang?: string;
   /** RFC-0162: Open Graph alternate locales in `xx_XX` form (other supported languages). */
   ogLocaleAlternates?: string[];
   /* RFC-0167: article metadata — when present, the page emits an Article/BlogPosting node. */
