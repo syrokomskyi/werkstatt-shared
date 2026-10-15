@@ -7,6 +7,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0303 Phase 3: extracted from shared-section-props/index.ts as part of the domain split.</item>
+  <item>RFC-1289</item>
 </CHANGE_SUMMARY>
 */
 
@@ -35,13 +36,29 @@ export const STANDARD_LIST_ITEM_SCHEMA = {
   },
 };
 
+/**
+ * RFC-1289 x-text contract: `body-list` consumers render items through
+ * section-list.astro (or an equivalent resolving loop), which resolves
+ * {price:…} markers — item text is marker-capable. `body-split-list` renders
+ * item text plain and keeps the unannotated STANDARD_LIST_ITEM_SCHEMA.
+ */
+export const MARKER_CAPABLE_LIST_ITEM_SCHEMA = {
+  ...STANDARD_LIST_ITEM_SCHEMA,
+  properties: {
+    ...STANDARD_LIST_ITEM_SCHEMA.properties,
+    text: { type: "string", minLength: 1, "x-text": { markers: ["price"] } },
+  },
+};
+
 export const STANDARD_CARD_SCHEMA = {
   type: "object",
   additionalProperties: false,
   required: ["title"],
   properties: {
     title: { type: "string", minLength: 1 },
-    description: { type: "string" },
+    // RFC-1289: the card-grid body renderer resolves {price:…} markers in
+    // description and badge; title stays plain.
+    description: { type: "string", "x-text": { markers: ["price"] } },
     image: { type: "string" },
     imageAlt: { type: "string" },
     icon: {
@@ -56,7 +73,7 @@ export const STANDARD_CARD_SCHEMA = {
       },
     },
     href: { type: "string" },
-    badge: { type: "string" },
+    badge: { type: "string", "x-text": { markers: ["price"] } },
     number: { type: "string" },
   },
 };

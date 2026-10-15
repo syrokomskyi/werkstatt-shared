@@ -7,6 +7,9 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0303 Phase 3: extracted from shared-section-props/index.ts as part of the domain split.</item>
+  <item>RFC-1289: x-text marker capability — section-header.astro resolves
+{price:…} in heading (string and segment text) and subheading; eyebrow stays
+plain.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -135,8 +138,10 @@ export const SECTION_HEADER_FRAGMENT: JsonSchemaFragment = {
       required: ["heading"],
       properties: {
         heading: {
+          // RFC-1289: section-header.astro resolves {price:…} markers in both
+          // the plain heading string and each tone-segment text.
           oneOf: [
-            { type: "string", minLength: 1 },
+            { type: "string", minLength: 1, "x-text": { markers: ["price"] } },
             {
               type: "array",
               minItems: 1,
@@ -145,7 +150,7 @@ export const SECTION_HEADER_FRAGMENT: JsonSchemaFragment = {
                 additionalProperties: false,
                 required: ["text"],
                 properties: {
-                  text: { type: "string", minLength: 1 },
+                  text: { type: "string", minLength: 1, "x-text": { markers: ["price"] } },
                   tone: { enum: ["default", "primary", "accent", "muted", "inverse"] },
                 },
               },
@@ -153,7 +158,7 @@ export const SECTION_HEADER_FRAGMENT: JsonSchemaFragment = {
           ],
         },
         eyebrow: { type: "string", minLength: 1 },
-        subheading: { type: "string", minLength: 1 },
+        subheading: { type: "string", minLength: 1, "x-text": { markers: ["price"] } },
         align: ALIGN_ENUM,
         level: { enum: [1, 2] },
         hideSectionNumber: { type: "boolean" },

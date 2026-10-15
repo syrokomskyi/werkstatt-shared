@@ -7,11 +7,15 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0303 Phase 3: extracted from shared-section-props/index.ts as part of the domain split.</item>
+  <item>RFC-1289: x-text marker capability — body-list items and paragraphs
+strings resolve {price:…} through their body renderers; body-split-list stays
+plain (section-split-list renders item text without resolution).</item>
 </CHANGE_SUMMARY>
 */
 
 import {
   STANDARD_LIST_ITEM_SCHEMA,
+  MARKER_CAPABLE_LIST_ITEM_SCHEMA,
   STANDARD_CARD_SCHEMA,
   STAT_ITEM_SCHEMA,
   ALIGN_ENUM,
@@ -29,7 +33,7 @@ export const BODY_LIST_FRAGMENT: JsonSchemaFragment = {
       required: ["kind", "items"],
       properties: {
         kind: { const: "list" },
-        items: { type: "array", minItems: 1, items: STANDARD_LIST_ITEM_SCHEMA },
+        items: { type: "array", minItems: 1, items: MARKER_CAPABLE_LIST_ITEM_SCHEMA },
         note: { type: "string" },
         iconColor: ICON_COLOR_ENUM,
         align: ALIGN_ENUM,
@@ -121,7 +125,13 @@ export const BODY_PARAGRAPHS_FRAGMENT: JsonSchemaFragment = {
       required: ["kind", "paragraphs"],
       properties: {
         kind: { const: "paragraphs" },
-        paragraphs: { type: "array", minItems: 1, items: { type: "string", minLength: 1 } },
+        // RFC-1289: section-paragraphs.astro resolves {price:…} markers in each
+        // paragraph string.
+        paragraphs: {
+          type: "array",
+          minItems: 1,
+          items: { type: "string", minLength: 1, "x-text": { markers: ["price"] } },
+        },
         align: ALIGN_ENUM,
       },
     },
