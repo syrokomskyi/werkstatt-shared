@@ -25,6 +25,7 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
   <item>ADR-0091: add externalEditBaselineSha to systemStateSchema — operator-set baseline that grandfathers pre-bordbuch commits in the external-edit guard.</item>
   <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
   <item>RFC-1263</item>
+  <item>RFC-1284: systemStateSchema gains nullable accessPinSuspended {at,by,operationId} — durable crash-safe suspension marker; accessPin stays the desired-state authority</item>
   <history>RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065</history>
 </CHANGE_SUMMARY>
 */
