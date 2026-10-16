@@ -154,13 +154,13 @@ const RE_QUOTES_SINGLE = /[‘’‚‛ʼ]/g;
 const RE_ELLIPSIS = /…/g;
 // U+00A0 nbsp, U+1680 ogham, U+2000-U+200A, U+202F narrow nbsp, U+205F medium math,
 // U+3000 ideographic space.
-const RE_SPACES = /[   -   　]/g;
+const RE_SPACES = /[\u00a0  -\u200a\u202f 　]/g;
 // Zero-width / invisible cruft: U+00AD soft hyphen, U+061C arabic letter mark,
 // U+180E Mongolian vowel sep, U+200B ZWSP, U+200C ZWNJ, U+2060 word joiner,
 // U+2061-U+2064 invisible math ops, U+FEFF BOM/ZWNBSP. NOTE: U+200D (ZWJ) is
 // handled separately to preserve emoji ZWJ sequences. Directional marks
 // (U+200E/U+200F) are intentionally excluded — meaningful for RTL content.
-const RE_ZERO_WIDTH = /[­؜᠎​‌⁠⁡-⁤﻿]/g;
+const RE_ZERO_WIDTH = /[\u00ad\u061c\u180e\u200b\u200c\u2060\u2061-\u2064\ufeff]/g;
 // Standalone ZWJ: only when NOT bridging two emoji components.
 const EMOJI_PART = "[\\p{Extended_Pictographic}\\uFE0F\\u{1F3FB}-\\u{1F3FF}]";
 const RE_STANDALONE_ZWJ = new RegExp(`(?<!${EMOJI_PART})\\u200D|\\u200D(?!${EMOJI_PART})`, "gu");
@@ -184,15 +184,15 @@ function applyCharSignals(input: string, cfg: NormalizeConfig): string {
 // ---------------------------------------------------------------------------
 
 const NAMED_ENTITIES: Record<string, string> = {
-  nbsp: " ",
+  nbsp: "\u00a0",
   ensp: " ",
   emsp: " ",
   emsp13: " ",
   emsp14: " ",
-  numsp: " ",
+  numsp: "\u2007",
   puncsp: " ",
-  thinsp: " ",
-  hairsp: " ",
+  thinsp: "\u2009",
+  hairsp: "\u200a",
   mdash: "—",
   ndash: "–",
   dash: "‐",
@@ -208,9 +208,9 @@ const NAMED_ENTITIES: Record<string, string> = {
   rsquo: "’",
   bdquo: "„",
   sbquo: "‚",
-  shy: "­",
-  zwnj: "‌",
-  zwj: "‍",
+  shy: "\u00ad",
+  zwnj: "\u200c",
+  zwj: "\u200d",
 };
 
 // Every codepoint any char signal can match — gates numeric-entity decoding.
