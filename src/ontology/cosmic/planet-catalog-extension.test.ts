@@ -6,6 +6,10 @@ import YAML from "yaml";
 import { PlanetCatalog } from "./planet-catalog.ts";
 import { MoonCatalog } from "./moon-catalog.ts";
 import { StarCatalog } from "./star-catalog.ts";
+import {
+  KNOWN_CROSS_CATALOG_COLLISIONS,
+  KNOWN_SAME_CATALOG_COLLISIONS,
+} from "./known-collisions.ts";
 
 // RFC-1300 rule 3, ported verbatim: lowercase; k→c, j→i, ae→e, ph→f, y→i;
 // doubled letters collapsed.
@@ -26,6 +30,12 @@ const sources = YAML.parse(readFileSync(join(here, "planet-catalog.sources.yaml"
   names: Record<string, { designation: string; kind: string }>;
 };
 
+const CATALOGS = {
+  StarCatalog,
+  PlanetCatalog,
+  MoonCatalog,
+} as const;
+
 describe("RFC-1300 PlanetCatalog extension", () => {
   test("AC-1: catalog holds at least 239 names", () => {
     expect(PlanetCatalog.length).toBeGreaterThanOrEqual(239);
@@ -36,18 +46,19 @@ describe("RFC-1300 PlanetCatalog extension", () => {
   });
 
   test("AC-3: no exact or normalized collision with Star/Moon catalogs", () => {
-    // Pre-existing collision grandfathered by RFC-1300 (renaming existing
-    // entries is an explicit non-goal): "Atlas" is both a Saturn moon here
-    // and a Pleiades star in StarCatalog since RFC-0025.
-    const grandfathered = new Set(["Atlas"]);
+    // RFC-1308: declared cross-catalog exceptions live in
+    // KNOWN_CROSS_CATALOG_COLLISIONS — the single reviewable surface;
+    // the list ships empty (Atlas resolved via the StarCatalog rename).
+    const declared = new Map(KNOWN_CROSS_CATALOG_COLLISIONS.map((c) => [c.name, c]));
     const others = new Map<string, string>();
     for (const n of [...StarCatalog, ...MoonCatalog]) {
       others.set(normalize(n), n);
     }
     for (const name of PlanetCatalog) {
       const hit = others.get(normalize(name));
-      if (grandfathered.has(name)) {
-        expect(hit, `grandfathered "${name}" no longer collides`).toBe(name);
+      const exception = declared.get(name);
+      if (exception) {
+        expect(hit, `declared "${name}" no longer collides`).toBe(name);
         continue;
       }
       expect(hit, `"${name}" collides with "${hit}"`).toBeUndefined();
@@ -61,6 +72,38 @@ describe("RFC-1300 PlanetCatalog extension", () => {
     for (const name of PlanetCatalog.slice(ORIGINAL_COUNT)) {
       const hit = originalNorm.get(normalize(name));
       expect(hit, `added "${name}" collides with original "${hit}"`).toBeUndefined();
+    }
+  });
+
+  test("RFC-1308: no undeclared same-catalog normalized collision", () => {
+    // Declared exceptions: KNOWN_SAME_CATALOG_COLLISIONS (e.g. the
+    // pre-existing Alfecca/Alphecca pair in StarCatalog, recorded not
+    // renamed). Any NEW same-catalog normalized dup fails here.
+    const declared = new Map(
+      KNOWN_SAME_CATALOG_COLLISIONS.map((c) => [`${c.catalog}::${c.normalized}`, c.names]),
+    );
+    for (const [catalogName, entries] of Object.entries(CATALOGS)) {
+      const seen = new Map<string, string>();
+      for (const name of entries) {
+        const key = normalize(name);
+        const prior = seen.get(key);
+        if (prior === undefined) {
+          seen.set(key, name);
+          continue;
+        }
+        const exception = declared.get(`${catalogName}::${key}`);
+        if (exception) {
+          expect(
+            exception,
+            `declared ${catalogName} exception "${key}" lists different names`,
+          ).toEqual(expect.arrayContaining([prior, name]));
+          continue;
+        }
+        expect(
+          prior,
+          `undeclared normalized collision in ${catalogName}: "${prior}" and "${name}" both normalize to "${key}" — record it in KNOWN_SAME_CATALOG_COLLISIONS with an RFC`,
+        ).toBeUndefined();
+      }
     }
   });
 

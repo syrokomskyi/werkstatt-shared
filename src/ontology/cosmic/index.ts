@@ -35,6 +35,13 @@ export type { PlanetName } from "./planet-catalog.ts";
 export { MoonCatalog, moonNameSchema } from "./moon-catalog.ts";
 export type { MoonName } from "./moon-catalog.ts";
 
+// Declared collision exceptions — the single reviewable list of
+// cross-catalog and same-catalog name collisions (RFC-1308).
+export {
+  KNOWN_CROSS_CATALOG_COLLISIONS,
+  KNOWN_SAME_CATALOG_COLLISIONS,
+} from "./known-collisions.ts";
+
 // ── Cross-catalog union ────────────────────────────────────────────────────
 // CosmicName is the full set of valid cosmicName values across all layers.
 // Use the per-layer schemas (starNameSchema, planetNameSchema, moonNameSchema)
