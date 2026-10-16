@@ -14,6 +14,7 @@
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1305: initial implementation — capDiagnostics (Diagnostic[] path) + capStrings (string-envelope path), both emitting the shared TRUNC-01 marker.</item>
+  <item>RFC-1305 review-r1: opts.total floored at items.length — an under-counted total can never emit more than cap items silently.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -46,7 +47,9 @@ export function capDiagnostics<T extends Diagnostic>(
   ruleId: string,
   opts?: { total?: number; detail?: Record<string, unknown> },
 ): (T | Diagnostic)[] {
-  const total = opts?.total ?? items.length;
+  // Floor at items.length — a caller passing a stale/under-counted opts.total
+  // must never emit more than cap items silently.
+  const total = Math.max(items.length, opts?.total ?? items.length);
   if (total <= cap) return items;
   const info: CapInfo = { cappedRule: ruleId, total, cap, hidden: total - cap };
   return [
@@ -71,7 +74,7 @@ export function capStrings(
   ruleId: string,
   opts?: { total?: number },
 ): string[] {
-  const total = opts?.total ?? items.length;
+  const total = Math.max(items.length, opts?.total ?? items.length);
   if (total <= cap) return items;
   return [
     ...items.slice(0, cap),
