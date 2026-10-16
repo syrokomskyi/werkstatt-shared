@@ -6,7 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1229: step 1 — shellContract schema in systemManifestSchema
 
 Add packages/werkstatt-shared/src/ontology/schemas/system/shell-contract.ts:
@@ -48,7 +47,8 @@ neutral 'Lokaler Kontext' — plus a Quellen block listing each distinct
 sourceUrl with its asOf date. Live warpgogol run: 40 LOCALFACT-01 warnings
 across the 12 city demand records — the owner's research backlog; no excerpts,
 review records, or gate flips authored. Canary C11 active.</item>
-  <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187</history>
+  <item>RFC-1307: step 6 — onboarding docs switched to intake path, manifest comment re-sourced, generated artifacts refreshed</item>
+  <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187, RFC-1209</history>
 </CHANGE_SUMMARY>
 */
 
@@ -145,8 +145,9 @@ export const systemManifestSchema = z.object({
 
     /**
      * Canonical FQDN for this app (without protocol or path).
-     * Mirrors client.domain from onboarding/.input/00-brief.md so that
-     * brief.validate can cross-check the brief against the running app identity.
+     * Seeded by sternsystem.register --intake from the intake's
+     * classification.domain when it is confirmed; left unset while the domain
+     * is an open onboarding gap (RFC-1307).
      */
     domain: z.string().min(1).optional(),
 
