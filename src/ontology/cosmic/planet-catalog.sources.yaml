@@ -1,7 +1,7 @@
 # Source of record for PlanetCatalog names added by RFC-1300.
-# kind is the RFC-1300 editorial group: where SBDB's orbit_class is finer
-# (e.g. "Mars-crossing Asteroid" for 132 Aethra and 9969 Braille), the entry
-# keeps the group the RFC's candidate list assigned it to.
+# kind is the RFC-1300 editorial group: where SBDB's orbit_class is finer than
+# the enum (e.g. "Mars-crossing Asteroid" for 132 Aethra and 9969 Braille),
+# the entry is grouped under main-belt — Mars-crossers are belt asteroids.
 retrievedAt: "2026-10-16"
 source: "https://ssd-api.jpl.nasa.gov/sbdb.api"
 names:
@@ -57,7 +57,7 @@ names:
   Bertha: { designation: "154 Bertha", kind: main-belt }
   Bienor: { designation: "54598 Bienor", kind: centaur }
   Borasisi: { designation: "66652 Borasisi", kind: tno }
-  Braille: { designation: "9969 Braille", kind: near-earth }
+  Braille: { designation: "9969 Braille", kind: main-belt }
   Brunhild: { designation: "123 Brunhild", kind: main-belt }
   Byblis: { designation: "199 Byblis", kind: main-belt }
   Camilla: { designation: "107 Camilla", kind: main-belt }
