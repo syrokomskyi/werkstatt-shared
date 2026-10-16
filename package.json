@@ -472,8 +472,8 @@
       "default": "./src/surface/index.ts"
     },
     "./text-corpus": {
-      "types": "./src/text-corpus/schema.ts",
-      "default": "./src/text-corpus/schema.ts"
+      "types": "./src/text-corpus/index.ts",
+      "default": "./src/text-corpus/index.ts"
     },
     "./surface/io": {
       "types": "./src/surface/io/index.ts",
