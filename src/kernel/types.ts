@@ -11,9 +11,6 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1144: run read-only steps to completion in collect-errors pipeline mode
-
-Scheduler: collectErrors option on executeScheduledSteps — read-only steps (ScheduledStep.readOnly, executor-resolved from mutatesState === false) run after dependency failures with ranAfterFailedDependency annotation; ranTainted set propagates taint transitively so mutating dependents still skip. Executor: mergeCollectErrorsOption OR-merges PipelineDeclaration.collectErrors with the CLI flag at registry resolution; readOnly annotated post-buildSchedule; taint flag copied to step reports; tainted failures marked in pretty output. Contracts: PipelineDeclaration.collectErrors, KernelExecutionReport.ranAfterFailedDependency, pipelines maps store full declarations. Declarations: collectErrors on validation-gate registrations (build.post, check, build.check, compass, integrity.release in the workpiece template; packages.check in checks module). Tests: 10 new cases covering AC-1..AC-6 plus transitive taint.</item>
   <item>RFC-1147: KernelRegisteredCommandInfo.provider narrowed to workspace | site-module and siteName field removed — runtime site enumeration deleted, the canonical site module set (SITE_MODULE_MAP) is the only site provider.</item>
   <item>RFC-1193: bound module hashing to src/os roots with constant fallbacks</item>
   <item>RFC-1231: step 1 — rename supportsAllSites to acceptsAllFlag
@@ -23,7 +20,8 @@ follows the parsed selector. Guard renamed assertAllSitesAllowed ->
 assertAllFlagAccepted, message updated. 417 declaration sites + type
 surfaces (KernelCommandMetadata, ForgeCommandMetadata) in one atomic pass.</item>
   <item>RFC-1260: resolve cache clones via system-config.yaml — package.json gate left the RFC-1025 fallback dead for every real clone; executor-guard mutating commands against mirror targets</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133</history>
+  <item>RFC-1303: review REVIEW-CODE-2026-10-16-02 — scanner moves to werkstatt-shared/node (IO-01), workpieceEnv hashes into envDigest, saveCache tolerates KERNEL-META-01, ENV-INPUT-02 coverage notice, ratchet path-arg tightening</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144</history>
 </CHANGE_SUMMARY>
 */
 
@@ -148,11 +146,13 @@ export interface KernelCommandMetadata {
    */
   envInputs?: string[];
   /**
-   * RFC-1303: workspace-relative directory prefixes (e.g. `".cache/"`) that
-   * this `mutatesState: false` command may legitimately write — cache-class
-   * artifacts only. Every entry must resolve to a git-ignored path
-   * (CACHE-WRITE-01). Writes outside the declared prefixes still throw
-   * KERNEL-META-01.
+   * RFC-1303: directory prefixes (e.g. `".cache/"`) that this
+   * `mutatesState: false` command may legitimately write — cache-class
+   * artifacts only. Prefixes are workspace-relative by default; the
+   * `<app>/` token resolves against the per-site app directory and
+   * absolute paths pass through as-is (executor expands both). Every
+   * entry must resolve to a git-ignored path (CACHE-WRITE-01). Writes
+   * outside the declared prefixes still throw KERNEL-META-01.
    */
   cacheWrites?: string[];
   requiresNetwork?: boolean;
