@@ -42,10 +42,6 @@
       "types": "./src/onboarding/index.ts",
       "default": "./src/onboarding/index.ts"
     },
-    "./onboarding/brief": {
-      "types": "./src/onboarding/brief.ts",
-      "default": "./src/onboarding/brief.ts"
-    },
     "./onboarding/intake": {
       "types": "./src/onboarding/intake.ts",
       "default": "./src/onboarding/intake.ts"
