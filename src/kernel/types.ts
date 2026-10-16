@@ -21,6 +21,7 @@ assertAllFlagAccepted, message updated. 417 declaration sites + type
 surfaces (KernelCommandMetadata, ForgeCommandMetadata) in one atomic pass.</item>
   <item>RFC-1260: resolve cache clones via system-config.yaml — package.json gate left the RFC-1025 fallback dead for every real clone; executor-guard mutating commands against mirror targets</item>
   <item>RFC-1303: review REVIEW-CODE-2026-10-16-02 — scanner moves to werkstatt-shared/node (IO-01), workpieceEnv hashes into envDigest, saveCache tolerates KERNEL-META-01, ENV-INPUT-02 coverage notice, ratchet path-arg tightening</item>
+  <item>RFC-1306: KernelRuntimeContext.invoke — optional host-populated command-execution port (KernelInvokeCommand) for in-process sibling-command delegation; absent under autonomous hosts so commands fail closed.</item>
   <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144</history>
 </CHANGE_SUMMARY>
 */
@@ -406,6 +407,17 @@ export interface KernelRuntimeContext {
    * When absent, `executeRegisteredCommand` lazily opens a layer for that call.
    */
   resultCache?: KernelResultCacheContext;
+  /**
+   * RFC-1306: optional sibling-command invocation port — populated by the
+   * executor on every command execution so commands can delegate by name
+   * (e.g. `rfc.evidence.sync`'s regeneration chain) without importing the
+   * engine. The child goes through `executeKernelCommand` with its own flag
+   * resolution and io adapter; workspaceRoot, the resolved site selector,
+   * dryRun, and outputFormat are inherited from the invoking context.
+   * Absent under autonomous hosts (standalone `forge` CLI) — consumers must
+   * fail closed with a diagnostic, never crash on the absent port.
+   */
+  invoke?: KernelInvokeCommand;
 }
 
 /**
@@ -486,6 +498,17 @@ export interface KernelAppConfig {
   /** Lazy module loaders — enables manifest-driven single-module loading. Functions are defined in kernel.config.ts so import() resolves from the workspace root. */
   moduleLoaders?: Record<string, () => Promise<ModuleExport>>;
 }
+/**
+ * RFC-1306: signature of the executor-populated invocation port on
+ * `KernelRuntimeContext.invoke` — delegates to a sibling command by name,
+ * flags serialized to argv by the executor. Always resolves to a single
+ * report (the port never passes `--all`).
+ */
+export type KernelInvokeCommand = (
+  commandName: string,
+  flags?: Record<string, KernelFlagValue>,
+) => Promise<KernelExecutionReport>;
+
 export interface KernelExecutionReport<TData = unknown> {
   siteName?: string;
   commandName: string;
