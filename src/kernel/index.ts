@@ -11,6 +11,7 @@
 
 Add guardTrackedOverwrite (json/yaml/text lost-key diff, warn-by-default, --strict fail-hard) and loadWorkpieceEnv (dotenv.parse wrapper) to werkstatt-shared kernel subpath; extend KernelRuntimeContext with optional workpieceEnv field.</item>
   <item>RFC-1296</item>
+  <item>RFC-1305: export capDiagnostics/capStrings + TRUNC_RULE_ID — shared truncation-marker primitives</item>
 </CHANGE_SUMMARY>
 */
 
@@ -21,6 +22,7 @@ export * from "./command-source-scan.ts";
 export * from "./fs-atomic.ts";
 export * from "./desired-state.ts";
 export * from "./diagnostic.ts";
+export * from "./diagnostic-cap.ts";
 export * from "./diagnostics-summary.ts";
 export * from "./drift-guard.ts";
 export * from "./workpiece-env.ts";
