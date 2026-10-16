@@ -1,3 +1,21 @@
+/*
+<MODULE_CONTRACT>
+<purpose>
+Collision guards for the Uni UI Ontology cosmic catalogs (DNA-19, DNA-23):
+RFC-1300 PlanetCatalog extension invariants plus RFC-1308 declared-exception
+enforcement — every exact or normalized collision, cross-catalog or
+same-catalog, must be recorded in KNOWN_*_CATALOG_COLLISIONS, and stale
+declarations whose collision was resolved fail closed.
+</purpose>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1308: consume KNOWN_*_CATALOG_COLLISIONS instead of a private
+whitelist; add the undeclared same-catalog normalized-collision check and
+declared-exception liveness check; header scaffolded (file previously carried
+no Compass contract).</item>
+</CHANGE_SUMMARY>
+*/
+
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -49,7 +67,9 @@ describe("RFC-1300 PlanetCatalog extension", () => {
     // RFC-1308: declared cross-catalog exceptions live in
     // KNOWN_CROSS_CATALOG_COLLISIONS — the single reviewable surface;
     // the list ships empty (Atlas resolved via the StarCatalog rename).
-    const declared = new Map(KNOWN_CROSS_CATALOG_COLLISIONS.map((c) => [c.name, c]));
+    const declared = new Map(
+      KNOWN_CROSS_CATALOG_COLLISIONS.flatMap((c) => c.names.map((n) => [n, c] as const)),
+    );
     const others = new Map<string, string>();
     for (const n of [...StarCatalog, ...MoonCatalog]) {
       others.set(normalize(n), n);
@@ -58,7 +78,10 @@ describe("RFC-1300 PlanetCatalog extension", () => {
       const hit = others.get(normalize(name));
       const exception = declared.get(name);
       if (exception) {
-        expect(hit, `declared "${name}" no longer collides`).toBe(name);
+        expect(
+          exception.names,
+          `declared "${name}" no longer collides — remove the stale entry`,
+        ).toContain(hit);
         continue;
       }
       expect(hit, `"${name}" collides with "${hit}"`).toBeUndefined();
@@ -104,6 +127,37 @@ describe("RFC-1300 PlanetCatalog extension", () => {
           `undeclared normalized collision in ${catalogName}: "${prior}" and "${name}" both normalize to "${key}" — record it in KNOWN_SAME_CATALOG_COLLISIONS with an RFC`,
         ).toBeUndefined();
       }
+    }
+  });
+
+  test("RFC-1308: declared collisions stay live — resolved entries must be removed", () => {
+    // A declaration whose collision no longer exists is dead weight: the
+    // module's non-goals forbid recording resolved collisions, so each entry
+    // must still describe a real collision in the current catalogs.
+    for (const c of KNOWN_CROSS_CATALOG_COLLISIONS) {
+      const holders = c.catalogs.filter((cat) =>
+        c.names.some((n) => (CATALOGS[cat] as readonly string[]).includes(n)),
+      );
+      expect(
+        holders.length,
+        `declared cross-catalog collision "${c.names.join("/")}" no longer spans ${c.catalogs.join(" and ")} — remove the resolved entry`,
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        new Set(c.names.map(normalize)).size,
+        `declared cross-catalog entry "${c.names.join("/")}" lists spellings that do not normalize together`,
+      ).toBe(1);
+    }
+    for (const c of KNOWN_SAME_CATALOG_COLLISIONS) {
+      const catalog = CATALOGS[c.catalog] as readonly string[];
+      const present = c.names.filter((n) => catalog.includes(n));
+      expect(
+        present.length,
+        `declared ${c.catalog} collision "${c.names.join("/")}" no longer holds — remove the resolved entry`,
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        present.every((n) => normalize(n) === c.normalized),
+        `declared ${c.catalog} entry expects normalized "${c.normalized}" — got ${present.map(normalize).join(", ")}`,
+      ).toBe(true);
     }
   });
 

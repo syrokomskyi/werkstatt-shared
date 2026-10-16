@@ -16,15 +16,22 @@ them (DNA-19, DNA-23, RFC-1308).
   <item>RFC-1308: module created — KNOWN_CROSS_CATALOG_COLLISIONS (empty after
 the Atlas/Tureis rename) and KNOWN_SAME_CATALOG_COLLISIONS (seeded with the
 pre-existing Alfecca/Alphecca StarCatalog pair, normalized "alfeca").</item>
+  <item>RFC-1308: review REVIEW-CODE-2026-10-16-06 fixes: exception-liveness test, CosmicCatalogName union, names-tuple cross-collisions, known-collisions subpath export, test MODULE_CONTRACT, runbook sync; AC-4 sweep recorded: cosmicName Atlas only in faq-list-section manifest+story (PlanetCatalog layer)</item>
 </CHANGE_SUMMARY>
 */
 
-/** Declared cross-catalog name collisions — one name spanning multiple
- *  catalogs, each with the RFC that grandfathered it. Empty when no
- *  exceptions remain. */
+/** Cosmic catalog identifiers usable in collision declarations — the closed
+ *  set of catalogs an exception may name (DNA-23). */
+export type CosmicCatalogName = "StarCatalog" | "PlanetCatalog" | "MoonCatalog";
+
+/** Declared cross-catalog name collisions — spellings spanning multiple
+ *  catalogs, each with the RFC that grandfathered it. `names` holds a single
+ *  spelling for an exact-name collision, or two or more spellings that
+ *  collide only after RFC-1300 normalization. Empty when no exceptions
+ *  remain. */
 export const KNOWN_CROSS_CATALOG_COLLISIONS: ReadonlyArray<{
-  name: string;
-  catalogs: readonly [string, string, ...string[]];
+  names: readonly [string, ...string[]];
+  catalogs: readonly [CosmicCatalogName, CosmicCatalogName, ...CosmicCatalogName[]];
   reason: string;
   rfc: string;
 }> = [];
@@ -34,7 +41,7 @@ export const KNOWN_CROSS_CATALOG_COLLISIONS: ReadonlyArray<{
  *  ae→e, ph→f, y→i; doubled letters collapsed). */
 export const KNOWN_SAME_CATALOG_COLLISIONS: ReadonlyArray<{
   names: readonly [string, string, ...string[]];
-  catalog: string;
+  catalog: CosmicCatalogName;
   normalized: string;
   reason: string;
   rfc: string;

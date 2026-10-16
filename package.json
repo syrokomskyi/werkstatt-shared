@@ -263,6 +263,10 @@
       "types": "./src/node/access-probe.ts",
       "default": "./src/node/access-probe.ts"
     },
+    "./node/kernel-source-scan": {
+      "types": "./src/node/kernel-source-scan.ts",
+      "default": "./src/node/kernel-source-scan.ts"
+    },
     "./knowledge": {
       "types": "./src/knowledge/index.ts",
       "default": "./src/knowledge/index.ts"
@@ -574,6 +578,10 @@
     "./ontology/cosmic/index": {
       "types": "./src/ontology/cosmic/index.ts",
       "default": "./src/ontology/cosmic/index.ts"
+    },
+    "./ontology/cosmic/known-collisions": {
+      "types": "./src/ontology/cosmic/known-collisions.ts",
+      "default": "./src/ontology/cosmic/known-collisions.ts"
     },
     "./ontology/cosmic/moon-catalog": {
       "types": "./src/ontology/cosmic/moon-catalog.ts",
