@@ -52,6 +52,16 @@ describe("RFC-1300 PlanetCatalog extension", () => {
       }
       expect(hit, `"${name}" collides with "${hit}"`).toBeUndefined();
     }
+    // Rule 3 also forbids collisions inside PlanetCatalog: added names vs the
+    // original entries (same-catalog duplicates are covered by AC-2).
+    const originalNorm = new Map<string, string>();
+    for (const n of PlanetCatalog.slice(0, ORIGINAL_COUNT)) {
+      originalNorm.set(normalize(n), n);
+    }
+    for (const name of PlanetCatalog.slice(ORIGINAL_COUNT)) {
+      const hit = originalNorm.get(normalize(name));
+      expect(hit, `added "${name}" collides with original "${hit}"`).toBeUndefined();
+    }
   });
 
   test("AC-4: every added name has a sources entry; every sources entry is in the catalog", () => {

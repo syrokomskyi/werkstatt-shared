@@ -1,4 +1,7 @@
 # Source of record for PlanetCatalog names added by RFC-1300.
+# kind is the RFC-1300 editorial group: where SBDB's orbit_class is finer
+# (e.g. "Mars-crossing Asteroid" for 132 Aethra and 9969 Braille), the entry
+# keeps the group the RFC's candidate list assigned it to.
 retrievedAt: "2026-10-16"
 source: "https://ssd-api.jpl.nasa.gov/sbdb.api"
 names:

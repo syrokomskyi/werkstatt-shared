@@ -1,14 +1,16 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-Closed catalog of IAU-approved moon and dwarf-planet names for the Uni UI Ontology
-cosmic overlay. Each entry is a valid cosmicName for manifests with layer="section"
-(DNA-23, RFC-0025). "Planet" in this context denotes the section archetype — bodies
-that orbit a star (page) just as sections orbit a page.
+Closed catalog of IAU-approved names for the Uni UI Ontology cosmic overlay.
+Each entry is a valid cosmicName for manifests with layer="section"
+(DNA-23, RFC-0025). "Planet" in this context denotes the section archetype —
+bodies that orbit a star (page) just as sections orbit a page.
 
 Catalog scope: inner/classical moons of Jupiter and Saturn, Mars moons,
-and IAU-recognized dwarf planets. The outer-system moons (Uranus, Neptune, Pluto)
-are in MoonCatalog (component archetypes).
+IAU-recognized dwarf planets, and — since RFC-1300 — numbered main-belt
+asteroids, mission-visited near-Earth bodies, Jupiter trojans, centaurs,
+trans-Neptunian objects, and their named satellites. The outer-system moons
+(Uranus, Neptune, Pluto) are in MoonCatalog (component archetypes).
 </purpose>
 <non-goals>
   <item>Do not add entries that are not IAU-approved names.</item>
@@ -24,6 +26,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1300: extend PlanetCatalog with SBDB-verified IAU names</item>
+  <item>RFC-1300: review findings — contract purpose, kind-label note, same-catalog collision check</item>
 </CHANGE_SUMMARY>
 */
 
