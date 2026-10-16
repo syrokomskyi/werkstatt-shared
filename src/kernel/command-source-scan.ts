@@ -15,6 +15,7 @@
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1304: initial implementation — maskSource lifted from checks/commands-generate.ts and extended with template-depth tracking; new findDefinitionAnchors (satisfies form), fileHasCommandSignal, scanForbiddenCodepoints; NON_COMMAND_ALLOWLIST moved here for consumer parity.</item>
+  <item>RFC-1304 review r1: positional signal pairing (unpairedCommandSignals) — an anchor consumes the annotation/shaped signal at its index and the satisfies tail after its literal end, so hybrid `: T = {…} satisfies KCD` counts once while literal-less `factory() satisfies KCD` stays suspect; CMDGEN_IGNORE_RE is line-anchored and tested against the keepComments mask so pragma text inside string literals cannot suppress; definition-field probe requires field position (prev char `{`/`,`) so ternary branches do not shape a literal.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -145,15 +146,16 @@ export function scanForbiddenCodepoints(source: string): ForbiddenCodepointHit[]
   const hits: ForbiddenCodepointHit[] = [];
   let line = 1;
   for (let i = 0; i < source.length; i++) {
+    const offset = i;
     const cp = source.codePointAt(i)!;
     if (cp > 0xffff) i++; // astral codepoints occupy a surrogate pair
     if (cp === 0x0a) {
       line++;
       continue;
     }
-    if (cp === 0xfeff && i === 0) continue;
+    if (cp === 0xfeff && offset === 0) continue;
     if (FORBIDDEN_SET.has(cp)) {
-      hits.push({ offset: i, codepoint: cp, name: codepointName(cp), line });
+      hits.push({ offset, codepoint: cp, name: codepointName(cp), line });
     }
   }
   return hits;
@@ -169,8 +171,13 @@ export function scanForbiddenCodepoints(source: string): ForbiddenCodepointHit[]
  * template instead of terminating the outer one (RFC-1304 — the desync that
  * silently dropped definitions). `${` and its closing `}` are masked as
  * template syntax; the expression inside is masked as ordinary code content.
+ *
+ * `opts.keepComments` leaves `//`/`/*` comment text visible (strings and
+ * templates still mask) — for pragma checks that must see real comments but
+ * never tokens carried inside string literals.
  */
-export function maskSource(src: string): string {
+export function maskSource(src: string, opts?: { keepComments?: boolean }): string {
+  const keepComments = opts?.keepComments === true;
   let out = "";
   let i = 0;
   const n = src.length;
@@ -237,17 +244,17 @@ export function maskSource(src: string): string {
     // code mode
     if (c === "/" && src[i + 1] === "/") {
       while (i < n && src[i] !== "\n") {
-        out += " ";
+        out += keepComments ? src[i] : " ";
         i++;
       }
     } else if (c === "/" && src[i + 1] === "*") {
-      out += "  ";
+      out += keepComments ? "/*" : "  ";
       i += 2;
       while (i < n && !(src[i] === "*" && src[i + 1] === "/")) {
-        out += src[i] === "\n" ? "\n" : " ";
+        out += src[i] === "\n" || keepComments ? src[i] : " ";
         i++;
       }
-      out += "  ";
+      out += keepComments && i < n ? "*/" : "  ";
       i += 2;
     } else if (
       c === "/" &&
@@ -376,17 +383,22 @@ export interface DefinitionAnchor {
 
 const ANNOTATED_DEF_RE =
   /export\s+const\s+([A-Za-z_$][\w$]*)\s*:\s*KernelCommandDefinition\s*=\s*\{/g;
-const SATISFIES_HEAD_RE = /export\s+const\s+([A-Za-z_$][\w$]*)\s*=\s*\{/g;
-const SATISFIES_TAIL_RE = /\s*satisfies\s+KernelCommandDefinition\b/y;
+// Satisfies form: `export const x(: OtherType)? = { … } satisfies KernelCommandDefinition`
+// — the literal precedes the annotation, so the anchor is proven by the tail.
+const SATISFIES_HEAD_RE = /export\s+const\s+([A-Za-z_$][\w$]*)\s*(?::[^{=]+)?=\s*\{/g;
+const SATISFIES_TAIL_RE = /\s*satisfies\s+KernelCommandDefinition\b(?![\w$.])/y;
 
 /**
  * Find `KernelCommandDefinition` object literals in masked source. Accepts the
  * colon-annotated form and the postfix `satisfies` form (RFC-1304). Anchors are
- * sorted by source position.
+ * sorted by source position. Convention-bound to `export const` — `export let`
+ * and `export { x }` barreled forms are not anchors (the corpus is uniform).
  */
 export function findDefinitionAnchors(masked: string): DefinitionAnchor[] {
   const anchors: DefinitionAnchor[] = [];
+  const annotatedIdx = new Set<number>();
   for (const m of masked.matchAll(ANNOTATED_DEF_RE)) {
+    annotatedIdx.add(m.index);
     anchors.push({
       exportName: m[1],
       index: m.index,
@@ -395,6 +407,7 @@ export function findDefinitionAnchors(masked: string): DefinitionAnchor[] {
     });
   }
   for (const m of masked.matchAll(SATISFIES_HEAD_RE)) {
+    if (annotatedIdx.has(m.index)) continue; // colon-annotated def already anchored
     const openIdx = m.index + m[0].length - 1;
     const end = literalEnd(masked, openIdx);
     if (end === -1) continue; // unbalanced — the suspect-file signal reports it
@@ -407,17 +420,29 @@ export function findDefinitionAnchors(masked: string): DefinitionAnchor[] {
   return anchors.sort((a, b) => a.index - b.index);
 }
 
-// Annotation-position tokens: the file carries a KernelCommandDefinition
-// annotation the anchor pass may have failed to pair with its literal. The `=`
-// requirement excludes type usages like `KernelCommandDefinition[]` arrays.
-const ANNOTATION_SIGNAL_RE = /export\s+const\s+[A-Za-z_$][\w$]*\s*:\s*KernelCommandDefinition\s*=/;
-const SATISFIES_SIGNAL_RE = /\}\s*satisfies\s+KernelCommandDefinition\b/;
+// Annotation-position tokens: an `export const x: KernelCommandDefinition =`
+// (any initializer) — the `=` requirement excludes type usages like
+// `KernelCommandDefinition[]` arrays. Counted per occurrence so a file can
+// pair each token with its anchor (REVIEW-CODE-2026-10-16-03 finding 01).
+const ANNOTATION_SIGNAL_RE = /export\s+const\s+[A-Za-z_$][\w$]*\s*:\s*KernelCommandDefinition\s*=/g;
+// Postfix `satisfies` tokens anywhere — covers `= f() satisfies KCD` factory
+// forms that carry no object literal at all.
+const SATISFIES_SIGNAL_RE = /\bsatisfies\s+KernelCommandDefinition\b(?![\w$.])/g;
 // Top-level object literals — `export const x = {`, `export const x: T = {`,
 // `export default {`. A depth-1 `execute:`/`command:` field makes the literal
 // definition-shaped; deeper fields (pipeline step `command:` props, interface
 // members) do not count.
 const TOP_LITERAL_HEAD_RE =
   /export\s+(?:const\s+[A-Za-z_$][\w$]*\s*(?::[^={]*)?=\s*|default\s*)\{/g;
+
+/** Last significant (non-space) char before `idx`, or "" at file start. */
+function prevSigChar(masked: string, idx: number): string {
+  for (let j = idx - 1; j >= 0; j--) {
+    const ch = masked[j];
+    if (ch !== " " && ch !== "\n" && ch !== "\t" && ch !== "\r") return ch;
+  }
+  return "";
+}
 
 function literalHasDefinitionField(masked: string, openIdx: number): boolean {
   let depth = 1;
@@ -430,8 +455,13 @@ function literalHasDefinitionField(masked: string, openIdx: number): boolean {
     } else if (depth === 1) {
       const fm = /^[A-Za-z_$][\w$]*\s*:/.exec(masked.slice(i, i + 64));
       if (fm) {
-        const field = /^[A-Za-z_$][\w$]*/.exec(fm[0])![0];
-        if (field === "execute" || field === "command") return true;
+        // Field names must sit in field position — after `{` or `,`. A `?`/`:`
+        // predecessor means a ternary branch or label, not a property.
+        const prev = prevSigChar(masked, i);
+        if (prev === "{" || prev === ",") {
+          const field = /^[A-Za-z_$][\w$]*/.exec(fm[0])![0];
+          if (field === "execute" || field === "command") return true;
+        }
         i += fm[0].length - 1;
       }
     }
@@ -439,32 +469,96 @@ function literalHasDefinitionField(masked: string, openIdx: number): boolean {
   return false;
 }
 
+export interface CommandSignalReport {
+  /** Definition evidence that did not resolve to an extracted anchor. */
+  unpaired: number;
+  /** Breakdown of the unpaired evidence, for diagnostic detail. */
+  unpairedAnnotated: number;
+  unpairedSatisfies: number;
+  unpairedShaped: number;
+  /** Offset of the first unpaired signal, or -1 when fully paired. */
+  firstOffset: number;
+}
+
 /**
- * Heuristic probe for the suspect-file gate (RFC-1304 CMDGEN-04): does the
- * masked source look like it carries a command definition? True when the file
- * contains an annotation-position KernelCommandDefinition token or a top-level
- * object literal with a depth-1 `execute`/`command` field. Consumers compare
- * this against `findDefinitionAnchors(masked).length === 0` — signal present
- * but nothing extracted means the masker failed on this file.
+ * Pair definition-shaped evidence against extracted anchors (RFC-1304
+ * CMDGEN-04). Pairing is positional: an anchor consumes the annotation or
+ * shaped-literal signal at its own `index` and the `satisfies` token directly
+ * following its literal's end — so a hybrid `: T = {…} satisfies KCD` def
+ * counts once, while `export const x = factory() satisfies KCD` (no literal at
+ * all) stays unpaired and suspect.
+ */
+export function unpairedCommandSignals(
+  masked: string,
+  anchors: readonly DefinitionAnchor[],
+): CommandSignalReport {
+  const annotatedAt = new Set<number>();
+  const satisfiesAt: number[] = [];
+  const shapedAt = new Set<number>();
+  for (const m of masked.matchAll(ANNOTATION_SIGNAL_RE)) {
+    annotatedAt.add(m.index);
+  }
+  for (const m of masked.matchAll(SATISFIES_SIGNAL_RE)) {
+    satisfiesAt.push(m.index);
+  }
+  for (const m of masked.matchAll(TOP_LITERAL_HEAD_RE)) {
+    if (literalHasDefinitionField(masked, m.index + m[0].length - 1)) {
+      shapedAt.add(m.index);
+    }
+  }
+  const pairedSatisfies = new Set<number>();
+  for (const anchor of anchors) {
+    annotatedAt.delete(anchor.index);
+    shapedAt.delete(anchor.index);
+    const end = literalEnd(masked, anchor.openIdx);
+    if (end === -1) continue;
+    SATISFIES_TAIL_RE.lastIndex = end;
+    const tm = SATISFIES_TAIL_RE.exec(masked);
+    SATISFIES_TAIL_RE.lastIndex = 0;
+    if (tm) pairedSatisfies.add(end + tm[0].indexOf("satisfies"));
+  }
+  const unpairedSatisfiesAt = satisfiesAt.filter((o) => !pairedSatisfies.has(o));
+  const report: CommandSignalReport = {
+    unpairedAnnotated: annotatedAt.size,
+    unpairedSatisfies: unpairedSatisfiesAt.length,
+    unpairedShaped: shapedAt.size,
+    unpaired: annotatedAt.size + unpairedSatisfiesAt.length + shapedAt.size,
+    firstOffset: -1,
+  };
+  for (const off of [...annotatedAt, ...unpairedSatisfiesAt, ...shapedAt]) {
+    if (report.firstOffset === -1 || off < report.firstOffset) {
+      report.firstOffset = off;
+    }
+  }
+  return report;
+}
+
+/**
+ * Heuristic probe (RFC-1304 CMDGEN-04): does the masked source carry any
+ * command-definition evidence — annotation-position token, postfix satisfies,
+ * or a definition-shaped top-level literal — regardless of pairing. Used by
+ * the site-exports seam so a suspect (unextractable) definition still keeps
+ * its file out of the exports map.
  */
 export function fileHasCommandSignal(masked: string): boolean {
+  ANNOTATION_SIGNAL_RE.lastIndex = 0;
   if (ANNOTATION_SIGNAL_RE.test(masked)) return true;
+  SATISFIES_SIGNAL_RE.lastIndex = 0;
   if (SATISFIES_SIGNAL_RE.test(masked)) return true;
   for (const m of masked.matchAll(TOP_LITERAL_HEAD_RE)) {
-    if (literalHasDefinitionField(masked, m.index + m[0].length - 1)) return true;
+    if (literalHasDefinitionField(masked, m.index + m[0].length - 1)) {
+      return true;
+    }
   }
   return false;
 }
 
 /**
- * True when the source text exports at least one `KernelCommandDefinition`
- * (either annotation form). Shared with site.exports.generate (RFC-1101):
- * definition-bearing modules are excluded from the exports map — commands live
- * behind the checks barrel.
+ * File-level pragma exempting a file from the CMDGEN-04 suspect net — must be
+ * a line comment at line start (`// cmdgen-ignore`); a string literal carrying
+ * the token does not suppress. Never suppresses CMDGEN-05.
  */
-export function fileHasCommandDefinition(content: string): boolean {
-  return findDefinitionAnchors(maskSource(content)).length > 0;
-}
+export const CMDGEN_IGNORE_RE = /^[ \t]*\/\/[ \t]*cmdgen-ignore/m;
 
 /**
  * Files under src/checks that export run* handlers or carry command-shaped
