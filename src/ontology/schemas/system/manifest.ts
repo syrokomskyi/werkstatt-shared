@@ -6,7 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1229: step 1 — shellContract schema in systemManifestSchema
 
@@ -34,7 +33,22 @@ run: 129 PBP-TIMING-01 warnings across policies/offerings/documents/claims —
 the owner's contract-decision agenda; no timing values authored, no site gate
 flipped. Known registry gap: renewal.renewalPeriod/reminder are not ISO-shaped
 and escape the sweep (documented in the RFC evidence). Canary C10 active.</item>
-  <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161</history>
+  <item>RFC-1294: require verbatim source provenance for external local facts (RFC-1294)
+
+localFacts[] entries gain sourceUrl/excerpt/excerptLang/scope/reviewedBy/
+reviewedAt. surface.evidence.validate sweeps every blueprint dataset record's
+localFacts once per source file and emits LOCALFACT-01 (missing
+sourceUrl/excerpt), LOCALFACT-02 (off-host sourceUrl — dot-boundary subdomains
+of the descriptor endpoint host pass), LOCALFACT-03 (normalized number absent
+from the verbatim excerpt), LOCALFACT-04 (stale asOf+reviewEvery, always a
+warning). systemManifestSchema gains provenance.gate (warn|enforce, absent =
+warn; new sites register enforce). The bake renders 'Geprüfte lokale Fakten'
+only when every rendered fact carries a human review record — otherwise the
+neutral 'Lokaler Kontext' — plus a Quellen block listing each distinct
+sourceUrl with its asOf date. Live warpgogol run: 40 LOCALFACT-01 warnings
+across the 12 city demand records — the owner's research backlog; no excerpts,
+review records, or gate flips authored. Canary C11 active.</item>
+  <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187</history>
 </CHANGE_SUMMARY>
 */
 
@@ -194,6 +208,21 @@ export const systemManifestSchema = z.object({
   contractTerms: z
     .object({
       gate: z.enum(["warn", "enforce"]),
+    })
+    .strict()
+    .optional(),
+
+  /**
+   * RFC-1294: external local-fact provenance gate; absent = "warn".
+   * `enforce` turns missing verbatim-source fields, off-host source URLs, and
+   * numbers absent from the recorded excerpt into LOCALFACT-01..03 violations
+   * (surface.evidence.validate); `warn` logs the same findings as warnings.
+   * LOCALFACT-04 (staleness) is always a warning. New sites register with
+   * `enforce`; legacy sites stay on `warn` until the owner sources the facts.
+   */
+  provenance: z
+    .object({
+      gate: z.enum(["warn", "enforce"]).optional(),
     })
     .strict()
     .optional(),
