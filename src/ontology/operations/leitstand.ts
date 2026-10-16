@@ -16,6 +16,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten â
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <history>RFC-0358, RFC-0379, RFC-0595, RFC-0624, RFC-0627, RFC-0666</history>
+  <item>RFC-1297: lastPropagatedChannelSchema gains states rolled-back + reconciled; healthy becomes nullable (unknown until re-verified).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -45,8 +46,17 @@ export const purgeResultSchema = z.object({
 export const lastPropagatedChannelSchema = z.object({
   releaseId: z.string(),
   at: z.string().datetime(),
-  healthy: z.boolean(),
-  state: z.enum(["succeeded", "failed", "failed-stale", "in-progress"]),
+  // RFC-1297: nullable â€” rollback/reconcile record the release but not its
+  // health; health is re-established by the next leitstand.verify run.
+  healthy: z.boolean().nullable(),
+  state: z.enum([
+    "succeeded",
+    "failed",
+    "failed-stale",
+    "in-progress",
+    "rolled-back",
+    "reconciled",
+  ]),
   operationId: z.string(),
   leaseExpiresAt: z.string().datetime().nullable(),
   purgeResult: purgeResultSchema.optional(),

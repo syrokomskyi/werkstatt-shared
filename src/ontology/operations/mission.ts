@@ -17,6 +17,7 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
   <item>RFC-1263</item>
   <item>RFC-1295</item>
   <history>RFC-0355, RFC-0473, RFC-0479, RFC-0480, RFC-0517, RFC-0706, RFC-0715</history>
+  <item>RFC-1297: bordbuchEntryKindSchema gains deployment-rolled-back + live-state-reconciled.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -80,6 +81,9 @@ export const bordbuchEntryKindSchema = z.enum([
   "release-rolled-back",
   "pin-update",
   "deployment",
+  // RFC-1297: recorded-vs-live channel drift outcomes
+  "deployment-rolled-back",
+  "live-state-reconciled",
   "notausgang-export",
   "operator-note",
   "erratum",
