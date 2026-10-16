@@ -11,7 +11,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0228: target.intent "editorial"|"decorative" optional marker.</item>
   <item>RFC-0231: optional per-asset `display` visibility override.</item>
   <item>RFC-0488: status, usageBasis, aiUsage fields; new sourceType/role values; label mapping helpers.</item>
   <item>RFC-1189: step 1 — partyKindLabels schema contract
@@ -21,7 +20,9 @@ members) to materialCreditLabelsSchema plus labelForMaterialCreditKind
 helper, so the public credits page renders localized kind labels instead
 of raw enum tokens. Seed the e2e cold-test labels fixture and cover the
 completeness gate with schema tests.</item>
-  <history>RFC-0220, RFC-0223</history>
+  <item>REVIEW-CODE-2026-10-16-08 N5: target.domain gains "business-profile" — the canonical tree RFC-1307 seeded assets live in.</item>
+  <item>RFC-1307: review-08 N1-N7 — ref-scoped rollback, pre-existing content preservation, svg resolution, explicit io</item>
+  <history>RFC-0220, RFC-0223, RFC-0228</history>
 </CHANGE_SUMMARY>
 */
 
@@ -88,7 +89,9 @@ export const materialTargetSchema = z
   .object({
     kind: materialKindSchema,
     id: z.string().min(1),
-    domain: z.enum(["pages", "prose", "business", "people", "site", "surface"]).optional(),
+    domain: z
+      .enum(["pages", "prose", "business", "business-profile", "people", "site", "surface"])
+      .optional(),
     lang: z.string().min(2).optional(),
     locator: z.string().min(1).optional(),
     /** RFC-0228: editorial requires a credit; decorative is excluded from the required-credit gate. */
