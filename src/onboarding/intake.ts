@@ -20,6 +20,7 @@ export that producers vendor byte-exact
   <item>RFC-1281: created — envelope Zod model of werkstatt:intake/v1 (envelope, gap, asset) + renderIntakeSchemaExport().</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>
   <item>RFC-1301: export PBP entity JSON Schemas in werkstatt:intake/v1 (RFC-1301)</item>
+  <item>RFC-1298: REVIEW-CODE-2026-10-16-01 findings — kebab flag guards, safeParse, reads declaration, family-append ordering, FONTS-SCRIPT-02 unverifiable-stack warning</item>
 </CHANGE_SUMMARY>
 */
 
@@ -444,6 +445,8 @@ export const intakeEnvelopeSchema = z
     schema: z.literal(INTAKE_SCHEMA_ID),
     intakeId: z
       .string()
+      // Canonical intakeId format — mirrored in ontology/schemas/biome.ts
+      // (intakeBiomeProvenanceSchema); update both on format change.
       .regex(/^int_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/),
     systemId: z.string().regex(/^[a-z][a-z0-9-]{1,48}$/),
     producedAt: z.iso.datetime(),

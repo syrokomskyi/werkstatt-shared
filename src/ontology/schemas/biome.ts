@@ -14,7 +14,6 @@ Applied via html[data-biome="<id>"] in the cascade layer stack.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0071: Replace narrow token overrides with the extended biome visual-DNA contract.</item>
   <item>RFC-0371: Add optional <code>fonts</code> field for biome-driven Fontsource CSS imports.</item>
   <item>RFC-1298: biomeProvenanceSchema becomes a union — legacy gen/site shape or intake shape (client, intakeId, selectedConcept, intakeSha256).</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
@@ -23,6 +22,8 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1298: REVIEW-CODE-2026-10-16-01 findings — kebab flag guards, safeParse, reads declaration, family-append ordering, FONTS-SCRIPT-02 unverifiable-stack warning</item>
+  <history>RFC-0071</history>
 </CHANGE_SUMMARY>
 */
 
@@ -55,6 +56,9 @@ const intakeBiomeProvenanceSchema = z
     client: kebabId,
     intakeId: z
       .string()
+      // Mirrors the canonical intakeId regex on intakeEnvelopeSchema
+      // (onboarding/intake.ts) — duplicated, not imported, because schemas/
+      // is a leaf and must not depend upward. Update both on format change.
       .regex(/^int_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/),
     selectedConcept: z.string().min(1),
     intakeSha256: z.string().regex(/^sha256:[0-9a-f]{64}$/),
