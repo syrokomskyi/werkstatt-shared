@@ -16,6 +16,7 @@ Applied via html[data-biome="<id>"] in the cascade layer stack.
 <CHANGE_SUMMARY>
   <item>RFC-0071: Replace narrow token overrides with the extended biome visual-DNA contract.</item>
   <item>RFC-0371: Add optional <code>fonts</code> field for biome-driven Fontsource CSS imports.</item>
+  <item>RFC-1298: biomeProvenanceSchema becomes a union — legacy gen/site shape or intake shape (client, intakeId, selectedConcept, intakeSha256).</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -38,7 +39,9 @@ const sourceArtifact = z
   .string()
   .regex(/^\d{2}-[a-z0-9][a-z0-9.-]*(?:\.[a-z0-9]+)?(?:\.[a-z0-9]+)?$/i);
 
-export const biomeProvenanceSchema = z
+// RFC-1298: provenance is a union — the legacy gen/site shape (unchanged) or
+// the intake shape produced by biome.from-intake (werkstatt-onboarding D13).
+const legacyBiomeProvenanceSchema = z
   .object({
     client: kebabId,
     selectedConcept: z.string().regex(/^concept-\d+$/),
@@ -46,6 +49,22 @@ export const biomeProvenanceSchema = z
     sourceFiles: z.array(sourceArtifact).min(1),
   })
   .strict();
+
+const intakeBiomeProvenanceSchema = z
+  .object({
+    client: kebabId,
+    intakeId: z
+      .string()
+      .regex(/^int_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/),
+    selectedConcept: z.string().min(1),
+    intakeSha256: z.string().regex(/^sha256:[0-9a-f]{64}$/),
+  })
+  .strict();
+
+export const biomeProvenanceSchema = z.union([
+  legacyBiomeProvenanceSchema,
+  intakeBiomeProvenanceSchema,
+]);
 
 export const biomeAxesSchema = z
   .object({
