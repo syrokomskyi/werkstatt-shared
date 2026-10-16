@@ -6,13 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1229: step 1 — shellContract schema in systemManifestSchema
-
-Add packages/werkstatt-shared/src/ontology/schemas/system/shell-contract.ts:
-closed-set region names, profile shape (regions + document-level script
-policy + breadcrumbsScope), routeProfiles closed-set reference check via
-superRefine, mode default report. Wire shellContract into
-systemManifestSchema and profile into pages[].shell.</item>
   <item>RFC-1283: step 1 — publication.gate in systemManifestSchema
 
 Per-site PBP publication gate mode (warn | enforce, absent = warn) consumed
@@ -48,7 +41,8 @@ sourceUrl with its asOf date. Live warpgogol run: 40 LOCALFACT-01 warnings
 across the 12 city demand records — the owner's research backlog; no excerpts,
 review records, or gate flips authored. Canary C11 active.</item>
   <item>RFC-1307: step 6 — onboarding docs switched to intake path, manifest comment re-sourced, generated artifacts refreshed</item>
-  <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187, RFC-1209</history>
+  <item>RFC-1307: canonical org-singleton PBP paths, seeded hreflang+publication.gate, full rollback</item>
+  <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229</history>
 </CHANGE_SUMMARY>
 */
 
@@ -226,6 +220,16 @@ export const systemManifestSchema = z.object({
       gate: z.enum(["warn", "enforce"]).optional(),
     })
     .strict()
+    .optional(),
+
+  /**
+   * RFC-1307: ISO 3166-1 alpha-2 legal jurisdiction seeded from the intake
+   * classification at birth (sternsystem.register --intake). Optional —
+   * pre-intake systems carry no value.
+   */
+  legalJurisdiction: z
+    .string()
+    .regex(/^[A-Z]{2}$/, "legalJurisdiction must be an ISO 3166-1 alpha-2 code")
     .optional(),
 
   /**

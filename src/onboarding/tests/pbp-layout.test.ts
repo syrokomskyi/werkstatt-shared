@@ -21,13 +21,23 @@ describe("pbp-layout (RFC-1307)", () => {
   it("resolves document paths per type", () => {
     expect(pbpDocumentPath("ru", { type: "business", id: "business/dp7" })).toBe("ru/business.md");
     expect(pbpDocumentPath("ru", { type: "legal-identity", id: "legal-identity/dp7" })).toBe(
-      "ru/organization/dp7.md",
+      "ru/organization/legal-identity.md",
     );
+    expect(pbpDocumentPath("ru", { type: "brand", id: "brand/dp7" })).toBe("ru/organization/brand.md");
     expect(pbpDocumentPath("ru", { type: "claim", id: "claim/european-quality" })).toBe(
       "ru/trust/claims/european-quality.md",
     );
     expect(pbpDocumentPath("ru", { type: "evidence-source", id: "evidence-source/src-01" })).toBe(
       "ru/trust/evidence/src-01.md",
+    );
+  });
+
+  it("rejects a collection-type entity id that does not yield a kebab-case slug", () => {
+    expect(() => pbpDocumentPath("ru", { type: "claim", id: "claim/Bad Slug" })).toThrow(
+      /kebab-case slug/,
+    );
+    expect(() => pbpDocumentPath("ru", { type: "claim", id: "claim/" })).toThrow(
+      /kebab-case slug/,
     );
   });
 
