@@ -16,17 +16,12 @@ RFC-0790: add systemConfigSchema, systemStateSchema, servicesRegistrySchema for 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>ADR-0091: add externalEditBaselineSha to systemStateSchema — operator-set baseline that grandfathers pre-bordbuch commits in the external-edit guard.</item>
   <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
   <item>RFC-1263</item>
   <item>RFC-1284: systemStateSchema gains nullable accessPinSuspended {at,by,operationId} — durable crash-safe suspension marker; accessPin stays the desired-state authority</item>
-  <history>RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065</history>
+  <item>RFC-1307: step 1 — shared PBP layout map, canonical writer, typed onboarding state</item>
+  <history>RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -200,6 +195,20 @@ export const systemStateSchema = z.looseObject({
   // RFC-0967: Controls OWNERSHIP-01 warning vs blocking. false during rollout,
   // set to true per-site when ready for blocking enforcement.
   ownershipRequired: z.boolean().default(false),
+  // RFC-1307: provenance of the werkstatt:intake/v1 bundle the system was
+  // born from (sternsystem.register --intake). Undefined for pre-intake systems.
+  onboarding: z
+    .object({
+      intakeId: z.string().regex(/^int_[0-9a-f-]+$/, "intakeId must be int_<uuid>"),
+      intakeSha256: z
+        .string()
+        .regex(/^sha256:[0-9a-f]{64}$/, "intakeSha256 must be sha256:<64 hex>"),
+      contractSnapshot: z
+        .string()
+        .regex(/^sha256:[0-9a-f]{64}$/, "contractSnapshot must be sha256:<64 hex>"),
+    })
+    .strict()
+    .optional(),
   // RFC-1065: Lagebild connection metadata. Undefined when not connected.
   lagebild: z
     .object({

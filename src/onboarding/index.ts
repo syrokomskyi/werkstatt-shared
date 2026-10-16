@@ -10,6 +10,7 @@ brief parsing utilities (RFC-0868).</purpose>
   <item>RFC-0868: extracted from werkstatt-site/src/onboarding/brief.ts.</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>
   <item>RFC-1299: capability.brief + family.detect + capability.gap.validate</item>
+  <item>RFC-1307: step 1 — shared PBP layout map, canonical writer, typed onboarding state</item>
 </CHANGE_SUMMARY>
 */
 
@@ -22,4 +23,5 @@ export {
 export type { Brief } from "./brief.ts";
 export * from "./capability-gap.ts";
 export * from "./intake.ts";
+export * from "./pbp-layout.ts";
 export * from "./yaml.ts";

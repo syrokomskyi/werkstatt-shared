@@ -51,6 +51,10 @@
       "default": "./src/onboarding/intake.ts"
     },
     "./onboarding/intake.schema.generated.yaml": "./src/onboarding/intake.schema.generated.yaml",
+    "./onboarding/pbp-layout": {
+      "types": "./src/onboarding/pbp-layout.ts",
+      "default": "./src/onboarding/pbp-layout.ts"
+    },
     "./checks/lib/astro-site-url": {
       "types": "./src/checks/lib/astro-site-url.ts",
       "default": "./src/checks/lib/astro-site-url.ts"
