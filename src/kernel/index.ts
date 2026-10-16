@@ -16,6 +16,7 @@ Add guardTrackedOverwrite (json/yaml/text lost-key diff, warn-by-default, --stri
 
 export * from "./types.ts";
 export * from "./workspace-io.ts";
+export * from "./run-mutating.ts";
 export * from "./fs-atomic.ts";
 export * from "./desired-state.ts";
 export * from "./diagnostic.ts";

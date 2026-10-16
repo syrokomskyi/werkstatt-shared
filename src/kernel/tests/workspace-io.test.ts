@@ -184,6 +184,67 @@ test("createReadOnlyIO: allowExec binds subprocess calls through to the base ada
   ).rejects.toThrow(KernelMetaError);
 });
 
+// RFC-1303: cacheWrites carve-out — declared prefixes delegate to the base
+// adapter even on a read-only invocation; everything else still throws.
+test("createReadOnlyIO: cacheWrites prefixes delegate writes to the base adapter (RFC-1303)", async () => {
+  const root = await mkdtemp(join(tmpdir(), "workspace-io-cachewrites-"));
+  try {
+    const { io: base } = createDefaultIO();
+    const io = createReadOnlyIO(base, "fixture.cache.command", {
+      workspaceRoot: root,
+      cacheWrites: [".cache/"],
+    });
+    await io.mkdir(join(root, ".cache"));
+    await io.writeFile(join(root, ".cache", "lt.json"), "{}");
+    expect(await io.readFile(join(root, ".cache", "lt.json"))).toBe("{}");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("createReadOnlyIO: writes outside declared cacheWrites prefixes still throw KERNEL-META-01", async () => {
+  const root = await mkdtemp(join(tmpdir(), "workspace-io-cachewrites-deny-"));
+  try {
+    const { io: base } = createDefaultIO();
+    const io = createReadOnlyIO(base, "fixture.cache.command", {
+      workspaceRoot: root,
+      cacheWrites: [".cache/"],
+    });
+    await expect(() => io.writeFile(join(root, "src", "x.txt"), "x")).rejects.toThrow(
+      KernelMetaError,
+    );
+    await expect(() => io.mkdir(join(root, "src"))).rejects.toThrow(KernelMetaError);
+    await expect(() => io.rm(join(root, "src"))).rejects.toThrow(KernelMetaError);
+    // A sibling prefix that merely shares a leading segment does not match.
+    await expect(() => io.writeFile(join(root, ".cache-other", "x.txt"), "x")).rejects.toThrow(
+      KernelMetaError,
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("createReadOnlyIO: absolute cacheWrites prefixes pass through unchanged (app-scope expansion)", async () => {
+  const root = await mkdtemp(join(tmpdir(), "workspace-io-cachewrites-abs-"));
+  try {
+    const { io: base } = createDefaultIO();
+    // Simulates the executor expanding "<app>/.cache/" to an absolute site dir.
+    // workspaceRoot covers the whole fixture tree so tmpdir passthrough does
+    // not mask the prefix check.
+    const io = createReadOnlyIO(base, "fixture.cache.command", {
+      workspaceRoot: root,
+      cacheWrites: [join(root, "site", ".cache") + "/"],
+    });
+    await io.writeFile(join(root, "site", ".cache", "lt.json"), "{}");
+    expect(await io.readFile(join(root, "site", ".cache", "lt.json"))).toBe("{}");
+    await expect(() => io.writeFile(join(root, "site", "src", "x.ts"), "x")).rejects.toThrow(
+      KernelMetaError,
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test("createReadOnlyIO: reads still work", async () => {
   const root = await mkdtemp(join(tmpdir(), "workspace-io-readonly-reads-"));
   try {

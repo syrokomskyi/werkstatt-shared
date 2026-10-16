@@ -137,6 +137,24 @@ export interface KernelCommandMetadata {
    * `mutatesState: false`.
    */
   mutatingFlags?: string[];
+  /**
+   * RFC-1303: environment variable names whose values this command reads
+   * (`process.env.*` reachable from its handler). Declared inputs are hashed
+   * — never the raw values — into the result-cache key on both read paths,
+   * so `cacheable` results cannot replay a verdict computed under a different
+   * environment. Names only (`^[A-Z_][A-Z0-9_]*$`). Undeclared env reads on a
+   * cacheable command emit ENV-INPUT-01 (error); on non-cacheable commands,
+   * a warning.
+   */
+  envInputs?: string[];
+  /**
+   * RFC-1303: workspace-relative directory prefixes (e.g. `".cache/"`) that
+   * this `mutatesState: false` command may legitimately write — cache-class
+   * artifacts only. Every entry must resolve to a git-ignored path
+   * (CACHE-WRITE-01). Writes outside the declared prefixes still throw
+   * KERNEL-META-01.
+   */
+  cacheWrites?: string[];
   requiresNetwork?: boolean;
   /**
    * RFC-1231: when true, the command accepts the reserved `--all` token

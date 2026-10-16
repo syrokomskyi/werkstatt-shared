@@ -361,6 +361,15 @@ export interface ReadOnlyIOOptions {
    * fixtures and CI smoke workspaces). When absent, any tmpdir path passes.
    */
   workspaceRoot?: string;
+  /**
+   * RFC-1303: workspace-relative directory prefixes the command declared via
+   * `cacheWrites` — writes resolving under them delegate to the wrapped
+   * adapter instead of throwing. Requires `workspaceRoot`; without it the
+   * prefixes cannot resolve and every write still throws KERNEL-META-01.
+   * Entries are cache-class paths only — CACHE-WRITE-01 rejects git-tracked
+   * prefixes at declaration-validation time.
+   */
+  cacheWrites?: string[];
 }
 
 /**
@@ -390,6 +399,20 @@ export function createReadOnlyIO(
       return false;
     return tmpRoots.some((root) => abs.startsWith(root));
   };
+  // RFC-1303: declared cache-write prefixes resolve under the workspace root;
+  // a write landing inside one delegates to the real adapter.
+  const cachePrefixes = (opts?.cacheWrites ?? [])
+    .map((prefix) => (workspaceRoot ? pathResolve(workspaceRoot, prefix) : undefined))
+    .filter((p): p is string => p !== undefined)
+    .map((p) => (p.endsWith(sep) ? p : p + sep));
+  const isCacheWritePath = (p: string) =>
+    cachePrefixes.length > 0 &&
+    cachePrefixes.some((root) => {
+      const abs = pathResolve(p);
+      // Equal match allows mkdir/writeFile on the prefix dir itself.
+      return abs === root.slice(0, -sep.length) || abs.startsWith(root);
+    });
+  const mayWrite = (p: string) => isTmpPath(p) || isCacheWritePath(p);
   return {
     readFile: base.readFile.bind(base),
     readFileBytes: base.readFileBytes.bind(base),
@@ -400,31 +423,31 @@ export function createReadOnlyIO(
     realpath: base.realpath.bind(base),
     readonly: true,
     async writeFile(path, content) {
-      if (isTmpPath(path)) return base.writeFile(path, content);
+      if (mayWrite(path)) return base.writeFile(path, content);
       throw new KernelMetaError(commandName, path);
     },
     async appendFile(path, content) {
-      if (isTmpPath(path)) return base.appendFile(path, content);
+      if (mayWrite(path)) return base.appendFile(path, content);
       throw new KernelMetaError(commandName, path);
     },
     async mkdir(path) {
-      if (isTmpPath(path)) return base.mkdir(path);
+      if (mayWrite(path)) return base.mkdir(path);
       throw new KernelMetaError(commandName, path);
     },
     async rm(path, rmOpts) {
-      if (isTmpPath(path)) return base.rm(path, rmOpts);
+      if (mayWrite(path)) return base.rm(path, rmOpts);
       throw new KernelMetaError(commandName, path);
     },
     async rename(src, dst) {
-      if (isTmpPath(dst)) return base.rename(src, dst);
+      if (mayWrite(dst)) return base.rename(src, dst);
       throw new KernelMetaError(commandName, dst);
     },
     async copyFile(src, dst) {
-      if (isTmpPath(dst)) return base.copyFile(src, dst);
+      if (mayWrite(dst)) return base.copyFile(src, dst);
       throw new KernelMetaError(commandName, dst);
     },
     async mkdtemp(prefix) {
-      if (isTmpPath(prefix)) return base.mkdtemp(prefix);
+      if (mayWrite(prefix)) return base.mkdtemp(prefix);
       throw new KernelMetaError(commandName, prefix);
     },
     exec: opts?.allowExec
