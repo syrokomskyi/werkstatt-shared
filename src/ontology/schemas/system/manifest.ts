@@ -6,19 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1106: step 2 — extend systemManifestSchema
-
-Add identity.legal (RFC-0096) and seo.anchorText.extraStopPhrases (RFC-0911) to systemManifestSchema — the two interface-only fields with living consumers. No dead fields found: all other interface fields already exist in the schema.</item>
-  <item>RFC-1161: derive named AI-training bot blocks in robots.txt from Content-Signal
-
-AI_TRAINING_CRAWLER_REGISTRY (14 train tokens) + derived User-agent
-group in buildRobotsTxt when contentSignal declares ai-train=no, deduped
-against crawlerBlocklist/customRules. ROBOTS-AITRAIN-01 (missing derived
-group) and ROBOTS-AITRAIN-02 (policy self-contradiction) in
-robots.validate; rule registry entries; robots.validate registered in
-build-prepare after robots.generate (first pipeline placement). Fix
-upstream dead config: robots block now declared in systemManifestSchema
-(manifest.robots was stripped by strict parse).</item>
   <item>RFC-1187: phases 1-3 — contracts, Redis registry, AS core + Bearer pipeline</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1229: step 1 — shellContract schema in systemManifestSchema
@@ -33,7 +20,21 @@ systemManifestSchema and profile into pages[].shell.</item>
 Per-site PBP publication gate mode (warn | enforce, absent = warn) consumed
 by PUBGATE-01 in pbp.content.validate and PUBGATE-02 in
 dist.content-references.validate.</item>
-  <history>ADR-0062, RFC-0303, RFC-0377</history>
+  <item>RFC-1293: require timing semantics on time-bound policy fields via contractTerms.gate (RFC-1293)
+
+policySchema gains an optional timing map (pbpTimingSchema: startEvent, clock,
+timezone, businessHours, boundary) inherited by every specialized policy.
+pbp.content.validate sweeps each pbp/* entity's frontmatter — TIMED_FIELDS
+registry paths plus every ISO-8601 duration literal — and emits
+PBP-TIMING-01..04 at contractTerms.gate severity (warn|enforce in system.md;
+absent = warn). enforce also makes pbp.terms-reference.validate behave as
+--strict. New sites register with contractTerms.gate: enforce
+(sternsystem-register stub + both onboarding system templates). Live warpgogol
+run: 129 PBP-TIMING-01 warnings across policies/offerings/documents/claims —
+the owner's contract-decision agenda; no timing values authored, no site gate
+flipped. Known registry gap: renewal.renewalPeriod/reminder are not ISO-shaped
+and escape the sweep (documented in the RFC evidence). Canary C10 active.</item>
+  <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161</history>
 </CHANGE_SUMMARY>
 */
 
@@ -176,6 +177,21 @@ export const systemManifestSchema = z.object({
    * sites stay on `warn` until a cleanup mission.
    */
   publication: z
+    .object({
+      gate: z.enum(["warn", "enforce"]),
+    })
+    .strict()
+    .optional(),
+
+  /**
+   * RFC-1293: contract-terms gate; absent = "warn".
+   * `enforce` turns missing/invalid `timing` semantics on time-bound policy
+   * fields into PBP-TIMING-01..04 violations (pbp.content.validate) and makes
+   * TERMS-DRIFT-* findings blocking in pbp.terms-reference.validate; `warn`
+   * logs the same findings as warnings. New sites register with `enforce`;
+   * legacy sites stay on `warn` until the owner decides the timing semantics.
+   */
+  contractTerms: z
     .object({
       gate: z.enum(["warn", "enforce"]),
     })
