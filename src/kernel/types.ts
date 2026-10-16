@@ -11,8 +11,6 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1147: KernelRegisteredCommandInfo.provider narrowed to workspace | site-module and siteName field removed — runtime site enumeration deleted, the canonical site module set (SITE_MODULE_MAP) is the only site provider.</item>
-  <item>RFC-1193: bound module hashing to src/os roots with constant fallbacks</item>
   <item>RFC-1231: step 1 — rename supportsAllSites to acceptsAllFlag
 
 Mechanical sweep: the field only ever gated --all argv acceptance; fan-out
@@ -22,7 +20,8 @@ surfaces (KernelCommandMetadata, ForgeCommandMetadata) in one atomic pass.</item
   <item>RFC-1260: resolve cache clones via system-config.yaml — package.json gate left the RFC-1025 fallback dead for every real clone; executor-guard mutating commands against mirror targets</item>
   <item>RFC-1303: review REVIEW-CODE-2026-10-16-02 — scanner moves to werkstatt-shared/node (IO-01), workpieceEnv hashes into envDigest, saveCache tolerates KERNEL-META-01, ENV-INPUT-02 coverage notice, ratchet path-arg tightening</item>
   <item>RFC-1306: KernelRuntimeContext.invoke — optional host-populated command-execution port (KernelInvokeCommand) for in-process sibling-command delegation; absent under autonomous hosts so commands fail closed.</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144</history>
+  <item>RFC-1306: review-r1 — io-native writes, cacheable off on chain generators, EVIDENCE-SYNC-02 on invoke throws</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193</history>
 </CHANGE_SUMMARY>
 */
 
@@ -416,6 +415,12 @@ export interface KernelRuntimeContext {
    * dryRun, and outputFormat are inherited from the invoking context.
    * Absent under autonomous hosts (standalone `forge` CLI) — consumers must
    * fail closed with a diagnostic, never crash on the absent port.
+   *
+   * Delegated flags resolve through the child's schema + universal aliases
+   * exactly like CLI argv — RFC-1126's `--site`→`--id` alias rewrite applies
+   * to `id`-declaring children, so callers must not pass `site` as a flag
+   * name to such commands (pass the resolved site via the parent's context
+   * instead).
    */
   invoke?: KernelInvokeCommand;
 }
