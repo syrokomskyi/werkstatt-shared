@@ -638,6 +638,8 @@ export interface ExecuteKernelCommandOptions {
   outputFormat?: KernelOutputFormat;
   /** Set to true when siteName was derived from an explicit --site flag, not cwd inference. */
   siteExplicit?: boolean;
+  /** RFC-1309: suppress registry/config loading preamble on stderr; command diagnostics are unaffected. */
+  quiet?: boolean;
 }
 
 export interface ExecuteKernelPipelineOptions {
@@ -663,6 +665,8 @@ export interface ExecuteKernelPipelineOptions {
    * only mutating dependents while read-only steps run annotated.
    */
   collectErrors?: boolean;
+  /** RFC-1309: suppress pipeline progressLine preamble on stderr; step diagnostics are unaffected. */
+  quiet?: boolean;
 }
 
 export interface SiteWorkspacesListResult {
