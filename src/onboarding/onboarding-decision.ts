@@ -14,14 +14,16 @@ onboarding.decision.validate (ONDEC-01…07).
   <item>Do not encode ONDEC discipline rules here — schema mirrors the vendored contract only; topic/status coupling is enforced by the validator.</item>
   <item>Do not add fields beyond the spec schema — strict objects mirror additionalProperties:false (DNA-19); divergence is a spec amendment, never a silent edit.</item>
 </non-goals>
+</MODULE_CONTRACT>
 <KEY_DECISIONS>
   <item>Field-for-field mirror of onboarding-decision.schema.yaml — the spec file is normative.</item>
   <item>capabilityGap reuses capabilityGapSchema (DNA-103 single-sourcing) — the vendored schema $refs it identically.</item>
-  <item>recommendation is a required first-class field per entry (RFC-1250 style); options items carry label+consequence only — a `recommended` key is schema-rejected.</item>
+  <item>recommendation is a required first-class field; options carry label+consequence only.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1317: created — ONBOARDING_DECISION_SCHEMA_ID, topic/resolutionPath/status tuples, entry + ledger schemas, inferred types.</item>
   <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
+  <item>RFC-1317: step 5: docs sync + Compass header repair — AGENTS.md onboarding composer contract, technology.xml/knowledge-graph.xml nodes, app-onboarding-guide commands, regenerated command/ecosystem manifests, /MODULE_CONTRACT closers + KD trims on RFC-1317 files</item>
 </CHANGE_SUMMARY>
 */
 

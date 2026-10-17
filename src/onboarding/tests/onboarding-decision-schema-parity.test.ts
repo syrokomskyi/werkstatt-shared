@@ -10,9 +10,11 @@ the entry-level $ref resolves, mirroring intake-schema-parity.test.ts.</purpose>
   <item>Do not exercise ONDEC-01…07 discipline rules — those are validator-side (werkstatt-site), not schema-level.</item>
   <item>Do not mutate the spec schemas — they are the normative reference.</item>
 </non-goals>
+</MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1317: created — 11-fixture Zod/JSON-Schema verdict-parity test.</item>
   <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
+  <item>RFC-1317: step 5: docs sync + Compass header repair — AGENTS.md onboarding composer contract, technology.xml/knowledge-graph.xml nodes, app-onboarding-guide commands, regenerated command/ecosystem manifests, /MODULE_CONTRACT closers + KD trims on RFC-1317 files</item>
 </CHANGE_SUMMARY>
 */
 
