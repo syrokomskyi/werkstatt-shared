@@ -14,6 +14,7 @@
   <item>NON_COMMAND_ALLOWLIST lives here so the generator</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1321: isStringLiteralSource — shared raw-text literal check for definition name fields (CMDGEN-06), consumed by checks.commands.generate and werkstatt.commands.validate.</item>
   <item>RFC-1304: initial implementation — maskSource lifted from checks/commands-generate.ts and extended with template-depth tracking; new findDefinitionAnchors (satisfies form), fileHasCommandSignal, scanForbiddenCodepoints; NON_COMMAND_ALLOWLIST moved here for consumer parity.</item>
   <item>RFC-1304 review r1: positional signal pairing (unpairedCommandSignals) — an anchor consumes the annotation/shaped signal at its index and the satisfies tail after its literal end, so hybrid `: T = {…} satisfies KCD` counts once while literal-less `factory() satisfies KCD` stays suspect; CMDGEN_IGNORE_RE is line-anchored and tested against the keepComments mask so pragma text inside string literals cannot suppress; definition-field probe requires field position (prev char `{`/`,`) so ternary branches do not shape a literal.</item>
 </CHANGE_SUMMARY>
@@ -345,24 +346,54 @@ export function literalEnd(masked: string, openIdx: number): number {
   return -1;
 }
 
-/** Return [start,end) offsets of a top-level field's value inside a masked literal. */
+/**
+ * Return [start,end) offsets of a TOP-LEVEL field's value inside a masked
+ * literal whose opening brace sits at index 0. A field name counts only in
+ * field position (preceding significant char `{` or `,`) at literal depth 1 —
+ * a nested `name:` (a flag key, a nested object field) ahead of the real
+ * top-level field must not shadow it (RFC-1321 review: the depth-blind
+ * first-match both false-positived on `flags: { name: {…} }` and let a real
+ * non-literal `name:` hide behind a nested literal).
+ */
 export function fieldOffsets(litMasked: string, field: string): [number, number] | undefined {
-  const m = new RegExp(`\\b${field}\\s*:`).exec(litMasked);
-  if (!m) return undefined;
-  // Do NOT skip whitespace here — masked string values are spaces, so skipping
-  // would overshoot to the next comma. Slice raw and trim instead.
-  const start = m.index + m[0].length;
-  let i = start;
-  let depth = 0;
-  for (; i < litMasked.length; i++) {
+  let depth = 1;
+  for (let i = 1; i < litMasked.length; i++) {
     const c = litMasked[i];
-    if (c === "{" || c === "[" || c === "(") depth++;
-    else if (c === "}" || c === "]" || c === ")") {
-      if (depth === 0) break;
+    if (c === "{" || c === "[" || c === "(") {
+      depth++;
+      continue;
+    }
+    if (c === "}" || c === "]" || c === ")") {
       depth--;
-    } else if (c === "," && depth === 0) break;
+      if (depth < 1) return undefined; // literal closed before the field
+      continue;
+    }
+    if (depth !== 1) continue;
+    const fm = /^[A-Za-z_$][\w$]*\s*:/.exec(litMasked.slice(i, i + 64));
+    if (!fm) continue;
+    const prev = prevSigChar(litMasked, i);
+    if (prev !== "{" && prev !== ",") {
+      i += fm[0].length - 1; // ternary branch / label — not a field name
+      continue;
+    }
+    const name = /^[A-Za-z_$][\w$]*/.exec(fm[0])![0];
+    // Do NOT skip whitespace here — masked string values are spaces, so
+    // skipping would overshoot to the next comma. Slice raw and trim instead.
+    const start = i + fm[0].length;
+    i = start - 1;
+    if (name !== field) continue;
+    let vdepth = 1;
+    for (let j = start; j < litMasked.length; j++) {
+      const v = litMasked[j];
+      if (v === "{" || v === "[" || v === "(") vdepth++;
+      else if (v === "}" || v === "]" || v === ")") {
+        if (vdepth === 1) return [start, j];
+        vdepth--;
+      } else if (v === "," && vdepth === 1) return [start, j];
+    }
+    return undefined;
   }
-  return [start, i];
+  return undefined;
 }
 
 export interface DefinitionAnchor {
@@ -549,6 +580,35 @@ export function fileHasCommandSignal(masked: string): boolean {
     if (literalHasDefinitionField(masked, m.index + m[0].length - 1)) {
       return true;
     }
+  }
+  return false;
+}
+
+/**
+ * RFC-1321 CMDGEN-06: is a definition field's source text a complete quoted
+ * string literal? Receives BOTH slices fieldOffsets returned — the raw text
+ * and its masked form. The masked slice must be entirely one string token:
+ * comments mask to spaces alongside it, so `name: "a"` with a trailing
+ * comment stays a literal while `name: CONST`, `"a" + b`, `("a")`, and `"a" as const` keep
+ * visible code and are rejected. The opening-quote requirement rejects bare
+ * template literals, which also mask clean. Both enforcement points
+ * (checks.commands.generate and werkstatt.commands.validate) share this
+ * helper so a lint pass and a generate pass cannot disagree.
+ */
+export function isStringLiteralSource(rawFieldText: string, maskedFieldText: string): boolean {
+  const t = rawFieldText.trim();
+  if (t.length < 2) return false;
+  const q = t[0];
+  if (q !== '"' && q !== "'") return false;
+  if (maskedFieldText.trim().length !== 0) return false;
+  for (let i = 1; i < t.length; i++) {
+    const c = t[i];
+    if (c === "\\") {
+      i++;
+      continue;
+    }
+    if (c === q) return true;
+    if (c === "\n") return false; // unterminated
   }
   return false;
 }
