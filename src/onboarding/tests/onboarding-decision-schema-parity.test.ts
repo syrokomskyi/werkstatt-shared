@@ -15,6 +15,7 @@ the entry-level $ref resolves, mirroring intake-schema-parity.test.ts.</purpose>
   <item>RFC-1317: created — 11-fixture Zod/JSON-Schema verdict-parity test.</item>
   <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
   <item>RFC-1317: step 5: docs sync + Compass header repair — AGENTS.md onboarding composer contract, technology.xml/knowledge-graph.xml nodes, app-onboarding-guide commands, regenerated command/ecosystem manifests, /MODULE_CONTRACT closers + KD trims on RFC-1317 files</item>
+  <item>RFC-1317: review r1 — negative date-time fixtures (bad-createdAt, bad-answeredAt).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -187,6 +188,26 @@ const FIXTURES: ParityFixture[] = [
           unknown
         >
       ).recommended = true;
+      return l;
+    },
+  },
+  {
+    name: "bad-createdAt-local-date",
+    build: () => {
+      const l = baseLedger();
+      l.createdAt = "17.10.2026";
+      return l;
+    },
+  },
+  {
+    name: "bad-answeredAt-no-offset",
+    build: () => {
+      const l = baseLedger();
+      const entry = l.items as Record<string, unknown>[];
+      entry[0].status = "answered";
+      entry[0].resolutionPath = "operator";
+      entry[0].answer = "confirmed by operator";
+      entry[0].answeredAt = "2026-10-17T12:05:00";
       return l;
     },
   },
