@@ -95,6 +95,13 @@ Rules:
 - The external packages `@sindresorhus/slugify`, `cyrillic-to-translit-js`, and `github-slugger` are dependencies of this package only — no other package may declare them as direct dependencies.
 - Enforcement: `utility.provenance.validate` (RFC-0916) scans for reimplementations outside the canonical path.
 
+### Source-scan helpers (RFC-1304, RFC-1321)
+
+Location: `packages/werkstatt-shared/src/kernel/command-source-scan.ts` — imported by `werkstatt-site` (generator door) and `werkstatt-engine` (validator door).
+
+- **Parse, don't validate.** When a check and a consumer need the same token from masked source, the shared helper MUST return the parsed value (e.g. `stringLiteralValue` returns the literal's inner content); a boolean predicate is a thin wrapper over it. A separate boolean + consumer-side re-extraction is a bug class: RFC-1321 review-r2 F-1 — `isStringLiteralSource` accepted `name: "x" /* c */` while the generator's own `replace(/^["']|["']$/g,"")` produced a corrupt `COMMAND_PROVENANCE` key and evaded CMDGEN-03.
+- **Both doors consume the same helper** — a lint pass and a generate pass must never disagree on what a definition declares (CMDGEN-06's invariant). Adding a scan rule means: shared helper here, enforcement call in both `checks/commands-generate.ts` and `commands-validate.ts`, `rules[]` entry in `werkstatt-commands-validate.module.ts`, regenerated `docs/validator-inventory.generated.yaml`.
+
 ### Section heading-id derivation (RFC-1196)
 
 Location: `packages/werkstatt-shared/src/sections/heading-id.ts` — exported via `@warpgogol/werkstatt-shared/sections/heading-id`.
