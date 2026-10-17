@@ -193,3 +193,41 @@ export function partitionByBaseline<T extends ValidationBaselineKeyable>(
   }
   return { fresh, debt };
 }
+
+export interface BaselinePartition<T extends { severity?: string }> {
+  /** Debt items downgraded to info severity; fresh items untouched. */
+  diagnostics: T[];
+  /** Count of baseline-listed (debt) diagnostics. */
+  debt: number;
+  /** Baseline file consulted — set whenever delta mode ran. */
+  baselineRef?: string;
+}
+
+/**
+ * The one delta-mode contract every `baselineEligible` validator applies:
+ * `--strict` or a missing/unreadable baseline → everything stays blocking;
+ * otherwise baseline-listed diagnostics downgrade to `info` (known-debt).
+ */
+export function applyValidationBaseline<
+  T extends ValidationBaselineKeyable & { severity?: string },
+>(
+  command: string,
+  diagnostics: T[],
+  options: { strict?: boolean; baseline?: ValidationBaseline },
+): BaselinePartition<T> {
+  if (options.strict === true || options.baseline === undefined) {
+    return { diagnostics, debt: 0 };
+  }
+  const { debt } = partitionByBaseline(command, diagnostics, options.baseline);
+  const partition: BaselinePartition<T> = {
+    diagnostics,
+    debt: debt.length,
+    baselineRef: VALIDATION_BASELINE_PATH,
+  };
+  if (debt.length === 0) return partition;
+  const known = new Set(debt);
+  partition.diagnostics = diagnostics.map((d) =>
+    known.has(d) ? { ...d, severity: "info" as const } : d,
+  );
+  return partition;
+}
