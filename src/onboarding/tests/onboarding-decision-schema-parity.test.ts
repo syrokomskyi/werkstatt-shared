@@ -1,0 +1,205 @@
+/*
+<MODULE_CONTRACT>
+<purpose>RFC-1317: prove onboardingDecisionLedgerSchema (Zod, source of truth)
+and the normative werkstatt-onboarding v0.1.0 onboarding-decision.schema.yaml
+produce identical accept/reject verdicts on the fixture set. The spec schema
+is loaded from docs/specs/werkstatt-onboarding/schemas/ and compiled with Ajv
+(draft 2020-12 + formats); capability-gap.schema.yaml is registered first so
+the entry-level $ref resolves, mirroring intake-schema-parity.test.ts.</purpose>
+<non-goals>
+  <item>Do not exercise ONDEC-01…07 discipline rules — those are validator-side (werkstatt-site), not schema-level.</item>
+  <item>Do not mutate the spec schemas — they are the normative reference.</item>
+</non-goals>
+<CHANGE_SUMMARY>
+  <item>RFC-1317: created — 11-fixture Zod/JSON-Schema verdict-parity test.</item>
+  <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
+</CHANGE_SUMMARY>
+*/
+
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
+import YAML from "yaml";
+import { describe, expect, it } from "vitest";
+
+import { onboardingDecisionLedgerSchema } from "../onboarding-decision.ts";
+
+const SPECS_DIR = resolve(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../../../../docs/specs/werkstatt-onboarding/schemas",
+);
+
+function loadSpec(name: string): Record<string, unknown> {
+  return YAML.parse(readFileSync(resolve(SPECS_DIR, name), "utf8"));
+}
+
+const ajv = new Ajv2020({ strict: false, allErrors: true });
+addFormats(ajv);
+// The decision schema $refs "capability-gap.schema.yaml" — register it under
+// its own $id before compiling, same as the intake parity test.
+ajv.addSchema(loadSpec("capability-gap.schema.yaml"));
+const specValidate = ajv.compile(loadSpec("onboarding-decision.schema.yaml"));
+
+const VALID_GAP = {
+  id: "CAPGAP-001",
+  systemId: "dp7",
+  kind: "new-family",
+  need: {
+    statement: "No site family matches the intake classification",
+    evidenceRefs: ["evidence-source/src-01"],
+  },
+  catalogEvidence: {
+    capabilityBriefSha256: "sha256:" + "0".repeat(64),
+    familyScore: 0.5,
+    candidates: [
+      { ref: "family-a", whyInsufficient: "unmatched signals" },
+    ],
+  },
+  proposal: { functionalName: "donation-kindergarten", track: "data" },
+  interim: "compose with the closest family's required archetypes",
+};
+
+function openEntry(): Record<string, unknown> {
+  return {
+    id: "OD-01",
+    topic: "family-confirmation",
+    question: "Accept the detected family?",
+    options: [
+      { label: "A — accept", consequence: "recipe applies as detected" },
+      { label: "B — override", consequence: "compose with another family" },
+    ],
+    recommendation: "A",
+    resolutionPath: "none",
+    refs: ["evidence-source/src-01"],
+    status: "open",
+  };
+}
+
+function baseLedger(): Record<string, unknown> {
+  return {
+    schema: "werkstatt:onboarding-decisions/v1",
+    systemId: "dp7",
+    missionId: "dp7-m000001",
+    intakeId: "int_019a4f2c-7a01-7f30-8c1e-9f2e4a6b8d01",
+    createdAt: "2026-10-17T12:00:00Z",
+    items: [openEntry()],
+  };
+}
+
+interface ParityFixture {
+  name: string;
+  build: () => Record<string, unknown>;
+}
+
+const FIXTURES: ParityFixture[] = [
+  { name: "valid-ledger", build: baseLedger },
+  {
+    name: "wrong-schema-const",
+    build: () => {
+      const l = baseLedger();
+      l.schema = "werkstatt:onboarding-decisions/v2";
+      return l;
+    },
+  },
+  {
+    name: "bad-od-id",
+    build: () => {
+      const l = baseLedger();
+      (l.items as Record<string, unknown>[])[0].id = "OD-1";
+      return l;
+    },
+  },
+  {
+    name: "missing-recommendation",
+    build: () => {
+      const l = baseLedger();
+      delete (l.items as Record<string, unknown>[])[0].recommendation;
+      return l;
+    },
+  },
+  {
+    name: "bad-topic",
+    build: () => {
+      const l = baseLedger();
+      (l.items as Record<string, unknown>[])[0].topic = "pricing-question";
+      return l;
+    },
+  },
+  {
+    name: "bad-resolutionPath",
+    build: () => {
+      const l = baseLedger();
+      (l.items as Record<string, unknown>[])[0].resolutionPath = "operator";
+      return l;
+    },
+  },
+  {
+    name: "entry-with-unknown-key",
+    build: () => {
+      const l = baseLedger();
+      (l.items as Record<string, unknown>[])[0].internal = "x";
+      return l;
+    },
+  },
+  {
+    name: "ledger-with-unknown-top-level-key",
+    build: () => {
+      const l = baseLedger();
+      l.meta = { note: "x" };
+      return l;
+    },
+  },
+  {
+    name: "valid-capability-gap-entry",
+    build: () => {
+      const l = baseLedger();
+      const entry = openEntry();
+      entry.topic = "capability-gap";
+      entry.capabilityGap = VALID_GAP;
+      l.items = [entry];
+      return l;
+    },
+  },
+  {
+    name: "invalid-capabilityGap-payload",
+    build: () => {
+      const l = baseLedger();
+      const entry = openEntry();
+      entry.topic = "capability-gap";
+      entry.capabilityGap = { id: "not-a-capgap" };
+      l.items = [entry];
+      return l;
+    },
+  },
+  {
+    name: "option-with-recommended-key",
+    build: () => {
+      const l = baseLedger();
+      const entry = l.items as Record<string, unknown>[];
+      (
+        (entry[0].options as Record<string, unknown>[])[0] as Record<
+          string,
+          unknown
+        >
+      ).recommended = true;
+      return l;
+    },
+  },
+];
+
+describe("onboarding decision ledger — Zod/spec-schema parity (RFC-1317)", () => {
+  for (const fixture of FIXTURES) {
+    it(`fixture ${fixture.name}: identical verdict`, () => {
+      const candidate = fixture.build();
+      const specVerdict = Boolean(specValidate(candidate));
+      const zodVerdict = onboardingDecisionLedgerSchema.safeParse(candidate).success;
+      expect(
+        zodVerdict,
+        `spec=${specVerdict} zod=${zodVerdict} specErrors=${JSON.stringify(specValidate.errors)}`,
+      ).toBe(specVerdict);
+    });
+  }
+});
