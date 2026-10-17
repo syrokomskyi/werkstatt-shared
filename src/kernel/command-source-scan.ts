@@ -17,6 +17,7 @@
   <item>RFC-1321: isStringLiteralSource — shared raw-text literal check for definition name fields (CMDGEN-06), consumed by checks.commands.generate and werkstatt.commands.validate.</item>
   <item>RFC-1304: initial implementation — maskSource lifted from checks/commands-generate.ts and extended with template-depth tracking; new findDefinitionAnchors (satisfies form), fileHasCommandSignal, scanForbiddenCodepoints; NON_COMMAND_ALLOWLIST moved here for consumer parity.</item>
   <item>RFC-1304 review r1: positional signal pairing (unpairedCommandSignals) — an anchor consumes the annotation/shaped signal at its index and the satisfies tail after its literal end, so hybrid `: T = {…} satisfies KCD` counts once while literal-less `factory() satisfies KCD` stays suspect; CMDGEN_IGNORE_RE is line-anchored and tested against the keepComments mask so pragma text inside string literals cannot suppress; definition-field probe requires field position (prev char `{`/`,`) so ternary branches do not shape a literal.</item>
+  <item>RFC-1321: review-r2: stringLiteralValue — comment-aware literal extractor keys COMMAND_PROVENANCE cleanly (adjacent comments no longer corrupt the key or evade CMDGEN-03); (?!\d) boundary in commitCarriesGovernanceProvenance; non-string --id guard</item>
 </CHANGE_SUMMARY>
 */
 
@@ -585,32 +586,64 @@ export function fileHasCommandSignal(masked: string): boolean {
 }
 
 /**
- * RFC-1321 CMDGEN-06: is a definition field's source text a complete quoted
- * string literal? Receives BOTH slices fieldOffsets returned — the raw text
- * and its masked form. The masked slice must be entirely one string token:
- * comments mask to spaces alongside it, so `name: "a"` with a trailing
- * comment stays a literal while `name: CONST`, `"a" + b`, `("a")`, and `"a" as const` keep
- * visible code and are rejected. The opening-quote requirement rejects bare
- * template literals, which also mask clean. Both enforcement points
- * (checks.commands.generate and werkstatt.commands.validate) share this
- * helper so a lint pass and a generate pass cannot disagree.
+ * RFC-1321 CMDGEN-06: extract the string-literal content of a definition
+ * field's value, or `undefined` when the value is not a pure literal.
+ * Receives BOTH slices fieldOffsets returned — raw text and its masked form.
+ * The masked slice must be whitespace-only (one string token plus optional
+ * comments — comments mask to spaces, so a leading or trailing comment stays
+ * a literal); any visible code (`name: CONST`, `"a" + b`, `("a")`,
+ * `"a" as const`) rejects. Bare template literals are rejected by the
+ * quote requirement. The first quote outside comments is the token's open —
+ * quotes inside comment text cannot mislead the extractor.
  */
-export function isStringLiteralSource(rawFieldText: string, maskedFieldText: string): boolean {
-  const t = rawFieldText.trim();
-  if (t.length < 2) return false;
-  const q = t[0];
-  if (q !== '"' && q !== "'") return false;
-  if (maskedFieldText.trim().length !== 0) return false;
-  for (let i = 1; i < t.length; i++) {
-    const c = t[i];
-    if (c === "\\") {
-      i++;
+export function stringLiteralValue(
+  rawFieldText: string,
+  maskedFieldText: string,
+): string | undefined {
+  if (maskedFieldText.trim().length !== 0) return undefined;
+  let i = 0;
+  let q = "";
+  let open = -1;
+  while (i < rawFieldText.length) {
+    const c = rawFieldText[i];
+    if (c === "/" && rawFieldText[i + 1] === "/") {
+      const nl = rawFieldText.indexOf("\n", i + 2);
+      i = nl === -1 ? rawFieldText.length : nl + 1;
       continue;
     }
-    if (c === q) return true;
-    if (c === "\n") return false; // unterminated
+    if (c === "/" && rawFieldText[i + 1] === "*") {
+      const e = rawFieldText.indexOf("*" + "/", i + 2);
+      i = e === -1 ? rawFieldText.length : e + 2;
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      q = c;
+      open = i;
+      break;
+    }
+    i++;
   }
-  return false;
+  if (open === -1) return undefined;
+  for (let j = open + 1; j < rawFieldText.length; j++) {
+    const c = rawFieldText[j];
+    if (c === "\\") {
+      j++;
+      continue;
+    }
+    if (c === q) return rawFieldText.slice(open + 1, j);
+    if (c === "\n") return undefined; // unterminated
+  }
+  return undefined;
+}
+
+/**
+ * RFC-1321 CMDGEN-06: is a definition field's source text a complete quoted
+ * string literal? Shared by both enforcement points
+ * (checks.commands.generate and werkstatt.commands.validate) so a lint pass
+ * and a generate pass cannot disagree.
+ */
+export function isStringLiteralSource(rawFieldText: string, maskedFieldText: string): boolean {
+  return stringLiteralValue(rawFieldText, maskedFieldText) !== undefined;
 }
 
 /**
