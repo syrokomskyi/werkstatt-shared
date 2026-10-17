@@ -26,3 +26,4 @@ export * from "./diagnostic-cap.ts";
 export * from "./diagnostics-summary.ts";
 export * from "./drift-guard.ts";
 export * from "./workpiece-env.ts";
+export * from "./validation-baseline.ts";

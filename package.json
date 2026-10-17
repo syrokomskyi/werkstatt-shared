@@ -107,6 +107,10 @@
       "types": "./src/kernel/generated-paths.ts",
       "default": "./src/kernel/generated-paths.ts"
     },
+    "./kernel/validation-baseline": {
+      "types": "./src/kernel/validation-baseline.ts",
+      "default": "./src/kernel/validation-baseline.ts"
+    },
     "./component": {
       "types": "./src/component/index.ts",
       "default": "./src/component/index.ts"
