@@ -11,17 +11,12 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1231: step 1 — rename supportsAllSites to acceptsAllFlag
-
-Mechanical sweep: the field only ever gated --all argv acceptance; fan-out
-follows the parsed selector. Guard renamed assertAllSitesAllowed ->
-assertAllFlagAccepted, message updated. 417 declaration sites + type
-surfaces (KernelCommandMetadata, ForgeCommandMetadata) in one atomic pass.</item>
   <item>RFC-1260: resolve cache clones via system-config.yaml — package.json gate left the RFC-1025 fallback dead for every real clone; executor-guard mutating commands against mirror targets</item>
   <item>RFC-1303: review REVIEW-CODE-2026-10-16-02 — scanner moves to werkstatt-shared/node (IO-01), workpieceEnv hashes into envDigest, saveCache tolerates KERNEL-META-01, ENV-INPUT-02 coverage notice, ratchet path-arg tightening</item>
   <item>RFC-1306: KernelRuntimeContext.invoke — optional host-populated command-execution port (KernelInvokeCommand) for in-process sibling-command delegation; absent under autonomous hosts so commands fail closed.</item>
   <item>RFC-1306: review-r1 — io-native writes, cacheable off on chain generators, EVIDENCE-SYNC-02 on invoke throws</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193</history>
+  <item>RFC-1327: run-twice idempotency — declarations, command.idempotency.validate, rerun tests, reconcile/ship/abort convergence fixes</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231</history>
 </CHANGE_SUMMARY>
 */
 
@@ -196,6 +191,18 @@ export interface KernelCommandMetadata {
    * and gate.catalog.generate (RFC-0519). Does NOT affect execution.
    */
   gate?: GateMetadata;
+  /**
+   * RFC-1327: rerun-safety class for mutating lifecycle/provisioning commands.
+   * `rerun-safe` — a second run on converged state is a no-op exit-0 (requires a
+   * sibling `*.rerun.test.ts`, enforced by command.idempotency.validate IDEMP-02);
+   * `resume-only` — safe via `--resume`/journal continuation, a plain re-run may
+   * repeat remote or destructive effects; `not-idempotent` — re-running has
+   * side effects and `idempotencyNote` must say what (IDEMP-03). Meaningful only
+   * with `mutatesState: true`.
+   */
+  idempotency?: "rerun-safe" | "resume-only" | "not-idempotent";
+  /** RFC-1327: explains the class — required for `not-idempotent`, recommended for `resume-only`. */
+  idempotencyNote?: string;
 }
 
 // ---------------------------------------------------------------------------
