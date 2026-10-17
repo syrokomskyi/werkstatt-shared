@@ -394,6 +394,16 @@ describe("TYPO-LOCALE-03 (Cyrillic in non-Cyrillic locale)", () => {
     expect(runRule("TYPO-LOCALE-03", seg)).toHaveLength(0);
   });
 
+  it("skips Cyrillic in a Russian locale", () => {
+    const seg = makeSegment("Это русский текст", { locale: "ru" });
+    expect(runRule("TYPO-LOCALE-03", seg)).toHaveLength(0);
+  });
+
+  it("still detects Cyrillic in a Latin-script Uzbek locale", () => {
+    const seg = makeSegment("Bu oʻzbek matni, lekin т harfi bor", { locale: "uz" });
+    expect(runRule("TYPO-LOCALE-03", seg)).toHaveLength(1);
+  });
+
   it("allows Cyrillic in blockquote lines", () => {
     const seg = makeSegment("Das ist ein Zitat", { locale: "de", raw: "> Das ist ein Zitat" });
     expect(runRule("TYPO-LOCALE-03", seg)).toHaveLength(0);

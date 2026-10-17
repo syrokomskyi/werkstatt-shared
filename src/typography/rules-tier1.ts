@@ -823,9 +823,23 @@ const locale02: TypographyRule = {
 
 // ---------------------------------------------------------------------------
 // TYPO-LOCALE-03: Cyrillic letters in a non-Cyrillic locale
-// Pattern: file locale `de`/`en`: \p{Script=Cyrillic}
+// Pattern: file locale outside CYRILLIC_SCRIPT_LOCALES: \p{Script=Cyrillic}
 // Exclusions: tokens in typography.allowedTokens; markdown blockquote lines (lines starting with >)
 // ---------------------------------------------------------------------------
+
+/** Locales (primary subtag) whose default script is Cyrillic — TYPO-LOCALE-03 never fires there. */
+export const CYRILLIC_SCRIPT_LOCALES: ReadonlySet<string> = new Set([
+  "be",
+  "bg",
+  "kk",
+  "ky",
+  "mk",
+  "mn",
+  "ru",
+  "sr",
+  "tg",
+  "uk",
+]);
 
 const locale03: TypographyRule = {
   id: "TYPO-LOCALE-03",
@@ -833,7 +847,7 @@ const locale03: TypographyRule = {
   tier: 1,
   severity: "error",
   check(segment, ctx) {
-    if (segment.locale === "uk") return [];
+    if (CYRILLIC_SCRIPT_LOCALES.has(segment.locale.split("-")[0]!)) return [];
     const text = segment.text;
     const m = CYRILLIC_SCRIPT.exec(text);
     if (!m) return [];
