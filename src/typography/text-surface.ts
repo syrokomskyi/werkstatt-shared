@@ -92,9 +92,11 @@ export const TECHNICAL_KEYS = new Set([
   "proseId",
 ]);
 
-// When the parent key is "icon", the child "name" is technical
+// Parent key → child keys whose values are technical (never text)
 const TECHNICAL_PARENT_CHILD: Record<string, Set<string>> = {
   icon: new Set(["name"]),
+  // labels.md shell switches: enum values (byIntent, shown, hidden), not text.
+  attribution: new Set(["credits", "proseAuthorship", "footerCopyright"]),
 };
 
 // ---------------------------------------------------------------------------

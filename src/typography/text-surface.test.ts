@@ -247,3 +247,23 @@ Body.
     expect(fmSegments.some((s) => s.text.includes("src/foo/bar.ts"))).toBe(false);
   });
 });
+
+describe("extractTextSurface — attribution switches", () => {
+  it("does not treat labels attribution enum values as text", () => {
+    const source = `---
+brandLabel: "DP7 Handels"
+attribution:
+  credits: byIntent
+  proseAuthorship: shown
+---
+`;
+    const result = extractTextSurface("src/content/site/de/labels.md", source, {
+      languages: ["de"],
+      defaultLanguage: "de",
+    });
+    const texts = result.segments.map((s) => s.text);
+    expect(texts).toContain("DP7 Handels");
+    expect(texts).not.toContain("byIntent");
+    expect(texts).not.toContain("shown");
+  });
+});
