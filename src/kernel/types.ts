@@ -182,6 +182,14 @@ export interface KernelCommandMetadata {
    */
   cacheBypassFlags?: string[];
   /**
+   * RFC-1316: opts this blocking validator into delta mode against
+   * docs/validation-baseline.generated.yaml — diagnostics matching the
+   * recorded key set report as known-debt (info) instead of failing the run;
+   * `--strict` bypasses the baseline. Declaring it contractually requires
+   * ruleId+file+message on every emitted diagnostic (line is advisory-only).
+   */
+  baselineEligible?: boolean;
+  /**
    * RFC-0518: declarative gate metadata. Optional. When present, describes the
    * gate's severity, phase, conditional logic, surfaces protected, rules enforced,
    * and workflow steps blocked on failure. Consumed by ecosystem.manifest.generate
