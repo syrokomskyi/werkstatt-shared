@@ -1,9 +1,11 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-RFC-0786: Unit tests for the buildDnsAidRecord pure function.
-Verifies determinism, domain extraction, and content URL construction.
+Unit tests for dns aid covering buildDnsAidRecords (RFC-0786, RFC-1162). It also guards the documented public contract and regression-sensitive edge cases.
 </purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0786: initial unit tests for buildDnsAidRecord.</item>

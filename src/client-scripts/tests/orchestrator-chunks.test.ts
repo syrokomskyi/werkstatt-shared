@@ -1,7 +1,9 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-1175 AC-5: structural coverage for the single-chunk orchestrator — self-gating feature modules stay statically imported so the entry script's one dynamic import resolves the whole dispatch graph; heavy third-party deps remain lazy inside each init.</purpose>
-<keywords>RFC-1175, orchestrator, chunks, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1175: initial orchestrator chunk-topology tests.</item>

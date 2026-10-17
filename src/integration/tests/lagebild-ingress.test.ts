@@ -6,6 +6,9 @@ construction, idempotency key generation, and network error handling.</purpose>
   <item>Do not make real HTTP calls — fetch is mocked.</item>
 </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the lagebild suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect, vi } from "vitest";

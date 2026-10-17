@@ -1,10 +1,15 @@
 /*
 <MODULE_CONTRACT>
-  <purpose>RFC-1156: Tests for the `duration` pipe formatter — =(ref | duration) renders ISO 8601 durations as locale-aware prose via Intl.DurationFormat; raw passthrough (no pipe) unchanged; strict param validation; uk plural boundaries; `case=` grammatical-case coverage (de dative, uk accusative/genitive).</purpose>
+  <purpose>
+Unit tests for formula eval.duration covering RFC-1156: duration pipe formatter.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1156: initial tests — AC-2..AC-7 coverage for duration pipe formatter.</item>
-  <item>Duration-case extension: tests for case=dative/accusative/genitive and short-style no-op.</item>
+  <item>RFC-1311: carried legacy entry — Duration-case extension: tests for case=dative/accusative/genitive and short-style no-op.</item>
 </CHANGE_SUMMARY>
 */
 

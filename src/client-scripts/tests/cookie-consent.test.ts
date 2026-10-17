@@ -3,6 +3,9 @@
 <purpose>RFC-1192: tests for the conditional cookie-consent surface — self-gating on the
 host node, recorded-choice skip, accept/decline flag writes, and the wg:cookie-consent
 CustomEvent (AC-2 conditional render, AC-3 flag record).</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1192: initial consent-surface tests.</item>

@@ -3,18 +3,13 @@
 <purpose>RFC-0176: verify the inbound/queue runtime — authenticateInbound, IntegrationEventSchema,
 routeEventToReady (self-enabling Lagebild route), and consumeIntegrationBatch dedup via a KV-backed
 seen-set. fetch + KV are stubbed so the full producer→consumer flow is exercised without Cloudflare.</purpose>
-<responsibilities>
-  <item>Assert a valid event routes once to the lagebild gogol-adapter destination.</item>
-  <item>Assert a queue redelivery is deduped (no double-write) via the KV seen-set.</item>
-  <item>Assert inbound auth + event-shape validation are fail-closed.</item>
-</responsibilities>
 <non-goals>
   <item>Do not hit the network — fetch is stubbed.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0176: initial queue/inbound runtime test.</item>
-  <item>Lagebild replaced Pipedrive as sole CRM destination — test updated accordingly.</item>
+  <item>RFC-1311: carried legacy entry — Lagebild replaced Pipedrive as sole CRM destination — test updated accordingly.</item>
 </CHANGE_SUMMARY>
 */
 

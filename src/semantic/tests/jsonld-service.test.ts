@@ -4,6 +4,9 @@
   where Service is required (website-local depth-1, website-service depth-1, website-local depth-5)
   and no Service nodes where Service is prohibited (depth-0, 2, 3, 4). Org-level Service nodes
   and services ItemList are suppressed for all surface pages.</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0492: initial JSON-LD test for industry Service node emission and org-level suppression.</item>

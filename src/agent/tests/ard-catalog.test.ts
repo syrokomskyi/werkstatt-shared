@@ -1,12 +1,16 @@
 /*
 <MODULE_CONTRACT>
-<purpose>ARD ai-catalog.json projection tests: determinism, shape, entry coverage.</purpose>
-<keywords>ARD, ai-catalog, agent surface, test</keywords>
+<purpose>
+Unit tests for ard catalog covering its documented public contract and regression-sensitive edge cases.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Initial ARD ai-catalog.json projection tests.</item>
+  <item>RFC-1311: carried legacy entry — Initial ARD ai-catalog.json projection tests.</item>
   <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>
-  <item>Schema-conformance tests: absolute-URI urls, whitelisted types only, knowledge refs as SKILL.md skill entries, non-whitelisted support docs excluded.</item>
+  <item>RFC-1311: carried legacy entry — Schema-conformance tests: absolute-URI urls, whitelisted types only, knowledge refs as SKILL.md skill entries, non-whitelisted support docs excluded.</item>
 </CHANGE_SUMMARY>
 */
 

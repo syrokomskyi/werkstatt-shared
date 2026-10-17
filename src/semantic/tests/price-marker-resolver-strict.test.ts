@@ -1,8 +1,13 @@
 /*
 <MODULE_CONTRACT>
 <purpose>[RFC-1288] Unit tests for strict price marker resolution: resolvePriceMarkersStrict, findDerivedPrice suffix lookup, verbatim unresolved markers, and the no-"0 €"-fallback contract of resolvePriceMarkersForSemantic.</purpose>
-<keywords>price-marker, strict-resolver, semantic, test, RFC-1288</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the price suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect, describe } from "vitest";

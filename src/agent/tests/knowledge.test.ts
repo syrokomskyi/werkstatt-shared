@@ -1,11 +1,10 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0287: shape + determinism tests for the knowledge envelope formatter.</purpose>
-<keywords>RFC-0287, agent surface, knowledge, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP>
-  <entry key="tests">domain list, envelope shape, determinism, hash stability.</entry>
-</MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0287: initial knowledge formatter tests.</item>
 </CHANGE_SUMMARY>

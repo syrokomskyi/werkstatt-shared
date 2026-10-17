@@ -1,3 +1,17 @@
+/*
+<MODULE_CONTRACT>
+<purpose>
+Unit tests for sternsystem owner covering systemConfigSchema owner field (RFC-0561).
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the sternsystem suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
+*/
+
 import { test, expect, describe } from "vitest";
 import { systemConfigSchema } from "@warpgogol/werkstatt-shared/ontology/operations";
 

@@ -1,11 +1,10 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0211: round-trip + edge-case tests for the claim subject address codec.</purpose>
-<keywords>RFC-0211, CKL, claim, subject, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP>
-  <entry key="tests">parse/format round-trips, lang detection, malformed input.</entry>
-</MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0211: initial codec tests.</item>
 </CHANGE_SUMMARY>

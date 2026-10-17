@@ -1,20 +1,15 @@
 /*
 <MODULE_CONTRACT>
   <purpose>
-    RFC-0082 regression tests for parseOnboardingArtifactHeader and
-    parseOnboardingArtifactPayload across the five contract shapes:
-    single-doc file, two-doc file, missing-header file, empty file,
-    doc-count > 2.
-  </purpose>
-  <responsibilities>
-    <item>Pin the "first doc is header, last doc is payload" rule.</item>
-    <item>Pin that single-doc payloads keep schema-declared keys (e.g. generatedAt) even when those overlap with RFC-0076 metadata.</item>
-    <item>Pin the > 2 docs rejection.</item>
-  </responsibilities>
+Unit tests for onboarding yaml covering its documented public contract and regression-sensitive edge cases.
+</purpose>
   <non-goals>
     <item>Do not test specific content-discipline schemas — they own their own validation.</item>
   </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the onboarding suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

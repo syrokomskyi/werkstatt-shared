@@ -1,17 +1,12 @@
 /*
 <MODULE_CONTRACT>
-<purpose>Unit tests for RFC-0306 Markdown twin path helpers.</purpose>
-<keywords>markdown twin, path helper, RFC-0306</keywords>
-<responsibilities>
-  <item>Lock root, language-root, nested, trailing-slash, and non-language slug behavior.</item>
-</responsibilities>
+<purpose>
+Unit tests for twin path covering its documented public contract and regression-sensitive edge cases.
+</purpose>
 <non-goals>
   <item>Do not inspect generated app files.</item>
 </non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP>
-  <entry key="tests">node:test assertions for markdownTwinRelPath and markdownTwinUrlPath.</entry>
-</MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0306: Added Markdown twin path helper coverage.</item>
 </CHANGE_SUMMARY>

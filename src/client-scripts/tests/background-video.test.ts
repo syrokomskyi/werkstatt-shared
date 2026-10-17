@@ -1,7 +1,9 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-1175: tests for background-video runtime — capability gating (saveData, reduced-motion), viewport play/pause, poster fallback.</purpose>
-<keywords>RFC-1175, background-video, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1175: initial background-video tests.</item>

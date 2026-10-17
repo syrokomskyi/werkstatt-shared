@@ -2,6 +2,9 @@
 <MODULE_CONTRACT>
 <purpose>RFC-1192: tests for the wg_consent flag + cookieWriteAllowed() write-gate — absent,
 declined, granted, malformed, and unavailable-storage paths (AC-3 flag shape, AC-4 gate).</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1192: initial write-gate tests.</item>

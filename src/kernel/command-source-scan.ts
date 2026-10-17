@@ -9,9 +9,9 @@
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>The suspect-file signal is anchored to definition shape — an annotation-position KernelCommandDefinition token or a top-level literal carrying an execute/command field. A bare `command:`/`KernelCommandDefinition` text match would false-positive on pipeline step descriptors, interface fields, and helper signatures (measured: 25 files in checks/, 85 in engine/src).</item>
-  <item>Masked source keeps braces outside strings/comments visible so literalEnd can pair them; template ${ } regions are masked opaque but depth-tracked, so inner backticks inside an interpolation can no longer desync the outer template (the RFC-1295 silent-drop defect).</item>
-  <item>NON_COMMAND_ALLOWLIST lives here so the generator and the validator apply the identical exemption set — divergence would re-report allowlisted files from the engine side.</item>
+  <item>The suspect-file signal is anchored to definition shape</item>
+  <item>Masked source keeps braces outside strings/comments visible so literalEnd can pair them; template ${ } regions are masked opaque.</item>
+  <item>NON_COMMAND_ALLOWLIST lives here so the generator</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1304: initial implementation — maskSource lifted from checks/commands-generate.ts and extended with template-depth tracking; new findDefinitionAnchors (satisfies form), fileHasCommandSignal, scanForbiddenCodepoints; NON_COMMAND_ALLOWLIST moved here for consumer parity.</item>

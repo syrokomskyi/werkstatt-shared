@@ -1,8 +1,13 @@
 /*
 <MODULE_CONTRACT>
 <purpose>Unit tests for RFC-0143 / RFC-0328 per-page output projection resolution.</purpose>
-<keywords>output projection, sitemap, llms, robots, legal, test, RFC-0328</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the output suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

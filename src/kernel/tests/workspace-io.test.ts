@@ -14,14 +14,15 @@ import type { ExecResult, WorkspaceIO } from "../workspace-io.ts";
 /*
 <MODULE_CONTRACT>
 <purpose>
-  RFC-0267: port + adapter tests, written before wiring into the executor.
-  Recording adapter captures intents and never touches disk (fs spy via a
-  real temp directory). Read-only adapter throws KERNEL-META-01 naming the
-  command and path on any mutation. Default adapter writes atomically
-  (delegates to writeFileAtomic, rfc-0258 — proven by "no partial content"
-  and "no leftover temp file" after a successful write).
+Unit tests for workspace io covering its documented public contract and regression-sensitive edge cases.
 </purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the workspace suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 test("createDefaultIO: writeFile creates the file with exact content, no leftover temp file", async () => {

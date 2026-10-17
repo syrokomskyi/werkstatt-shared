@@ -10,9 +10,9 @@ and the Nachweis I/O helpers (RFC-1307).</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>One map for every writer: register seeding and nachweis resolve the same directory per entity type, so a content reference like business-profile.trust/claims/<slug> means the same file everywhere.</item>
-  <item>Singleton entity types (business, legal-identity, brand) are type-named files — canonical readers (semantic-loader, rfc-0483 migrator, wikidata) and business-profile.* refs all address organization/&lt;type&gt;.md; the id slug is only used by collection types. Two singletons on the same slug can never collide (REVIEW-CODE-2026-10-16-07).</item>
-  <item>Serialization is independent of input key order: envelope keys first in fixed order, every other mapping key sorted lexicographically at every depth (DNA-58).</item>
+  <item>One map for every writer: register seeding</item>
+  <item>Singleton entity types (business, legal-identity, brand) are type-named files</item>
+  <item>Serialization is independent of input key order: envelope keys first in fixed order, every other mapping key sorted lexicographically.</item>
   <item>YAML quoting follows RFC-0493 — plain scalars by default, double quotes when required, never single quotes; no line folding.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>

@@ -5,14 +5,15 @@ import { EMPTY_RUNTIME_CONTEXT } from "../../runtime/runtime-context.ts";
 /*
 <MODULE_CONTRACT>
 <purpose>
-  RFC-0262: verify buildPage's validateProps hook is called per resolved
-  block (with the block id) and that a thrown violation propagates —
-  buildPage never swallows a validateProps error (fail-fast contract).
+Unit tests for dev props validator covering its documented public contract and regression-sensitive edge cases.
 </purpose>
 <non-goals>
   <item>Do not test real propsSchema resolution here — see dev-props-validator's own schema-shape checks, exercised indirectly via props-contract.test.ts's validateExampleAgainstSchema (identical logic).</item>
 </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the dev suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 function fixtureEntry(): PageEntry {

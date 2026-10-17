@@ -1,15 +1,13 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-0181: verify the unified deliverEvent fan-out (channels + destinations) and the
-eventToLeadMessage mapping. With no secrets every sink is skipped (not failed), so a misconfigured
-site never spuriously retries. No network — adapters self-skip on absent secrets.</purpose>
-<responsibilities>
-  <item>eventToLeadMessage maps source/locale/occurredAt/contact + payload.message.</item>
-  <item>deliverEvent with no secrets skips all channels + the CRM destination (no failures).</item>
-</responsibilities>
+<purpose>
+Unit tests for deliver event covering its documented public contract and regression-sensitive edge cases.
+</purpose>
 <non-goals><item>No network.</item></non-goals>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-0181: initial deliverEvent test.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0181: initial deliverEvent test.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

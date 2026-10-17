@@ -2,13 +2,11 @@
 <MODULE_CONTRACT>
 <purpose>RFC-0191: prove the lifecycle event contracts — the closed kind catalog, the typed
 payload schema the Stripe adapter validates against, and the guard. Pure — no I/O, no Stripe.</purpose>
-<responsibilities>
-  <item>LifecycleEventPayloadSchema accepts a valid Stripe-mapped payload and rejects bad input.</item>
-  <item>isLifecycleEventKind guards the closed catalog.</item>
-</responsibilities>
 <non-goals><item>No network, no Stripe SDK — the schema is pure.</item></non-goals>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-0191: initial lifecycle contract test.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0191: initial lifecycle contract test.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

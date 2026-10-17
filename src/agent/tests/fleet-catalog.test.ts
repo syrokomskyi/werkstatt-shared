@@ -1,11 +1,10 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0292: determinism + shape tests for the Fleet Agent Catalog builder.</purpose>
-<keywords>RFC-0292, fleet, agent catalog, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP>
-  <entry key="tests">determinism, missing-doc entry, sorting, hash stability, empty-input safe default.</entry>
-</MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0292: initial builder tests.</item>
 </CHANGE_SUMMARY>

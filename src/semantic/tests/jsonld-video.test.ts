@@ -9,7 +9,13 @@ import type { SemanticPageModel, VideoSeoData } from "../models.ts";
     RFC-0912: Tests for buildVideoObjectNodes — the JSON-LD builder that emits
     VideoObject nodes from SemanticBlock.video data on opted-in content video blocks.
   </purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the jsonld suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 function makeMinimalPage(overrides: Partial<SemanticPageModel> = {}): SemanticPageModel {

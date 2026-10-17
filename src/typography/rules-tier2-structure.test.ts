@@ -5,6 +5,9 @@ of the 10 rules (TYPO-HEAD-01..04, TYPO-PAIR-01..03, TYPO-MD-01..03) with
 positive and negative cases, including edge cases for frontmatter heading
 detection, multi-sentence heading gating, link-stripping interactions, and
 placeholder exclusions.</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>warpgogol-m000193: tests for TYPO-HEAD-04 and the single-sentence gate on TYPO-HEAD-01/03.</item>

@@ -9,6 +9,7 @@ from docs/specs/werkstatt-onboarding/schemas/ and compiled with Ajv
   <item>Do not exercise bundle-level INTAKE-01…11 rules — those are engine-side.</item>
   <item>Do not mutate the spec schemas — they are the normative reference.</item>
 </non-goals>
+</MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1281: created — 13-fixture Zod/JSON-Schema verdict-parity test.</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>

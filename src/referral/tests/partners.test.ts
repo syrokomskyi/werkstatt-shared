@@ -1,10 +1,7 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-[RFC-1222] Unit tests for the referral-partner contract: v4 schema boundaries
-(status lifecycle, structured consent union, role, retiredAt), loader
-classification (pending|active|retired, malformed, reserved, duplicate),
-resolveReferralPartner normalization, and the slug-PII guard.
+Unit tests for partners covering ReferralPartnerSchema v4; RFC-1277 display switches + publication predicates; loadReferralPartners lifecycle classification.
 </purpose>
 <non-goals>
   <item>Does not test route generation or HTTP — loader/resolver purity only.</item>

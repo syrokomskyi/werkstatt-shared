@@ -1,19 +1,15 @@
 /*
 <MODULE_CONTRACT>
   <purpose>
-    RFC-0258 unit tests for writeFileAtomic, written before the workspace-shared
-    writer migration per the RFC's own rollout order.
-  </purpose>
-  <responsibilities>
-    <item>Content lands intact after a single write.</item>
-    <item>A reader polling the target during many sequential writes never observes a partial file.</item>
-    <item>The temp file is removed when the write ultimately fails.</item>
-    <item>A simulated Windows EPERM on the first rename attempt is retried and succeeds.</item>
-  </responsibilities>
+Unit tests for fs atomic covering its documented public contract and regression-sensitive edge cases.
+</purpose>
   <non-goals>
     <item>Do not cover the workspace-write-boundary lint here — see workspace-write-boundary.test.ts in site-kernel-checks.</item>
   </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the fs suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 import fs from "node:fs/promises";

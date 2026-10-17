@@ -1,17 +1,13 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-1112: verify the Upstash Redis REST receipt store. get parses the stored
-{ receipt, bodyHash } record or returns null on a miss; put issues SET NX EX with the
-receipt JSON and the configured key prefix. Both throw on transport errors so the
-caller can decide fail-open semantics. fetch is stubbed — no network.</purpose>
-<responsibilities>
-  <item>get → null on miss, parsed record on hit, correct key prefix.</item>
-  <item>put → SET key JSON NX EX ttl command shape.</item>
-  <item>transport errors propagate (throw).</item>
-</responsibilities>
+<purpose>
+Unit tests for idempotency covering its documented public contract and regression-sensitive edge cases.
+</purpose>
 <non-goals><item>No network — fetch stubbed.</item></non-goals>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-1112: initial receipt store test.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-1112: initial receipt store test.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

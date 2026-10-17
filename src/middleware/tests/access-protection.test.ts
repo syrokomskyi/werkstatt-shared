@@ -1,12 +1,20 @@
 /*
 <MODULE_CONTRACT>
   <purpose>RFC-0899: Unit tests for access protection middleware logic — constant-time comparison, host matching, PIN gating.</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<KEY_DECISIONS>
+  <item>Fixtures stay inline and minimal so each case states its own setup.</item>
+</KEY_DECISIONS>
+
 <CHANGE_SUMMARY>
   <item>RFC-0899: Initial middleware unit tests.</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
 </CHANGE_SUMMARY>
 */
+// @ai-invariant fixtures must not couple to internals beyond the public surface under test
 
 import { describe, expect, it, vi } from "vitest";
 

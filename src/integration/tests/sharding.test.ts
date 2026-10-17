@@ -3,14 +3,11 @@
 <purpose>RFC-0179: verify resolveShard is deterministic, distributes across the shared pool, names
 resources by the documented scheme, and isolates a dedicated-tier site onto its own queue. These
 properties are what registry-free placement and re-sharding safety depend on.</purpose>
-<responsibilities>
-  <item>Same siteId+region+shardCount ⇒ identical assignment (stable hash).</item>
-  <item>shared tier names gogol-int-{region}-shared-{NN}; dedicated names a per-site queue.</item>
-  <item>dedup namespace is region-scoped; DLQ/consumer derive from the queue.</item>
-</responsibilities>
 <non-goals><item>No I/O — resolveShard is pure.</item></non-goals>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-0179: initial sharding test.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0179: initial sharding test.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

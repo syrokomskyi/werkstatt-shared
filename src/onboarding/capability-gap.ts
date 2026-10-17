@@ -1,5 +1,6 @@
 /*
 <MODULE_CONTRACT>
+
 <purpose>
 RFC-1299: capabilityGapSchema — the Zod mirror of
 docs/specs/werkstatt-onboarding/schemas/capability-gap.schema.yaml. A
@@ -12,6 +13,7 @@ capability.gap.validate (CAPGAP-01…03).
   <item>Do not score or detect gaps here — detection lives in werkstatt-site (family.detect); this file is the data contract only.</item>
   <item>Do not add fields beyond the spec schema — strict objects mirror additionalProperties:false (DNA-19).</item>
 </non-goals>
+</MODULE_CONTRACT>
 <KEY_DECISIONS>
   <item>Field-for-field mirror of capability-gap.schema.yaml — the spec file is normative; any divergence is a bug.</item>
   <item>systemId has no pattern in the spec schema, so none is enforced here (CAPGAP-02's token check supplies the semantic constraint).</item>

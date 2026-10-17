@@ -3,8 +3,13 @@
 <purpose>[RFC-0229] Unit tests for the canonical breadcrumb trail builder: ordering (Home → ancestors
   → self), dedupe against Home/self, site-name stripping, empty-ancestor flat trail, and the resolver
   seam contract.</purpose>
-<keywords>breadcrumb, trail, test, RFC-0229</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the breadcrumbs suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

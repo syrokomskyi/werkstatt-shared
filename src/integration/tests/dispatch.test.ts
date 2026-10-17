@@ -3,14 +3,11 @@
 <purpose>RFC-0179: verify the dynamic-dispatch seam. executeDispatch (tenant-side) runs ready
 destinations with local secrets; dispatchToTenant (consumer-side) posts into the tenant, never
 carries a destination token, and maps the reply to ack vs retry. fetch/dispatcher are stubbed.</purpose>
-<responsibilities>
-  <item>executeDispatch skips destinations when the tenant has no secrets (no network).</item>
-  <item>dispatchToTenant returns ok on a routed reply and retry on all-failed / non-2xx / throw.</item>
-  <item>dispatchToTenant sends the inbound secret header and never the destination token.</item>
-</responsibilities>
 <non-goals><item>No network — fetch + dispatcher are stubbed.</item></non-goals>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-0179: initial dispatch-seam test.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0179: initial dispatch-seam test.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

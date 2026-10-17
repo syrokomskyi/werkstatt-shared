@@ -1,11 +1,10 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0783: determinism + shape tests for the MCP Server Card projection.</purpose>
-<keywords>RFC-0783, agent surface, MCP Server Card, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP>
-  <entry key="tests">null mcp, mcp card fields, determinism.</entry>
-</MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0783: initial MCP Server Card projection tests.</item>
   <item>RFC-1113: align agent discovery surface with RFC 9727 and MCP 2026-07-28 stateless era</item>

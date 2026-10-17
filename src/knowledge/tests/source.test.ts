@@ -1,10 +1,15 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-0214: tests for descriptor schema, JSON extraction, tolerance comparison.</purpose>
-<keywords>RFC-0214, CKL, source, monitor, test</keywords>
+<purpose>
+Unit tests for source covering its documented public contract and regression-sensitive edge cases.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP><entry key="tests">schema validity, extractJsonPath, compareValues bands.</entry></MODULE_MAP>
-<CHANGE_SUMMARY><item>RFC-0214: initial source tests.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0214: initial source tests.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

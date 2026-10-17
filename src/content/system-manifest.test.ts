@@ -1,6 +1,9 @@
 /*
 <MODULE_CONTRACT>
 <purpose>Tests for loadSystemManifest / loadSystemManifestSync — RFC-1106: loaders execute systemManifestSchema.parse() at load time, so a valid manifest returns the schema-inferred type with defaults materialized and an invalid manifest throws ZodError.</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1106: created — pins the parse-at-load contract (AC-7).</item>

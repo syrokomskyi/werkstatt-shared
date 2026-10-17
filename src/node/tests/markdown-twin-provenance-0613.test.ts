@@ -4,21 +4,10 @@
 RFC-0613: Regression tests for parseMarkdownTwinFrontmatter null handling
 and buildMarkdownTwinFrontmatter null serialization.
 </purpose>
-<keywords>RFC-0613, RFC-0602, markdown twin, provenance, null parsing, lastModified</keywords>
-<responsibilities>
-  <item>Verify bare YAML null is parsed as JS null for lastModified.</item>
-  <item>Verify quoted "null" is also parsed as JS null (parser strips quotes before null check).</item>
-  <item>Verify valid date strings are parsed as strings.</item>
-  <item>Verify buildMarkdownTwinFrontmatter serializes null as bare YAML null.</item>
-  <item>Verify buildMarkdownTwinFrontmatter serializes date strings as quoted YAML.</item>
-</responsibilities>
 <non-goals>
   <item>Do not test page.markdown.validate — that is covered in site-kernel-checks tests.</item>
 </non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP>
-  <entry key="tests">Vitest cases for parseMarkdownTwinFrontmatter and buildMarkdownTwinFrontmatter null handling.</entry>
-</MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0613: Added regression tests for null parsing and serialization in markdown twin provenance.</item>
 </CHANGE_SUMMARY>

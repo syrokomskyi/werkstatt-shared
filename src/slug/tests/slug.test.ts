@@ -1,14 +1,15 @@
 /*
 <MODULE_CONTRACT>
-  <purpose>RFC-0915: unit tests for canonical slug module output compatibility.</purpose>
-  <keywords>RFC-0915, slug, slugUrl, slugId, HeadingSlugger, DNA-88</keywords>
-  <responsibilities>
-    <item>Verify slugUrl locale-aware output for DE, UK, and default locales.</item>
-    <item>Verify slugId semantic block ID output and empty fallback.</item>
-    <item>Verify HeadingSlugger deduplication behavior.</item>
-  </responsibilities>
+  <purpose>
+Unit tests for slug covering slugUrl; slugId; HeadingSlugger. It also guards the documented public contract and regression-sensitive edge cases.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-0915: initial unit tests for canonical slug module.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0915: initial unit tests for canonical slug module.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect, describe } from "vitest";

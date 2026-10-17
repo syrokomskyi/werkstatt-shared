@@ -1,11 +1,11 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-1191: verify parseEntitledFeatures — the shared reader for the generated
-entitlements.yaml document used by runtime endpoints via an inlined ?raw bundle.</purpose>
-<responsibilities>
-  <item>well-formed document → the features array as strings.</item>
-  <item>absent/empty/malformed input → null (fail-closed for paid modules).</item>
-</responsibilities>
+<purpose>
+Unit tests for entitlement covering its documented public contract and regression-sensitive edge cases.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1191: initial parser test.</item>

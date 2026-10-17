@@ -1,5 +1,6 @@
 /*
 <MODULE_CONTRACT>
+
 <purpose>Zod model of the werkstatt:intake/v1 hand-over envelope (RFC-1281,
 spec werkstatt-onboarding ON-01 / INTAKE-CONTRACT, AMD-001 §1) — the single
 producer → Werkstatt contract. Owns every envelope field of the three
@@ -11,10 +12,11 @@ export that producers vendor byte-exact
   <item>Do not redeclare PBP entity shapes (DNA-103) — full entity validation runs in @warpgogol/werkstatt-engine via pbpSchemaById (INTAKE-03); this package cannot import @warpgogol/pbp without a dependency cycle.</item>
   <item>Do not touch the filesystem or run bundle-level checks — INTAKE-01…11 live in @warpgogol/werkstatt-engine.</item>
 </non-goals>
+</MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>pbp[] entities are checked at envelope level only — DNA-103 keeps entity shapes single-sourced in @warpgogol/pbp; AMD-001 §1 places the PBP-level check (INTAKE-03) in the engine, which may depend on both packages.</item>
-  <item>Entity JSON Schemas are injected by the engine (RFC-1301) as $defs of the same export — one file, one contractSnapshot hash.</item>
-  <item>Zod is the source of truth (spec D2) — the JSON Schema export producers vendor is derived via z.toJSONSchema, never hand-maintained.</item>
+  <item>pbp[] entities are checked at envelope level only</item>
+  <item>Entity JSON Schemas are injected by the engine (RFC-1301) as $defs of the same export</item>
+  <item>Zod is the source of truth (spec D2)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1281: created — envelope Zod model of werkstatt:intake/v1 (envelope, gap, asset) + renderIntakeSchemaExport().</item>

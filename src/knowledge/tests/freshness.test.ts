@@ -1,10 +1,13 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0213: tests for the freshness state model + ISO duration arithmetic.</purpose>
-<keywords>RFC-0213, CKL, freshness, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP><entry key="tests">addDuration + evaluateFreshness state transitions.</entry></MODULE_MAP>
-<CHANGE_SUMMARY><item>RFC-0213: initial freshness tests.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0213: initial freshness tests.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

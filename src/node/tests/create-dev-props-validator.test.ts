@@ -4,11 +4,15 @@ import { createDevPropsValidator } from "../dev-props-validator.ts";
 /*
 <MODULE_CONTRACT>
 <purpose>
-  RFC-0262: end-to-end test of createDevPropsValidator against the real
-  packages/werkstatt-site/src/domain/ui/sections/hero manifest (this test runs from within the
-  actual monorepo checkout, so workspace-root discovery resolves for real).
+Unit tests for create dev props validator covering its documented public contract and regression-sensitive edge cases.
 </purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the create suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 test("createDevPropsValidator: passes valid Europa (hero-section) props", async () => {

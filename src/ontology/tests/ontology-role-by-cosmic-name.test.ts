@@ -10,7 +10,13 @@ import { roleByCosmicName } from "@warpgogol/werkstatt-shared/ontology/archetype
   Guards the two concrete hero-role entries buildPage's hideSectionNumber
   injection depends on (see hero-section-numbering-parity.test.ts).
 </purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the ontology suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 test("roleByCosmicName is exported and non-empty", () => {

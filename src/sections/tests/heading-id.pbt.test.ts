@@ -1,8 +1,8 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-1196: property guarantees for sectionHeadingId() (DNA-101 PBT) —
-a falsy prefix never produces a leading-dash id, non-empty sectionNumber always
-wins, and empty prefix sources are equivalent to absent ones.</purpose>
+<purpose>
+Unit tests for heading id.pbt covering its documented public contract and regression-sensitive edge cases.
+</purpose>
 <non-goals>
   <item>Do not validate caller-supplied id shape — the kebab typeId contract belongs to the section schema.</item>
 </non-goals>

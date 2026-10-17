@@ -1,17 +1,10 @@
 /*
 <MODULE_CONTRACT>
   <purpose>RFC-0347 + ADR-0019: property-based tests for text normalization idempotency and HTML structural invariance.</purpose>
-  <keywords>RFC-0347, ADR-0019, PBT, fast-check, text-normalize, idempotency, tag balance, comment isolation, no content creation</keywords>
-  <responsibilities>
-    <item>Verify normalizeText is idempotent: normalize(normalize(x)) === normalize(x).</item>
-    <item>Verify normalizeHtml is idempotent.</item>
-    <item>Verify normalizeMarkdown is idempotent.</item>
-    <item>ADR-0019: Verify normalizeHtml preserves tag balance — structural tags in input remain balanced in output.</item>
-    <item>ADR-0019: Verify normalizeHtml preserves comment isolation — HTML comments are not created or destroyed.</item>
-    <item>ADR-0019: Verify normalizeHtml does not create HTML tags not present in input.</item>
-  </responsibilities>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP><entry key="pbt-text-normalize">Property-based tests for normalization idempotency and structural invariance.</entry></MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0347: initial PBT illustrative example for text-normalize idempotency.</item>
   <item>ADR-0019: added tag balance, comment isolation, and no-content-creation properties for normalizeHtml.</item>

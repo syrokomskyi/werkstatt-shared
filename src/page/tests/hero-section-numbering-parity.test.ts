@@ -11,7 +11,13 @@ import { EMPTY_RUNTIME_CONTEXT } from "../../runtime/runtime-context.ts";
   implementation (which replaced the UNNUMBERED_HERO_PLANETS literal set) to
   guard byte-identical output going forward.
 </purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the hero suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 function fixtureEntry(): PageEntry {

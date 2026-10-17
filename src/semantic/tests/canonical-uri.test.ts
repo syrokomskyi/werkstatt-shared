@@ -1,3 +1,17 @@
+/*
+<MODULE_CONTRACT>
+<purpose>
+Unit tests for canonical uri covering RFC-1075 AC-4: deriveCanonicalUri is pure and deterministic.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the canonical suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
+*/
+
 import { describe, it, expect } from "vitest";
 import { deriveCanonicalUri } from "../canonical-uri.ts";
 

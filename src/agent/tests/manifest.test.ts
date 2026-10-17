@@ -1,11 +1,10 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0286: determinism + shape tests for the Agent Surface Manifest builder.</purpose>
-<keywords>RFC-0286, agent surface, manifest, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP>
-  <entry key="tests">determinism, sorting, hash stability, empty-input safe default.</entry>
-</MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0286: initial builder tests.</item>
   <item>RFC-0954: add search interface tests.</item>

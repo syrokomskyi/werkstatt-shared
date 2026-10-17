@@ -1,10 +1,15 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-0215: tests for normalized hashing + derived-state comparison.</purpose>
-<keywords>RFC-0215, CKL, derivation, test</keywords>
+<purpose>
+Unit tests for derivation covering its documented public contract and regression-sensitive edge cases.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP><entry key="tests">normalize stability, hash sensitivity, derivedState transitions.</entry></MODULE_MAP>
-<CHANGE_SUMMARY><item>RFC-0215: initial derivation tests.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0215: initial derivation tests.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

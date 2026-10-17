@@ -1,15 +1,13 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-0181: verify the EU delivery substrate. buildQstashPublish targets the EU region, pins
-dedup to the eventId, and never leaks the token into the body; restRedisLedger gives first-seen-once
-semantics and fails closed on transport error. fetch is stubbed — no network.</purpose>
-<responsibilities>
-  <item>publish Request hits the EU base, carries dedup id + retries, body is the event (no token).</item>
-  <item>ledger.firstSeen is true on OK, false on null (redelivery), throws on non-2xx (fail-closed).</item>
-</responsibilities>
+<purpose>
+Unit tests for qstash covering its documented public contract and regression-sensitive edge cases.
+</purpose>
 <non-goals><item>No network — fetch stubbed.</item></non-goals>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-0181: initial EU delivery substrate test.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0181: initial EU delivery substrate test.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

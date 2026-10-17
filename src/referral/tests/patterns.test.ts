@@ -1,3 +1,17 @@
+/*
+<MODULE_CONTRACT>
+<purpose>
+Unit tests for patterns covering SCENARIO_PARAM_PATTERN (RFC-1257); REF_PARAM_PATTERN; TARGET_QUERY_*_PATTERN (RFC-1257).
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the patterns suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
+*/
+
 import { describe, it, expect } from "vitest";
 import {
   REF_PARAM_PATTERN,

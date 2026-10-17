@@ -1,6 +1,8 @@
 /*
 <MODULE_CONTRACT>
-<purpose>Kernel helper that runs a mutation only when a declared mutatingFlag is truthy — the ratchet-recognized guard form for flag-gated writes under mutatesState: false (RFC-1303).</purpose>
+<purpose>
+Implements run mutating exposing RunMutatingResult, runMutating for the workspace package surface.
+</purpose>
 <non-goals>
   <item>Do not read argv directly — the caller passes input so the flag resolves from input.flags.</item>
 </non-goals>

@@ -24,7 +24,6 @@ capture intents, just from different adapters.
   <item>WorkspaceIO is the single filesystem seam — kernel commands never touch fs directly.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-0267 follow-up: add readdir(path): Promise&lt;DirEntry[]&gt; to complete the port so directory-listing commands (e.g. sitemap.generate) migrate mechanically without importing node:fs for Dirent.</item>
   <item>RFC-0326: createDefaultIO returns { io, intents } — writes touch real disk AND record WriteIntent[] for filesModified reporting.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 

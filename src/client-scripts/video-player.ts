@@ -14,13 +14,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Fix plyr import typing — plyr@3.8 d.ts ends in `export = Plyr` (types import as the class) while dist/plyr.mjs is a real ESM namespace with the class on `.default`; cast pins the runtime shape.</item>
   <item>RFC-1175: autoplay capability gate — prefers-reduced-motion / navigator.connection.saveData suppress data-autoplay playback (poster stays; manual play unaffected).</item>
   <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
   <item>RFC-1175 AC-5: plyr.css moved from top-level import into the Plyr branch — keeps the stylesheet lazy so the orchestrator single-chunk import carries no feature-player CSS.</item>
   <item>warpgogol-m000170: plyr.css via ?inline + &lt;style&gt; injection — the plain css import emitted a preload to an asset inlineStylesheets:'always' never writes, so Plyr init threw and silently fell back to native controls on prod.</item>
   <item>warpgogol-m000196: icon sprite served same-origin — `plyr/dist/plyr.svg?url` + `iconUrl` replaces Plyr's cdn.plyr.io default, whose third-party request the axiom capture policy blocks (console-error → certify gate fail).</item>
-  <history>RFC-0210, RFC-0950</history>
+  <history>RFC-0210, RFC-0950, RFC-1311</history>
 </CHANGE_SUMMARY>
 */
 

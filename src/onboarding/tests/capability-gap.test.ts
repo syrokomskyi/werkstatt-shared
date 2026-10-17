@@ -8,6 +8,7 @@ keys are stripped nowhere (strict objects reject).</purpose>
 <non-goals>
   <item>Do not exercise CAPGAP-02/03 semantics — those live in the site validator.</item>
 </non-goals>
+</MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1299: created — schema boundary tests.</item>
   <item>RFC-1299: capability.brief + family.detect + capability.gap.validate</item>

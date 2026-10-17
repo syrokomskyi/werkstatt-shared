@@ -1,16 +1,15 @@
 /*
 <MODULE_CONTRACT>
-  <purpose>RFC-0347: property-based tests for redactUrl safety invariants.</purpose>
-  <keywords>RFC-0347, PBT, fast-check, redact, url, observability</keywords>
-  <responsibilities>
-    <item>Verify redactUrl never contains a query string in output.</item>
-    <item>Verify redactUrl never contains a fragment in output.</item>
-    <item>Verify redactUrl is idempotent.</item>
-    <item>Verify redactUrl host is always lowercase.</item>
-  </responsibilities>
+  <purpose>
+Unit tests for redactpbt — redact.pbt covering its documented public contract and regression-sensitive edge cases.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP><entry key="pbt-redact-url">Property-based tests for redactUrl safety invariants.</entry></MODULE_MAP>
-<CHANGE_SUMMARY><item>RFC-0347: initial PBT illustrative example for redactUrl invariants.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0347: initial PBT illustrative example for redactUrl invariants.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

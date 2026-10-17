@@ -1,6 +1,9 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-1305 AC-1/AC-2 probes for capDiagnostics/capStrings — capped lists carry the TRUNC-01 marker with total/cap/hidden; at-cap lists pass through unchanged.</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1305: initial tests.</item>

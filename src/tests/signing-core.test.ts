@@ -1,6 +1,9 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0921: Unit tests for the shared signing core — sign/verify round-trip, key generation, canonicalization.</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0921: initial signing core unit tests.</item>

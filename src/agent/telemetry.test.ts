@@ -1,9 +1,7 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-RFC-1172: closed-schema coverage for agentTrafficEventSchema — canonical
-acceptance, unknown-field rejection (AC-2 payload creep), unknown enum
-rejection (DNA-19), and durationMs bounds.
+Unit tests for telemetry covering agentTrafficEventSchema (RFC-1172). It also guards the documented public contract and regression-sensitive edge cases.
 </purpose>
 <non-goals>
   <item>Do not test emission — the boundary emit + recorder live in werkstatt-engine.</item>

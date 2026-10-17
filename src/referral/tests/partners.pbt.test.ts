@@ -1,8 +1,7 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-[RFC-1198] Property-based tests for referral-partner contract invariants
-(DNA-41/DNA-101): schema/loader/resolver determinism over generated inputs.
+Unit tests for partnerspbt — partners.pbt covering ReferralPartnerSchema PBT; resolveReferralPartner PBT. It also guards the documented public contract and regression-sensitive edge cases.
 </purpose>
 <non-goals>
   <item>No I/O — pure contract properties only.</item>

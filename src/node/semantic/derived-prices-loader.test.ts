@@ -1,6 +1,11 @@
 /*
 <MODULE_CONTRACT>
-  <purpose>RFC-1137: tests for loadDerivedPrices — required cwd contract (AC-2) and workpiece-resolved warning path (AC-3).</purpose>
+  <purpose>
+Unit tests for derived prices loader covering loadDerivedPrices (RFC-1137). It also guards the documented public contract and regression-sensitive edge cases.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1137: initial tests — cwd is a required parameter (compile-time guard via @ts-expect-error), missing file warns with the resolved path, present file loads entries.</item>

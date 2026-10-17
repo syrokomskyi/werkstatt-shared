@@ -7,6 +7,9 @@ enforcement — every exact or normalized collision, cross-catalog or
 same-catalog, must be recorded in KNOWN_*_CATALOG_COLLISIONS, and stale
 declarations whose collision was resolved fail closed.
 </purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1308: consume KNOWN_*_CATALOG_COLLISIONS instead of a private

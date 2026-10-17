@@ -11,8 +11,10 @@ code as the conformance mechanism — shared code with Lagebild is forbidden
   <item>Do not send anything to Lagebild — these tests perform no network IO.</item>
 </non-goals>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-1269: PIN bump to
-verbund-integration-spec-v0.1.5 (AMD-WERKSTATT-05 accepted, ADR-0009).</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-1269: PIN bump to
+verbund-integration-spec-v0.1.5 (AMD-WERKSTATT-05 accepted, ADR-0009).</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

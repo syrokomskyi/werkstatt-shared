@@ -1,9 +1,14 @@
 /*
 <MODULE_CONTRACT>
-  <purpose>Test that buildWebPageNode emits correct speakable cssSelector matching the rendered section-header__subheading class.</purpose>
+  <purpose>
+Unit tests for jsonld webpage covering buildWebPageNode speakable cssSelector. It also guards the documented public contract and regression-sensitive edge cases.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>Initial test for speakable cssSelector referencing section-header__subheading (not section-header__lead).</item>
+  <item>RFC-1311: carried legacy entry — Initial test for speakable cssSelector referencing section-header__subheading (not section-header__lead).</item>
 </CHANGE_SUMMARY>
 */
 

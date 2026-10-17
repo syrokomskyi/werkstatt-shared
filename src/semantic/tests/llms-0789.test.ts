@@ -1,14 +1,15 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-0789: tests for conditional agent discovery links in buildLlmsIndex.</purpose>
-<keywords>RFC-0789, llms.txt, agent surface, discovery links, test</keywords>
+<purpose>
+Unit tests for llms 0789 covering its documented public contract and regression-sensitive edge cases.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP>
-  <entry key="tests">agent absent (default enabled), agent.enabled true, agent.enabled false, absolute URLs.</entry>
-</MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0789: initial tests for conditional agent discovery links in buildLlmsIndex.</item>
-  <item>Assert the fifth link — .well-known/ard.json (ARD v0.91 catalog) — present when enabled, absent when disabled.</item>
+  <item>RFC-1311: carried legacy entry — Assert the fifth link — .well-known/ard.json (ARD v0.91 catalog) — present when enabled, absent when disabled.</item>
 </CHANGE_SUMMARY>
 */
 

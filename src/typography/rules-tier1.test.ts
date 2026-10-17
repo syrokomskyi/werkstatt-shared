@@ -1,6 +1,11 @@
 /*
 <MODULE_CONTRACT>
-<purpose>Unit tests for the Tier 1 typography rules (RFC-1068).</purpose>
+<purpose>
+Unit tests for rules tier1 covering TYPO-PUNCT-01 (doubled/clashing punctuation); TYPO-PUNCT-02 (two dots or 4+ dots); TYPO-PUNCT-03 (whitespace before closing punctuation).
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1068: initial creation.</item>

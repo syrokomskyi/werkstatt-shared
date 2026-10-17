@@ -1,11 +1,10 @@
 /*
 <MODULE_CONTRACT>
 <purpose>RFC-0289: bijection + shape tests for the OpenAPI projection formatter.</purpose>
-<keywords>RFC-0289, agent surface, OpenAPI, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP>
-  <entry key="tests">empty manifest, knowledge ref projection, action ref projection, mcp/proof omission.</entry>
-</MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0289: initial OpenAPI formatter tests.</item>
   <item>RFC-0954: add search path projection tests.</item>

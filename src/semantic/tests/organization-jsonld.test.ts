@@ -1,6 +1,11 @@
 /*
 <MODULE_CONTRACT>
-  <purpose>RFC-0745: test that buildOrganizationNode emits priceCurrency in makesOffer Offer nodes when currency is available.</purpose>
+  <purpose>
+Unit tests for organization jsonld covering RFC-0745: buildOrganizationNode makesOffer priceCurrency; buildOrganizationNode priceRange.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0745: initial test for priceCurrency in makesOffer Offer nodes.</item>

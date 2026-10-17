@@ -1,3 +1,17 @@
+/*
+<MODULE_CONTRACT>
+<purpose>
+Unit tests for project claims.pbt covering projectClaims — property-based (AC-4).
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the project suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
+*/
+
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
 import { projectClaims } from "../business-projection.ts";

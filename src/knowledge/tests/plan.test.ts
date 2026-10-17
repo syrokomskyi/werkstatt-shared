@@ -2,9 +2,10 @@
 <MODULE_CONTRACT>
 <purpose>RFC-0216: tests for maintenance-plan contracts — task-id idempotency,
 pre-deadline dueAt, and the shared red/amber gate verdict.</purpose>
-<keywords>RFC-0216, CKL, plan, task, gate, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP><entry key="tests">stableTaskId, computeDueAt, isRedTask, defaultCriticality.</entry></MODULE_MAP>
 <CHANGE_SUMMARY>
   <item>RFC-0216: initial plan tests (added in self-review pass).</item>
   <item>RFC-0323: blocking review-due comparative claims are red.</item>

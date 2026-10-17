@@ -3,13 +3,11 @@
 <purpose>RFC-0188 Phase 3: prove the canonical→generic stage bridge is total and lands only on
 valid generic stages, so the Pipedrive sync worker (STAGE_MAP) keeps working while the precise
 funnel_stage is preserved. Pure — no I/O.</purpose>
-<responsibilities>
-  <item>FUNNEL_STAGE_TO_BUFFER_STAGE covers every canonical stage and maps into BUFFER_DEAL_STAGES.</item>
-  <item>Terminal stages bridge to their generic equivalents; isFunnelStage guards the catalog.</item>
-</responsibilities>
 <non-goals><item>No DB — the bridge is a pure mapping.</item></non-goals>
 </MODULE_CONTRACT>
-<CHANGE_SUMMARY><item>RFC-0188 Phase 3: initial stage-bridge test.</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0188 Phase 3: initial stage-bridge test.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

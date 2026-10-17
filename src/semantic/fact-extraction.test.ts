@@ -1,3 +1,17 @@
+/*
+<MODULE_CONTRACT>
+<purpose>
+Unit tests for fact extraction covering fact-extraction: normalizeFactValue; fact-extraction: CanonicalFact interface.
+</purpose>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
+</MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the fact suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
+*/
+
 import { describe, test, expect } from "vitest";
 import { normalizeFactValue, type CanonicalFact } from "./fact-extraction.ts";
 

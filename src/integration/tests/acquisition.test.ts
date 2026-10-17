@@ -7,6 +7,9 @@ and the shared structural validator.</purpose>
   <item>Do not test browser APIs — storage is faked; no jsdom dependency.</item>
 </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1311: Compass header sweep — declares the acquisition suite's contract for test-file scaffold coverage.</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";

@@ -8,9 +8,9 @@
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>TRUNC-01 is always warning-severity regardless of the capped rule's severity — it reports about the report, not the content (RFC-1305 alternatives: per-rule ids and error severity both rejected).</item>
-  <item>opts.total lets early-break collectors report the true filtered count — the count that would have been listed, not the raw scan count.</item>
-  <item>capStrings is the string-envelope adapter for the RFC-1305 sweep's non-Diagnostic emission paths (import.extensions.lint, price.presence.validate, need.markers.validate, dist.faq.validate, dist.content-references.validate, content.idempotency.validate) — those commands truncate rendered violation lines, not Diagnostic objects, so the marker is embedded in the string.</item>
+  <item>is always warning-severity regardless of the capped rule's severity</item>
+  <item>opts.total lets early-break collectors report the true filtered count</item>
+  <item>capStrings is the string-envelope adapter for the RFC-1305 sweep's non-Diagnostic emission paths (import.extensions.lint, price.presence.validate, need.markers.validate, dist.faq.validate, dist.content-references.validate, content.idempotency.validate)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1305: initial implementation — capDiagnostics (Diagnostic[] path) + capStrings (string-envelope path), both emitting the shared TRUNC-01 marker.</item>

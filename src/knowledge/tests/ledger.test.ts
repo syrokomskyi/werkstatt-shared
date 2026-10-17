@@ -2,10 +2,13 @@
 <MODULE_CONTRACT>
 <purpose>RFC-0217: tests for the claim ledger — event-id identity (incl. value),
 as-of query, lineage assembly, and the two projections.</purpose>
-<keywords>RFC-0217, CKL, ledger, event, lineage, projection, test</keywords>
+<non-goals>
+  <item>Not a contract source of truth — the module under test owns the authoritative behavior; fixtures are minimal scaffolding only.</item>
+</non-goals>
 </MODULE_CONTRACT>
-<MODULE_MAP><entry key="tests">stableEventId, queryAsOf, buildLineage, projectGraph, projectTemporalSeo, ndjson round-trip.</entry></MODULE_MAP>
-<CHANGE_SUMMARY><item>RFC-0217: initial ledger tests (added in self-review pass).</item></CHANGE_SUMMARY>
+<CHANGE_SUMMARY>
+  <item>RFC-0217: initial ledger tests (added in self-review pass).</item>
+</CHANGE_SUMMARY>
 */
 
 import { test, expect } from "vitest";
