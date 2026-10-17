@@ -12,6 +12,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0899: Initial middleware unit tests.</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
+  <item>RFC-0899: protect workers.dev dev and alt channels with the PIN and noindex</item>
 </CHANGE_SUMMARY>
 */
 // @ai-invariant fixtures must not couple to internals beyond the public surface under test
@@ -87,6 +88,28 @@ describe("RFC-0899: access protection middleware", () => {
     const res = await runMiddleware(handler, "alt.example.com");
     expect(res._nextCalled).toBe(false);
     expect(res.status).toBe(401);
+  });
+
+  it("returns 401 for a workers.dev dev channel (dev-<site>.<account>.workers.dev)", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    const handler = await loadMiddleware();
+    const res = await runMiddleware(handler, "dev-dp7.syrokomskyi.workers.dev");
+    expect(res._nextCalled).toBe(false);
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 401 for a workers.dev alt channel", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    const handler = await loadMiddleware();
+    const res = await runMiddleware(handler, "alt-dp7.syrokomskyi.workers.dev");
+    expect(res.status).toBe(401);
+  });
+
+  it("passes through the workers.dev main channel and look-alike hosts", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    const handler = await loadMiddleware();
+    expect((await runMiddleware(handler, "dp7.syrokomskyi.workers.dev"))._nextCalled).toBe(true);
+    expect((await runMiddleware(handler, "devtools.example.com"))._nextCalled).toBe(true);
   });
 
   it("passes through dev.* with correct Basic Auth", async () => {

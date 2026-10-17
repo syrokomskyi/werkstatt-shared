@@ -21,6 +21,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-0899: protect workers.dev dev and alt channels with the PIN and noindex</item>
 </CHANGE_SUMMARY>
 */
 
@@ -45,8 +46,13 @@ function constantTimeEqual(a: string, b: string): boolean {
 /**
  * Check if a host is a dev or alt subdomain.
  */
-function isDevOrAltHost(host: string): boolean {
-  return host.startsWith("dev.") || host.startsWith("alt.");
+/**
+ * Dev/alt channel hosts: `dev.<domain>` / `alt.<domain>` on a custom domain,
+ * and `dev-<site>.<account>.workers.dev` / `alt-<site>…` on a provisional
+ * workers.dev host — the same `^(dev|alt)[.-]` rule certify uses.
+ */
+export function isDevOrAltHost(host: string): boolean {
+  return /^(dev|alt)[.-]/i.test(host);
 }
 
 /**
@@ -163,7 +169,7 @@ export const accessProtectionMiddleware = defineMiddleware(async (context: any, 
   }
 
   const host = context.request.headers.get("host") ?? "";
-  const isDevOrAlt = host.startsWith("dev.") || host.startsWith("alt.");
+  const isDevOrAlt = isDevOrAltHost(host);
 
   if (!isDevOrAlt) {
     return next();
