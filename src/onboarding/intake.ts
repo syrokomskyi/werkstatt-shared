@@ -19,6 +19,7 @@ export that producers vendor byte-exact
   <item>Zod is the source of truth (spec D2)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1328/AMD-005: statementByLocale + localeNeutral on the envelope entity (INTAKE-13); envelope-level, pbp/*@1 schemas untouched.</item>
   <item>RFC-1281: created — envelope Zod model of werkstatt:intake/v1 (envelope, gap, asset) + renderIntakeSchemaExport().</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>
   <item>RFC-1301: export PBP entity JSON Schemas in werkstatt:intake/v1 (RFC-1301)</item>
@@ -132,6 +133,19 @@ const intakePbpEntitySchema = z.looseObject({
   id: z.string().min(1),
   type: z.string(),
   status: z.enum(["draft", "published", "superseded"]),
+  /**
+   * AMD-005/RFC-1328: per-locale value of the entity's statement field
+   * (`statement`, else `summary`) for published entities — keyed by the
+   * BCP 47 tags of `classification.locales`. The root statement field is
+   * the primary-locale value; this map covers the rest. Optional — an
+   * entity without it is either `localeNeutral` or INTAKE-13.
+   */
+  statementByLocale: z.record(bcp47Tag, z.string().min(1)).optional(),
+  /**
+   * AMD-005/RFC-1328: the statement is a name/identifier/address — the same
+   * string is correct in every locale (INTAKE-13 exempt).
+   */
+  localeNeutral: z.boolean().optional(),
 });
 
 // ---------------------------------------------------------------------------
