@@ -15,6 +15,7 @@ All regexes use the `u` flag and Unicode property escapes where applicable.</pur
   <item>RFC-1070: initial creation with 7 Tier 2 locale rules.</item>
   <item>RFC-1072: populated fix on ABBR-01, ABBR-02, APOS-01, APOS-02.</item>
   <item>RFC-1324 cold-run defect: TYPO-ABBR-01 false-positive — bare `Art` is a common German noun (jede Art der Verwertung); DIGIT_REQUIRED_BARE gates it to citation context (Art 6 DSGVO).</item>
+  <item>RFC-1324 cold-run defect: same class in `en` — bare `No` is the determiner (No preview available); joins DIGIT_REQUIRED_BARE (No. 5 stays flagged).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -210,8 +211,9 @@ function buildBareFormMap(abbreviations: ReadonlySet<string>): Map<string, strin
   return map;
 }
 
-/** Bare abbreviation forms that are also common nouns — require a digit after the match (citation context) to count as the abbreviation. */
-const DIGIT_REQUIRED_BARE = new Set(["Art"]);
+/** Bare abbreviation forms that are also common nouns/determiners — require a
+    digit after the match (citation context) to count as the abbreviation. */
+const DIGIT_REQUIRED_BARE = new Set(["Art", "No"]);
 
 const abbr01: TypographyRule = {
   id: "TYPO-ABBR-01",
@@ -231,9 +233,10 @@ const abbr01: TypographyRule = {
       for (const m of text.matchAll(pattern)) {
         const after = text[m.index + m[0].length];
         if (after === ".") continue;
-        // Bare forms that double as common nouns only count as the abbreviation
-        // in their citation context: German `Art.` (Artikel) always precedes a
-        // digit (Art. 6 DSGVO) — "jede Art der Verwertung" is the noun.
+        // Bare forms that double as common nouns/determiners only count as the
+        // abbreviation in citation context: German `Art.` (Art. 6 DSGVO) and
+        // English `No.` (No. 5) always precede a digit — "jede Art der
+        // Verwertung" / "No preview available" are the common words.
         if (
           DIGIT_REQUIRED_BARE.has(bare) &&
           !/^\s*\p{Nd}/u.test(text.slice(m.index + m[0].length))

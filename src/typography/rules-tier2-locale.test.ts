@@ -10,7 +10,7 @@ is tested for positive detection, negative (no finding), and key exclusions.</pu
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1070: initial creation with unit tests for 7 Tier 2 locale rules.</item>
-  <item>RFC-1324: ABBR-01 digit-required coverage — Art citation vs noun.</item>
+  <item>RFC-1324: ABBR-01 digit-required coverage — Art citation vs noun; No citation vs determiner.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -189,6 +189,14 @@ describe("TYPO-ABBR-01 — Missing trailing period on abbreviation", () => {
       "Vervielfältigung und jede Art der Verwertung bedürfen der Zustimmung.",
       "de",
     );
+  });
+
+  it("detects No without period in citation context (No 5)", () => {
+    expectFinding("TYPO-ABBR-01", "See section No 5 for details.", "en");
+  });
+
+  it("does not fire on No as the determiner (No preview available)", () => {
+    expectNoFinding("TYPO-ABBR-01", "No preview available", "en");
   });
 });
 
