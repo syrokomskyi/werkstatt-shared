@@ -20,6 +20,7 @@ or `^(dev|alt)[.-]` literal is a HOST-01 defect.
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
+  <item>RFC-1325: review r1 — pin-carrying probes, AC-3 write ordering, dns-aid validate parity, hardened host lint</item>
 </CHANGE_SUMMARY>
 */
 
@@ -28,12 +29,14 @@ export type SiteHostKind = "custom-domain" | "provisional-workers-dev";
 
 const WORKERS_DEV_SUFFIX = ".workers.dev";
 
-/** Strip a scheme and trailing path so callers may pass a domain or a URL. */
+/** Strip a scheme, port, and trailing path so callers may pass a domain or a URL. */
 function normalizeHost(domain: string): string {
   return domain
     .toLowerCase()
     .replace(/^https?:\/\//, "")
-    .replace(/\/.*$/, "");
+    .replace(/\/.*$/, "")
+    .replace(/:\d+$/, "")
+    .replace(/\.$/, "");
 }
 
 /** Classify a site domain: `*.workers.dev` hosts are provisional, everything else is a custom domain. */
@@ -70,7 +73,13 @@ export function channelHost(
     if (channel === "alt") return `alt.${domain}`;
     return domain;
   }
-  const suffix = domain.split(".").slice(1).join(".");
+  const parts = normalizeHost(domain).split(".");
+  if (parts.length < 4) {
+    throw new Error(
+      `[site-host] provisional channel host needs a <worker>.<account>.workers.dev domain, got '${domain}'`,
+    );
+  }
+  const suffix = parts.slice(1).join(".");
   return `${workerName}.${suffix}`;
 }
 
@@ -87,4 +96,21 @@ export function workersDevHost(workerName: string, accountSubdomain: string): st
  */
 export function isDevOrAltHost(host: string): boolean {
   return /^(dev|alt)[.-]/i.test(host);
+}
+
+const HOST_LABEL_RE = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
+
+/**
+ * True for a bare lowercase host name (`<label>.<label>.<tld>`): every label
+ * alphanumeric with interior hyphens only, TLD alphabetic and ≥2 chars.
+ * Single-sourced here — `--domain` validators at sternsystem.register and
+ * site.domain.adopt share it; a local host-shape regex is the same HOST-01
+ * defect class as a local classification literal.
+ */
+export function isBareHostname(domain: string): boolean {
+  const labels = domain.split(".");
+  if (labels.length < 2) return false;
+  const tld = labels[labels.length - 1]!;
+  if (!/^[a-z]{2,}$/.test(tld)) return false;
+  return labels.every((label) => HOST_LABEL_RE.test(label));
 }
