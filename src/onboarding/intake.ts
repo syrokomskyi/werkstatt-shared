@@ -19,11 +19,20 @@ export that producers vendor byte-exact
   <item>Zod is the source of truth (spec D2)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1328/AMD-005: statementByLocale + localeNeutral on the envelope entity (INTAKE-13); envelope-level, pbp/*@1 schemas untouched.</item>
   <item>RFC-1281: created — envelope Zod model of werkstatt:intake/v1 (envelope, gap, asset) + renderIntakeSchemaExport().</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>
   <item>RFC-1301: export PBP entity JSON Schemas in werkstatt:intake/v1 (RFC-1301)</item>
   <item>RFC-1298: REVIEW-CODE-2026-10-16-01 findings — kebab flag guards, safeParse, reads declaration, family-append ordering, FONTS-SCRIPT-02 unverifiable-stack warning</item>
+  <item>RFC-1328: review fix pass: envelope fields in vendored schema defs, locale merge prose guard, manifest defaultLocale threading
+
+F-1 blocking: inject statementByLocale/localeNeutral into every exported pbp
+def so producers can self-validate AMD-005 bundles. F-2/F-3: LOCALE_SCOPED_FIELDS
+never merge onto existing locale docs; defaultLocale param replaces the
+hardcoded de across semantic profile, currency, referral capacity. F-4..F-10:
+statementLang rewrite, prose drops on clones/variants, INTAKE-12 name+literals,
+currency-policy gate, predicate signature, doc drift. Unblocks dna-trace
+WS-WRITE-02 false positive (_io naming).</item>
+  <history>RFC-1328</history>
 </CHANGE_SUMMARY>
 */
 
@@ -128,7 +137,7 @@ const classificationSchema = z
 // pbp[] entities — envelope-level check only (DNA-103, AMD-001 §1)
 // ---------------------------------------------------------------------------
 
-const intakePbpEntitySchema = z.looseObject({
+export const intakePbpEntitySchema = z.looseObject({
   schema: z.enum(INTAKE_PBP_SCHEMA_ALLOWLIST),
   id: z.string().min(1),
   type: z.string(),

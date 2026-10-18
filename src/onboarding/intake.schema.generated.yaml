@@ -1011,6 +1011,16 @@ $defs:
         propertyNames:
           type: string
         additionalProperties: {}
+      statementByLocale: &a1
+        type: object
+        propertyNames:
+          type: string
+          pattern: ^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$
+        additionalProperties:
+          type: string
+          minLength: 1
+      localeNeutral: &a2
+        type: boolean
     required:
       - schema
       - id
@@ -1159,6 +1169,8 @@ $defs:
         propertyNames:
           type: string
         additionalProperties: {}
+      statementByLocale: *a1
+      localeNeutral: *a2
     required:
       - schema
       - id
@@ -1681,6 +1693,8 @@ $defs:
           required:
             - label
             - detail
+      statementByLocale: *a1
+      localeNeutral: *a2
     required:
       - schema
       - id
@@ -1819,6 +1833,8 @@ $defs:
           - N1
           - N2
           - N3
+      statementByLocale: *a1
+      localeNeutral: *a2
     required:
       - schema
       - id
@@ -2236,6 +2252,8 @@ $defs:
         type: integer
         minimum: -9007199254740991
         maximum: 9007199254740991
+      statementByLocale: *a1
+      localeNeutral: *a2
     required:
       - schema
       - id
@@ -2346,6 +2364,8 @@ $defs:
             type: boolean
         required:
           - required
+      statementByLocale: *a1
+      localeNeutral: *a2
     required:
       - schema
       - id
@@ -2438,6 +2458,8 @@ $defs:
         additionalProperties:
           type: string
           minLength: 1
+      statementByLocale: *a1
+      localeNeutral: *a2
     required:
       - schema
       - id
@@ -2529,6 +2551,8 @@ $defs:
           required:
             - schemeRef
             - value
+      statementByLocale: *a1
+      localeNeutral: *a2
     required:
       - schema
       - id
