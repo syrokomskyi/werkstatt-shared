@@ -37,6 +37,10 @@ excludePathSegments:
   # root (docs/specs/verbund-integration-spec-*/) — outside the package dir,
   # never shipped standalone; the scandir would ENOENT in the extracted repo.
   - verbund-contract.test.ts
+  # RFC-1328 schema-parity tests read the vendored onboarding spec at the
+  # monorepo root (docs/specs/werkstatt-onboarding/schemas/) — not shipped standalone.
+  - intake-schema-parity.test.ts
+  - onboarding-decision-schema-parity.test.ts
 
 postProcess:
   - action: delete
