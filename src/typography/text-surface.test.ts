@@ -9,6 +9,7 @@ Unit tests for text surface covering deriveFileLocale; extractTextSurface. It al
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1068: initial creation.</item>
+  <item>RFC-1324: coverage for the frontmatter `lang` override over directory locale.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -82,6 +83,35 @@ Second line of text.
     expect(bodySegments.length).toBe(2);
     expect(bodySegments[0].text).toContain("This is a body paragraph");
     expect(bodySegments[1].text).toContain("Second line of text");
+  });
+
+  it("honors a declared frontmatter lang over the directory locale (RFC-1329 binding docs)", () => {
+    const source = `---
+kind: prose
+lang: de
+---
+Deutsche Rechtstexte.
+`;
+    const result = extractTextSurface("src/content/prose/uk/impressum.md", source, {
+      languages: LANGS,
+      defaultLanguage: "de",
+    });
+
+    expect(result.segments.every((s) => s.locale === "de")).toBe(true);
+  });
+
+  it("falls back to the directory locale when no lang is declared", () => {
+    const source = `---
+title: Test
+---
+Body text.
+`;
+    const result = extractTextSurface("src/content/prose/uk/note.md", source, {
+      languages: LANGS,
+      defaultLanguage: "de",
+    });
+
+    expect(result.segments.every((s) => s.locale === "uk")).toBe(true);
   });
 
   it("skips fenced code blocks", () => {

@@ -14,6 +14,7 @@ parse errors and maps them to a structured yamlError field.</purpose>
 <CHANGE_SUMMARY>
   <item>RFC-1068: initial creation.</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
+  <item>RFC-1324 cold-run defect: declared frontmatter `lang` now wins over the directory segment — RFC-1329 binding legal documents live under non-binding locale dirs carrying `lang: de`; directory-keyed checking was a false-positive by locale mismatch.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -303,7 +304,7 @@ export function extractTextSurface(
   options: TextSurfaceOptions,
 ): ExtractTextSurfaceResult {
   const skipKeys = options.skipKeys ?? TECHNICAL_KEYS;
-  const locale = deriveFileLocale(file, options.languages, options.defaultLanguage);
+  const dirLocale = deriveFileLocale(file, options.languages, options.defaultLanguage);
 
   // Parse frontmatter — catch YAML errors
   // Strip BOM if present so the frontmatter regex matches
@@ -330,6 +331,14 @@ export function extractTextSurface(
       yamlError = { line: 0, column: 0, message: err instanceof Error ? err.message : String(err) };
     }
   }
+
+  // A declared frontmatter `lang` wins over the directory segment — legal
+  // binding documents live under a non-binding locale directory but carry
+  // `lang: de` (RFC-1329), and checking German prose under `ru`/`uz` rules is
+  // a false-positive by locale mismatch.
+  const declaredLang =
+    typeof data.lang === "string" && data.lang.trim().length > 0 ? data.lang.trim() : undefined;
+  const locale = declaredLang ?? dirLocale;
 
   const segments: TextSegment[] = [];
 
