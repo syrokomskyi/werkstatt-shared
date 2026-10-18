@@ -14,6 +14,7 @@ All regexes use the `u` flag and Unicode property escapes where applicable.</pur
 <CHANGE_SUMMARY>
   <item>RFC-1070: initial creation with 7 Tier 2 locale rules.</item>
   <item>RFC-1072: populated fix on ABBR-01, ABBR-02, APOS-01, APOS-02.</item>
+  <item>RFC-1324 cold-run defect: TYPO-ABBR-01 false-positive — bare `Art` is a common German noun (jede Art der Verwertung); DIGIT_REQUIRED_BARE gates it to citation context (Art 6 DSGVO).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -209,6 +210,9 @@ function buildBareFormMap(abbreviations: ReadonlySet<string>): Map<string, strin
   return map;
 }
 
+/** Bare abbreviation forms that are also common nouns — require a digit after the match (citation context) to count as the abbreviation. */
+const DIGIT_REQUIRED_BARE = new Set(["Art"]);
+
 const abbr01: TypographyRule = {
   id: "TYPO-ABBR-01",
   family: "ABBR",
@@ -227,6 +231,15 @@ const abbr01: TypographyRule = {
       for (const m of text.matchAll(pattern)) {
         const after = text[m.index + m[0].length];
         if (after === ".") continue;
+        // Bare forms that double as common nouns only count as the abbreviation
+        // in their citation context: German `Art.` (Artikel) always precedes a
+        // digit (Art. 6 DSGVO) — "jede Art der Verwertung" is the noun.
+        if (
+          DIGIT_REQUIRED_BARE.has(bare) &&
+          !/^\s*\p{Nd}/u.test(text.slice(m.index + m[0].length))
+        ) {
+          continue;
+        }
         if (ctx.allowedTokens.has(bare) || ctx.allowedTokens.has(full)) continue;
         findings.push(
           finding(

@@ -10,6 +10,7 @@ is tested for positive detection, negative (no finding), and key exclusions.</pu
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1070: initial creation with unit tests for 7 Tier 2 locale rules.</item>
+  <item>RFC-1324: ABBR-01 digit-required coverage — Art citation vs noun.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -176,6 +177,18 @@ describe("TYPO-ABBR-01 — Missing trailing period on abbreviation", () => {
 
   it("does not fire on напр. with period", () => {
     expectNoFinding("TYPO-ABBR-01", "Наприклад напр. роздiл 5.", "uk");
+  });
+
+  it("detects Art without period in citation context (Art 6)", () => {
+    expectFinding("TYPO-ABBR-01", "Informationsdokument nach Art 13 DSGVO.", "de");
+  });
+
+  it("does not fire on Art as the noun (jede Art der Verwertung)", () => {
+    expectNoFinding(
+      "TYPO-ABBR-01",
+      "Vervielfältigung und jede Art der Verwertung bedürfen der Zustimmung.",
+      "de",
+    );
   });
 });
 
