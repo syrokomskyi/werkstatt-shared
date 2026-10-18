@@ -10,6 +10,7 @@ registry-rendered doc/hint strings the three permission surfaces consume.
 <CHANGE_SUMMARY>
   <item>RFC-1326: initial — AC-1 registry assertions, probe/unknown invariants, allow-list match, render helpers.</item>
   <item>RFC-1326: single Cloudflare permission registry, token preflight, birth provisioning</item>
+  <item>RFC-1326: review-fix pass — siteName targeting for app-scoped provisioning, allow-list completion</item>
 </CHANGE_SUMMARY>
 */
 
@@ -88,6 +89,15 @@ describe("WORKSHOP_ENV_ALLOWLIST", () => {
       "R2_NACHWEIS_SECRET_ACCESS_KEY",
       "FLEET_OWNERSHIP_REGISTRY_URL",
       "FLEET_OWNERSHIP_REGISTRY_TOKEN",
+      "PASSPORT_SIGNING_KEY",
+      "PUBLIC_KEY_URL",
+      "LLM_PROVIDER",
+      "LLM_MODEL",
+      "LLM_API_KEY",
+      "WARPGOGOL_OTLP_ENDPOINT",
+      "WARPGOGOL_OTLP_TOKEN",
+      "UPSTASH_REDIS_REST_URL",
+      "UPSTASH_REDIS_REST_TOKEN",
     ]) {
       expect(workshopEnvAllowed(allowed), allowed).toBe(true);
     }
@@ -96,10 +106,9 @@ describe("WORKSHOP_ENV_ALLOWLIST", () => {
       "LAGEBILD_API_KEY",
       "GH_TOKEN",
       "OPENAI_API_KEY",
-      "UPSTASH_REDIS_REST_URL",
       "SEARCH_REINDEX_TOKEN",
       "STRIPE_SECRET_KEY",
-      "PASSPORT_SIGNING_KEY",
+      "GSC_SERVICE_ACCOUNT_JSON",
       "ECOSYSTEM_COMMIT",
     ]) {
       expect(workshopEnvAllowed(denied), denied).toBe(false);

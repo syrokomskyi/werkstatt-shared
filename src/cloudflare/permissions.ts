@@ -21,6 +21,7 @@ workshop-root .env keys the kernel copies into process.env.
 <CHANGE_SUMMARY>
   <item>RFC-1326: initial — CloudflarePermission, CLOUDFLARE_PERMISSIONS (8 entries), WORKSHOP_ENV_ALLOWLIST, registry-rendered hint/table/env-block helpers.</item>
   <item>RFC-1326: single Cloudflare permission registry, token preflight, birth provisioning</item>
+  <item>RFC-1326: review-fix pass — siteName targeting for app-scoped provisioning, allow-list completion</item>
 </CHANGE_SUMMARY>
 */
 
@@ -209,6 +210,33 @@ export const WORKSHOP_ENV_ALLOWLIST: readonly WorkshopEnvAllowlistEntry[] = [
     prefix: true,
     consumer:
       "fleet ownership registry reach (mission.close, sternsystem.validate, e2e.cold, fleet/ownership-registry)",
+  },
+  {
+    key: "PASSPORT_SIGNING_KEY",
+    consumer:
+      "passport/integrity/release signing (sternsystem.passport.*, integrity.*, release.sign)",
+  },
+  {
+    key: "PUBLIC_KEY_URL",
+    consumer: "release.sign — published public-key URL embedded in signatures",
+  },
+  {
+    key: "LLM_PROVIDER",
+    consumer: "changelog.* LLM provider selection (workspace-scoped changelog context)",
+  },
+  { key: "LLM_MODEL", consumer: "changelog.* LLM model selection" },
+  { key: "LLM_API_KEY", consumer: "changelog.* LLM API key" },
+  {
+    key: "WARPGOGOL_OTLP_",
+    prefix: true,
+    consumer:
+      "observability collector endpoint/token (stack.health, factory.smoke, stack.validate)",
+  },
+  {
+    key: "UPSTASH_REDIS_REST_",
+    prefix: true,
+    consumer:
+      "agent registration ops registry (agent.registration.list, agent.registration.revoke)",
   },
 ];
 
