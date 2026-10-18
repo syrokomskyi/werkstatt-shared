@@ -63,6 +63,10 @@
       "types": "./src/checks/result-helpers.ts",
       "default": "./src/checks/result-helpers.ts"
     },
+    "./cloudflare/permissions": {
+      "types": "./src/cloudflare/permissions.ts",
+      "default": "./src/cloudflare/permissions.ts"
+    },
     "./checks/suppressions-config": {
       "types": "./src/checks/suppressions-config.ts",
       "default": "./src/checks/suppressions-config.ts"
