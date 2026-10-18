@@ -11,9 +11,7 @@
   <item>Edges sort by kind then ref and carry no timestamps, so the manifest stays deterministic.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1334: initial implementation — invocation scanning moved from command.coverage.validate; computeCommandReachability.</item>
-  <item>RFC-1334: steps 1-3 — shared structural reachability, reachableVia in the command manifest, coverage validator on the shared scan</item>
-  <item>RFC-1334: steps 1-3 — shared structural reachability, manifest reachableVia, shared coverage scan</item>
+  <item>RFC-1334: invocation scanning moved from command.coverage.validate; computeCommandReachability with structural, sorted edges.</item>
 </CHANGE_SUMMARY>
 */
 
