@@ -13,7 +13,6 @@
   <item>PIN check runs in the Workers runtime — Web Crypto only, no Node APIs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-0899: Initial access protection middleware for dev/alt subdomains.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -22,10 +21,19 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-0899: protect workers.dev dev and alt channels with the PIN and noindex</item>
+  <item>RFC-1325: provisional workers.dev as first-class site host
+
+Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
+  <history>RFC-0899</history>
 </CHANGE_SUMMARY>
 */
 
 import { defineMiddleware } from "astro:middleware";
+import { isDevOrAltHost, isProvisionalHost } from "./site-host.ts";
+
+// RFC-1325: compat re-export — consumers keep importing isDevOrAltHost from
+// this module while the predicate's canonical home is site-host.ts.
+export { isDevOrAltHost };
 
 const NOINDEX_HEADER = "noindex, nofollow, noai, noimageai";
 
@@ -41,18 +49,6 @@ function constantTimeEqual(a: string, b: string): boolean {
     diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return diff === 0;
-}
-
-/**
- * Check if a host is a dev or alt subdomain.
- */
-/**
- * Dev/alt channel hosts: `dev.<domain>` / `alt.<domain>` on a custom domain,
- * and `dev-<site>.<account>.workers.dev` / `alt-<site>…` on a provisional
- * workers.dev host — the same `^(dev|alt)[.-]` rule certify uses.
- */
-export function isDevOrAltHost(host: string): boolean {
-  return /^(dev|alt)[.-]/i.test(host);
 }
 
 /**
@@ -121,7 +117,9 @@ export function checkAccessProtection(
  */
 export function addNoIndexHeaderIfNeeded(request: Request, response: Response): Response {
   const host = request.headers.get("host") ?? "";
-  if (!isDevOrAltHost(host)) return response;
+  // RFC-1325: noindex on every provisional-host response — the unprotected
+  // provisional main channel is the public preview but must not index.
+  if (!isDevOrAltHost(host) && !isProvisionalHost(host)) return response;
 
   const headers = new Headers(response.headers);
   headers.set("X-Robots-Tag", NOINDEX_HEADER);
@@ -171,8 +169,16 @@ export const accessProtectionMiddleware = defineMiddleware(async (context: any, 
   const host = context.request.headers.get("host") ?? "";
   const isDevOrAlt = isDevOrAltHost(host);
 
-  if (!isDevOrAlt) {
+  if (!isDevOrAlt && !isProvisionalHost(host)) {
     return next();
+  }
+
+  // RFC-1325: the provisional main host (<id>.workers.dev) carries no PIN gate —
+  // it is the public preview — but every provisional response is noindexed.
+  if (!isDevOrAlt) {
+    const response = await next();
+    response.headers.set("X-Robots-Tag", NOINDEX_HEADER);
+    return response;
   }
 
   const url = new URL(context.request.url);

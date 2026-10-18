@@ -315,6 +315,10 @@
       "types": "./src/middleware/access-protection.ts",
       "default": "./src/middleware/access-protection.ts"
     },
+    "./middleware/site-host": {
+      "types": "./src/middleware/site-host.ts",
+      "default": "./src/middleware/site-host.ts"
+    },
     "./offers/offer-capacity": {
       "types": "./src/offers/offer-capacity.ts",
       "default": "./src/offers/offer-capacity.ts"

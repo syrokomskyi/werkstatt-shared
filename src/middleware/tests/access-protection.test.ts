@@ -13,6 +13,9 @@
   <item>RFC-0899: Initial middleware unit tests.</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
   <item>RFC-0899: protect workers.dev dev and alt channels with the PIN and noindex</item>
+  <item>RFC-1325: provisional workers.dev as first-class site host
+
+Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
 </CHANGE_SUMMARY>
 */
 // @ai-invariant fixtures must not couple to internals beyond the public surface under test
@@ -110,6 +113,17 @@ describe("RFC-0899: access protection middleware", () => {
     const handler = await loadMiddleware();
     expect((await runMiddleware(handler, "dp7.syrokomskyi.workers.dev"))._nextCalled).toBe(true);
     expect((await runMiddleware(handler, "devtools.example.com"))._nextCalled).toBe(true);
+  });
+
+  it("RFC-1325: noindexes the unprotected workers.dev main channel (public preview, never indexed)", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    const handler = await loadMiddleware();
+    const res = await runMiddleware(handler, "dp7.syrokomskyi.workers.dev");
+    expect(res._nextCalled).toBe(true);
+    expect(res.headers.get("X-Robots-Tag")).toBe("noindex, nofollow, noai, noimageai");
+    // A real custom domain still carries no noindex.
+    const prod = await runMiddleware(handler, "dp7.example.com");
+    expect(prod.headers.get("X-Robots-Tag")).toBe(null);
   });
 
   it("passes through dev.* with correct Basic Auth", async () => {
