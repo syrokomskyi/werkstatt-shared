@@ -406,6 +406,20 @@ properties:
               type: array
               items:
                 type: string
+            visibility:
+              type: string
+              enum:
+                - public
+                - internal
+                - conditional
+            clearedFor:
+              type: array
+              items:
+                type: string
+            blockedBy:
+              type: array
+              items:
+                type: string
           required:
             - id
             - text
@@ -444,29 +458,31 @@ properties:
         type: object
         properties:
           toneOfVoice:
-            type: object
-            properties:
-              tone:
-                type: string
-              posture:
-                type: string
-              readingLevel:
-                type: string
-              avoids:
-                type: array
-                items:
-                  type: string
-              prefers:
-                type: array
-                items:
-                  type: string
-            required:
-              - tone
-              - posture
-              - readingLevel
-              - avoids
-              - prefers
-            additionalProperties: false
+            anyOf:
+              - type: object
+                properties:
+                  tone:
+                    type: string
+                  posture:
+                    type: string
+                  readingLevel:
+                    type: string
+                  avoids:
+                    type: array
+                    items:
+                      type: string
+                  prefers:
+                    type: array
+                    items:
+                      type: string
+                required:
+                  - tone
+                  - posture
+                  - readingLevel
+                  - avoids
+                  - prefers
+                additionalProperties: false
+              - type: "null"
           linguisticRules:
             type: object
             propertyNames:
@@ -477,13 +493,13 @@ properties:
               items:
                 type: string
           culturalRules:
-            type: array
-            items:
-              type: string
+            anyOf:
+              - type: array
+                items:
+                  type: string
+              - type: "null"
         required:
-          - toneOfVoice
           - linguisticRules
-          - culturalRules
         additionalProperties: false
     required:
       - verbatim
@@ -1107,6 +1123,12 @@ $defs:
             minLength: 1
         required:
           - ref
+      address:
+        type: string
+        minLength: 1
+      email:
+        type: string
+        minLength: 1
       publicIdentifiers:
         type: object
         propertyNames:

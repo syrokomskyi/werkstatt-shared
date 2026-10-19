@@ -32,6 +32,7 @@ hardcoded de across semantic profile, currency, referral capacity. F-4..F-10:
 statementLang rewrite, prose drops on clones/variants, INTAKE-12 name+literals,
 currency-policy gate, predicate signature, doc drift. Unblocks dna-trace
 WS-WRITE-02 false positive (_io naming).</item>
+  <item>ADR-0114: voiceVerbatimSchema gains optional visibility/clearedFor/blockedBy (handoff W3 machine-readable clearance for COMP-VOICE-01); voiceProfileSchema toneOfVoice/culturalRules accept null — upstream emits null when no profile was distilled.</item>
   <history>RFC-1328</history>
 </CHANGE_SUMMARY>
 */
@@ -200,6 +201,17 @@ const voiceVerbatimSchema = z
     sourceRef,
     use: z.string(),
     claimRefs: z.array(z.string()).optional(),
+    /**
+     * ADR-0114 / handoff W3: machine-readable clearance. `visibility` is the
+     * blanket classification; `clearedFor` names the public surfaces the line
+     * may occupy (chrome motto/tagline slots, hero tagline, page copy);
+     * `blockedBy` names the claim/decision ids holding the line back.
+     * Optional — pre-W3 bundles carry `use` prose only and the composer
+     * judges clearance from it (COMP-VOICE-01).
+     */
+    visibility: z.enum(["public", "internal", "conditional"]).optional(),
+    clearedFor: z.array(z.string()).optional(),
+    blockedBy: z.array(z.string()).optional(),
   })
   .strict();
 
@@ -214,6 +226,11 @@ const voiceDirectiveSchema = z
 
 const voiceProfileSchema = z
   .object({
+    /**
+     * Handoff W3: upstream bundles may carry `null` when no tone profile was
+     * distilled — accept both absent and explicit null (COMP-VOICE-01 judges
+     * verbatim clearance regardless).
+     */
     toneOfVoice: z
       .object({
         tone: z.string(),
@@ -222,10 +239,11 @@ const voiceProfileSchema = z
         avoids: z.array(z.string()),
         prefers: z.array(z.string()),
       })
-      .strict(),
+      .strict()
+      .nullish(),
     /** Rules per BCP 47 locale tag (spec: propertyNames bcp47). */
     linguisticRules: z.record(bcp47Tag, z.array(z.string())),
-    culturalRules: z.array(z.string()),
+    culturalRules: z.array(z.string()).nullish(),
   })
   .strict();
 

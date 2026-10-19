@@ -40,6 +40,7 @@ neutral 'Lokaler Kontext' — plus a Quellen block listing each distinct
 sourceUrl with its asOf date. Live warpgogol run: 40 LOCALFACT-01 warnings
 across the 12 city demand records — the owner's research backlog; no excerpts,
 review records, or gate flips authored. Canary C11 active.</item>
+  <item>ADR-0114: identity.legal gains optional name/vatId — the seed mapping carries the full pbp/legal-identity surface (legalName + publicIdentifiers.vatId) alongside responsibleName/address/email.</item>
   <item>RFC-1307: step 6 — onboarding docs switched to intake path, manifest comment re-sourced, generated artifacts refreshed</item>
   <item>RFC-1307: canonical org-singleton PBP paths, seeded hreflang+publication.gate, full rollback</item>
   <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229</history>
@@ -155,12 +156,16 @@ export const systemManifestSchema = z.object({
     /**
      * RFC-0096: Operator details consumed by legal.scaffold to fill
      * Impressum / Datenschutz stubs.
+     * ADR-0114: name/vatId carry the rest of the seeded legal identity
+     * (pbp/legal-identity legalName + publicIdentifiers.vatId).
      */
     legal: z
       .object({
         responsibleName: z.string().min(1).optional(),
         address: z.string().min(1).optional(),
         email: z.string().min(1).optional(),
+        name: z.string().min(1).optional(),
+        vatId: z.string().min(1).optional(),
       })
       .optional(),
   }),
