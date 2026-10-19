@@ -16,7 +16,6 @@ RFC-0790: add systemConfigSchema, systemStateSchema, servicesRegistrySchema for 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
   <item>RFC-1263</item>
   <item>RFC-1284: systemStateSchema gains nullable accessPinSuspended {at,by,operationId} — durable crash-safe suspension marker; accessPin stays the desired-state authority</item>
   <item>RFC-1307: step 1 — shared PBP layout map, canonical writer, typed onboarding state</item>
@@ -41,7 +40,17 @@ a passing 112-route capture at 1512.5s.
 - producers whose requirements all declare reuse.allowedFrom: [] sort
   last so gate-bound evidence mints closest to the decision
 - AC-6: cache-clone editorial coverage (prepare writes, verify read-only)</item>
-  <history>ADR-0091, RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065, RFC-1097</history>
+  <item>ADR-0111: bound dev-deploy mission.check by route count like certify
+
+Hoist the RFC-1335 producer budget into shared resolveRouteCountBudget
+(configPath + logTag parameterised); runMissionCheckWithResilience takes a
+resolved per-attempt timeoutMs instead of the fixed 15min constant;
+leitstand.devDeploy.missionCheckTimeoutMs schema'd as an independent
+override key. RFC-0668 retry contract unchanged.
+
+Test-Reason: regression — fixed 15min mission.check cliff on dev-deploy
+(warpgogol-m000202 class, RFC-1335 review open question).</item>
+  <history>ADR-0091, RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065, RFC-1097, RFC-1210</history>
 </CHANGE_SUMMARY>
 */
 
@@ -188,9 +197,22 @@ export const systemConfigSchema = z.looseObject({
             ),
         })
         .optional(),
+      devDeploy: z
+        .looseObject({
+          missionCheckTimeoutMs: z
+            .unknown()
+            .optional()
+            .describe(
+              "ADR-0111: positive-ms override for the adaptive dev-deploy mission.check " +
+                "per-attempt budget — independently tunable from certify.producerBudgetMs. " +
+                "Typed z.unknown() deliberately — a malformed value (non-number, <=0) must be " +
+                "ignored with a warning at read time, never fail the whole config parse.",
+            ),
+        })
+        .optional(),
     })
     .optional()
-    .describe("RFC-1335: leitstand runtime overrides"),
+    .describe("RFC-1335/ADR-0111: leitstand runtime overrides"),
 });
 
 // Loose for the same reason as systemConfigSchema — system-state.yaml is
