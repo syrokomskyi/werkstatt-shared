@@ -14,6 +14,7 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
   <item>RFC-1263</item>
   <item>RFC-1295</item>
   <item>RFC-1297: bordbuchEntryKindSchema gains deployment-rolled-back + live-state-reconciled.</item>
+  <item>RFC-1336: bordbuchEntryKindSchema gains authority-delegation + authority-delegation-revoked.</item>
   <history>RFC-0355, RFC-0473, RFC-0479, RFC-0480, RFC-0517, RFC-0706, RFC-0715, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
@@ -109,6 +110,9 @@ export const bordbuchEntryKindSchema = z.enum([
   "remediation-mission",
   // RFC-1295: human editorial sign-off recorded at promote-main
   "editorial-signoff",
+  // RFC-1336: operator-authority delegation lifecycle (grant / revoke)
+  "authority-delegation",
+  "authority-delegation-revoked",
 ]);
 
 export const bordbuchEntryStatusSchema = z.enum(["done", "failed", "waiting", "escalated"]);
