@@ -12,6 +12,7 @@ consume these schemas. Types derive from schemas.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1336: sign-off reviewer accepts agent:<id>; delegatedBy + delegationId carry delegation provenance.</item>
   <item>RFC-1335: sunk from @warpgogol/werkstatt-site/checks/editorial/schema.ts — the promote-main precondition helper in werkstatt-engine needs the same canonical shapes.</item>
   <item>RFC-1296: warningsAck on the sign-off; warningsIncreased + contentWarningsHash on the packet (defaults keep RFC-1295 records valid).</item>
   <item>RFC-1295: initial schemas — werkstatt/editorial-packet@1 and werkstatt/editorial-signoff@1.</item>
@@ -75,7 +76,22 @@ export const editorialSignoffSchema = z
     systemId: z.string(),
     releaseId: z.string(),
     decision: z.enum(["approve", "reject"]),
-    reviewer: z.string().regex(/^human:[a-z0-9-]+$/),
+    /**
+     * RFC-1336: human:<handle> reviewer, or agent:<id> acting under an active
+     * editorial.signoff delegation — agent reviewers MUST carry delegatedBy
+     * + delegationId provenance.
+     */
+    reviewer: z.string().regex(/^(human|agent):[a-z0-9-]+$/),
+    /** RFC-1336: the granting human on delegated sign-offs. */
+    delegatedBy: z
+      .string()
+      .regex(/^human:[a-z0-9-]+$/)
+      .optional(),
+    /** RFC-1336: the delegation id backing a delegated sign-off. */
+    delegationId: z
+      .string()
+      .regex(/^del-[0-9]{4,}$/)
+      .optional(),
     textDiffHash: z.string(),
     protectedChangesHash: z.string(),
     protectedAck: z.boolean(),
@@ -84,7 +100,16 @@ export const editorialSignoffSchema = z
     notes: z.string().optional(),
     signedAt: z.string().datetime(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (s) =>
+      !s.reviewer.startsWith("agent:") ||
+      (s.delegatedBy !== undefined && s.delegationId !== undefined),
+    {
+      message:
+        "agent:<id> reviewers require delegatedBy + delegationId provenance (RFC-1336) — an unsigned agent attestation is not a sign-off",
+    },
+  );
 
 export type EditorialSignoff = z.infer<typeof editorialSignoffSchema>;
 
