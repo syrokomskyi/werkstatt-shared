@@ -14,9 +14,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1106: step 6 — delete integration port-barrel
 
 port-barrel.ts deleted; its explicit contract re-exports absorbed into integration/index.ts. The site domain/integration barrel rewires to explicit names from the shared barrel. ./integration/port-barrel export entry removed; ./integration/port (→ port.ts) stays — engine agent-gate consumers unaffected.</item>
@@ -48,6 +45,7 @@ to absent, never a dispatch error. contract_version stays 1.
   types unchanged in shape, new sourceHash
 - conformance: emitted acquisition + emitted ingress surface validated
   per snapshot (82 tests, 5 snapshots)</item>
+  <item>RFC-1340: api.probe.check live delivery-path probes (DNA-114): black-box contract legs (malformed→4xx, honeypot→quarantine, honest legs never delivery-not-configured), secret-gated probe event through real QStash→callback→Redis probe:<eventId> marker with budget polling, uninstrumented honest state, certify probe phase before gate verdict, RFC-0899 warp-pin auth, x-form-probe AC-8 contract test</item>
   <history>RFC-0168, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
@@ -179,6 +177,9 @@ export {
   routeEvent,
   IntegrationEventSchema,
   authenticateInbound,
+  isProbeEvent,
+  PROBE_MARKER_PREFIX,
+  PROBE_MARKER_TTL_SECONDS,
   routeEventToReady,
   deliverEvent,
   kvDedup,

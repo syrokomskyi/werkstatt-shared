@@ -18,6 +18,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1340: api.probe.check live delivery-path probes (DNA-114): black-box contract legs (malformed→4xx, honeypot→quarantine, honest legs never delivery-not-configured), secret-gated probe event through real QStash→callback→Redis probe:<eventId> marker with budget polling, uninstrumented honest state, certify probe phase before gate verdict, RFC-0899 warp-pin auth, x-form-probe AC-8 contract test</item>
 </CHANGE_SUMMARY>
 */
 
@@ -305,6 +306,22 @@ export function authenticateInbound(headers: Headers, secret: string | undefined
     mismatch |= provided.charCodeAt(i) ^ secret.charCodeAt(i);
   }
   return mismatch === 0;
+}
+
+// @ai-invariant: payload.probe is attached server-side on a constant-time
+// secret match only — client-controlled input must NEVER set it. The delivery
+// callback drops probe events at the destination boundary and records a TTL'd
+// marker instead of routing; probes detect a broken chain without deliveries.
+
+/** RFC-1340: Redis key prefix for the live delivery-path probe marker — the key is `<prefix>:<eventId>`, disjoint from the dedup keyspace. */
+export const PROBE_MARKER_PREFIX = "probe";
+
+/** RFC-1340: TTL for the probe marker key (15 min — observable, bounded, no payload). */
+export const PROBE_MARKER_TTL_SECONDS = 900;
+
+/** Single predicate for the probe-marker convention (RFC-1340): `payload.probe === true`. */
+export function isProbeEvent(event: Pick<IntegrationEvent, "payload">): boolean {
+  return event.payload?.probe === true;
 }
 
 /**
