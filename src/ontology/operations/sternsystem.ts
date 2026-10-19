@@ -16,12 +16,32 @@ RFC-0790: add systemConfigSchema, systemStateSchema, servicesRegistrySchema for 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>ADR-0091: add externalEditBaselineSha to systemStateSchema — operator-set baseline that grandfathers pre-bordbuch commits in the external-edit guard.</item>
   <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
   <item>RFC-1263</item>
   <item>RFC-1284: systemStateSchema gains nullable accessPinSuspended {at,by,operationId} — durable crash-safe suspension marker; accessPin stays the desired-state authority</item>
   <item>RFC-1307: step 1 — shared PBP layout map, canonical writer, typed onboarding state</item>
-  <history>RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065, RFC-1097</history>
+  <item>RFC-1335: implement RFC-1335: fail-fast editorial gate, adaptive certify budget, gate-bound producer ordering
+
+warpgogol-m000202 burned ~26min of producer capture before the main gate
+reported a missing editorial sign-off, and the fixed 40min timeout failed
+a passing 112-route capture at 1512.5s.
+
+- shared editorial precondition helper (checkEditorialPrecondition) reads
+  packet.json + <release>-editorial.json via schemas sunk to
+  werkstatt-shared/ontology/operations (engine cannot import werkstatt-site)
+- leitstand.certify --gate main reduces the producer plan to
+  editorial-signoff when the precondition is unmet; fail decision names
+  editorial.review.prepare/signoff in reasons + nextSteps
+- leitstand.promote checks the precondition before loading the
+  main-verification decision (ordered authorization)
+- adaptive budget clamp(10min + 15s x emittedHtmlCount, 20min, 90min)
+  over dist/client/**.html; leitstand.certify.producerBudgetMs override
+  (z.unknown so malformed values warn, never fail the config parse);
+  40min fallback when the dist tree is absent
+- producers whose requirements all declare reuse.allowedFrom: [] sort
+  last so gate-bound evidence mints closest to the decision
+- AC-6: cache-clone editorial coverage (prepare writes, verify read-only)</item>
+  <history>ADR-0091, RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -154,6 +174,23 @@ export const systemConfigSchema = z.looseObject({
     })
     .optional()
     .describe("RFC-0964: fleet wave orchestration config"),
+  leitstand: z
+    .looseObject({
+      certify: z
+        .looseObject({
+          producerBudgetMs: z
+            .unknown()
+            .optional()
+            .describe(
+              "RFC-1335: positive-ms override for the adaptive certify producer budget. " +
+                "Typed z.unknown() deliberately — a malformed value (non-number, <=0) must be " +
+                "ignored with a warning at read time, never fail the whole config parse.",
+            ),
+        })
+        .optional(),
+    })
+    .optional()
+    .describe("RFC-1335: leitstand runtime overrides"),
 });
 
 // Loose for the same reason as systemConfigSchema — system-state.yaml is

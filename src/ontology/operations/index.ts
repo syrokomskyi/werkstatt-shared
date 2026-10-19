@@ -16,6 +16,27 @@ RFC-1104.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1104: retargeted barrel — platform operations schemas sunk from werkstatt-engine/schemas; diagnostic schemas moved to werkstatt-shared/kernel.</item>
+  <item>RFC-1335: implement RFC-1335: fail-fast editorial gate, adaptive certify budget, gate-bound producer ordering
+
+warpgogol-m000202 burned ~26min of producer capture before the main gate
+reported a missing editorial sign-off, and the fixed 40min timeout failed
+a passing 112-route capture at 1512.5s.
+
+- shared editorial precondition helper (checkEditorialPrecondition) reads
+  packet.json + <release>-editorial.json via schemas sunk to
+  werkstatt-shared/ontology/operations (engine cannot import werkstatt-site)
+- leitstand.certify --gate main reduces the producer plan to
+  editorial-signoff when the precondition is unmet; fail decision names
+  editorial.review.prepare/signoff in reasons + nextSteps
+- leitstand.promote checks the precondition before loading the
+  main-verification decision (ordered authorization)
+- adaptive budget clamp(10min + 15s x emittedHtmlCount, 20min, 90min)
+  over dist/client/**.html; leitstand.certify.producerBudgetMs override
+  (z.unknown so malformed values warn, never fail the config parse);
+  40min fallback when the dist tree is absent
+- producers whose requirements all declare reuse.allowedFrom: [] sort
+  last so gate-bound evidence mints closest to the decision
+- AC-6: cache-clone editorial coverage (prepare writes, verify read-only)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -171,6 +192,15 @@ export type {
   NotausgangFeatureNote,
   NotausgangManifest,
 } from "./notausgang.ts";
+
+// RFC-1295/RFC-1335: editorial packet + sign-off schemas (single-sourced —
+// the engine's leitstand precondition helper cannot import werkstatt-site).
+export {
+  editorialPacketSchema,
+  editorialSignoffSchema,
+  protectedContentSchema,
+} from "./editorial.ts";
+export type { EditorialPacket, EditorialSignoff } from "./editorial.ts";
 
 // RFC-0565: DHT site registry and content placement schemas.
 export {
