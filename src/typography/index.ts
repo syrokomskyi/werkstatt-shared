@@ -9,11 +9,12 @@ typography rule families.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1068: initial creation.</item>
   <item>RFC-1069: added Tier 2 structure rules export.</item>
   <item>RFC-1070: added Tier 2 locale rules export.</item>
   <item>RFC-1071: added Tier 3 advisory rules export.</item>
   <item>RFC-1072: added fix module export (FixAction, FIXABLE_RULE_IDS, applyFixes, isFixable).</item>
+  <item>ADR-0116: compose-hygiene rules — COMP-PROMISE-01/COMP-SELFDESC-01 on typography.validate, COMP-I18N-01 lang-switcher on chrome.data.validate, DIST-LEAK-10 NEED_THIS_* placeholders on dist.serialization-leakage.validate</item>
+  <history>RFC-1068</history>
 </CHANGE_SUMMARY>
 */
 
@@ -44,6 +45,12 @@ export { TIER2_STRUCTURE_RULES } from "./rules-tier2-structure.ts";
 export { TIER2_LOCALE_RULES, type Tier2LocaleRuleId } from "./rules-tier2-locale.ts";
 
 export { TIER3_ADVISORY_RULES, type Tier3AdvisoryRuleId } from "./rules-tier3-advisory.ts";
+
+export {
+  COMPOSE_HYGIENE_RULES,
+  PROMISE_PHRASES,
+  SELFDESC_PHRASES,
+} from "./rules-compose-hygiene.ts";
 
 export {
   LOCALE_DEFAULTS,

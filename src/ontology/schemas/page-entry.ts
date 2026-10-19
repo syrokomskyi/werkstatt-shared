@@ -18,6 +18,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>ADR-0116: BlockEntrySchema gains optional strict `copyHygiene: { allowPromise }` — the COMP-PROMISE-01 per-block opt-out with an authored reason.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -119,6 +120,16 @@ export const BlockEntrySchema = z
      * Evaluated at build time by evalVisibility against the RuntimeContext.
      */
     visibility: visibilityExprSchema.optional(),
+
+    /**
+     * ADR-0116: per-block copy-hygiene opt-outs. `allowPromise` documents why a
+     * COMP-PROMISE-01 phrase is intentional; typography.validate logs the
+     * opt-out as an info diagnostic instead of erroring on the block's text.
+     */
+    copyHygiene: z
+      .object({ allowPromise: z.string().min(1).optional() })
+      .strict()
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.type && !data.use) {

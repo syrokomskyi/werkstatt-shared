@@ -20,6 +20,7 @@ TypographyRule[].</purpose>
   <item>RFC-1071: extended TypographyRuleId and TypographyRuleFamily with UNICODE, LINK, SENT families.</item>
   <item>RFC-1072: changed TypographyFinding.fix from null to FixAction | null; extended finding() helper with optional FixAction param; populated fix on PUNCT-01, SPACE-01, SPACE-02.</item>
   <item>RFC-1201: TYPO-LOCALE-01 fixHint branches on token shape — path-like tokens (`/` or `<` present) name the accepted domain-qualified URL-placeholder normalization form; plain mixed-script words keep the generic single-script hint. Detection unchanged.</item>
+  <item>ADR-0116: extended TypographyRuleId and TypographyRuleFamily with COMP-PROMISE/COMP-SELFDESC — compose-hygiene rules (rules-compose-hygiene.ts) share the typography text-surface pass.</item>
   <history>RFC-1068</history>
 </CHANGE_SUMMARY>
 */
@@ -36,21 +37,23 @@ import {
 // Types (from RFC-1068)
 // ---------------------------------------------------------------------------
 
-export type TypographyRuleId = `TYPO-${
-  | "PUNCT"
-  | "SPACE"
-  | "CASE"
-  | "LOCALE"
-  | "YAML"
-  | "HEAD"
-  | "PAIR"
-  | "MD"
-  | "NUM"
-  | "ABBR"
-  | "APOS"
-  | "UNICODE"
-  | "LINK"
-  | "SENT"}-${string}`;
+export type TypographyRuleId =
+  | `TYPO-${
+      | "PUNCT"
+      | "SPACE"
+      | "CASE"
+      | "LOCALE"
+      | "YAML"
+      | "HEAD"
+      | "PAIR"
+      | "MD"
+      | "NUM"
+      | "ABBR"
+      | "APOS"
+      | "UNICODE"
+      | "LINK"
+      | "SENT"}-${string}`
+  | `COMP-${"PROMISE" | "SELFDESC"}-${string}`;
 
 export type TypographyRuleFamily =
   | "PUNCT"
@@ -66,7 +69,9 @@ export type TypographyRuleFamily =
   | "APOS"
   | "UNICODE"
   | "LINK"
-  | "SENT";
+  | "SENT"
+  | "PROMISE"
+  | "SELFDESC";
 
 export interface TypographyFinding {
   ruleId: TypographyRuleId;
