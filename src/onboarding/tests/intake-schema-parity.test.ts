@@ -13,6 +13,7 @@ from docs/specs/werkstatt-onboarding/schemas/ and compiled with Ajv
 <CHANGE_SUMMARY>
   <item>RFC-1281: created — 13-fixture Zod/JSON-Schema verdict-parity test.</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>
+  <item>ADR-0114: review fixes: runtime-parity navIds, naming-bound ledger cover, supported-locale legal loop, scaffold-keyed LEGAL-JUR-02, spec schema parity</item>
 </CHANGE_SUMMARY>
 */
 
@@ -301,6 +302,39 @@ const FIXTURES: ParityFixture[] = [
     build: () => {
       const e = baseEnvelope();
       e.unknownField = { x: 1 };
+      return e;
+    },
+  },
+  {
+    name: "voice-clearance-fields",
+    build: () => {
+      const e = baseEnvelope();
+      const verbatim = (e.voice as Record<string, unknown>).verbatim as Record<string, unknown>[];
+      verbatim[0] = {
+        ...verbatim[0],
+        visibility: "conditional",
+        clearedFor: ["chrome-motto", "hero-tagline"],
+        blockedBy: ["CLM-01"],
+      };
+      return e;
+    },
+  },
+  {
+    name: "null-profile-fields",
+    build: () => {
+      const e = baseEnvelope();
+      const profile = (e.voice as Record<string, Record<string, unknown>>).profile;
+      profile.toneOfVoice = null;
+      profile.culturalRules = null;
+      return e;
+    },
+  },
+  {
+    name: "bad-visibility-enum",
+    build: () => {
+      const e = baseEnvelope();
+      const verbatim = (e.voice as Record<string, unknown>).verbatim as Record<string, unknown>[];
+      verbatim[0].visibility = "secret";
       return e;
     },
   },
