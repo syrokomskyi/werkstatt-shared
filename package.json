@@ -227,6 +227,10 @@
       "types": "./src/text/css-value-normalize.ts",
       "default": "./src/text/css-value-normalize.ts"
     },
+    "./text/inline-markdown": {
+      "types": "./src/text/inline-markdown.ts",
+      "default": "./src/text/inline-markdown.ts"
+    },
     "./node/dev-props-validator": {
       "types": "./src/node/dev-props-validator.ts",
       "default": "./src/node/dev-props-validator.ts"

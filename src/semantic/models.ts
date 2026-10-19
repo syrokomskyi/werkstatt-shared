@@ -11,6 +11,7 @@
   <item>RFC-0912: Added VideoSeoData type and optional SemanticBlock.video field for opted-in content video structured data.</item>
   <item>RFC-1254: drain latent lint debt — dead imports/vars, no-as-any casts, restricted imports</item>
   <item>RFC-1282: SemanticPageModel.htmlLang — the BCP 47 tag emitted as <html lang> (falls back to the lang segment when unset).</item>
+  <item>warpgogol-m000202: SemanticPageModel.canonicalPageId — marks canonical-collapse pages whose WebPage assertion belongs to a parent pageId; the render layer suppresses their JSON-LD @graph (JSONLD-URL.DUPLICATE-WEBPAGE-ID fix).</item>
   <history>RFC-0133, RFC-0165, RFC-0328, RFC-0490, RFC-0508</history>
 </CHANGE_SUMMARY>
 */
@@ -372,6 +373,14 @@ export type SemanticPageModel = {
   surfaceId?: string;
   /** RFC-0492: surface depth for depth-gated JSON-LD corrections. */
   depth?: number;
+  /**
+   * warpgogol-m000202: set on canonical-collapse pages — a navigation-noindex
+   * surface variant whose canonical URL belongs to a different (parent) pageId.
+   * The model is built for the PARENT url, so its WebPage @id duplicates the
+   * parent's own assertion; the render layer suppresses the JSON-LD @graph doc
+   * on such pages (OG/meta still emit — og:url is intentionally the canonical).
+   */
+  canonicalPageId?: string;
   /**
    * RFC-0492/RFC-0498: industry-specific Service node metadata for surface pages where Service is required.
    * When present, `buildJsonLd` emits a single industry Service node instead of the

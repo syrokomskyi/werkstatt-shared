@@ -181,6 +181,12 @@ levels:
         de: "Website für {industry.name} in {country.name}",
         uk: "{industry.name}: сайт у {country.name}",
       }
+    # warpgogol-m000202: axis-scoped meta description — without it the baked page
+    # inherits the industry record's metaDescription and every page in the branch
+    # shares one string (SEO-UNIQ-02).
+    descriptionTemplate:
+      de: "Website für {industry.name} in {country.name}: Leistungen, Einsatzgebiet und Kontaktwege des Digitalen Fundaments."
+      uk: "Сайт для {industry.name} у {country.name}: послуги, зона роботи та шляхи контакту Цифрового фундаменту."
   - depth: 3
     slug: { de: "website/{industry}/{region}", uk: "sait/{industry}/{region}" }
     constellation: website-region
@@ -190,6 +196,9 @@ levels:
         de: "Website für {industry.name} in {region.name}",
         uk: "{industry.name}: сайт у регіоні {region.name}",
       }
+    descriptionTemplate:
+      de: "Website für {industry.name} in {region.name}: lokale Erreichbarkeit, Leistungen und ein direkter Weg zur Anfrage."
+      uk: "Сайт для {industry.name} у регіоні {region.name}: локальна доступність, послуги та прямий шлях до запиту."
   - depth: 4
     slug: { de: "website/{industry}/{city}", uk: "sait/{industry}/{city}" }
     constellation: website-city
@@ -199,6 +208,9 @@ levels:
         de: "Website für {industry.name} in {city.name}",
         uk: "{industry.name}: сайт у місті {city.name}",
       }
+    descriptionTemplate:
+      de: "Website für {industry.name} in {city.name}: lokale Erreichbarkeit, klare Leistungen und Anfragen ohne Umweg."
+      uk: "Сайт для {industry.name} у місті {city.name}: локальна доступність, чіткі послуги та запити без зайвого."
   - depth: 5
     slug: { de: "website/{industry}/{city}/{demand}", uk: "sait/{industry}/{city}/{demand}" }
     constellation: bedarfskarte
@@ -208,6 +220,9 @@ levels:
         de: "{demand.name} für {industry.name} in {city.name}",
         uk: "{demand.name} для {industry.name} у {city.name}",
       }
+    descriptionTemplate:
+      de: "{demand.name} für {industry.name} in {city.name}: klare Antworten, ehrliche Bedingungen und ein kurzer Weg zur Anfrage."
+      uk: "{demand.name} для {industry.name} у місті {city.name}: чіткі відповіді, чесні умови та короткий шлях до запиту."
     # RFC-0497: intersection gate — depth-5 pages require explicit intersection records
     intersection:
       gate:

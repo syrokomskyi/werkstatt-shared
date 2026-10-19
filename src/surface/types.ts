@@ -15,6 +15,7 @@
   <item>RFC-0192: initial contracts.</item>
   <item>RFC-0207: SurfaceNarrative (bespoke per-page hero/section prose) + SurfaceRecordImage (per-record image token + alt).</item>
   <item>warpgogol-m000185: VirtualRouteEntry.noindexLocales — per-locale index suppression on generated surface entries.</item>
+  <item>warpgogol-m000202: VirtualRouteEntry.socialImage — og-image-only fallback asset name for entries without backgroundImage/leadImage (SEO-META.MISSING-OG-IMAGE).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -200,6 +201,14 @@ export interface VirtualRouteEntry {
    * a shell-layer background instead of the generic `home-bg` default. Omit for the default.
    */
   backgroundImage?: string;
+  /**
+   * warpgogol-m000202: og-image-only fallback asset name for entries that carry no
+   * `backgroundImage` and no hero `leadImage` (offer/ratgeber/service dossiers).
+   * Unlike `backgroundImage` it never reaches the hero — the page handler routes
+   * it through the RFC-0209 leadImage token channel so every indexable surface
+   * page emits an og:image (SEO-META.MISSING-OG-IMAGE).
+   */
+  socialImage?: string;
   /**
    * RFC-0192: the resolved page. In "inline" bake mode it carries the full blocks. In "lazy" mode it
    * carries only metadata (title/description, empty blocks) and the full page lives in its own file

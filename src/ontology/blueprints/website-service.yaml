@@ -36,6 +36,11 @@ levels:
         de: "Website-Services für {industry.name} | Warpgogol",
         uk: "Сайт-сервіси для {industry.name} | Warpgogol",
       }
+    # warpgogol-m000202: without a template the hub inherits the industry record's
+    # metaDescription — identical to the website-local trade hub (SEO-UNIQ-02).
+    descriptionTemplate:
+      de: "Website-Services für {industry.name}: Aufbau, Inhalte und Funktionen, die zu den Aufgaben des Gewerbes passen."
+      uk: "Сайт-сервіси для {industry.name}: структура, контент і функції, що відповідають завданням бізнесу."
   - depth: 2
     slug: { de: "website/{industry}/{service}", uk: "sait/{industry}/{service}" }
     constellation: website-service

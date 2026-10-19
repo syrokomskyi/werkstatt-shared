@@ -11,6 +11,7 @@
   <item>RFC-0287: added projectWeb for the Agent Surface knowledge tier.</item>
   <item>RFC-0373: added projectServices for business service catalog projection.</item>
   <item>RFC-1076: add projectClaims projector and SemanticClaimProvenance / SemanticEvidenceRef types.</item>
+  <item>warpgogol-m000202: projectPeople projects bio through inlineMarkdownToPlain — inline-markdown syntax no longer leaks into JSON-LD Person descriptions (DIST-LEAK-07).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -21,6 +22,7 @@ import type {
   SemanticService,
   SemanticWeb,
 } from "./models.ts";
+import { inlineMarkdownToPlain } from "../text/inline-markdown.ts";
 
 export interface SemanticClaimProvenance {
   /** Stable claim ID from PbpClaim.id. */
@@ -223,7 +225,9 @@ export function projectPeople(
     people.push({
       name,
       ...(role ? { role } : {}),
-      ...(bio ? { description: bio } : {}),
+      // RFC-1289: bio is x-text inline-markdown — JSON-LD/llms descriptions are
+      // plain-text surfaces, so markdown syntax must not survive (DIST-LEAK-07).
+      ...(bio ? { description: inlineMarkdownToPlain(bio) } : {}),
       ...(affiliations.length ? { affiliations } : {}),
       ...(born != null ? { birthDate: String(born) } : {}),
       ...(died != null ? { deathDate: String(died), isDeceased: true } : {}),
