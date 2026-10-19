@@ -16,6 +16,7 @@
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
+  <item>RFC-1340</item>
 </CHANGE_SUMMARY>
 */
 // @ai-invariant fixtures must not couple to internals beyond the public surface under test
@@ -184,5 +185,27 @@ describe("RFC-0899: access protection middleware", () => {
     const res = await runMiddleware(handler, "alt.example.com", undefined, "/manifest.webmanifest");
     expect(res._nextCalled).toBe(true);
     expect(res.status).toBe(200);
+  });
+
+  it("exempts machine-authenticated inbound endpoints on dev.* when PIN is set (RFC-1340)", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    const handler = await loadMiddleware();
+    for (const pathname of [
+      "/api/integration-route",
+      "/api/stripe-webhook",
+      "/api/integration-inbound",
+    ]) {
+      const res = await runMiddleware(handler, "dev.example.com", undefined, pathname);
+      expect(res._nextCalled).toBe(true);
+      expect(res.status).toBe(200);
+    }
+  });
+
+  it("does NOT exempt /api/send-message on dev.* — visitor endpoint stays PIN-gated", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    const handler = await loadMiddleware();
+    const res = await runMiddleware(handler, "dev.example.com", undefined, "/api/send-message");
+    expect(res._nextCalled).toBe(false);
+    expect(res.status).toBe(401);
   });
 });

@@ -13,9 +13,6 @@
   <item>PIN check runs in the Workers runtime — Web Crypto only, no Node APIs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
   <item>warpgogol-m000193: prerendered-context guard — skip Host/Authorization reads when context.isPrerendered (static render carries a stub request whose headers getter logs a per-route Astro warning; real static-asset protection lives in worker.ts).</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
@@ -24,7 +21,8 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
-  <history>RFC-0899</history>
+  <item>RFC-1340</item>
+  <history>RFC-0899, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -57,8 +55,28 @@ function constantTimeEqual(a: string, b: string): boolean {
  */
 const PUBLIC_STATIC_EXEMPTIONS = ["/manifest.webmanifest"];
 
+/**
+ * RFC-1340: inbound endpoints that carry their own machine authentication —
+ * QStash delivery callbacks verify Upstash-Signature, Stripe webhooks verify
+ * stripe-signature, integration-inbound verifies x-integration-secret
+ * (fail-closed). External providers physically cannot send the channel's
+ * Basic Auth credential, so the PIN gate would 401 every delivery POST
+ * before the route's own signature check could run — deadlocking all
+ * dev/alt delivery roundtrips (and the api.probe.check marker path).
+ * /api/send-message stays gated: it is the visitor form endpoint with no
+ * independent machine auth.
+ */
+const MACHINE_AUTHENTICATED_EXEMPTIONS = [
+  "/api/integration-route",
+  "/api/stripe-webhook",
+  "/api/integration-inbound",
+];
+
 function isExemptPath(pathname: string): boolean {
-  return PUBLIC_STATIC_EXEMPTIONS.includes(pathname);
+  return (
+    PUBLIC_STATIC_EXEMPTIONS.includes(pathname) ||
+    MACHINE_AUTHENTICATED_EXEMPTIONS.includes(pathname)
+  );
 }
 
 /**
