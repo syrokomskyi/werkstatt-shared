@@ -189,7 +189,12 @@ export interface ReferralFormCopy {
   privacyNote: string;
   privacyLinkLabel: string;
   successMessage: string;
+  /** Validation summary — heading of the native per-field error re-render.
+      Never shown for delivery failures (that is `submitError`). */
   errorSummary: string;
+  /** Delivery failure — the submit did not reach the queue. Also the
+      enhanced client's errorMessage/fallback heading on /r/ documents. */
+  submitError: string;
   /** Per-field errors on the native re-rendered error document — the
       one-field form keeps only the message plus the extracted-contact hint. */
   contactRequired: string;
@@ -608,6 +613,8 @@ function deCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       privacyLinkLabel: "Datenschutzerklärung",
       successMessage: `Danke. Ihre Anfrage ist angekommen. ${responseSentence} Schauen Sie bei Bedarf im Spam-Ordner nach.`,
       errorSummary: "Einige Angaben fehlen oder sind ungültig.",
+      submitError:
+        "Ihre Anfrage konnte gerade nicht gesendet werden. Bitte versuchen Sie es später erneut oder schreiben Sie direkt per E-Mail.",
       contactRequired:
         "Bitte hinterlassen Sie eine E-Mail-Adresse oder Telefonnummer in der Nachricht.",
       messageRequired: "Bitte schreiben Sie eine Nachricht.",
@@ -750,6 +757,8 @@ function ukCopy(siteName: string, facts: ReferralLandingFacts): ReferralLandingC
       privacyLinkLabel: "Політика конфіденційності",
       successMessage: `Дякуємо. Ваш запит надійшов. ${responseSentence} За потреби перевірте папку «Спам».`,
       errorSummary: "Деякі поля не заповнені або містять помилки.",
+      submitError:
+        "Ваш запит зараз не вдалося надіслати. Будь ласка, спробуйте пізніше або напишіть безпосередньо електронною поштою.",
       contactRequired:
         "Будь ласка, залиште в повідомленні адресу електронної пошти або номер телефону.",
       messageRequired: "Будь ласка, напишіть повідомлення.",
