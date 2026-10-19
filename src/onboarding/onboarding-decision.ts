@@ -24,6 +24,7 @@ onboarding.decision.validate (ONDEC-01…07).
   <item>RFC-1317: created — ONBOARDING_DECISION_SCHEMA_ID, topic/resolutionPath/status tuples, entry + ledger schemas, inferred types.</item>
   <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
   <item>RFC-1317: step 5: docs sync + Compass header repair — AGENTS.md onboarding composer contract, technology.xml/knowledge-graph.xml nodes, app-onboarding-guide commands, regenerated command/ecosystem manifests, /MODULE_CONTRACT closers + KD trims on RFC-1317 files</item>
+  <item>RFC-1336: answeredBy/delegatedBy/delegationId provenance fields (strict parity with the spec's if/then) — agent:<id> answers require delegation provenance.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -93,8 +94,35 @@ export const onboardingDecisionEntrySchema = z
     status: z.enum(ONBOARDING_DECISION_STATUSES),
     answer: z.string().optional(),
     answeredAt: z.iso.datetime().optional(),
+    /**
+     * RFC-1336: who bound the answer — human:<handle> directly, or
+     * agent:<id> under an active onboarding.decision delegation.
+     */
+    answeredBy: z
+      .string()
+      .regex(/^(human|agent):[a-z0-9-]+$/)
+      .optional(),
+    /** RFC-1336: the granting human on delegated answers. */
+    delegatedBy: z
+      .string()
+      .regex(/^human:[a-z0-9-]+$/)
+      .optional(),
+    /** RFC-1336: the delegation id backing an agent answer. */
+    delegationId: z
+      .string()
+      .regex(/^del-[0-9]{4,}$/)
+      .optional(),
   })
-  .strict();
+  .strict()
+  .refine(
+    (e) =>
+      !e.answeredBy?.startsWith("agent:") ||
+      (e.delegatedBy !== undefined && e.delegationId !== undefined),
+    {
+      message:
+        "agent:<id> answeredBy requires delegatedBy + delegationId provenance (RFC-1336) — an unsigned agent attestation is not a decision",
+    },
+  );
 
 export const onboardingDecisionLedgerSchema = z
   .object({
