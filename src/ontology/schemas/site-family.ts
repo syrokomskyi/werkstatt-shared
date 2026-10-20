@@ -12,6 +12,7 @@ candidate constellations, required section archetypes, audit thresholds, and rea
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0071: Add site-family contract to @warpgogol/werkstatt-shared/ontology.</item>
+  <item>RFC-1344: visitorQuestions — {id, prompt, placement home|within-one-hop} on the family root, superRefine enforces id uniqueness (FAMILY-Q-01's schema half); COMP-QUESTIONS-01/PAGE-ANSWERS-01 consume.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -60,6 +61,21 @@ const auditThresholdValueSchema = z.enum([
   "forbidden",
 ]);
 
+/**
+ * RFC-1344: a question a visitor of this site family arrives with. Composer
+ * page blocks declare `answers: [<question-id>]`; onboarding.composition.validate
+ * (COMP-QUESTIONS-01) and page.block.validate (PAGE-ANSWERS-01) consume them.
+ * `placement` is a closed enum: `home` must be answered by a home-page block,
+ * `within-one-hop` by a home-page or primary-navigation-target block.
+ */
+export const siteFamilyVisitorQuestionSchema = z
+  .object({
+    id: kebabId,
+    prompt: z.string().min(1),
+    placement: z.enum(["home", "within-one-hop"]),
+  })
+  .strict();
+
 export const siteFamilyRecipeSchema = z
   .object({
     candidateBiomes: z.array(kebabId).min(1),
@@ -89,10 +105,30 @@ export const siteFamilySchema = z
     description: z.string().min(1),
     detection: siteFamilyDetectionSchema,
     recipe: siteFamilyRecipeSchema,
+    /**
+     * RFC-1344: questions a visitor of this family arrives with — platform
+     * data, never site-local overrides. Families without the field skip
+     * COMP-QUESTIONS-01 (COMP-QUESTIONS-00 keeps the gap visible).
+     */
+    visitorQuestions: z.array(siteFamilyVisitorQuestionSchema).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((family, ctx) => {
+    const seen = new Set<string>();
+    for (const [index, question] of (family.visitorQuestions ?? []).entries()) {
+      if (seen.has(question.id)) {
+        ctx.addIssue({
+          code: "custom",
+          message: `duplicate visitor question id '${question.id}'`,
+          path: ["visitorQuestions", index, "id"],
+        });
+      }
+      seen.add(question.id);
+    }
+  });
 
 export type SiteFamilyDetection = z.infer<typeof siteFamilyDetectionSchema>;
 export type SiteFamilyRecipe = z.infer<typeof siteFamilyRecipeSchema>;
+export type SiteFamilyVisitorQuestion = z.infer<typeof siteFamilyVisitorQuestionSchema>;
 export type SiteFamily = z.infer<typeof siteFamilySchema>;
 export const SiteFamilyContract = siteFamilySchema;

@@ -20,6 +20,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>ADR-0116: BlockEntrySchema gains optional strict `copyHygiene: { allowPromise }` — the COMP-PROMISE-01 per-block opt-out with an authored reason.</item>
   <item>RFC-1341: BlockEntrySchema gains optional `requires` — `claim:<entry-id>` references (AND-ed) evaluated against the publication tiers at render time.</item>
+  <item>RFC-1344: BlockEntrySchema gains optional `answers` — kebab-case ids of the site family's visitorQuestions; PAGE-ANSWERS-01 + COMP-QUESTIONS-01 consume.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -140,6 +141,19 @@ export const BlockEntrySchema = z
      * Content (section-layer) blocks only.
      */
     requires: z.array(z.string().regex(/^claim:/)).optional(),
+
+    /**
+     * RFC-1344: ids of the site family's `visitorQuestions` this block answers
+     * — platform family data, never free-form. page.block.validate
+     * (PAGE-ANSWERS-01) requires each id to exist in the family's
+     * visitorQuestions and the block to carry real content (a resolved PBP
+     * reference/`requires`, or a non-empty text-bearing prop after
+     * shared-context fallback); onboarding.composition.validate
+     * (COMP-QUESTIONS-01) requires every question answered at its placement.
+     */
+    answers: z
+      .array(z.string().regex(/^[a-z][a-z0-9-]*$/, "question id must be kebab-case"))
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.type && !data.use) {
