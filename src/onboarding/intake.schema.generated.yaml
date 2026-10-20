@@ -4,7 +4,7 @@
 # Edit instead: the onboarding.intake.schema.export generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run onboarding.intake.schema.export
 $id: https://werkstatt.local/specs/onboarding/v0.1.0/werkstatt-intake.schema.yaml
-title: Werkstatt Intake v1 envelope
+title: Werkstatt Intake v2 envelope
 $schema: https://json-schema.org/draft/2020-12/schema
 type: object
 properties:
@@ -671,6 +671,7 @@ properties:
             - generated
             - stock
             - studio
+            - extracted
         rights:
           type: object
           properties:
@@ -692,9 +693,12 @@ properties:
               format: uri
             evidenceRef:
               type: string
-            gapRef:
-              type: string
-              pattern: ^GAP-[0-9]{2,}$
+            blockers:
+              minItems: 1
+              type: array
+              items:
+                type: string
+                pattern: ^GAP-[0-9]{2,}$
             restrictions:
               type: array
               items:
@@ -720,6 +724,129 @@ properties:
             - model
             - promptSha256
             - generatedAt
+          additionalProperties: false
+        depicts:
+          type: object
+          properties:
+            kind:
+              type: string
+              enum:
+                - represented-product
+                - brand-mark
+                - people
+                - place
+                - atmosphere
+                - illustration
+                - abstract
+            entityRefs:
+              minItems: 1
+              type: array
+              items:
+                type: string
+                minLength: 1
+            label:
+              type: string
+              minLength: 1
+          required:
+            - kind
+          additionalProperties: false
+        mediaHints:
+          minItems: 1
+          type: array
+          items:
+            type: object
+            properties:
+              page:
+                type: integer
+                minimum: 1
+                maximum: 9007199254740991
+              region:
+                type: array
+                prefixItems:
+                  - type: number
+                    minimum: 0
+                    maximum: 1
+                  - type: number
+                    minimum: 0
+                    maximum: 1
+                  - type: number
+                    minimum: 0
+                    maximum: 1
+                  - type: number
+                    minimum: 0
+                    maximum: 1
+                items: false
+                minItems: 4
+                maxItems: 4
+              depicts:
+                type: object
+                properties:
+                  kind:
+                    type: string
+                    enum:
+                      - represented-product
+                      - brand-mark
+                      - people
+                      - place
+                      - atmosphere
+                      - illustration
+                      - abstract
+                  entityRefs:
+                    minItems: 1
+                    type: array
+                    items:
+                      type: string
+                      minLength: 1
+                  label:
+                    type: string
+                    minLength: 1
+                required:
+                  - kind
+                additionalProperties: false
+            required:
+              - page
+              - depicts
+            additionalProperties: false
+        derivedFrom:
+          type: object
+          properties:
+            asset:
+              type: string
+              pattern: ^AST-[0-9]{2,}$
+            sourceSha256:
+              type: string
+              pattern: ^sha256:[0-9a-f]{64}$
+            page:
+              type: integer
+              minimum: 1
+              maximum: 9007199254740991
+            region:
+              type: array
+              prefixItems:
+                - type: number
+                  minimum: 0
+                  maximum: 1
+                - type: number
+                  minimum: 0
+                  maximum: 1
+                - type: number
+                  minimum: 0
+                  maximum: 1
+                - type: number
+                  minimum: 0
+                  maximum: 1
+              items: false
+              minItems: 4
+              maxItems: 4
+            method:
+              type: string
+              enum:
+                - embedded-image
+                - page-render
+          required:
+            - asset
+            - sourceSha256
+            - method
           additionalProperties: false
         altText:
           type: object

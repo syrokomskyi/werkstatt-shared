@@ -407,6 +407,10 @@
       "types": "./src/schemas/material-credit.ts",
       "default": "./src/schemas/material-credit.ts"
     },
+    "./media/extract-document": {
+      "types": "./src/media/extract-document.ts",
+      "default": "./src/media/extract-document.ts"
+    },
     "./schemas/media": {
       "types": "./src/schemas/media.ts",
       "default": "./src/schemas/media.ts"

@@ -22,6 +22,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1345: imageSlots on section manifests — image prop paths + depicts kind for MEDIA-01 and future asset.slot.fulfill</item>
   <item>RFC-1204: effectsParity flag on section manifests + resolver lookup</item>
   <item>RFC-1261</item>
 </CHANGE_SUMMARY>
@@ -308,6 +309,35 @@ export const sectionManifestSchema = manifestBaseSchema.extend({
    */
   localePolicy: z
     .record(z.string(), z.enum(["structural", "localized", "locale-locked"]))
+    .optional(),
+
+  /**
+   * RFC-1345: image-bearing props this section consumes, with the depicts
+   * kind each slot requires. `prop` is a props path — dots descend into
+   * objects, `[]` maps over arrays (e.g. `items[].image`). MEDIA-01 in
+   * page.block.validate rejects assets whose credit sidecar sourceType is
+   * ai-generated/ai-assisted in slots depicting `represented-product`.
+   * Declare slots only where the section consumes image props and slot
+   * resolution is reliable.
+   */
+  imageSlots: z
+    .array(
+      z
+        .object({
+          prop: z.string().min(1),
+          depicts: z.enum([
+            "any",
+            "atmosphere",
+            "illustration",
+            "abstract",
+            "represented-product",
+            "brand-mark",
+            "people",
+            "place",
+          ]),
+        })
+        .strict(),
+    )
     .optional(),
 });
 

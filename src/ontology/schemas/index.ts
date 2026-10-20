@@ -9,8 +9,6 @@ Re-exports the Constellation, Biome, SiteFamily, and SystemManifest schemas and 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0071: Re-export site-family contract and expanded biome surface.</item>
-  <item>RFC-0371: Re-export biome font entry schema and types.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -31,6 +29,8 @@ skeleton consistency, strict/report/off modes. Wired into
 SITES_CHECK_POSTBUILD_PIPELINE and CONTRACT_FULL_VALIDATORS; command
 table + manifest regenerated.</item>
   <item>RFC-1341: barrel exports the publication-register schema, tier primitives, and entityCeiling.</item>
+  <item>RFC-1345: carry source-derived media from client documents through the intake as extracted assets</item>
+  <history>RFC-0071, RFC-0371</history>
 </CHANGE_SUMMARY>
 */
 
@@ -131,6 +131,7 @@ export {
 export type {
   PublicationRegister,
   PublicationRegisterEntity,
+  PublicationRegisterAsset,
   PublicationBlocker,
   PublicationTier,
   SiteCeiling,

@@ -6,11 +6,12 @@ ceiling plus open blockers (gap id, kind, owner). Pure schema + tier
 primitives; IO readers live in werkstatt-site checks/lib/pbp-publication.ts.</purpose>
 <non-goals>
   <item>Do not read files — this module is pure schema/types.</item>
-  <item>Do not model asset tiers here — `assets` is reserved for RFC-1345.</item>
+  <item>Do not evaluate asset ceilings against entity status — the `assets` section mirrors intake/extraction facts; PUBGATE-03 consumes it.</item>
   <item>Do not raise ceilings above preview for unpublished entities — entityCeiling caps it.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1345: assets section typed — {ceiling, blockers, emitted} per asset basename for extraction register entries + PUBGATE-03.</item>
   <item>RFC-1341: created — publication register schema + tier model.</item>
   <item>RFC-1341: preview/public publication tiers — register + ceiling + requires + PUBTIER-01/02 + tier artifact</item>
 </CHANGE_SUMMARY>
@@ -64,13 +65,30 @@ export const publicationRegisterSchema = z
           .strict(),
       )
       .default({}),
-    /** Reserved for RFC-1345 asset tiers — not evaluated by this RFC. */
-    assets: z.record(z.string(), z.unknown()).default({}),
+    /**
+     * RFC-1345: per-asset tier register — keyed by the asset basename the file
+     * is emitted under (`ast-07.webp`, `ext-<sha12>.webp`). `emitted` stores the
+     * emitted path relative to `src/content/` so PUBGATE-03 can match dist
+     * basenames even after re-encode changes the content hash.
+     */
+    assets: z
+      .record(
+        z.string(),
+        z
+          .object({
+            ceiling: z.enum(["draft", "preview", "public"]),
+            blockers: z.array(blockerSchema).default([]),
+            emitted: z.string().min(1).optional(),
+          })
+          .strict(),
+      )
+      .default({}),
   })
   .strict();
 
 export type PublicationRegister = z.infer<typeof publicationRegisterSchema>;
 export type PublicationRegisterEntity = PublicationRegister["entities"][string];
+export type PublicationRegisterAsset = PublicationRegister["assets"][string];
 export type PublicationBlocker = z.infer<typeof blockerSchema>;
 
 // ---------------------------------------------------------------------------

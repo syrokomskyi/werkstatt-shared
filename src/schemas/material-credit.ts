@@ -20,6 +20,7 @@ members) to materialCreditLabelsSchema plus labelForMaterialCreditKind
 helper, so the public credits page renders localized kind labels instead
 of raw enum tokens. Seed the e2e cold-test labels fixture and cover the
 completeness gate with schema tests.</item>
+  <item>RFC-1345: materialCreditSchema gains optional derivedFrom ({asset, sourceSha256, page?, region?, method}) for document-extracted assets.</item>
   <item>REVIEW-CODE-2026-10-16-08 N5: target.domain gains "business-profile" — the canonical tree RFC-1307 seeded assets live in.</item>
   <item>RFC-1307: review-08 N1-N7 — ref-scoped rollback, pre-existing content preservation, svg resolution, explicit io</item>
   <history>RFC-0220, RFC-0223, RFC-0228</history>
@@ -176,11 +177,31 @@ export const aiUsageSchema = z
   .strict();
 export type AiUsage = z.infer<typeof aiUsageSchema>;
 
+/**
+ * RFC-1345: provenance of an asset extracted from a client document —
+ * which intake document asset it came from, the source content hash, and the
+ * page/region/method the extractor used. Additive optional; present only on
+ * sidecars of extracted assets (sourceType `customer-supplied`).
+ */
+export const materialDerivedFromSchema = z
+  .object({
+    asset: z.string().min(1),
+    sourceSha256: z.string().min(1),
+    page: z.number().int().min(1).optional(),
+    /** Normalized [x, y, width, height] crop region inside the source page. */
+    region: z.tuple([z.number(), z.number(), z.number(), z.number()]).optional(),
+    method: z.enum(["embedded-image", "page-render"]),
+  })
+  .strict();
+export type MaterialDerivedFrom = z.infer<typeof materialDerivedFromSchema>;
+
 export const materialCreditSchema = z
   .object({
     id: z.string().min(1),
     target: materialTargetSchema,
     sourceType: materialSourceTypeSchema,
+    /** RFC-1345: extraction provenance for assets pulled out of client documents. */
+    derivedFrom: materialDerivedFromSchema.optional(),
     /** RFC-0231: per-asset visibility override (level 1). Absent ⇒ policy decides. */
     display: z.enum(["shown", "hidden"]).optional(),
     /** RFC-0488: lifecycle status of the credit record. */

@@ -33,6 +33,7 @@ statementLang rewrite, prose drops on clones/variants, INTAKE-12 name+literals,
 currency-policy gate, predicate signature, doc drift. Unblocks dna-trace
 WS-WRITE-02 false positive (_io naming).</item>
   <item>ADR-0114: voiceVerbatimSchema gains optional visibility/clearedFor/blockedBy (handoff W3 machine-readable clearance for COMP-VOICE-01); voiceProfileSchema toneOfVoice/culturalRules accept null — upstream emits null when no profile was distilled.</item>
+  <item>RFC-1345/AMD-009: v2 asset cut — origin gains `extracted` (+derivedFrom provenance, schema-required iff extracted); `mediaHints` on kind:document; `depicts` required on image-bearing kinds (photo/product-photo/illustration); rights.gapRef replaced by rights.blockers[]; export title corrected to "Werkstatt Intake v2 envelope" in the pbpEntitySchemas branch.</item>
   <item>RFC-1342/AMD-007: werkstatt:intake/v2 cut — gap.kind typed (proof/rights/approval/scope-extension/operational); annotation gapRef replaced by blockers[] (≥1 on every non-published non-internal entity, schema-level) + ceiling draft|preview; operatorDecisions gain required effect plus appliesTo and grantsTier (conditional superRefine); pageSetIntent gains optional entityRefs; voice profile toneOfVoice/culturalRules non-null again; INTAKE-13 coverage widened to ceiling:preview entities.</item>
   <history>RFC-1328</history>
 </CHANGE_SUMMARY>
@@ -467,6 +468,46 @@ export const intakeGapSchema = z
 // intake-asset.schema.yaml — the two allOf/if-then rules become superRefine.
 // ---------------------------------------------------------------------------
 
+/**
+ * RFC-1345/AMD-009: what an image-bearing asset depicts. `represented-product`
+ * marks real goods the client represents — MEDIA-01 forbids generated imagery
+ * in those slots; `people` keeps model photography separable for rights calls
+ * (dp7 AST-14).
+ */
+const depictsKindSchema = z.enum([
+  "represented-product",
+  "brand-mark",
+  "people",
+  "place",
+  "atmosphere",
+  "illustration",
+  "abstract",
+]);
+
+const depictsSchema = z
+  .object({
+    kind: depictsKindSchema,
+    /** Any PBP entity id in the bundle — claims included (INTAKE-04). */
+    entityRefs: z.array(z.string().min(1)).min(1).optional(),
+    label: z.string().min(1).optional(),
+  })
+  .strict();
+
+/** Normalized [x, y, width, height] crop region inside a document page. */
+const regionSchema = z.tuple([
+  z.number().min(0).max(1),
+  z.number().min(0).max(1),
+  z.number().min(0).max(1),
+  z.number().min(0).max(1),
+]);
+
+/**
+ * Asset kinds whose file is itself the content image — `depicts` is required
+ * on these. `icon` stays optional (a pictorial icon SHOULD declare depicts;
+ * abstract UI glyphs need not); `document`/`video`/`mood`/`logo` are exempt.
+ */
+const DEPICTS_REQUIRED_KINDS = new Set(["photo", "product-photo", "illustration"]);
+
 export const intakeAssetSchema = z
   .object({
     id: z.string().regex(/^AST-[0-9]{2,}$/),
@@ -485,7 +526,8 @@ export const intakeAssetSchema = z
     mediaType: z.string(),
     width: z.number().int().min(1).optional(),
     height: z.number().int().min(1).optional(),
-    origin: z.enum(["client", "generated", "stock", "studio"]),
+    /** `extracted` ⇒ `derivedFrom` required (RFC-1345). */
+    origin: z.enum(["client", "generated", "stock", "studio", "extracted"]),
     rights: z
       .object({
         state: z.enum([
@@ -501,10 +543,11 @@ export const intakeAssetSchema = z
         licence: z.string().optional(),
         licenceUrl: z.url().optional(),
         evidenceRef: z.string().optional(),
-        gapRef: z
-          .string()
-          .regex(/^GAP-[0-9]{2,}$/)
-          .optional(),
+        /**
+         * RFC-1345/AMD-009: gap ids blocking this asset's use — mirrors the
+         * RFC-1342 claim-side blockers[] swap (replaces v1 `gapRef`).
+         */
+        blockers: z.array(z.string().regex(/^GAP-[0-9]{2,}$/)).min(1).optional(),
         restrictions: z.array(z.string()).optional(),
       })
       .strict(),
@@ -515,6 +558,44 @@ export const intakeAssetSchema = z
         promptSha256: sha256Digest,
         conceptId: z.string().optional(),
         generatedAt: z.iso.datetime(),
+      })
+      .strict()
+      .optional(),
+    /**
+     * RFC-1345: what the asset depicts — required on image-bearing kinds
+     * (`photo`, `product-photo`, `illustration`); optional elsewhere.
+     */
+    depicts: depictsSchema.optional(),
+    /**
+     * RFC-1345: page imagery the producer wants extracted from this document —
+     * `asset.extract` / `sternsystem.register --intake` run the deterministic
+     * poppler pipeline for every hinted page. Only legal on `kind: document`.
+     */
+    mediaHints: z
+      .array(
+        z
+          .object({
+            page: z.number().int().min(1),
+            region: regionSchema.optional(),
+            depicts: depictsSchema,
+          })
+          .strict(),
+      )
+      .min(1)
+      .optional(),
+    /**
+     * RFC-1345: provenance of an `extracted` asset — which document asset it
+     * came from, the source content hash, and the page/region/method.
+     * INTAKE-21 verifies `asset` resolves to a `document` asset whose sha256
+     * equals `sourceSha256`; INTAKE-22 pins rights equality with the source.
+     */
+    derivedFrom: z
+      .object({
+        asset: z.string().regex(/^AST-[0-9]{2,}$/),
+        sourceSha256: sha256Digest,
+        page: z.number().int().min(1).optional(),
+        region: regionSchema.optional(),
+        method: z.enum(["embedded-image", "page-render"]),
       })
       .strict()
       .optional(),
@@ -538,6 +619,34 @@ export const intakeAssetSchema = z
           path: ["rights", "state"],
         });
       }
+    }
+    if (asset.origin === "extracted" && !asset.derivedFrom) {
+      ctx.addIssue({
+        code: "custom",
+        message: "derivedFrom is required when origin is 'extracted'",
+        path: ["derivedFrom"],
+      });
+    }
+    if (asset.derivedFrom && asset.origin !== "extracted") {
+      ctx.addIssue({
+        code: "custom",
+        message: "derivedFrom is only allowed when origin is 'extracted'",
+        path: ["derivedFrom"],
+      });
+    }
+    if (asset.mediaHints && asset.kind !== "document") {
+      ctx.addIssue({
+        code: "custom",
+        message: "mediaHints is only allowed on kind 'document'",
+        path: ["mediaHints"],
+      });
+    }
+    if (DEPICTS_REQUIRED_KINDS.has(asset.kind) && !asset.depicts) {
+      ctx.addIssue({
+        code: "custom",
+        message: `depicts is required on image-bearing kind '${asset.kind}'`,
+        path: ["depicts"],
+      });
     }
     if (asset.rights.state === "licensed-stock" && !asset.rights.licence) {
       ctx.addIssue({
@@ -652,7 +761,7 @@ export function renderIntakeSchemaExport(
   pbp.items = { ...pbp.items, allOf: dispatch };
   return YAML.stringify({
     $id: INTAKE_EXPORT_ID,
-    title: "Werkstatt Intake v1 envelope",
+    title: "Werkstatt Intake v2 envelope",
     ...jsonSchema,
     $defs,
   });

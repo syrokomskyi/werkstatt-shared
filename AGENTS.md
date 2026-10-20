@@ -47,6 +47,7 @@ The `src/share/` namespace is dissolved. Every former `share/` subdomain is now 
 | `client-scripts` | `@warpgogol/werkstatt-shared/client-scripts` | Browser-only (gsap, lenis, plyr, hls, lordicon, counter-utils) |
 | `node` | `@warpgogol/werkstatt-shared/node/*` | Node-only (`node/fs`, `node/import-scan`, `node/dev-props-validator`, `node/semantic/*`) |
 | `text`, `policy`, `page`, `redirects`, `image-provider`, `attribution`, `offers`, `checks`, `runtime`, `sections`, `stack` | `@warpgogol/werkstatt-shared/<name>` | Former loose files grouped by domain |
+| `media` | `@warpgogol/werkstatt-shared/media` | Source-document extraction core (RFC-1345) |
 
 Classification rule for new modules:
 
