@@ -12,6 +12,7 @@
   <item>RFC-0627: add dev-deployed state (precedes alt-deployed in the three-channel deployment chain).</item>
   <item>RFC-0628: remove dev-deployed state (workpiece-based dev deploy does not enter the release state machine).</item>
   <item>RFC-0851: replace legacy state enum with artifact-only prepared|ready; make manifest strict; replace publishedAt with readyAt; add legacyReleaseStateSchema and legacyReleaseDiagnosticSchema.</item>
+  <item>RFC-1341: releaseManifestSchema gains publicationTier (default "public") + belowPublic — the build's derived publication tier the release truthfully reports.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -67,6 +68,16 @@ export const releaseManifestSchema = z
     migratorVerdict: z.enum(["pass", "fail"]),
     versionCompareVerdict: z.enum(["in-sync", "catch-up", "refuse-downgrade"]),
     bootSmokeVerdict: z.enum(["pass", "fail"]),
+    /**
+     * RFC-1341: derived build tier — "preview" iff the build rendered any
+     * below-public (register-gated) content. Default "public" is truthful for
+     * pre-RFC manifests: the two-state gate admitted published content only.
+     */
+    publicationTier: z.enum(["public", "preview"]).default("public"),
+    /** Below-public refs the build rendered, each with its open blocker ids. */
+    belowPublic: z
+      .array(z.object({ ref: z.string(), blockers: z.array(z.string()) }).strict())
+      .default([]),
   })
   .strict();
 

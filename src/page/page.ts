@@ -20,6 +20,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1341: BlockEntry gains optional requires (claim:<pbp-entry-id>, AND-ed); BuildPageOptions.publication evaluates claims against the site ceiling — below-ceiling claims omit the block via onOmitted, preview-tier claims mark ResolvedBlock.publicationTier/publicationNote; absent option keeps pre-RFC byte-identical output.</item>
   <history>RFC-0091</history>
 </CHANGE_SUMMARY>
 */
@@ -36,6 +37,7 @@ import {
   moonImportPaths as registryMoonImportPaths,
   roleByCosmicName as registryRoleByCosmicName,
 } from "@warpgogol/werkstatt-shared/ontology/archetypes";
+import { PUBLICATION_TIER_ORDER } from "../ontology/schemas/publication-register.ts";
 
 // @ai-invariant: PageEntry and BlockEntry shapes MUST stay structurally
 // compatible with @warpgogol/werkstatt-shared/ontology/schemas PageEntrySchema / BlockEntrySchema.
@@ -59,6 +61,12 @@ export interface BlockEntry {
   /** Explicit shared-context inheritance edge — pageId or opt-out `false` (RFC-1185). */
   inherit?: string | false;
   visibility?: import("../policy/visibility.ts").VisibilityExpr;
+  /**
+   * RFC-1341: claim requirements — `claim:<pbp-claim-entry-id>` references,
+   * AND-ed. A block is omitted when any claim resolves below the site ceiling;
+   * blocks whose claims resolve at preview render badged.
+   */
+  requires?: string[];
   /** Block layer — shell blocks render before content blocks (RFC-0036). */
   layer?: "shell" | "section";
 }
@@ -102,6 +110,14 @@ export interface ResolvedBlock {
   readonly visibility: import("../policy/visibility.ts").VisibilityExpr | null;
   /** Block layer — shell blocks are prepended and render before content blocks (RFC-0036). */
   readonly layer?: "shell" | "section";
+  /**
+   * RFC-1341: "preview" when this block's `requires` claims resolve below
+   * public — the section wrapper renders `data-publication-tier` + badge.
+   * Absent for public-tier blocks.
+   */
+  readonly publicationTier?: "preview";
+  /** Badge note text (already localized) for preview-tier blocks. */
+  readonly publicationNote?: string;
 }
 
 /**
@@ -245,6 +261,25 @@ export interface BuildPageOptions {
     props: Record<string, unknown>,
     blockId: string | null,
   ) => void | Promise<void>;
+  /**
+   * RFC-1341 publication tier evaluation. When supplied, content blocks
+   * carrying `requires: [claim:<id>, …]` are evaluated against the site
+   * ceiling: a claim below the ceiling omits the block (reported via
+   * `onOmitted`); claims resolving at preview mark the block
+   * `publicationTier: "preview"` (rendered badged). When omitted entirely,
+   * `requires` entries are ignored — public-tier builds stay byte-identical
+   * to pre-RFC-1341 behaviour.
+   */
+  publication?: {
+    /** system.md `publication.ceiling` (absent → "public"). */
+    siteCeiling: import("../ontology/schemas/publication-register.ts").SiteCeiling;
+    /** Resolve a `claim:` requirement's effective tier. */
+    claimTier: (
+      claimId: string,
+    ) => import("../ontology/schemas/publication-register.ts").PublicationTier;
+    /** Called once per omitted block. */
+    onOmitted?: (info: { blockId: string | null; requires: string[] }) => void;
+  };
 }
 
 // @ai-invariant: buildPage is the SINGLE page pipeline (DNA-25). Every page
@@ -324,6 +359,28 @@ export async function buildPage(
     const visible = evalVisibility(block.visibility ?? null, ctx, featureGraph);
     if (!visible) continue;
 
+    // RFC-1341: claim requirements — AND-ed; a claim below the site ceiling
+    // omits the block, claims at preview mark it for badged rendering.
+    let publicationTier: "preview" | undefined;
+    if (options?.publication && block.requires && block.requires.length > 0) {
+      const pub = options.publication;
+      let omit = false;
+      let belowPublic = false;
+      for (const req of block.requires) {
+        const tier = pub.claimTier(req.replace(/^claim:/, ""));
+        if (PUBLICATION_TIER_ORDER[tier] < PUBLICATION_TIER_ORDER[pub.siteCeiling]) {
+          omit = true;
+          break;
+        }
+        if (tier !== "public") belowPublic = true;
+      }
+      if (omit) {
+        pub.onOmitted?.({ blockId: block.id ?? null, requires: block.requires });
+        continue;
+      }
+      if (belowPublic) publicationTier = "preview";
+    }
+
     // Resolve the component import path
     const planetName = normalizeBlockType(block);
     const componentImportPath = resolver(planetName);
@@ -349,6 +406,7 @@ export async function buildPage(
       props: contentProps,
       visibility: block.visibility ?? null,
       layer: block.layer ?? "section",
+      publicationTier,
     });
   }
 

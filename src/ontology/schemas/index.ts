@@ -30,6 +30,7 @@ default), minimal CSS matcher, variadic skeleton collapse, variant-grouped
 skeleton consistency, strict/report/off modes. Wired into
 SITES_CHECK_POSTBUILD_PIPELINE and CONTRACT_FULL_VALIDATORS; command
 table + manifest regenerated.</item>
+  <item>RFC-1341: barrel exports the publication-register schema, tier primitives, and entityCeiling.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -120,6 +121,20 @@ export type { GrowthVendor } from "./system.ts";
 
 export { PageEntrySchema, BlockEntrySchema } from "./page-entry.ts";
 export type { PageEntry, BlockEntry } from "./page-entry.ts";
+
+export {
+  publicationRegisterSchema,
+  PUBLICATION_TIER_ORDER,
+  tierAtLeast,
+  entityCeiling,
+} from "./publication-register.ts";
+export type {
+  PublicationRegister,
+  PublicationRegisterEntity,
+  PublicationBlocker,
+  PublicationTier,
+  SiteCeiling,
+} from "./publication-register.ts";
 // getSectionPropsSchema is NOT re-exported here — it lives in manifest-resolver.ts
 // which imports node:fs/promises. Re-exporting it from this barrel pulls Node-only
 // modules into the Vite client bundle (growth/config.ts imports growthVendorSchema

@@ -211,6 +211,10 @@
       "types": "./src/content-discipline/index.ts",
       "default": "./src/content-discipline/index.ts"
     },
+    "./content/business-profile-references": {
+      "types": "./src/content/business-profile-references.ts",
+      "default": "./src/content/business-profile-references.ts"
+    },
     "./content/content-reference": {
       "types": "./src/content/content-reference.ts",
       "default": "./src/content/content-reference.ts"

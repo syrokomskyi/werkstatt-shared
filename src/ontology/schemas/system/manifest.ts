@@ -43,6 +43,7 @@ review records, or gate flips authored. Canary C11 active.</item>
   <item>ADR-0114: identity.legal gains optional name/vatId — the seed mapping carries the full pbp/legal-identity surface (legalName + publicIdentifiers.vatId) alongside responsibleName/address/email.</item>
   <item>RFC-1307: step 6 — onboarding docs switched to intake path, manifest comment re-sourced, generated artifacts refreshed</item>
   <item>RFC-1307: canonical org-singleton PBP paths, seeded hreflang+publication.gate, full rollback</item>
+  <item>RFC-1341: publication block gains optional ceiling: public | preview — opts a site into badged below-public rendering (absent = public).</item>
   <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229</history>
 </CHANGE_SUMMARY>
 */
@@ -193,6 +194,13 @@ export const systemManifestSchema = z.object({
   publication: z
     .object({
       gate: z.enum(["warn", "enforce"]),
+      /**
+       * RFC-1341: content-use ceiling; absent = "public" (today's two-state
+       * behaviour). `preview` lets register-gated (ceiling: preview) entities
+       * render on PIN-protected channels with a visible badge; the main gate
+       * refuses the derived release tier via PUBTIER-01.
+       */
+      ceiling: z.enum(["public", "preview"]).optional(),
     })
     .strict()
     .optional(),
