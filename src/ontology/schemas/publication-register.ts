@@ -11,6 +11,7 @@ primitives; IO readers live in werkstatt-site checks/lib/pbp-publication.ts.</pu
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1353/AMD-011: optional faq section — {entryId, ceiling, blockers, questionnaireRef?} per seeded slug for entries below public.</item>
   <item>RFC-1346: assets entries gain origin (placeholder|generated|extracted|client|stock|studio) — placeholder ⇒ derived preview tier via slot:&lt;id&gt; in belowPublic.</item>
   <item>RFC-1345: assets section typed — {ceiling, blockers, emitted} per asset basename for extraction register entries + PUBGATE-03.</item>
   <item>RFC-1341: created — publication register schema + tier model.</item>
@@ -90,12 +91,32 @@ export const publicationRegisterSchema = z
           .strict(),
       )
       .default({}),
+    /**
+     * RFC-1353/AMD-011: seeded FAQ entries below public — keyed by the seeded
+     * slug (`<topic>-<nn>` or the entry's explicit slug). `awaiting-client`
+     * rows carry `questionnaireRef` so the status card can list them without
+     * reading the intake bundle.
+     */
+    faq: z
+      .record(
+        z.string(),
+        z
+          .object({
+            entryId: z.string().min(1),
+            ceiling: z.enum(["draft", "preview"]),
+            blockers: z.array(blockerSchema).default([]),
+            questionnaireRef: z.string().optional(),
+          })
+          .strict(),
+      )
+      .default({}),
   })
   .strict();
 
 export type PublicationRegister = z.infer<typeof publicationRegisterSchema>;
 export type PublicationRegisterEntity = PublicationRegister["entities"][string];
 export type PublicationRegisterAsset = PublicationRegister["assets"][string];
+export type PublicationRegisterFaqEntry = PublicationRegister["faq"][string];
 export type PublicationBlocker = z.infer<typeof blockerSchema>;
 
 // ---------------------------------------------------------------------------
