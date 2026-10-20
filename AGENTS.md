@@ -46,6 +46,8 @@ Changes to shared **contract surfaces** (Zod schemas mirrored by vendored spec Y
 5. **Union provenance shapes** — widening a schema to a union (e.g. `MaterialDerivedFrom`) breaks direct property access at every consumer; grep for `.asset`/`.derivedFrom` reads before typechecking.
 6. **Generated artifacts** — covered by the sweep's `command-tables`, `command-manifest`, and `site-exports` steps (`command-manifest.generated.yaml`, `checks/command-tables/index.generated.ts`, `package.json` export map). Regenerate before the impl commit, never mid-review.
 
+**Adding a new generated export to the sweep** (precedent: `family.questions.export`, RFC-1353): the export command MUST return `renderedFiles: { "<spec-relative path>": "<rendered bytes>" }` in its result `data` and a step registered in `RIPPLE_STEPS` before `spec-mirror` — the mirror step hashes those intent bytes so `integrity.yaml` stays honest under `--dry-run` (hashing the disk instead writes stale entries on every dry-run). `runSpecMirror` appends missing `files:` entries in sorted order, so a first-time mirror needs no manual integrity edit.
+
 ## Domain layout (RFC-1105)
 
 The `src/share/` namespace is dissolved. Every former `share/` subdomain is now a top-level `src/` directory with a matching subpath export:
