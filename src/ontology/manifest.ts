@@ -16,16 +16,12 @@ Exports a discriminated union on `layer` so TypeScript narrows the `role` and
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1346/AMD-010: imageSlots entries gain optional aspect (W:H) — declared manifests win over brief aspectHint at fulfilment.</item>
   <item>RFC-1345: imageSlots on section manifests — image prop paths + depicts kind for MEDIA-01 and future asset.slot.fulfill</item>
   <item>RFC-1204: effectsParity flag on section manifests + resolver lookup</item>
   <item>RFC-1261</item>
+  <item>RFC-1340: mandatory api routes compose into every SSR site — probe-mandatory endpoints emitted regardless of section use</item>
+  <history>RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -287,6 +283,14 @@ export const sectionManifestSchema = manifestBaseSchema.extend({
         secrets: z
           .array(z.string().regex(/^[A-Z][A-Z0-9_]*$/, "must be a SCREAMING_SNAKE_CASE env key"))
           .optional(),
+        /**
+         * RFC-1340 Q-3: mandatory endpoints compose into EVERY site — the
+         * delivery-path probe (api.probe.check) treats an absent or
+         * non-contract mandatory endpoint as an error regardless of whether
+         * the site uses the declaring section. When true, api.routes.generate
+         * emits this route unconditionally on SSR-capable adapters.
+         */
+        mandatory: z.boolean().optional(),
       }),
     )
     .optional(),
