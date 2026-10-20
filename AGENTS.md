@@ -449,6 +449,10 @@ Location: `packages/werkstatt-shared/src/referral/` — exported via `@warpgogol
 
 **No-client-storage invariant:** referral attribution carries NO cookies, `localStorage`, `sessionStorage`, or IndexedDB — the chain is `/r/<slug>` → `?ref=<slug>` URL → voluntary form field → server-side slug resolution → `referralPartnerSlug`/`referralPartnerName` on the Lagebild ingress contract. `src/referral/tests/no-cookie-remnants.test.ts` is the enforcement guard; keep the banned-literal list intact.
 
+### Access protection on PIN-gated channels (RFC-1340)
+
+Machine-authenticated endpoints cannot satisfy Basic Auth — external providers (QStash callbacks, Stripe webhooks, inbound integration posts) never carry `warp:<pin>` credentials, so on `dev`/`alt`/provisional `workers.dev` hosts the access-protection middleware exempts them by path and the endpoint's own authentication decides (`Upstash-Signature` for `/api/integration-route`, `INTEGRATION_INBOUND_SECRET` — fail-closed — for `/api/integration-inbound`, Stripe signature for `/api/stripe-webhook`). The exemption path list lives canonically in `src/middleware/access-protection.ts` — add new machine-authenticated endpoints there, never in generated workpiece copies (thin re-exports); every exempted endpoint must carry its own auth or the exemption opens an unauthenticated surface. Temporary probe runs go through `leitstand.access.suspend`/`access.resume`, never by weakening the list. Discovered during warpgogol-m000204: a fully healthy QStash→callback→Redis delivery path deadlocked on PIN-gated channels because the callback POST 401'd before its signature check ran.
+
 ## Test coverage
 
 RFC-1044 (Phase 2) ratcheted the package adjacency ratio from 29% to 62% by adding 70 adjacent test files across Groups A (share/schemas + ontology/schemas) and B (share/scripts + share/agent + share/knowledge). Groups C-E remain for follow-up sessions. The adjacency baseline is tracked via `.test-adjacency-baseline.json` and enforced by `test.adjacency.validate` (RFC-1040).
