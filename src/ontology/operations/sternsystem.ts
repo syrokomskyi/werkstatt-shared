@@ -16,6 +16,7 @@ RFC-0790: add systemConfigSchema, systemStateSchema, servicesRegistrySchema for 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1342/AMD-007: onboarding provenance comment names the v2 intake bundle</item>
   <item>RFC-1263</item>
   <item>RFC-1284: systemStateSchema gains nullable accessPinSuspended {at,by,operationId} — durable crash-safe suspension marker; accessPin stays the desired-state authority</item>
   <item>RFC-1307: step 1 — shared PBP layout map, canonical writer, typed onboarding state</item>
@@ -254,7 +255,7 @@ export const systemStateSchema = z.looseObject({
   // RFC-0967: Controls OWNERSHIP-01 warning vs blocking. false during rollout,
   // set to true per-site when ready for blocking enforcement.
   ownershipRequired: z.boolean().default(false),
-  // RFC-1307: provenance of the werkstatt:intake/v1 bundle the system was
+  // RFC-1307: provenance of the werkstatt:intake/v2 bundle the system was
   // born from (sternsystem.register --intake). Undefined for pre-intake systems.
   onboarding: z
     .object({

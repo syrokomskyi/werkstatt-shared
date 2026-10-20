@@ -1,11 +1,11 @@
 /*
 <MODULE_CONTRACT>
 
-<purpose>Zod model of the werkstatt:intake/v1 hand-over envelope (RFC-1281,
-spec werkstatt-onboarding ON-01 / INTAKE-CONTRACT, AMD-001 §1) — the single
-producer → Werkstatt contract. Owns every envelope field of the three
-normative v0.1.0 spec schemas; pbp[] entities are checked at envelope level
-only (schema allow-list, id, type, status). Also renders the JSON Schema
+<purpose>Zod model of the werkstatt:intake/v2 hand-over envelope (RFC-1281 +
+RFC-1342/AMD-007, spec werkstatt-onboarding ON-01 / INTAKE-CONTRACT, AMD-001 §1)
+— the single producer → Werkstatt contract. Owns every envelope field of the
+three normative v0.1.0 spec schemas; pbp[] entities are checked at envelope
+level only (schema allow-list, id, type, status). Also renders the JSON Schema
 export that producers vendor byte-exact
 (intake.schema.generated.yaml, owner command onboarding.intake.schema.export).</purpose>
 <non-goals>
@@ -33,6 +33,7 @@ statementLang rewrite, prose drops on clones/variants, INTAKE-12 name+literals,
 currency-policy gate, predicate signature, doc drift. Unblocks dna-trace
 WS-WRITE-02 false positive (_io naming).</item>
   <item>ADR-0114: voiceVerbatimSchema gains optional visibility/clearedFor/blockedBy (handoff W3 machine-readable clearance for COMP-VOICE-01); voiceProfileSchema toneOfVoice/culturalRules accept null — upstream emits null when no profile was distilled.</item>
+  <item>RFC-1342/AMD-007: werkstatt:intake/v2 cut — gap.kind typed (proof/rights/approval/scope-extension/operational); annotation gapRef replaced by blockers[] (≥1 on every non-published non-internal entity, schema-level) + ceiling draft|preview; operatorDecisions gain required effect plus appliesTo and grantsTier (conditional superRefine); pageSetIntent gains optional entityRefs; voice profile toneOfVoice/culturalRules non-null again; INTAKE-13 coverage widened to ceiling:preview entities.</item>
   <history>RFC-1328</history>
 </CHANGE_SUMMARY>
 */
@@ -40,7 +41,7 @@ WS-WRITE-02 false positive (_io naming).</item>
 import { z } from "zod";
 import YAML from "yaml";
 
-export const INTAKE_SCHEMA_ID = "werkstatt:intake/v1" as const;
+export const INTAKE_SCHEMA_ID = "werkstatt:intake/v2" as const;
 
 /**
  * v1 allow-list of PBP schema ids an intake pbp[] entry may carry
@@ -126,6 +127,11 @@ const classificationSchema = z
           .object({
             intent: z.string(),
             evidenceRefs: z.array(sourceRef),
+            /**
+             * RFC-1342/AMD-007: PBP entity ids the intent page is meant to
+             * present — the typed composition coverage edge.
+             */
+            entityRefs: z.array(z.string().min(1)).optional(),
           })
           .strict(),
       )
@@ -149,6 +155,7 @@ export const intakePbpEntitySchema = z.looseObject({
    * BCP 47 tags of `classification.locales`. The root statement field is
    * the primary-locale value; this map covers the rest. Optional — an
    * entity without it is either `localeNeutral` or INTAKE-13.
+   * RFC-1342/AMD-007: `ceiling: preview` entities are covered too (INTAKE-18).
    */
   statementByLocale: z.record(bcp47Tag, z.string().min(1)).optional(),
   /**
@@ -162,20 +169,38 @@ export const intakePbpEntitySchema = z.looseObject({
 // annotations / operatorDecisions
 // ---------------------------------------------------------------------------
 
+const gapId = z.string().regex(/^GAP-[0-9]{2,}$/);
+
 const annotationSchema = z
   .object({
     verbatim: z.array(verbatimSchema).optional(),
-    /** Gap whose closure publishes this draft entity (INTAKE-06). */
-    gapRef: z
-      .string()
-      .regex(/^GAP-[0-9]{2,}$/)
-      .optional(),
+    /**
+     * RFC-1342/AMD-007: gaps whose closure publishes this entity. Required
+     * (≥1) on every non-published, non-internal entity — enforced on the
+     * envelope superRefine (INTAKE-02); a draft with no blockers is a
+     * contract defect, not a semantic violation.
+     */
+    blockers: z.array(gapId).min(1).optional(),
+    /**
+     * RFC-1342/AMD-007: upper bound this entity may render at — `draft`
+     * (default when absent) or `preview`. `public` is unreachable from the
+     * intake: only `status: published` publishes.
+     */
+    ceiling: z.enum(["draft", "preview"]).optional(),
     /** Composer context only — never publishable (D10 gate). */
     internal: z.boolean().optional(),
     /** Originating evidence-ledger record id (e.g. CLM-023). */
     ledgerRef: z.string().optional(),
   })
   .strict();
+
+const OPERATOR_DECISION_EFFECTS = [
+  "content-scope",
+  "publication-tier",
+  "process",
+  "commercial",
+  "other",
+] as const;
 
 const operatorDecisionSchema = z
   .object({
@@ -187,8 +212,45 @@ const operatorDecisionSchema = z
     answer: z.string(),
     answeredAt: z.iso.datetime().optional(),
     reversible: z.boolean().optional(),
+    /** RFC-1342/AMD-007: what the ruling affects. */
+    effect: z.enum(OPERATOR_DECISION_EFFECTS),
+    /**
+     * RFC-1342/AMD-007: entity, gap, or asset ids the ruling applies to.
+     * Required on `content-scope` and `publication-tier` effects.
+     */
+    appliesTo: z.array(z.string().min(1)).min(1).optional(),
+    /**
+     * RFC-1342/AMD-007: tier the ruling grants — required on
+     * `effect: publication-tier`, forbidden otherwise (INTAKE-20's input).
+     */
+    grantsTier: z.enum(["preview", "public"]).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((decision, ctx) => {
+    const scoped =
+      decision.effect === "content-scope" || decision.effect === "publication-tier";
+    if (scoped && !decision.appliesTo) {
+      ctx.addIssue({
+        code: "custom",
+        message: `appliesTo is required when effect is '${decision.effect}'`,
+        path: ["appliesTo"],
+      });
+    }
+    if (decision.effect === "publication-tier" && !decision.grantsTier) {
+      ctx.addIssue({
+        code: "custom",
+        message: "grantsTier is required when effect is 'publication-tier'",
+        path: ["grantsTier"],
+      });
+    }
+    if (decision.effect !== "publication-tier" && decision.grantsTier !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        message: "grantsTier is forbidden unless effect is 'publication-tier'",
+        path: ["grantsTier"],
+      });
+    }
+  });
 
 // ---------------------------------------------------------------------------
 // voice
@@ -227,9 +289,8 @@ const voiceDirectiveSchema = z
 const voiceProfileSchema = z
   .object({
     /**
-     * Handoff W3: upstream bundles may carry `null` when no tone profile was
-     * distilled — accept both absent and explicit null (COMP-VOICE-01 judges
-     * verbatim clearance regardless).
+     * RFC-1342/AMD-007: populated profile, always — the ADR-0114 null
+     * tolerance (mistaken W3 report) is removed with the v2 cut.
      */
     toneOfVoice: z
       .object({
@@ -239,11 +300,10 @@ const voiceProfileSchema = z
         avoids: z.array(z.string()),
         prefers: z.array(z.string()),
       })
-      .strict()
-      .nullish(),
+      .strict(),
     /** Rules per BCP 47 locale tag (spec: propertyNames bcp47). */
     linguisticRules: z.record(bcp47Tag, z.array(z.string())),
-    culturalRules: z.array(z.string()).nullish(),
+    culturalRules: z.array(z.string()),
   })
   .strict();
 
@@ -324,7 +384,7 @@ const provenanceSchema = z
     producer: z.string(),
     producerVersion: z.string(),
     runId: z.string(),
-    /** SHA-256 of the vendored werkstatt:intake/v1 JSON Schema export. */
+    /** SHA-256 of the vendored werkstatt:intake/v2 JSON Schema export. */
     contractSnapshot: sha256Digest,
     inputs: z.array(provenanceInputSchema).min(1),
     evidenceLedger: sha256Digest,
@@ -361,6 +421,15 @@ const provenanceSchema = z
 export const intakeGapSchema = z
   .object({
     id: z.string().regex(/^GAP-[0-9]{2,}$/),
+    /**
+     * RFC-1342/AMD-007: what kind of input the gap asks for. `proof` proves a
+     * blocked statement; `rights` is permission to publish material;
+     * `approval` is client sign-off on wording; `scope-extension` asks
+     * whether a known set grows; `operational` blocks nothing publishable
+     * (domain, billing, process) — INTAKE-16 forbids the last two kinds
+     * from appearing in any blockers/blocks edge.
+     */
+    kind: z.enum(["proof", "rights", "approval", "scope-extension", "operational"]),
     what: z.string().min(1),
     why: z.string().min(1),
     obtainableBy: z.enum(["client", "studio", "either"]),
@@ -503,7 +572,24 @@ export const intakeEnvelopeSchema = z
     assets: z.array(intakeAssetSchema),
     provenance: provenanceSchema,
   })
-  .strict();
+  .strict()
+  .superRefine((env, ctx) => {
+    // RFC-1342/AMD-007: a non-published, non-internal entity MUST declare its
+    // blockers — the contract-level form of v1's INTAKE-06 (schema defect,
+    // reported as INTAKE-02, not a semantic violation).
+    for (const entity of env.pbp) {
+      if (entity.status !== "draft") continue;
+      const annotation = env.annotations[entity.id];
+      if (annotation?.internal === true) continue;
+      if (!annotation?.blockers || annotation.blockers.length === 0) {
+        ctx.addIssue({
+          code: "custom",
+          message: `draft entity '${entity.id}' has no annotation with internal: true or a non-empty blockers[]`,
+          path: ["annotations", entity.id, "blockers"],
+        });
+      }
+    }
+  });
 
 export type IntakeEnvelope = z.infer<typeof intakeEnvelopeSchema>;
 export type IntakeGap = z.infer<typeof intakeGapSchema>;
@@ -544,7 +630,7 @@ export function renderIntakeSchemaExport(
   if (entities === undefined) {
     return YAML.stringify({
       $id: INTAKE_EXPORT_ID,
-      title: "Werkstatt Intake v1 envelope",
+      title: "Werkstatt Intake v2 envelope",
       ...jsonSchema,
     });
   }

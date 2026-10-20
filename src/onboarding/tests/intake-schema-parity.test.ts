@@ -2,15 +2,16 @@
 <MODULE_CONTRACT>
 <purpose>RFC-1281 AC-7: prove intakeEnvelopeSchema (Zod, source of truth) and the
 normative werkstatt-onboarding v0.1.0 JSON Schemas produce identical
-accept/reject verdicts on the 13-fixture parity set. Spec schemas are loaded
+accept/reject verdicts on the fixture parity set. Spec schemas are loaded
 from docs/specs/werkstatt-onboarding/schemas/ and compiled with Ajv
 (draft 2020-12 + formats), mirroring how a producer's vendored copy behaves.</purpose>
 <non-goals>
-  <item>Do not exercise bundle-level INTAKE-01…11 rules — those are engine-side.</item>
+  <item>Do not exercise bundle-level INTAKE-01…20 rules — those are engine-side.</item>
   <item>Do not mutate the spec schemas — they are the normative reference.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1342/AMD-007: parity set migrated to v2 — wrong-schema-const targets the retired v1 major; new fixtures cover gap.kind, decision effect/grantsTier conditionals, empty blockers (the draft⇒blockers correlation is Zod-only — the vendored schema cannot key annotations to pbp ids, per AMD-007).</item>
   <item>RFC-1281: created — 13-fixture Zod/JSON-Schema verdict-parity test.</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>
   <item>ADR-0114: review fixes: runtime-parity navIds, naming-bound ledger cover, supported-locale legal loop, scaffold-keyed LEGAL-JUR-02, spec schema parity</item>
@@ -49,7 +50,7 @@ const SHA = "sha256:" + "a".repeat(64);
 
 function baseEnvelope(): Record<string, unknown> {
   return {
-    schema: "werkstatt:intake/v1",
+    schema: "werkstatt:intake/v2",
     intakeId: "int_019a4f2c-7a01-7f30-8c1e-9f2e4a6b8d01",
     systemId: "dp7",
     producedAt: "2026-10-15T10:00:00Z",
@@ -81,6 +82,7 @@ function baseEnvelope(): Record<string, unknown> {
     gaps: [
       {
         id: "GAP-04",
+        kind: "approval",
         what: "Warranty policy wording",
         why: "Draft claim cannot be published without it",
         obtainableBy: "client",
@@ -98,6 +100,7 @@ function baseEnvelope(): Record<string, unknown> {
         question: "Accept producer's direction?",
         answer: "yes",
         answeredAt: "2026-10-15T10:00:00Z",
+        effect: "other",
       },
     ],
     voice: {
@@ -203,7 +206,52 @@ const FIXTURES: ParityFixture[] = [
     name: "wrong-schema-const",
     build: () => {
       const e = baseEnvelope();
-      e.schema = "werkstatt:intake/v2";
+      e.schema = "werkstatt:intake/v1";
+      return e;
+    },
+  },
+  {
+    name: "gap-without-kind",
+    build: () => {
+      const e = baseEnvelope();
+      delete (e.gaps as Record<string, unknown>[])[0].kind;
+      return e;
+    },
+  },
+  {
+    name: "decision-without-effect",
+    build: () => {
+      const e = baseEnvelope();
+      delete (e.operatorDecisions as Record<string, unknown>[])[0].effect;
+      return e;
+    },
+  },
+  {
+    name: "publication-tier-decision-without-grantsTier",
+    build: () => {
+      const e = baseEnvelope();
+      const decision = (e.operatorDecisions as Record<string, unknown>[])[0];
+      decision.effect = "publication-tier";
+      decision.appliesTo = ["claim/installation-warranty"];
+      return e;
+    },
+  },
+  {
+    name: "grantsTier-on-non-tier-effect",
+    build: () => {
+      const e = baseEnvelope();
+      const decision = (e.operatorDecisions as Record<string, unknown>[])[0];
+      decision.grantsTier = "preview";
+      return e;
+    },
+  },
+  {
+    name: "annotation-empty-blockers",
+    build: () => {
+      const e = baseEnvelope();
+      (e.annotations as Record<string, unknown>)["claim/installation-warranty"] = {
+        blockers: [],
+      };
       return e;
     },
   },

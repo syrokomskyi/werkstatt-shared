@@ -10,7 +10,7 @@ type: object
 properties:
   schema:
     type: string
-    const: werkstatt:intake/v1
+    const: werkstatt:intake/v2
   intakeId:
     type: string
     pattern: ^int_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
@@ -122,6 +122,11 @@ properties:
             intent:
               type: string
             evidenceRefs:
+              type: array
+              items:
+                type: string
+                minLength: 1
+            entityRefs:
               type: array
               items:
                 type: string
@@ -278,9 +283,17 @@ properties:
               - text
               - sourceRef
             additionalProperties: false
-        gapRef:
+        blockers:
+          minItems: 1
+          type: array
+          items:
+            type: string
+            pattern: ^GAP-[0-9]{2,}$
+        ceiling:
           type: string
-          pattern: ^GAP-[0-9]{2,}$
+          enum:
+            - draft
+            - preview
         internal:
           type: boolean
         ledgerRef:
@@ -294,6 +307,14 @@ properties:
         id:
           type: string
           pattern: ^GAP-[0-9]{2,}$
+        kind:
+          type: string
+          enum:
+            - proof
+            - rights
+            - approval
+            - scope-extension
+            - operational
         what:
           type: string
           minLength: 1
@@ -342,6 +363,7 @@ properties:
             type: string
       required:
         - id
+        - kind
         - what
         - why
         - obtainableBy
@@ -377,12 +399,32 @@ properties:
           pattern: ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$
         reversible:
           type: boolean
+        effect:
+          type: string
+          enum:
+            - content-scope
+            - publication-tier
+            - process
+            - commercial
+            - other
+        appliesTo:
+          minItems: 1
+          type: array
+          items:
+            type: string
+            minLength: 1
+        grantsTier:
+          type: string
+          enum:
+            - preview
+            - public
       required:
         - id
         - kind
         - gate
         - question
         - answer
+        - effect
       additionalProperties: false
   voice:
     type: object
@@ -458,31 +500,29 @@ properties:
         type: object
         properties:
           toneOfVoice:
-            anyOf:
-              - type: object
-                properties:
-                  tone:
-                    type: string
-                  posture:
-                    type: string
-                  readingLevel:
-                    type: string
-                  avoids:
-                    type: array
-                    items:
-                      type: string
-                  prefers:
-                    type: array
-                    items:
-                      type: string
-                required:
-                  - tone
-                  - posture
-                  - readingLevel
-                  - avoids
-                  - prefers
-                additionalProperties: false
-              - type: "null"
+            type: object
+            properties:
+              tone:
+                type: string
+              posture:
+                type: string
+              readingLevel:
+                type: string
+              avoids:
+                type: array
+                items:
+                  type: string
+              prefers:
+                type: array
+                items:
+                  type: string
+            required:
+              - tone
+              - posture
+              - readingLevel
+              - avoids
+              - prefers
+            additionalProperties: false
           linguisticRules:
             type: object
             propertyNames:
@@ -493,13 +533,13 @@ properties:
               items:
                 type: string
           culturalRules:
-            anyOf:
-              - type: array
-                items:
-                  type: string
-              - type: "null"
+            type: array
+            items:
+              type: string
         required:
+          - toneOfVoice
           - linguisticRules
+          - culturalRules
         additionalProperties: false
     required:
       - verbatim
