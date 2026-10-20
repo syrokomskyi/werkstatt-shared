@@ -35,6 +35,17 @@ Rules:
 - **Persisted schemas that participate in parse→write cycles must preserve forward-compatible fields.** For extensible config/state documents, use a loose schema or explicitly carry unknown keys through, and add a read→write regression test asserting declared integration fields and an unknown extension key survive. A strict `z.object` strips unknown fields; serializing that parsed value can persist the loss. Discovered during RFC-1275: auto-pin removed `integrations.journal` from `system-config.yaml`.
 - **Copy modules (`src/**/copy.ts`, `src/**/*.copy.ts`) hold localized UI/compliance strings only — site-facing values are never literals (RFC-1278, DNA-4).** Prices, rewards, URLs, emails, partner names, and SLA/launch-day numbers MUST be interpolated from PBP facts or authored data (`${facts.reward}`, `${launchDays}`, `${version}`) — a literal `"70 €"` in a copy module is the same violation class as a literal in `.astro` markup. `copy-values.validate` (werkstatt-site, blocking in `PACKAGES_CHECK_PIPELINE`) flags literal money/URL/domain/email/brand tokens; suppress a proven false positive with `// copy-values: <reason>` on the offending line. Legal section references (`§ 19 UStG`) are law citations, not site values.
 
+## Contract-change ripple checklist (batch-retro RFC-1346)
+
+Changes to shared **contract surfaces** (Zod schemas mirrored by vendored spec YAML, closed enums, ledger/register entry shapes) have a predictable blast radius — run this list _before_ the first full-suite run, not after it:
+
+1. **Schema mirrors** — regenerate `src/onboarding/intake.schema.generated.yaml` via the owner command, vendor/refresh the matching `docs/specs/werkstatt-onboarding/schemas/*.schema.yaml`, and re-hash `docs/specs/werkstatt-onboarding/integrity.yaml`. New vendored schema files need no parity-test registration — `intake-schema-parity.test.ts` auto-discovers every `*.schema.yaml` in the specs dir.
+2. **Committed intake fixtures** — an envelope/schema change invalidates `contractSnapshot` + `MANIFEST.sha256` in `packages/werkstatt-engine/src/intake/fixtures/*/`. Re-run `gen-rfc1324-fixtures.ts` rather than hand-editing hashes.
+3. **`rules[]` declarations** — every new diagnostic id emitted by a validator must appear in its module's `rules` list; `intake-rules-parity.test.ts` enforces this for the intake surface, other modules rely on discipline (see the retro notes).
+4. **Closed enums consumed by labels** — new `materialSourceType`/`statusLabels`-style members must be added to every authored `site/<lang>/labels.md` across `systems-cache/*` and active mission workpieces, plus the label test fixtures in `werkstatt-site` (`labels-schema-validate`, `material-credits-public-text`, `service-material-credits`). Verify with `labels.schema.validate` per system before the commit gate.
+5. **Union provenance shapes** — widening a schema to a union (e.g. `MaterialDerivedFrom`) breaks direct property access at every consumer; grep for `.asset`/`.derivedFrom` reads before typechecking.
+6. **Generated artifacts** — `command-manifest.generated.yaml`, `checks/command-tables/index.generated.ts`, and `site.exports.generate`'s `package.json` export map drift behind earlier work — regenerate before the impl commit, never mid-review.
+
 ## Domain layout (RFC-1105)
 
 The `src/share/` namespace is dissolved. Every former `share/` subdomain is now a top-level `src/` directory with a matching subpath export:

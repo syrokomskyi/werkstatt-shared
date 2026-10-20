@@ -19,7 +19,7 @@ from docs/specs/werkstatt-onboarding/schemas/ and compiled with Ajv
 </CHANGE_SUMMARY>
 */
 
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -41,11 +41,14 @@ function loadSpec(name: string): Record<string, unknown> {
 
 const ajv = new Ajv2020({ strict: false, allErrors: true });
 addFormats(ajv);
-// Cross-file $refs ("intake-gap.schema.yaml", "intake-asset.schema.yaml")
-// resolve to each file's own $id — register them before compiling the envelope.
-ajv.addSchema(loadSpec("intake-gap.schema.yaml"));
-ajv.addSchema(loadSpec("intake-asset.schema.yaml"));
-ajv.addSchema(loadSpec("intake-slot-brief.schema.yaml"));
+// Cross-file $refs resolve to each file's own $id — register every sibling
+// schema in the specs directory before compiling the envelope, so newly
+// vendored fragment schemas never need a manual registration edit here.
+for (const file of readdirSync(SPECS_DIR)) {
+  if (file !== "werkstatt-intake.schema.yaml" && file.endsWith(".schema.yaml")) {
+    ajv.addSchema(loadSpec(file));
+  }
+}
 const specValidate = ajv.compile(loadSpec("werkstatt-intake.schema.yaml"));
 
 const SHA = "sha256:" + "a".repeat(64);
