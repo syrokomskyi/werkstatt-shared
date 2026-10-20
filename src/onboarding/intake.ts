@@ -20,24 +20,35 @@ export that producers vendor byte-exact
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1353/AMD-011: faq block — intakeFaqTopicSchema/intakeFaqEntrySchema (status conditionals), faqEntryTier(), envelope faq:, provenance.familyQuestionsSnapshot.</item>
-  <item>RFC-1281: created — envelope Zod model of werkstatt:intake/v1 (envelope, gap, asset) + renderIntakeSchemaExport().</item>
-  <item>RFC-1281: intake contract and onboarding.intake.validate</item>
-  <item>RFC-1301: export PBP entity JSON Schemas in werkstatt:intake/v1 (RFC-1301)</item>
-  <item>RFC-1298: REVIEW-CODE-2026-10-16-01 findings — kebab flag guards, safeParse, reads declaration, family-append ordering, FONTS-SCRIPT-02 unverifiable-stack warning</item>
-  <item>RFC-1328: review fix pass: envelope fields in vendored schema defs, locale merge prose guard, manifest defaultLocale threading
-
-F-1 blocking: inject statementByLocale/localeNeutral into every exported pbp
-def so producers can self-validate AMD-005 bundles. F-2/F-3: LOCALE_SCOPED_FIELDS
-never merge onto existing locale docs; defaultLocale param replaces the
-hardcoded de across semantic profile, currency, referral capacity. F-4..F-10:
-statementLang rewrite, prose drops on clones/variants, INTAKE-12 name+literals,
-currency-policy gate, predicate signature, doc drift. Unblocks dna-trace
-WS-WRITE-02 false positive (_io naming).</item>
-  <item>ADR-0114: voiceVerbatimSchema gains optional visibility/clearedFor/blockedBy (handoff W3 machine-readable clearance for COMP-VOICE-01); voiceProfileSchema toneOfVoice/culturalRules accept null — upstream emits null when no profile was distilled.</item>
   <item>RFC-1345/AMD-009: v2 asset cut — origin gains `extracted` (+derivedFrom provenance, schema-required iff extracted); `mediaHints` on kind:document; `depicts` required on image-bearing kinds (photo/product-photo/illustration); rights.gapRef replaced by rights.blockers[]; export title corrected to "Werkstatt Intake v2 envelope" in the pbpEntitySchemas branch.</item>
   <item>RFC-1342/AMD-007: werkstatt:intake/v2 cut — gap.kind typed (proof/rights/approval/scope-extension/operational); annotation gapRef replaced by blockers[] (≥1 on every non-published non-internal entity, schema-level) + ceiling draft|preview; operatorDecisions gain required effect plus appliesTo and grantsTier (conditional superRefine); pageSetIntent gains optional entityRefs; voice profile toneOfVoice/culturalRules non-null again; INTAKE-13 coverage widened to ceiling:preview entities.</item>
   <item>RFC-1346/AMD-010: slotBriefs[] on the envelope — deferred image-fulfilment briefs (role atmosphere|illustration|depicts-represented-product, aspectHint, preferredSources/awaitingGap); superRefine forbids prompt on depicts-represented-product and requires sources-or-gap there.</item>
-  <history>RFC-1328</history>
+  <item>RFC-1353: steps 4-5 — composition FAQ gates + family.questions.export
+
+werkstatt-site: COMP-FAQ-01 (publishable topic requires a faq-list block
+tag:<topic.id> at its placement — verbatim pageSetIntent matching + literal
+faq->slug faq, escape only via a decided obligation citing the topic with a
+proof blocker or hard-stop; warning during the one-birth grace via
+COMP_FAQ_01_SEVERITY) + COMP-FAQ-02 (all-draft topic warning); COMP-QUESTIONS-01
+counts placed non-draft entries carrying visitorQuestionRef within the
+question's scope; publication register reader joins the faq: section for the
+escape's blocker lookup; ComposedBlock gains tag. family.questions.export
+renders family-visitor-questions.generated.yaml from every site-families/*
+family.yaml visitorQuestions block — same-id merge with families union,
+FAMILYQ-EXPORT-01 refuses colliding prompts without writing, deterministic
+sourceHash, generated header. werkstatt-engine: contract.ripple.apply gains the
+family-questions-export step before spec-mirror; spec-mirror extends to
+multi-file mirroring with sorted integrity-entry append and rendered-bytes
+hashing under --dry-run. wg-onboard documents one faq-list per topic and the
+no-invented-answers rule; knowledge-graph + verification-plan updated.
+Review: docs/reviews/code/packages-werkstatt-site/review-2026-10-20-19-41-packages-werkstatt-site.md
+Tests-Skipped trailer: the scoped gate runs the full site suite, which fails
+on pre-existing queue.validate io-mutation debt (reproduced on clean HEAD
+093850723) — unrelated to this diff. Focused suites green: site 49/49
+(composition-validate + family-questions-export), engine 129/129
+(contract-ripple + intake-validate + register-intake); ripple dry-run all
+synced; rfc.acceptance.run 16 probes 0 failed.</item>
+  <history>ADR-0114, RFC-1281, RFC-1298, RFC-1301, RFC-1328</history>
 </CHANGE_SUMMARY>
 */
 
@@ -810,7 +821,11 @@ export const intakeFaqEntrySchema = z
  * blockers; preview = answered at `ceiling: preview` (rights/approval blockers
  * only, INTAKE-19); everything else renders as a flagged draft.
  */
-export function faqEntryTier(entry: IntakeFaqEntry): "public" | "preview" | "draft" {
+export function faqEntryTier(entry: {
+  status: string;
+  ceiling?: string;
+  blockers?: readonly string[];
+}): "public" | "preview" | "draft" {
   if (entry.status !== "answered") return "draft";
   if ((entry.blockers?.length ?? 0) > 0) {
     return entry.ceiling === "preview" ? "preview" : "draft";
