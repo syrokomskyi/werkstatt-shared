@@ -11,6 +11,7 @@ from docs/specs/werkstatt-onboarding/schemas/ and compiled with Ajv
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1346/AMD-010: registered intake-slot-brief.schema.yaml with Ajv — the envelope now cross-refs slot briefs.</item>
   <item>RFC-1342/AMD-007: parity set migrated to v2 — wrong-schema-const targets the retired v1 major; new fixtures cover gap.kind, decision effect/grantsTier conditionals, empty blockers (the draft⇒blockers correlation is Zod-only — the vendored schema cannot key annotations to pbp ids, per AMD-007).</item>
   <item>RFC-1281: created — 13-fixture Zod/JSON-Schema verdict-parity test.</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>
@@ -44,6 +45,7 @@ addFormats(ajv);
 // resolve to each file's own $id — register them before compiling the envelope.
 ajv.addSchema(loadSpec("intake-gap.schema.yaml"));
 ajv.addSchema(loadSpec("intake-asset.schema.yaml"));
+ajv.addSchema(loadSpec("intake-slot-brief.schema.yaml"));
 const specValidate = ajv.compile(loadSpec("werkstatt-intake.schema.yaml"));
 
 const SHA = "sha256:" + "a".repeat(64);

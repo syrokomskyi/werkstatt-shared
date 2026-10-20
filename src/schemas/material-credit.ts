@@ -21,6 +21,7 @@ helper, so the public credits page renders localized kind labels instead
 of raw enum tokens. Seed the e2e cold-test labels fixture and cover the
 completeness gate with schema tests.</item>
   <item>RFC-1345: materialCreditSchema gains optional derivedFrom ({asset, sourceSha256, page?, region?, method}) for document-extracted assets.</item>
+  <item>RFC-1346: sourceType gains "placeholder" (register-emitted slot stand-ins); derivedFrom becomes a union — document-extraction form or {slotBrief: SLOT-NN} for placeholder/fulfilled assets.</item>
   <item>REVIEW-CODE-2026-10-16-08 N5: target.domain gains "business-profile" — the canonical tree RFC-1307 seeded assets live in.</item>
   <item>RFC-1307: review-08 N1-N7 — ref-scoped rollback, pre-existing content preservation, svg resolution, explicit io</item>
   <history>RFC-0220, RFC-0223, RFC-0228</history>
@@ -51,6 +52,11 @@ export const materialSourceTypeSchema = z.enum([
   "customer-supplied",
   "public-domain",
   "screenshot",
+  /**
+   * RFC-1346: deterministic biome-tinted stand-in emitted at register for a
+   * `slotBriefs[]` entry — never real media; below-public by construction.
+   */
+  "placeholder",
 ]);
 export type MaterialSourceType = z.infer<typeof materialSourceTypeSchema>;
 
@@ -180,10 +186,10 @@ export type AiUsage = z.infer<typeof aiUsageSchema>;
 /**
  * RFC-1345: provenance of an asset extracted from a client document —
  * which intake document asset it came from, the source content hash, and the
- * page/region/method the extractor used. Additive optional; present only on
- * sidecars of extracted assets (sourceType `customer-supplied`).
+ * page/region/method the extractor used. Present on sidecars of extracted
+ * assets (sourceType `customer-supplied`).
  */
-export const materialDerivedFromSchema = z
+export const materialDerivedFromDocumentSchema = z
   .object({
     asset: z.string().min(1),
     sourceSha256: z.string().min(1),
@@ -193,6 +199,22 @@ export const materialDerivedFromSchema = z
     method: z.enum(["embedded-image", "page-render"]),
   })
   .strict();
+
+/**
+ * RFC-1346: provenance of a slot-derived asset — the `slotBriefs[]` entry a
+ * register placeholder or a fulfilled generation descends from. Present on
+ * sidecars of `placeholder` and fulfilled `ai-generated` assets.
+ */
+export const materialDerivedFromSlotBriefSchema = z
+  .object({
+    slotBrief: z.string().regex(/^SLOT-[0-9]{2,}$/),
+  })
+  .strict();
+
+export const materialDerivedFromSchema = z.union([
+  materialDerivedFromDocumentSchema,
+  materialDerivedFromSlotBriefSchema,
+]);
 export type MaterialDerivedFrom = z.infer<typeof materialDerivedFromSchema>;
 
 export const materialCreditSchema = z

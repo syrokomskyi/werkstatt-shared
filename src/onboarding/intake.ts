@@ -35,6 +35,7 @@ WS-WRITE-02 false positive (_io naming).</item>
   <item>ADR-0114: voiceVerbatimSchema gains optional visibility/clearedFor/blockedBy (handoff W3 machine-readable clearance for COMP-VOICE-01); voiceProfileSchema toneOfVoice/culturalRules accept null — upstream emits null when no profile was distilled.</item>
   <item>RFC-1345/AMD-009: v2 asset cut — origin gains `extracted` (+derivedFrom provenance, schema-required iff extracted); `mediaHints` on kind:document; `depicts` required on image-bearing kinds (photo/product-photo/illustration); rights.gapRef replaced by rights.blockers[]; export title corrected to "Werkstatt Intake v2 envelope" in the pbpEntitySchemas branch.</item>
   <item>RFC-1342/AMD-007: werkstatt:intake/v2 cut — gap.kind typed (proof/rights/approval/scope-extension/operational); annotation gapRef replaced by blockers[] (≥1 on every non-published non-internal entity, schema-level) + ceiling draft|preview; operatorDecisions gain required effect plus appliesTo and grantsTier (conditional superRefine); pageSetIntent gains optional entityRefs; voice profile toneOfVoice/culturalRules non-null again; INTAKE-13 coverage widened to ceiling:preview entities.</item>
+  <item>RFC-1346/AMD-010: slotBriefs[] on the envelope — deferred image-fulfilment briefs (role atmosphere|illustration|depicts-represented-product, aspectHint, preferredSources/awaitingGap); superRefine forbids prompt on depicts-represented-product and requires sources-or-gap there.</item>
   <history>RFC-1328</history>
 </CHANGE_SUMMARY>
 */
@@ -658,6 +659,68 @@ export const intakeAssetSchema = z
   });
 
 // ---------------------------------------------------------------------------
+// intake-slot-brief.schema.yaml — RFC-1346: deferred image fulfilment briefs
+// ---------------------------------------------------------------------------
+
+/**
+ * RFC-1346/AMD-010: what a post-approval `asset.slot.fulfill` run may fill.
+ * `depicts-represented-product` slots carry no prompt — they can only be
+ * filled by real media (MEDIA-01); every other role keeps the full prompt
+ * the provider receives after the visual-review approval.
+ */
+const slotBriefRoleSchema = z.enum([
+  "atmosphere",
+  "illustration",
+  "depicts-represented-product",
+]);
+
+export const intakeSlotBriefSchema = z
+  .object({
+    id: z.string().regex(/^SLOT-[0-9]{2,}$/),
+    /** A `classification.pageSetIntent[].intent` entry (INTAKE-25). */
+    intent: z.string().min(1),
+    role: slotBriefRoleSchema,
+    /** Short label rendered on the deterministic register placeholder. */
+    label: z.string().min(1),
+    /**
+     * Full generation prompt — forbidden on `depicts-represented-product`
+     * (spec allOf → superRefine): that slot can only be filled by real media.
+     */
+    prompt: z.string().min(1).optional(),
+    constraints: z.array(z.string().min(1)).optional(),
+    /** `W:H` aspect hint; consumers default to 3:2. */
+    aspectHint: z.string().regex(/^[0-9]+:[0-9]+$/).optional(),
+    /**
+     * Intake asset ids to use before generating (source-first fulfilment —
+     * e.g. an `extracted` asset from RFC-1345).
+     */
+    preferredSources: z.array(z.string().regex(/^AST-[0-9]{2,}$/)).optional(),
+    /** The open gap that must close before real media exists. */
+    awaitingGap: z.string().regex(/^GAP-[0-9]{2,}$/).optional(),
+    evidenceRefs: z.array(z.string().min(1)).optional(),
+  })
+  .strict()
+  .superRefine((brief, ctx) => {
+    if (brief.role !== "depicts-represented-product") return;
+    if (brief.prompt !== undefined) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "prompt is forbidden when role is 'depicts-represented-product' — that slot fills only from real media",
+        path: ["prompt"],
+      });
+    }
+    if ((brief.preferredSources?.length ?? 0) === 0 && !brief.awaitingGap) {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "depicts-represented-product briefs must name preferredSources (>=1) or awaitingGap",
+        path: ["preferredSources"],
+      });
+    }
+  });
+
+// ---------------------------------------------------------------------------
 // werkstatt-intake.schema.yaml — the envelope
 // ---------------------------------------------------------------------------
 
@@ -679,6 +742,12 @@ export const intakeEnvelopeSchema = z
     voice: voiceSchema,
     visual: visualSchema,
     assets: z.array(intakeAssetSchema),
+    /**
+     * RFC-1346/AMD-010: image slots the pipeline leaves unfilled — register
+     * renders deterministic placeholders; `asset.slot.fulfill` fills them
+     * after the recorded visual-review approval.
+     */
+    slotBriefs: z.array(intakeSlotBriefSchema).optional(),
     provenance: provenanceSchema,
   })
   .strict()
@@ -703,6 +772,7 @@ export const intakeEnvelopeSchema = z
 export type IntakeEnvelope = z.infer<typeof intakeEnvelopeSchema>;
 export type IntakeGap = z.infer<typeof intakeGapSchema>;
 export type IntakeAsset = z.infer<typeof intakeAssetSchema>;
+export type IntakeSlotBrief = z.infer<typeof intakeSlotBriefSchema>;
 
 const INTAKE_EXPORT_ID =
   "https://werkstatt.local/specs/onboarding/v0.1.0/werkstatt-intake.schema.yaml";

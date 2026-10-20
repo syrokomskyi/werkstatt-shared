@@ -22,6 +22,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1346/AMD-010: imageSlots entries gain optional aspect (W:H) — declared manifests win over brief aspectHint at fulfilment.</item>
   <item>RFC-1345: imageSlots on section manifests — image prop paths + depicts kind for MEDIA-01 and future asset.slot.fulfill</item>
   <item>RFC-1204: effectsParity flag on section manifests + resolver lookup</item>
   <item>RFC-1261</item>
@@ -335,6 +336,15 @@ export const sectionManifestSchema = manifestBaseSchema.extend({
             "people",
             "place",
           ]),
+          /**
+           * RFC-1346: `W:H` aspect the slot renders at — declared manifests
+           * win over the brief's aspectHint when asset.slot.fulfill picks
+           * generation dimensions.
+           */
+          aspect: z
+            .string()
+            .regex(/^[0-9]+:[0-9]+$/)
+            .optional(),
         })
         .strict(),
     )

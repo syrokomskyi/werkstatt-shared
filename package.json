@@ -411,6 +411,10 @@
       "types": "./src/media/extract-document.ts",
       "default": "./src/media/extract-document.ts"
     },
+    "./media/placeholder": {
+      "types": "./src/media/placeholder.ts",
+      "default": "./src/media/placeholder.ts"
+    },
     "./schemas/media": {
       "types": "./src/schemas/media.ts",
       "default": "./src/schemas/media.ts"

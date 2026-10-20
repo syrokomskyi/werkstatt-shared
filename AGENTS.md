@@ -47,7 +47,7 @@ The `src/share/` namespace is dissolved. Every former `share/` subdomain is now 
 | `client-scripts` | `@warpgogol/werkstatt-shared/client-scripts` | Browser-only (gsap, lenis, plyr, hls, lordicon, counter-utils) |
 | `node` | `@warpgogol/werkstatt-shared/node/*` | Node-only (`node/fs`, `node/import-scan`, `node/dev-props-validator`, `node/semantic/*`) |
 | `text`, `policy`, `page`, `redirects`, `image-provider`, `attribution`, `offers`, `checks`, `runtime`, `sections`, `stack` | `@warpgogol/werkstatt-shared/<name>` | Former loose files grouped by domain |
-| `media` | `@warpgogol/werkstatt-shared/media` | Source-document extraction core (RFC-1345) |
+| `media` | `@warpgogol/werkstatt-shared/media` | Source-document extraction core (RFC-1345); deterministic slot-placeholder renderer (RFC-1346, `media/placeholder`) |
 
 Classification rule for new modules:
 
@@ -318,6 +318,21 @@ Rules:
 - `remediation.hint.validate` (engine command) cross-references catalog entries with validator `rules[]` declarations — REMEDIATION-01 for missing entries, REMEDIATION-02 for stale ones.
 - `remediation.catalog.generate` (engine command) emits `docs/remediation-catalog.generated.yaml` from the catalog.
 - To add a new remediation pattern, add an entry to `REMEDIATION_ENTRIES` in `remediation-catalog.ts` and run `remediation.catalog.generate`.
+
+### Slot placeholders (RFC-1346, AMD-010)
+
+Location: `packages/werkstatt-shared/src/media/placeholder.ts` — exported via `@warpgogol/werkstatt-shared/media/placeholder`.
+
+| Export | Purpose |
+| --- | --- |
+| `renderSlotPlaceholderSvg(brief)` | Deterministic SVG template — biome `surface` background, `brand` hairline, brief label + slot id in the biome body font; byte-identical per input, no timestamps |
+| `parseAspectRatio(hint)` | `W:H` → ints, malformed/absent → 3:2 |
+| `placeholderStem` / `placeholderBasename` | The `slot-<id>` token / `slot-<id>.webp` filename — identity end-to-end (file, frontmatter value, fulfill's replace target) |
+| `placeholderCreditRecord` | `sourceType: "placeholder"` sidecar with `derivedFrom: { slotBrief }` |
+| `placeholderRegisterEntry` | `ceiling: preview` + `origin: "placeholder"` — the register row the derived-tier emitter reads to hold `preview` |
+
+- Rasterization is injected (`sharpSvgToWebp` lives in the engine) — same no-native-deps seam as `extract-document`'s `encodeWebp`. Callers: `sternsystem-register.ts` (seed) — fulfilment is `asset.slot.fulfill` in werkstatt-site.
+- Schema siblings of this RFC: `materialSourceTypeSchema` gains `"placeholder"`, `MaterialDerivedFrom` becomes a union (document-extraction vs `{ slotBrief }`), register `assets` entries gain `origin` + `emitted`, section-manifest `imageSlots[]` gains optional `W:H` `aspect`.
 
 ### Agent Surface search (RFC-0954)
 

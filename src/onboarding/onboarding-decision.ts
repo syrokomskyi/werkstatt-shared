@@ -22,6 +22,7 @@ ledgers per RFC-1343/AMD-008).
   <item>recommendation is a required first-class field; options carry label+consequence only.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1346/AMD-010: ONBOARDING_DECISION_TOPICS gains visual-review — the answered Approve gate for asset.slot.fulfill.</item>
   <item>RFC-1343/AMD-008: option tier enum, entry rulingRefs/recommendedOption/overrides (closed reason enum, evidence min 1), ledger rulesVersion (absent = 1) — additive, v1 ledgers still parse.</item>
   <item>RFC-1317: created — ONBOARDING_DECISION_SCHEMA_ID, topic/resolutionPath/status tuples, entry + ledger schemas, inferred types.</item>
   <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
@@ -46,10 +47,15 @@ export const ONBOARDING_DECISION_TOPICS = [
   "asset-rights-risk",
   "locale-launch",
   "hard-stop",
+  /**
+   * RFC-1346: D14's dev-preview layout review made explicit — an answered
+   * `Approve` gates `asset.slot.fulfill` (post-approval image fulfilment).
+   */
+  "visual-review",
   "auto-resolved-log",
 ] as const;
 
-/** The eight operator-facing topics — `auto-resolved-log` is the ninth, log-only. */
+/** The nine operator-facing topics — `auto-resolved-log` is the tenth, log-only. */
 export const ONBOARDING_OPERATOR_TOPICS = ONBOARDING_DECISION_TOPICS.filter(
   (t) => t !== "auto-resolved-log",
 );

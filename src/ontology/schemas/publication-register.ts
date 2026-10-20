@@ -11,6 +11,7 @@ primitives; IO readers live in werkstatt-site checks/lib/pbp-publication.ts.</pu
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1346: assets entries gain origin (placeholder|generated|extracted|client|stock|studio) — placeholder ⇒ derived preview tier via slot:&lt;id&gt; in belowPublic.</item>
   <item>RFC-1345: assets section typed — {ceiling, blockers, emitted} per asset basename for extraction register entries + PUBGATE-03.</item>
   <item>RFC-1341: created — publication register schema + tier model.</item>
   <item>RFC-1341: preview/public publication tiers — register + ceiling + requires + PUBTIER-01/02 + tier artifact</item>
@@ -67,9 +68,12 @@ export const publicationRegisterSchema = z
       .default({}),
     /**
      * RFC-1345: per-asset tier register — keyed by the asset basename the file
-     * is emitted under (`ast-07.webp`, `ext-<sha12>.webp`). `emitted` stores the
-     * emitted path relative to `src/content/` so PUBGATE-03 can match dist
-     * basenames even after re-encode changes the content hash.
+     * is emitted under (`ast-07.webp`, `ext-<sha12>.webp`, `slot-<id>.webp`).
+     * `emitted` stores the emitted path relative to `src/content/` so
+     * PUBGATE-03 can match dist basenames even after re-encode changes the
+     * content hash. RFC-1346: `origin` carries the intake origin vocabulary
+     * plus `placeholder` — the derived-tier emitter reads it (placeholder ⇒
+     * belowPublic `slot:<id>` ⇒ preview), never sidecars mid-build.
      */
     assets: z
       .record(
@@ -79,6 +83,9 @@ export const publicationRegisterSchema = z
             ceiling: z.enum(["draft", "preview", "public"]),
             blockers: z.array(blockerSchema).default([]),
             emitted: z.string().min(1).optional(),
+            origin: z
+              .enum(["placeholder", "generated", "extracted", "client", "stock", "studio"])
+              .optional(),
           })
           .strict(),
       )
