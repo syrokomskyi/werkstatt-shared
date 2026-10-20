@@ -11,7 +11,7 @@ scanner. Single source so every consumer parses references identically.</purpose
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1341: created — pattern/finder extracted from werkstatt-site checks/lib/pbp-publication.ts so the build-page stage can scan block props without importing checks code.</item>
-  <item>RFC-1341: preview/public publication tiers — register + ceiling + requires + PUBTIER-01/02 + tier artifact</item>
+  <item>RFC-1341: rfc-1341: code review r1 (pass, blockLevel none) + CHANGE_SUMMARY dedup</item>
 </CHANGE_SUMMARY>
 */
 
