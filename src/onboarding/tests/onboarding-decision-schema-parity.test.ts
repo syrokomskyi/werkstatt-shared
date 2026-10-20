@@ -12,6 +12,7 @@ the entry-level $ref resolves, mirroring intake-schema-parity.test.ts.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1343/AMD-008: +7 fixtures — rulesVersion literal, rulingRefs pattern, option tier enum, override reason enum + evidence min-1.</item>
   <item>RFC-1317: created — 11-fixture Zod/JSON-Schema verdict-parity test.</item>
   <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
   <item>RFC-1317: step 5: docs sync + Compass header repair — AGENTS.md onboarding composer contract, technology.xml/knowledge-graph.xml nodes, app-onboarding-guide commands, regenerated command/ecosystem manifests, /MODULE_CONTRACT closers + KD trims on RFC-1317 files</item>
@@ -208,6 +209,81 @@ const FIXTURES: ParityFixture[] = [
       entry[0].resolutionPath = "operator";
       entry[0].answer = "confirmed by operator";
       entry[0].answeredAt = "2026-10-17T12:05:00";
+      return l;
+    },
+  },
+  // ─── RFC-1343/AMD-008: ruling refs, tiers, overrides, rulesVersion ───────
+  {
+    name: "valid-rulesVersion2-ledger",
+    build: () => {
+      const l = baseLedger();
+      l.rulesVersion = 2;
+      const entry = (l.items as Record<string, unknown>[])[0];
+      entry.rulingRefs = ["OPD-08", "DEF-03"];
+      entry.recommendedOption = "A — accept";
+      (entry.options as Record<string, unknown>[])[0].tier = "preview";
+      entry.overrides = [
+        {
+          ruling: "OPD-08",
+          reason: "ruling-superseded-by-new-evidence",
+          evidence: ["evidence-source/src-77"],
+        },
+      ];
+      return l;
+    },
+  },
+  {
+    name: "rulesVersion-1-literal-rejected",
+    build: () => {
+      const l = baseLedger();
+      l.rulesVersion = 1; // only the literal 2 is legal — 1 is the absent field
+      return l;
+    },
+  },
+  {
+    name: "bad-rulingRef-pattern",
+    build: () => {
+      const l = baseLedger();
+      (l.items as Record<string, unknown>[])[0].rulingRefs = ["XX-01"];
+      return l;
+    },
+  },
+  {
+    name: "option-bad-tier",
+    build: () => {
+      const l = baseLedger();
+      const entry = (l.items as Record<string, unknown>[])[0];
+      (entry.options as Record<string, unknown>[])[0].tier = "staging";
+      return l;
+    },
+  },
+  {
+    name: "override-bad-reason",
+    build: () => {
+      const l = baseLedger();
+      (l.items as Record<string, unknown>[])[0].overrides = [
+        { ruling: "OPD-08", reason: "taste", evidence: ["src-1"] },
+      ];
+      return l;
+    },
+  },
+  {
+    name: "override-empty-evidence",
+    build: () => {
+      const l = baseLedger();
+      (l.items as Record<string, unknown>[])[0].overrides = [
+        { ruling: "OPD-08", reason: "hard-stop", evidence: [] },
+      ];
+      return l;
+    },
+  },
+  {
+    name: "override-missing-evidence",
+    build: () => {
+      const l = baseLedger();
+      (l.items as Record<string, unknown>[])[0].overrides = [
+        { ruling: "OPD-08", reason: "ruling-out-of-scope" },
+      ];
       return l;
     },
   },

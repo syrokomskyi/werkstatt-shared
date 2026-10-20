@@ -8,7 +8,8 @@ The onboarding decision ledger is the single decision window of one
 onboarding (D14): append-only OD-NN entries over a closed topic set,
 written by onboarding.decision.record into
 missions/[missionId]/onboarding.decisions.yaml and checked by
-onboarding.decision.validate (ONDEC-01…07).
+onboarding.decision.validate (ONDEC-01…07; ONDEC-08…11 on rulesVersion-2
+ledgers per RFC-1343/AMD-008).
 </purpose>
 <non-goals>
   <item>Do not encode ONDEC discipline rules here — schema mirrors the vendored contract only; topic/status coupling is enforced by the validator.</item>
@@ -21,6 +22,7 @@ onboarding.decision.validate (ONDEC-01…07).
   <item>recommendation is a required first-class field; options carry label+consequence only.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1343/AMD-008: option tier enum, entry rulingRefs/recommendedOption/overrides (closed reason enum, evidence min 1), ledger rulesVersion (absent = 1) — additive, v1 ledgers still parse.</item>
   <item>RFC-1317: created — ONBOARDING_DECISION_SCHEMA_ID, topic/resolutionPath/status tuples, entry + ledger schemas, inferred types.</item>
   <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
   <item>RFC-1317: step 5: docs sync + Compass header repair — AGENTS.md onboarding composer contract, technology.xml/knowledge-graph.xml nodes, app-onboarding-guide commands, regenerated command/ecosystem manifests, /MODULE_CONTRACT closers + KD trims on RFC-1317 files</item>
@@ -74,6 +76,11 @@ const onboardingDecisionOptionSchema = z
   .object({
     label: z.string(),
     consequence: z.string(),
+    /**
+     * RFC-1343/AMD-008: highest publication tier this option lets the
+     * referenced entities reach. Absent reads as `omit` (ONDEC-09).
+     */
+    tier: z.enum(["omit", "draft", "preview", "public"]).optional(),
   })
   .strict();
 
@@ -89,6 +96,41 @@ export const onboardingDecisionEntrySchema = z
     resolutionPath: z.enum(ONBOARDING_RESOLUTION_PATHS),
     /** Intake ids, gap ids, capability-gap ids, PBP entity ids. */
     refs: z.array(z.string()).optional(),
+    /**
+     * RFC-1343/AMD-008: intake operator rulings (OPD-NN, DEF-NN) this
+     * entry's refs touch — ONDEC-08 requires citing a ruling whose
+     * appliesTo intersects refs.
+     */
+    rulingRefs: z
+      .array(z.string().regex(/^(OPD|DEF)-[0-9]{2,}$/))
+      .optional(),
+    /**
+     * RFC-1343/AMD-008: machine-checkable recommendation — must equal one
+     * options[].label when options exist (ONDEC-11). The free-text
+     * `recommendation` stays the human-readable form.
+     */
+    recommendedOption: z.string().optional(),
+    /**
+     * RFC-1343/AMD-008: declared contradiction of a cited ruling —
+     * mandatory when the recommended option's tier is below the ruling's
+     * grantsTier (ONDEC-09); evidence ids make the override auditable.
+     */
+    overrides: z
+      .array(
+        z
+          .object({
+            ruling: z.string().regex(/^(OPD|DEF)-[0-9]{2,}$/),
+            reason: z.enum([
+              "ruling-superseded-by-new-evidence",
+              "ruling-out-of-scope",
+              "hard-stop",
+            ]),
+            /** Evidence-source / gap / journal ids backing the override. */
+            evidence: z.array(z.string()).min(1),
+          })
+          .strict(),
+      )
+      .optional(),
     /** Inline capability-gap record when topic is capability-gap. */
     capabilityGap: capabilityGapSchema.optional(),
     status: z.enum(ONBOARDING_DECISION_STATUSES),
@@ -131,6 +173,12 @@ export const onboardingDecisionLedgerSchema = z
     missionId: z.string(),
     intakeId: z.string(),
     createdAt: z.iso.datetime(),
+    /**
+     * RFC-1343/AMD-008: ONDEC rule-set the ledger is audited under.
+     * Absent = 1 (pre-RFC-1343 ledgers, ONDEC-01…07 only); 2 enables
+     * ONDEC-08…11. Stamped by onboarding.decision.record on creation.
+     */
+    rulesVersion: z.literal(2).optional(),
     items: z.array(onboardingDecisionEntrySchema),
   })
   .strict();
