@@ -19,6 +19,7 @@ export that producers vendor byte-exact
   <item>Zod is the source of truth (spec D2)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1353/AMD-011: faq block — intakeFaqTopicSchema/intakeFaqEntrySchema (status conditionals), faqEntryTier(), envelope faq:, provenance.familyQuestionsSnapshot.</item>
   <item>RFC-1281: created — envelope Zod model of werkstatt:intake/v1 (envelope, gap, asset) + renderIntakeSchemaExport().</item>
   <item>RFC-1281: intake contract and onboarding.intake.validate</item>
   <item>RFC-1301: export PBP entity JSON Schemas in werkstatt:intake/v1 (RFC-1301)</item>
@@ -388,6 +389,12 @@ const provenanceSchema = z
     runId: z.string(),
     /** SHA-256 of the vendored werkstatt:intake/v2 JSON Schema export. */
     contractSnapshot: sha256Digest,
+    /**
+     * RFC-1353/AMD-011: digest of the vendored family visitor-question export
+     * the producer resolved `visitorQuestionRef` against — absent when the
+     * bundle carries no faq block or no family-question origin.
+     */
+    familyQuestionsSnapshot: sha256Digest.optional(),
     inputs: z.array(provenanceInputSchema).min(1),
     evidenceLedger: sha256Digest,
     models: z.array(
@@ -721,6 +728,100 @@ export const intakeSlotBriefSchema = z
   });
 
 // ---------------------------------------------------------------------------
+// intake-faq.schema.yaml — RFC-1353/AMD-011: the client FAQ block
+// ---------------------------------------------------------------------------
+
+/** Per-locale text keyed by the BCP 47 tags of `classification.locales`. */
+const localeText = z.record(bcp47Tag, z.string().min(1));
+
+export const intakeFaqTopicSchema = z
+  .object({
+    id: z.string().regex(/^[a-z][a-z0-9-]*$/),
+    label: localeText,
+    /** A `classification.pageSetIntent[].intent` or the literal `faq` (INTAKE-26). */
+    placement: z.string().min(1),
+    order: z.number().int(),
+  })
+  .strict();
+
+export const intakeFaqEntrySchema = z
+  .object({
+    id: z.string().regex(/^FAQ-[0-9]{2,}$/),
+    topic: z.string(),
+    order: z.number().int(),
+    slug: z.string().regex(/^[a-z][a-z0-9-]*$/).optional(),
+    question: localeText,
+    /** Present only on `answered` entries (INTAKE-02). */
+    answer: localeText.optional(),
+    /** Confirmable draft shown to the client while `awaiting-client`. */
+    proposedAnswer: localeText.optional(),
+    status: z.enum(["answered", "awaiting-client", "internal"]),
+    origin: z.enum([
+      "client-material",
+      "client-answer",
+      "public-assertion",
+      "family-question",
+      "archetype",
+      "studio",
+    ]),
+    evidenceRefs: z.array(sourceRef).optional(),
+    entityRefs: z.array(z.string().min(1)).optional(),
+    verbatim: z.array(verbatimSchema).optional(),
+    questionnaireRef: z.string().regex(/^Q-[0-9]{2,}$/).optional(),
+    /** Required on `family-question` origin (INTAKE-02) — id in the vendored export. */
+    visitorQuestionRef: z.string().regex(/^[a-z][a-z0-9-]*$/).optional(),
+    blockers: z.array(gapId).min(1).optional(),
+    ceiling: z.enum(["draft", "preview"]).optional(),
+  })
+  .strict()
+  .superRefine((entry, ctx) => {
+    if (entry.status === "answered" && !entry.answer) {
+      ctx.addIssue({
+        code: "custom",
+        message: "answer is required when status is 'answered'",
+        path: ["answer"],
+      });
+    }
+    if (entry.status === "awaiting-client" && entry.answer) {
+      ctx.addIssue({
+        code: "custom",
+        message: "answer is forbidden while status is 'awaiting-client' — use proposedAnswer",
+        path: ["answer"],
+      });
+    }
+    if (entry.status === "internal" && entry.ceiling) {
+      ctx.addIssue({
+        code: "custom",
+        message: "ceiling is forbidden on internal entries — internal is never publishable",
+        path: ["ceiling"],
+      });
+    }
+    if (entry.origin === "family-question" && !entry.visitorQuestionRef) {
+      ctx.addIssue({
+        code: "custom",
+        message: "visitorQuestionRef is required when origin is 'family-question'",
+        path: ["visitorQuestionRef"],
+      });
+    }
+  });
+
+/**
+ * Publication tier of a seeded FAQ entry (RFC-1353): public = answered with no
+ * blockers; preview = answered at `ceiling: preview` (rights/approval blockers
+ * only, INTAKE-19); everything else renders as a flagged draft.
+ */
+export function faqEntryTier(entry: IntakeFaqEntry): "public" | "preview" | "draft" {
+  if (entry.status !== "answered") return "draft";
+  if ((entry.blockers?.length ?? 0) > 0) {
+    return entry.ceiling === "preview" ? "preview" : "draft";
+  }
+  return "public";
+}
+
+export type IntakeFaqTopic = z.infer<typeof intakeFaqTopicSchema>;
+export type IntakeFaqEntry = z.infer<typeof intakeFaqEntrySchema>;
+
+// ---------------------------------------------------------------------------
 // werkstatt-intake.schema.yaml — the envelope
 // ---------------------------------------------------------------------------
 
@@ -748,6 +849,17 @@ export const intakeEnvelopeSchema = z
      * after the recorded visual-review approval.
      */
     slotBriefs: z.array(intakeSlotBriefSchema).optional(),
+    /**
+     * RFC-1353/AMD-011: client FAQ material — evidence-bound, locale-aware
+     * topics and entries the register seeds into `src/content/faq/`.
+     */
+    faq: z
+      .object({
+        topics: z.array(intakeFaqTopicSchema).min(1),
+        entries: z.array(intakeFaqEntrySchema),
+      })
+      .strict()
+      .optional(),
     provenance: provenanceSchema,
   })
   .strict()

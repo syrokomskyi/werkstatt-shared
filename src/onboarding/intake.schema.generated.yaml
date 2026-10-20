@@ -915,6 +915,155 @@ properties:
         - role
         - label
       additionalProperties: false
+  faq:
+    type: object
+    properties:
+      topics:
+        minItems: 1
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              pattern: ^[a-z][a-z0-9-]*$
+            label:
+              type: object
+              propertyNames:
+                type: string
+                pattern: ^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$
+              additionalProperties:
+                type: string
+                minLength: 1
+            placement:
+              type: string
+              minLength: 1
+            order:
+              type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+          required:
+            - id
+            - label
+            - placement
+            - order
+          additionalProperties: false
+      entries:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              pattern: ^FAQ-[0-9]{2,}$
+            topic:
+              type: string
+            order:
+              type: integer
+              minimum: -9007199254740991
+              maximum: 9007199254740991
+            slug:
+              type: string
+              pattern: ^[a-z][a-z0-9-]*$
+            question:
+              type: object
+              propertyNames:
+                type: string
+                pattern: ^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$
+              additionalProperties:
+                type: string
+                minLength: 1
+            answer:
+              type: object
+              propertyNames:
+                type: string
+                pattern: ^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$
+              additionalProperties:
+                type: string
+                minLength: 1
+            proposedAnswer:
+              type: object
+              propertyNames:
+                type: string
+                pattern: ^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$
+              additionalProperties:
+                type: string
+                minLength: 1
+            status:
+              type: string
+              enum:
+                - answered
+                - awaiting-client
+                - internal
+            origin:
+              type: string
+              enum:
+                - client-material
+                - client-answer
+                - public-assertion
+                - family-question
+                - archetype
+                - studio
+            evidenceRefs:
+              type: array
+              items:
+                type: string
+                minLength: 1
+            entityRefs:
+              type: array
+              items:
+                type: string
+                minLength: 1
+            verbatim:
+              type: array
+              items:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    minLength: 1
+                  sourceRef:
+                    type: string
+                    minLength: 1
+                  speaker:
+                    type: string
+                    enum:
+                      - client
+                      - studio
+                      - third-party
+                required:
+                  - text
+                  - sourceRef
+                additionalProperties: false
+            questionnaireRef:
+              type: string
+              pattern: ^Q-[0-9]{2,}$
+            visitorQuestionRef:
+              type: string
+              pattern: ^[a-z][a-z0-9-]*$
+            blockers:
+              minItems: 1
+              type: array
+              items:
+                type: string
+                pattern: ^GAP-[0-9]{2,}$
+            ceiling:
+              type: string
+              enum:
+                - draft
+                - preview
+          required:
+            - id
+            - topic
+            - order
+            - question
+            - status
+            - origin
+          additionalProperties: false
+    required:
+      - topics
+      - entries
+    additionalProperties: false
   provenance:
     type: object
     properties:
@@ -925,6 +1074,9 @@ properties:
       runId:
         type: string
       contractSnapshot:
+        type: string
+        pattern: ^sha256:[0-9a-f]{64}$
+      familyQuestionsSnapshot:
         type: string
         pattern: ^sha256:[0-9a-f]{64}$
       inputs:
