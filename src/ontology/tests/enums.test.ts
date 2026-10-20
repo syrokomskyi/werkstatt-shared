@@ -9,6 +9,7 @@ Unit tests for enums covering Layer enum; ComponentRole enum; Industry enum.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1311: Compass header sweep — declares the enums suite's contract for test-file scaffold coverage.</item>
+  <item>RFC-1347: implement: product-line-cards section archetype for represented brand lines — Flora/product-line-presentation, body.kind product-lines, mandatory manufacturer attribution per item, imageSlots depicts represented-product for MEDIA-01, internal|anchor links only, no price/availability/purchase affordances; brand-line-showcase recipe requires it in place of entity-grid; IndustryValues gains trade-and-distribution; archetype+uni registries and site exports regenerated</item>
 </CHANGE_SUMMARY>
 */
 
@@ -77,13 +78,16 @@ describe("ComponentRole enum", () => {
 });
 
 describe("Industry enum", () => {
-  test("has exactly 6 values", () => {
-    expect(IndustryValues).toHaveLength(6);
+  test("has exactly 7 values", () => {
+    expect(IndustryValues).toHaveLength(7);
   });
 
   test("schema accepts valid values", () => {
     expect(industrySchema.safeParse("trades-and-construction").success).toBe(true);
     expect(industrySchema.safeParse("non-profit").success).toBe(true);
+    // RFC-1347: brand-line-showcase industry fit.
+    expect(industrySchema.safeParse("trade-and-distribution").success).toBe(true);
+    expect(IndustryLabels["trade-and-distribution"]).toBe("Handel & Distribution");
   });
 
   test("schema rejects invalid values", () => {

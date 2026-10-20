@@ -1,7 +1,7 @@
 {
   "_generated": "// GENERATED. Do not change this line unless the file contains project specific changes.",
   "schemaVersion": "1.0.0",
-  "totalCount": 83,
+  "totalCount": 84,
   "entries": [
     {
       "id": "agent-surface-overview",
@@ -724,6 +724,18 @@
       "layer": "section"
     },
     {
+      "id": "product-line-cards",
+      "displayName": "Product line cards",
+      "semanticRole": "product-line-presentation",
+      "version": "1.0.0",
+      "layoutHint": "card-grid",
+      "acceptedCosmicNames": [
+        "Flora"
+      ],
+      "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/sections/product-line-cards.yaml",
+      "layer": "section"
+    },
+    {
       "id": "prose-a11y",
       "displayName": "Prose a11y",
       "semanticRole": "component-prose-a11y",
@@ -1031,6 +1043,7 @@
     "people",
     "pricing-disclosure",
     "problem",
+    "product-line-presentation",
     "scope-of-responsibility-disclosure",
     "side-by-side-comparison",
     "social-proof",
@@ -1118,6 +1131,7 @@
     "Mimas": "@warpgogol/werkstatt-site/ui/sections/people",
     "Pan": "@warpgogol/werkstatt-site/ui/sections/price-card",
     "Callisto": "@warpgogol/werkstatt-site/ui/sections/problem",
+    "Flora": "@warpgogol/werkstatt-site/ui/sections/product-line-cards",
     "Ceres": "@warpgogol/werkstatt-site/ui/sections/send-message",
     "Sedna": "@warpgogol/werkstatt-site/ui/sections/service-metadata-block",
     "Enceladus": "@warpgogol/werkstatt-site/ui/sections/social-proof",
@@ -1216,6 +1230,7 @@
     "people": "Mimas",
     "price-card": "Pan",
     "problem": "Callisto",
+    "product-line-cards": "Flora",
     "send-message": "Ceres",
     "service-metadata-block": "Sedna",
     "social-proof": "Enceladus",
@@ -1321,6 +1336,7 @@
     "Mimas": "people",
     "Pan": "pricing-disclosure",
     "Callisto": "problem",
+    "Flora": "product-line-presentation",
     "Ceres": "lead-message-capture",
     "Sedna": "page-metadata-footer",
     "Enceladus": "social-proof",

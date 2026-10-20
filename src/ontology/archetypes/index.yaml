@@ -4,7 +4,7 @@
 # Edit instead: the archetype.registry.build generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 schemaVersion: 1.0.0
-totalCount: 83
+totalCount: 84
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
@@ -546,6 +546,15 @@ entries:
       - Callisto
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/problem.yaml
     layer: section
+  - id: product-line-cards
+    displayName: Product line cards
+    semanticRole: product-line-presentation
+    version: 1.0.0
+    layoutHint: card-grid
+    acceptedCosmicNames:
+      - Flora
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/product-line-cards.yaml
+    layer: section
   - id: prose-a11y
     displayName: Prose a11y
     semanticRole: component-prose-a11y
@@ -784,6 +793,7 @@ sectionRoles:
   - people
   - pricing-disclosure
   - problem
+  - product-line-presentation
   - scope-of-responsibility-disclosure
   - side-by-side-comparison
   - social-proof
@@ -869,6 +879,7 @@ planetImportPaths:
   Mimas: "@warpgogol/werkstatt-site/ui/sections/people"
   Pan: "@warpgogol/werkstatt-site/ui/sections/price-card"
   Callisto: "@warpgogol/werkstatt-site/ui/sections/problem"
+  Flora: "@warpgogol/werkstatt-site/ui/sections/product-line-cards"
   Ceres: "@warpgogol/werkstatt-site/ui/sections/send-message"
   Sedna: "@warpgogol/werkstatt-site/ui/sections/service-metadata-block"
   Enceladus: "@warpgogol/werkstatt-site/ui/sections/social-proof"
@@ -966,6 +977,7 @@ blockTypeToCosmicName:
   people: Mimas
   price-card: Pan
   problem: Callisto
+  product-line-cards: Flora
   send-message: Ceres
   service-metadata-block: Sedna
   social-proof: Enceladus
@@ -1069,6 +1081,7 @@ roleByCosmicName:
   Mimas: people
   Pan: pricing-disclosure
   Callisto: problem
+  Flora: product-line-presentation
   Ceres: lead-message-capture
   Sedna: page-metadata-footer
   Enceladus: social-proof

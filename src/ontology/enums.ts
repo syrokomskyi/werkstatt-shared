@@ -20,6 +20,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1347: IndustryValues gains trade-and-distribution (Handel & Distribution) for the brand-line-showcase industry's fit — DNA-19 closed vocabulary, one RFC-gated value.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -137,6 +138,7 @@ export type ComponentRole = z.infer<typeof componentRoleSchema>;
  * legal-services              | Recht & Kanzleien
  * non-profit                  | Non-Profit & Vereine
  * creative-studios            | Kreative Branchen & Studios
+ * trade-and-distribution      | Handel & Distribution
  */
 export const IndustryValues = [
   "trades-and-construction",
@@ -145,6 +147,7 @@ export const IndustryValues = [
   "legal-services",
   "non-profit",
   "creative-studios",
+  "trade-and-distribution",
 ] as const;
 
 export const industrySchema = z.enum(IndustryValues);
@@ -161,4 +164,5 @@ export const IndustryLabels: Record<Industry, string> = {
   "legal-services": "Recht & Kanzleien",
   "non-profit": "Non-Profit & Vereine",
   "creative-studios": "Kreative Branchen & Studios",
+  "trade-and-distribution": "Handel & Distribution",
 };
