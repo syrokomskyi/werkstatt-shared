@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1201: remediation entry for PARITY-MD-CONSTRUCT-COUNT (inline-construct parity).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
   <item>RFC-1365: step 4 — DNA-115, CONF-* remediation entries, agents-generate convention section</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, warpgogol-m000196</history>
+  <item>RFC-1365: review round 1 — CONF-03 rescoped producer-side (Q-9), producers[] json shape, crash guard + leg output, transport attribution, env semantics, writes declared, regen sweep</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -604,7 +604,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CONF-03",
     action:
-      "Fix the script path inside the reported argv — producer-side paths resolve from the repo root, consumer.validator.argv paths resolve from consumer.root; flag-value tokens and bare binary names are skipped, argv with no path-looking element passes vacuously.",
+      "Fix the script path inside the reported emit.argv/mirror.argv — producer-side paths resolve from the repo root; flag-value tokens and bare binary names are skipped, argv with no path-looking element passes vacuously. consumer.validator.argv is intentionally not linted — consumer-side failures surface as consumer-leg transport failures at run time.",
     docRef:
       "docs/rfcs/rfc-1365-require-golden-conformance-runs-against-authoritative-consumers-for-declared-contract-producers.md",
     targetFiles: ["forge.yaml"],
