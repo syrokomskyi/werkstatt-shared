@@ -11,12 +11,12 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1303: review REVIEW-CODE-2026-10-16-02 — scanner moves to werkstatt-shared/node (IO-01), workpieceEnv hashes into envDigest, saveCache tolerates KERNEL-META-01, ENV-INPUT-02 coverage notice, ratchet path-arg tightening</item>
   <item>RFC-1306: KernelRuntimeContext.invoke — optional host-populated command-execution port (KernelInvokeCommand) for in-process sibling-command delegation; absent under autonomous hosts so commands fail closed.</item>
   <item>RFC-1306: review-r1 — io-native writes, cacheable off on chain generators, EVIDENCE-SYNC-02 on invoke throws</item>
   <item>RFC-1327: run-twice idempotency — declarations, command.idempotency.validate, rerun tests, reconcile/ship/abort convergence fixes</item>
   <item>RFC-1354: review r1 — AC-1 regression test via executeKernelCommand, delegated-write attribution docs on mutatesState, site-to-system ownership tokens, requiresNetwork on remote commands, execOnReadOnly wording</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260</history>
+  <item>RFC-1354: review r2 — approved/info; closes three info notes: requiresNetwork on remaining remote commands, ForgeCommandMetadata mirror JSDoc, baseline widened to full module-slice blind spot</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303</history>
 </CHANGE_SUMMARY>
 */
 
@@ -102,9 +102,10 @@ export interface KernelCommandMetadata {
    * scope: an `executeKernelCommand` call attributes its writes to the callee,
    * whose own declaration owns those paths. A read-only orchestrator (e.g.
    * `indexnow.submit` → `bordbuch.append`) therefore stays
-   * `mutatesState: false`; it MUST NOT re-declare the callee's writes — the
-   * ownership map enforces a single writer per path (CMD-MAN-03,
-   * GENERATES-PATH-COLLISION).
+   * `mutatesState: false`; it MUST NOT re-declare the callee's writes — a
+   * false declaration carrying writes is caught by
+   * MUTATES-STATE-WRITES-MISMATCH, and shared generated paths collide under
+   * GENERATES-PATH-COLLISION.
    */
   mutatesState?: boolean;
   /**
@@ -162,6 +163,11 @@ export interface KernelCommandMetadata {
    * outside the declared prefixes still throw KERNEL-META-01.
    */
   cacheWrites?: string[];
+  /**
+   * The command performs network egress — remote APIs, git push, DHT or
+   * other distributed calls. Informational manifest metadata; it does not
+   * gate the read-only adapter (network is not WorkspaceIO-governed).
+   */
   requiresNetwork?: boolean;
   /**
    * RFC-1231: when true, the command accepts the reserved `--all` token
