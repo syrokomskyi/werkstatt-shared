@@ -155,6 +155,10 @@
       "types": "./src/ontology/archetype-registry.ts",
       "default": "./src/ontology/archetype-registry.ts"
     },
+    "./ontology/archetype-selection": {
+      "types": "./src/ontology/archetype-selection.ts",
+      "default": "./src/ontology/archetype-selection.ts"
+    },
     "./ontology/schemas": {
       "types": "./src/ontology/schemas/index.ts",
       "default": "./src/ontology/schemas/index.ts"

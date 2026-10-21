@@ -11,6 +11,7 @@ packages/werkstatt-site/src/domain/ontology/archetypes/sections/ recursive YAML 
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0072: Initial archetype catalog contract.</item>
+  <item>RFC-1355: carry `selection` through as unknown — a malformed block must surface as a SECTION-SEM-01 diagnostic, not crash the whole catalog load; archetypeSelectionSchema (ontology/archetype-selection.ts) is the parsing door.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -41,7 +42,7 @@ const layoutHintSchema = z.enum([
  * hero-decision-card, founder-trust-card, donation-card, price-card, faq-list,
  * markdown) declare `bodyKind: composite` and own their bespoke layout.
  */
-const archetypeBodyKindSchema = z.enum([
+export const archetypeBodyKindSchema = z.enum([
   "list",
   "split-list",
   "stats",
@@ -97,6 +98,13 @@ export const sectionArchetypeSchema = z.object({
   /** RFC-0072: advisory min/max number of body items the archetype expects. */
   recommendedItemCount: recommendedItemCountSchema.optional(),
   propsSchema: propsSchemaFragmentSchema,
+  /**
+   * RFC-1355: agent-readable selection contract (purpose / useWhen / avoidWhen /
+   * variants). Kept as unknown here — the descriptor layer preserves the raw
+   * block and archetype.registry.validate reports malformed shapes as
+   * SECTION-SEM-01 via archetypeSelectionSchema.safeParse.
+   */
+  selection: z.unknown().optional(),
   acceptedCosmicNames: z.array(cosmicNameSchema).min(1),
   constraints: z.record(z.string(), z.unknown()).default({}),
 });

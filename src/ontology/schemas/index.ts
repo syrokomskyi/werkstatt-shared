@@ -9,9 +9,6 @@ Re-exports the Constellation, Biome, SiteFamily, and SystemManifest schemas and 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1229: steps 2-4 — component region contracts, validator, pipeline wiring
 
 Component-declared ShellRegionContract per shell component (verified
@@ -39,6 +36,7 @@ preview faq rows contribute faq:<slug> to belowPublic; PUBTIER-02 covers faq
 keys (unknown slug, preview-without-blockers). Tests-Skipped: scoped gate
 deferred; register-intake 34/34, sternsystem 385/385, checks suite green
 (except pre-existing queue.validate debt).</item>
+  <item>RFC-1355: step 1 — archetype selection schema + SECTION-SEM-01..06 at warning severity</item>
   <history>RFC-0071, RFC-0371, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
@@ -83,8 +81,9 @@ export {
 } from "./site-family.ts";
 export type { SiteFamily, SiteFamilyDetection, SiteFamilyRecipe } from "./site-family.ts";
 
-export { sectionArchetypeSchema } from "./section-archetype.ts";
+export { sectionArchetypeSchema, archetypeBodyKindSchema } from "./section-archetype.ts";
 export type {
+  ArchetypeBodyKind,
   SectionArchetypeContract,
   SectionArchetypeId,
   SectionArchetypeLayoutHint,

@@ -17,6 +17,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1355: step 1 — archetype selection schema + SECTION-SEM-01..06 at warning severity</item>
 </CHANGE_SUMMARY>
 */
 
@@ -83,11 +84,13 @@ export {
   siteFamilyDetectionSchema,
   siteFamilyRecipeSchema,
   SiteFamilyContract,
+  archetypeBodyKindSchema,
   sectionArchetypeSchema,
   systemManifestSchema,
   systemCollectionSchema,
 } from "./schemas/index.ts";
 export type {
+  ArchetypeBodyKind,
   Constellation,
   ConstellationSlot,
   Biome,
@@ -113,6 +116,22 @@ export type {
   SystemPlanetPin,
   SystemCollectionData,
 } from "./schemas/index.ts";
+
+// ---------------------------------------------------------------------------
+// Archetype selection contract (RFC-1355, DNA-116)
+// ---------------------------------------------------------------------------
+export {
+  archetypeSelectionSchema,
+  parseArchetypeSelection,
+  VARIANT_PROP_MARKER,
+  SELECTION_PURPOSE_MAX_LENGTH,
+  SELECTION_LIST_MAX_ITEMS,
+} from "./archetype-selection.ts";
+export type {
+  ArchetypeAvoidWhenEntry,
+  ArchetypeSelection,
+  ArchetypeVariantMap,
+} from "./archetype-selection.ts";
 
 // ---------------------------------------------------------------------------
 // Schemas — PageEntry, BlockEntry (DNA-24, RFC-0026)
