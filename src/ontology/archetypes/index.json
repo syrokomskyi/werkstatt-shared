@@ -654,7 +654,7 @@
     {
       "id": "passport-score-grid",
       "displayName": "Passport Score Grid",
-      "semanticRole": "component-passport-score-grid",
+      "semanticRole": "component-passport-score-summary",
       "version": "1.0.0",
       "layoutHint": "split",
       "acceptedCosmicNames": [
@@ -1077,7 +1077,7 @@
     "component-media",
     "component-passport-header",
     "component-passport-provenance",
-    "component-passport-score-grid",
+    "component-passport-score-summary",
     "component-passport-star-map",
     "component-person-profile",
     "component-prose-a11y",
