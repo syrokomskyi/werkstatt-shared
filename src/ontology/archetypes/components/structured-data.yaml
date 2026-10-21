@@ -22,3 +22,8 @@ propsSchema:
 acceptedCosmicNames:
   - Triton
 constraints: {}
+selection:
+    purpose: Emits machine-readable structured data so search and agent consumers can interpret the page.
+    useWhen:
+    - Pages must expose structured data for external consumers.
+    avoidWhen: []

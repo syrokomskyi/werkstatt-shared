@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Klarissa
 constraints: {}
+selection:
+  purpose: Shows the overall quality score with its pillar breakdown in the passport view.
+  useWhen:
+    - The passport displays the nebula score and per-pillar detail.
+  avoidWhen: []

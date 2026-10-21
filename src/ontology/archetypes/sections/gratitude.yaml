@@ -31,3 +31,11 @@ propsSchema:
 acceptedCosmicNames:
   - Gonggong
 constraints: {}
+selection:
+    purpose: Shows client gratitude testimonials as quotes so the visitor sees human appreciation behind the evidence.
+    useWhen:
+    - Human trust signals complement cryptographic verification pages.
+    - A page needs testimonials in the client's own words.
+    avoidWhen:
+    -   when: External citations rather than client voices.
+        use: social-proof

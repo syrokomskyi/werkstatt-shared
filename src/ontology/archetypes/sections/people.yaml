@@ -51,3 +51,16 @@ propsSchema:
 acceptedCosmicNames:
   - Mimas
 constraints: {}
+selection:
+    purpose: Introduces the people behind the site from canonical records, so the visitor sees who stands behind the work.
+    useWhen:
+    - Team members or responsible persons are presented to humanise the brand.
+    - Ownership or expertise is attributed to named people.
+    avoidWhen:
+    -   when: Methods and principles rather than people.
+        use: approach
+    variants:
+    -   prop: layout
+        values:
+            grid: All selected people shown together as an overview.
+            spotlight: One person featured prominently, others secondary.

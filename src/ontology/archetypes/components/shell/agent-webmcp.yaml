@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Desdemona
 constraints: {}
+selection:
+    purpose: Registers the site's agent-facing capabilities so agentic visitors can discover what the site offers.
+    useWhen:
+    - Every page head carries the agent-capability registration.
+    avoidWhen: []

@@ -45,3 +45,12 @@ propsSchema:
 acceptedCosmicNames:
   - Mneme
 constraints: {}
+selection:
+    purpose: Walks the visitor through a documented work example — situation, what was built, and what is publicly verifiable.
+    useWhen:
+    - A concrete project story with verifiable outcomes is presented.
+    avoidWhen:
+    -   when: Short client quotes rather than a documented case.
+        use: gratitude
+    -   when: Raw verification records rather than a narrative case.
+        use: nachweis-card

@@ -56,3 +56,10 @@ propsSchema:
 acceptedCosmicNames:
   - Pandora
 constraints: {}
+selection:
+    purpose: Presents a donation ask with the organisation's details resolved so the visitor can give confidently.
+    useWhen:
+    - Non-profit pages that carry a donation call to action.
+    avoidWhen:
+    -   when: Explaining what donations fund rather than asking for one.
+        use: donation-use

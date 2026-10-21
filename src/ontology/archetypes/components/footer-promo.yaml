@@ -22,3 +22,10 @@ propsSchema:
 acceptedCosmicNames:
   - Nereid
 constraints: {}
+selection:
+    purpose: Closes the footer with a promotional invitation aimed at visitors who scrolled to the end.
+    useWhen:
+    - The site footer carries a closing conversion element.
+    avoidWhen:
+    -   when: The page's own closing call to action.
+        use: final-cta

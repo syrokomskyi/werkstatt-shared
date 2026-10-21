@@ -24,3 +24,8 @@ propsSchema:
 acceptedCosmicNames:
   - Eirene
 constraints: {}
+selection:
+    purpose: Renders prose content accessibly so every visitor can read long-form text comfortably.
+    useWhen:
+    - Body text must render with accessible typography.
+    avoidWhen: []

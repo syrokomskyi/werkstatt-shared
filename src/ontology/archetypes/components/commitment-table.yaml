@@ -48,3 +48,10 @@ propsSchema:
 acceptedCosmicNames:
   - Portia
 constraints: {}
+selection:
+    purpose: Pairs each written commitment with its contractual consequence so the visitor sees what it costs the provider to break it.
+    useWhen:
+    - Trust pages that must show commitments bound to consequences.
+    avoidWhen:
+    -   when: Questions for weighing providers rather than commitments.
+        use: check-questions

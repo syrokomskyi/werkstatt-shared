@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Naiad
 constraints: {}
+selection:
+    purpose: Supplies the share-card metadata so links posted elsewhere present the page correctly to recipients.
+    useWhen:
+    - Every page head carries share-preview metadata.
+    avoidWhen: []

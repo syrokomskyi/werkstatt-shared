@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Prospero
 constraints: {}
+selection:
+    purpose: Shows a QR code for an external link so the visitor can carry the page onto another device.
+    useWhen:
+    - A page offers an external destination visitors may open on a phone.
+    avoidWhen: []

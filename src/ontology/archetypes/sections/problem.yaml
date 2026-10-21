@@ -26,3 +26,10 @@ propsSchema:
 acceptedCosmicNames:
   - Callisto
 constraints: {}
+selection:
+    purpose: Articulates the problem the visitor likely recognises, building the case for the offer that follows.
+    useWhen:
+    - The page must name the pain or situation before presenting a solution.
+    avoidWhen:
+    -   when: Method or approach rather than the problem statement.
+        use: approach

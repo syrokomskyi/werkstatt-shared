@@ -22,3 +22,8 @@ propsSchema:
 acceptedCosmicNames:
   - Umbriel
 constraints: {}
+selection:
+    purpose: Provides the page shell — head, header, footer scaffolding — inside which every section renders.
+    useWhen:
+    - The document shell every page is composed into.
+    avoidWhen: []

@@ -25,3 +25,10 @@ propsSchema:
 acceptedCosmicNames:
   - Metis
 constraints: {}
+selection:
+    purpose: Gives the visitor a linked overview of the page's parts so they can jump straight to what they need.
+    useWhen:
+    - Long pages where the visitor must navigate between parts.
+    avoidWhen:
+    -   when: Site-level navigation rather than in-page contents.
+        use: navigation

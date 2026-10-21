@@ -46,3 +46,10 @@ propsSchema:
       }),
     }).strict()
 constraints: {}
+selection:
+    purpose: Lets the visitor test a URL and watch its maturity score animate along an interactive mountain journey.
+    useWhen:
+    - An interactive maturity assessment is the page's core experience.
+    avoidWhen:
+    -   when: Static outcome numbers rather than a live scored journey.
+        use: impact

@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Ferdinand
 constraints: {}
+selection:
+    purpose: Renders the portal surface so the visitor reaches their cockpit view.
+    useWhen:
+    - Portal routes rendered inside the shell.
+    avoidWhen: []

@@ -22,3 +22,10 @@ propsSchema:
 acceptedCosmicNames:
   - Rosalind
 constraints: {}
+selection:
+    purpose: Shows the price in the visitor's currency, pre-rendered server-side and toggled client-side.
+    useWhen:
+    - Prices must render in the visitor's locale currency without a reload.
+    avoidWhen:
+    -   when: Full price disclosure with inclusions rather than a bare figure.
+        use: price-card

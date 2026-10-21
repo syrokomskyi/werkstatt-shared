@@ -61,3 +61,8 @@ propsSchema:
 acceptedCosmicNames:
   - Praxidike
 constraints: {}
+selection:
+    purpose: Lets the visitor verify an upload receipt against the site's published keys directly in the browser.
+    useWhen:
+    - A verification page must check receipts client-side against same-origin keys.
+    avoidWhen: []

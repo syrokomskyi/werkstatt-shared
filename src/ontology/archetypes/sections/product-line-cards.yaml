@@ -62,3 +62,13 @@ constraints:
     - lieferbar
     - sofort bestellen
     - in den Warenkorb
+selection:
+    purpose: Presents the product lines the firm represents, each with its manufacturer and intended audience.
+    useWhen:
+    - A representative firm shows which third-party product lines it carries.
+    - Each offering needs manufacturer attribution and audience framing.
+    avoidWhen:
+    -   when: Visitor segments rather than product lines.
+        use: audience-cards
+    -   when: Alternatives weighed side by side.
+        use: comparison-cards

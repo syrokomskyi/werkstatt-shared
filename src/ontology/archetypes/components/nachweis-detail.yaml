@@ -66,3 +66,10 @@ propsSchema:
 acceptedCosmicNames:
   - Kerberos
 constraints: {}
+selection:
+    purpose: Shows the complete verification record with its signed evidence section for close inspection.
+    useWhen:
+    - A record's detail page must show the record plus its cryptographic envelope.
+    avoidWhen:
+    -   when: A compact record presentation without the evidence detail.
+        use: nachweis-card

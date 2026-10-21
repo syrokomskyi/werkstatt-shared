@@ -46,3 +46,10 @@ propsSchema:
 acceptedCosmicNames:
   - Orthosie
 constraints: {}
+selection:
+    purpose: Presents the questions a visitor may ask any provider, paired with the standard each answer should meet.
+    useWhen:
+    - A provider-comparison page arms the visitor with questions to ask and the standard to expect.
+    avoidWhen:
+    -   when: Written commitments bound to consequences rather than check questions.
+        use: commitment-table

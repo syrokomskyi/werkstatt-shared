@@ -25,3 +25,10 @@ propsSchema:
 acceptedCosmicNames:
   - Himalia
 constraints: {}
+selection:
+    purpose: Opens an article with its title and publication metadata so the reader knows what they are about to read and when it was published.
+    useWhen:
+    - The first block of a dated article page.
+    avoidWhen:
+    -   when: A marketing page opening that must carry positioning and a next step.
+        use: hero

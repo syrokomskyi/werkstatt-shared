@@ -25,3 +25,10 @@ propsSchema:
 acceptedCosmicNames:
   - Ersa
 constraints: {}
+selection:
+    purpose: Presents the referral partner's landing content inside the referral shell for their visitors.
+    useWhen:
+    - An active referral partner's landing is rendered under the shell.
+    avoidWhen:
+    -   when: The full document wrapper rather than the page content.
+        use: layout.referral-landing-document

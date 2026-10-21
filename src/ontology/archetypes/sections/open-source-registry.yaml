@@ -29,3 +29,8 @@ propsSchema:
 acceptedCosmicNames:
   - Orcus
 constraints: {}
+selection:
+    purpose: Publishes the deployment's software bill of materials so the visitor can inspect components and licences.
+    useWhen:
+    - The site must show its open-source component registry with licences.
+    avoidWhen: []

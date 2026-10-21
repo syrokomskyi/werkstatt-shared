@@ -61,3 +61,13 @@ constraints:
   forbidIconLibraryTags:
     - stock-handshake
     - stock-thumbs-up
+selection:
+    purpose: Shows three to five short trust signals in one row — evidence the visitor absorbs at a glance.
+    useWhen:
+    - A compact band of trust evidence under or near the fold.
+    - Pages that need quick credibility markers without a full narrative.
+    avoidWhen:
+    -   when: Outcome numbers with animation rather than glanceable signals.
+        use: impact
+    -   when: Full answers to trust questions rather than short signals.
+        use: faq-list

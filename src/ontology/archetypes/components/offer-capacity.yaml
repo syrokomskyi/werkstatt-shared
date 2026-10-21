@@ -24,3 +24,8 @@ propsSchema:
 acceptedCosmicNames:
   - Thalassa
 constraints: {}
+selection:
+    purpose: Renders the current offer-capacity state inside a section so the visitor sees live availability.
+    useWhen:
+    - A section must display real-time capacity without owning the surrounding narrative.
+    avoidWhen: []

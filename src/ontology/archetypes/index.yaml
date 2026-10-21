@@ -8,7 +8,7 @@ totalCount: 84
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
-    semanticRole: entity-composition-grid
+    semanticRole: agent-surface-disclosure
     version: 1.0.0
     layoutHint: card-grid
     acceptedCosmicNames:
@@ -188,7 +188,7 @@ entries:
     layer: section
   - id: entity-grid
     displayName: Engineering entity grid
-    semanticRole: entity-composition-grid
+    semanticRole: entity-collection
     version: 1.0.0
     layoutHint: card-grid
     acceptedCosmicNames:
@@ -215,7 +215,7 @@ entries:
     layer: component
   - id: faq-list
     displayName: Faq List
-    semanticRole: faq-list
+    semanticRole: faq
     version: 1.2.0
     layoutHint: single-column
     acceptedCosmicNames:
@@ -253,14 +253,14 @@ entries:
     displayName: Hero
     semanticRole: hero
     version: 1.1.0
-    layoutHint: decision-card
+    layoutHint: split
     acceptedCosmicNames:
       - Europa
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/hero.yaml
     layer: section
   - id: hero-decision-card
     displayName: Hero · Decision card
-    semanticRole: hero-with-decision-card
+    semanticRole: decision-opening
     version: 1.1.0
     layoutHint: decision-card
     acceptedCosmicNames:
@@ -269,7 +269,7 @@ entries:
     layer: section
   - id: impact
     displayName: Impact
-    semanticRole: impact
+    semanticRole: quantified-outcomes
     version: 1.2.0
     layoutHint: split
     acceptedCosmicNames:
@@ -368,7 +368,7 @@ entries:
     layer: component
   - id: markdown
     displayName: Markdown
-    semanticRole: markdown
+    semanticRole: long-form-narrative
     version: 1.3.0
     layoutHint: single-column
     acceptedCosmicNames:
@@ -755,7 +755,7 @@ entries:
     layer: section
   - id: women
     displayName: Women
-    semanticRole: women
+    semanticRole: illustrated-narrative
     version: 1.2.0
     layoutHint: split
     acceptedCosmicNames:
@@ -763,6 +763,7 @@ entries:
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/women.yaml
     layer: section
 sectionRoles:
+  - agent-surface-disclosure
   - approach
   - article-index
   - article-metadata-header
@@ -774,18 +775,18 @@ sectionRoles:
   - consent-gated-chat-launcher
   - credits-gallery
   - data-driven-status-indicator
+  - decision-opening
   - donation-card
   - donation-use
-  - entity-composition-grid
+  - entity-collection
   - exit-clause-disclosure
   - exit-flow-visualization
-  - faq-list
+  - faq
   - final-cta
   - hero
-  - hero-with-decision-card
-  - impact
+  - illustrated-narrative
   - lead-message-capture
-  - markdown
+  - long-form-narrative
   - maturity-visualization
   - navigation
   - open-source-registry
@@ -794,6 +795,7 @@ sectionRoles:
   - pricing-disclosure
   - problem
   - product-line-presentation
+  - quantified-outcomes
   - scope-of-responsibility-disclosure
   - side-by-side-comparison
   - social-proof
@@ -801,7 +803,6 @@ sectionRoles:
   - transparency
   - trust-evidence-row
   - video-feature
-  - women
 componentRoles:
   - component-brand-label
   - component-check-questions
@@ -1050,7 +1051,7 @@ moonImportPaths:
   Ferdinand: "@warpgogol/werkstatt-site/ui/components/portal-view"
   Hermippe: "@warpgogol/werkstatt-site/ui/components/site-background"
 roleByCosmicName:
-  Varuna: entity-composition-grid
+  Varuna: agent-surface-disclosure
   Titan: approach
   Himalia: article-metadata-header
   Io: approach
@@ -1064,15 +1065,15 @@ roleByCosmicName:
   Pandora: donation-use
   Rhea: donation-use
   Elara: data-driven-status-indicator
-  Ixion: entity-composition-grid
+  Ixion: entity-collection
   Haumea: exit-flow-visualization
-  Atlas: approach
+  Atlas: faq
   Dione: final-cta
   Gonggong: client-gratitude
   Europa: hero
   Phobos: hero
-  Ganymede: impact
-  Hyperion: markdown
+  Ganymede: quantified-outcomes
+  Hyperion: long-form-narrative
   Eris: maturity-visualization
   Phoebe: navigation
   Telesto: exit-clause-disclosure
@@ -1089,7 +1090,7 @@ roleByCosmicName:
   Tethys: transparency
   Deimos: trust-evidence-row
   Quaoar: video-feature
-  Iapetus: women
+  Iapetus: illustrated-narrative
   Desdemona: layout-shell
   Proteus: brand-label
   Ariel: breadcrumbs

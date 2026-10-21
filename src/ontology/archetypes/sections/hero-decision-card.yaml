@@ -6,7 +6,7 @@
 id: hero-decision-card
 displayName: Hero · Decision card
 version: 1.1.0
-semanticRole: hero-with-decision-card
+semanticRole: decision-opening
 description: |
   Hero with side decision card. RFC-0101/0102 composed; decision card uses
   RFC-0101 GlassConfig.
@@ -100,3 +100,11 @@ constraints:
     - günstig
     - Ergebnis garantiert
     - "100% Erfolg"
+selection:
+    purpose: Opens the page with the identity claim beside a decision-support card that helps the visitor judge fit immediately.
+    useWhen:
+    - The opening must pair positioning with a structured self-qualification aid.
+    - First folds where the visitor decides fit in seconds.
+    avoidWhen:
+    -   when: A clean opening without a decision aid is enough.
+        use: hero

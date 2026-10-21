@@ -26,3 +26,10 @@ propsSchema:
 acceptedCosmicNames:
   - Rhea
 constraints: {}
+selection:
+    purpose: Explains where donations go so the visitor understands the concrete use of their contribution.
+    useWhen:
+    - A donation page must show what contributions fund.
+    avoidWhen:
+    -   when: The donation ask itself with organisation details is needed.
+        use: donation-card

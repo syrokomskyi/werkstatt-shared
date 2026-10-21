@@ -32,3 +32,8 @@ propsSchema:
 acceptedCosmicNames:
   - Makemake
 constraints: {}
+selection:
+    purpose: Shows the provenance credits of the site's media materials as a browsable gallery.
+    useWhen:
+    - A credits page renders every credited material with its attribution.
+    avoidWhen: []

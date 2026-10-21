@@ -43,3 +43,8 @@ propsSchema:
 acceptedCosmicNames:
   - Sedna
 constraints: {}
+selection:
+    purpose: Closes the page with service metadata — the small print a careful visitor reads at the bottom.
+    useWhen:
+    - Pages that must carry a metadata footer with muted emphasis.
+    avoidWhen: []

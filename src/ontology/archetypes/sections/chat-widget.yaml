@@ -40,3 +40,12 @@ propsSchema:
 acceptedCosmicNames:
   - Amalthea
 constraints: {}
+selection:
+    purpose: Offers live chat while the third-party vendor script loads only after the visitor explicitly opts in.
+    useWhen:
+    - A site offers chat contact but must gate the vendor behind visitor consent.
+    avoidWhen:
+    -   when: A free-text message channel is the right contact path.
+        use: send-message
+    -   when: A closing invitation without interactive chat.
+        use: final-cta

@@ -23,3 +23,10 @@ propsSchema:
 acceptedCosmicNames:
   - Phoebe
 constraints: {}
+selection:
+    purpose: Provides the site's primary navigation so the visitor can reach every main area from any page.
+    useWhen:
+    - The persistent header navigation of the site.
+    avoidWhen:
+    -   when: Positional orientation inside a deep page rather than site navigation.
+        use: breadcrumbs

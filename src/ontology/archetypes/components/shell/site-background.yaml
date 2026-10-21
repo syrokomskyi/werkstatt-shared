@@ -28,3 +28,8 @@ acceptedCosmicNames:
   - Hermippe
 constraints:
   maxPerPage: 1
+selection:
+    purpose: Paints the full-viewport background behind all page content.
+    useWhen:
+    - The ambient background layer of the page, declared at most once.
+    avoidWhen: []

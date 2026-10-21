@@ -22,3 +22,8 @@ propsSchema:
 acceptedCosmicNames:
   - Ophelia
 constraints: {}
+selection:
+    purpose: Lets the visitor switch the site to another available language.
+    useWhen:
+    - Multi-language sites need a visible locale switch.
+    avoidWhen: []

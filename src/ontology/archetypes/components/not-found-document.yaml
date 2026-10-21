@@ -24,3 +24,10 @@ propsSchema:
 acceptedCosmicNames:
   - Pallene
 constraints: {}
+selection:
+    purpose: Assembles the complete document for the not-found route, keeping lost visitors oriented.
+    useWhen:
+    - The generated not-found route needs its complete document composition.
+    avoidWhen:
+    -   when: The not-found content area inside an existing document.
+        use: layout.not-found

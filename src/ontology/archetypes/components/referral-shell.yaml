@@ -24,3 +24,8 @@ propsSchema:
 acceptedCosmicNames:
   - Helike
 constraints: {}
+selection:
+    purpose: Frames referral documents with the legal navigation and chrome every referral page must carry.
+    useWhen:
+    - Referral routes need the shared shell with legal navigation.
+    avoidWhen: []

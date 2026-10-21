@@ -22,3 +22,8 @@ propsSchema:
 acceptedCosmicNames:
   - Proteus
 constraints: {}
+selection:
+    purpose: Renders the site's brand label so the visitor recognises whose page this is.
+    useWhen:
+    - Shell chrome that must carry the brand mark.
+    avoidWhen: []

@@ -22,3 +22,8 @@ propsSchema:
 acceptedCosmicNames:
   - Methone
 constraints: {}
+selection:
+    purpose: Shows the app's passport identity — name and tagline — at the head of the passport view.
+    useWhen:
+    - The passport page header identifying the application.
+    avoidWhen: []

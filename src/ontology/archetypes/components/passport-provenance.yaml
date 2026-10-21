@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Bianca
 constraints: {}
+selection:
+    purpose: Displays the build provenance — commit, timestamp, credential — so the visitor can trace this exact build.
+    useWhen:
+    - The passport view must show where and when this build came from.
+    avoidWhen: []

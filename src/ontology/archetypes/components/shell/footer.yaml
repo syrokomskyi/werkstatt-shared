@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Titania
 constraints: {}
+selection:
+    purpose: Presents the site footer — legal navigation, compliance links, closing identity — at the end of every page.
+    useWhen:
+    - The persistent footer chrome of every page.
+    avoidWhen: []

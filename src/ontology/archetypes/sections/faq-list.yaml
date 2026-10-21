@@ -6,7 +6,7 @@
 id: faq-list
 displayName: Faq List
 version: 1.2.0
-semanticRole: faq-list
+semanticRole: faq
 description: |
   FAQ accordion sourced from business/faq entries. RFC-0101/0102 composed.
   RFC-1197: optional inline items[] for baked surfaces — same accordion, same FAQPage emission.
@@ -31,3 +31,13 @@ propsSchema:
 acceptedCosmicNames:
   - Atlas
 constraints: {}
+selection:
+    purpose: Answers the questions visitors actually ask, each with its full answer, in an expandable overview.
+    useWhen:
+    - Collected question-and-answer entries must address recurring visitor questions.
+    - Baked surfaces that need the same questions rendered inline.
+    avoidWhen:
+    -   when: Method or approach rather than answers is explained.
+        use: approach
+    -   when: Dated articles rather than answers are indexed.
+        use: article-list

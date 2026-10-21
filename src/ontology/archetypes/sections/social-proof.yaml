@@ -30,3 +30,12 @@ propsSchema:
 acceptedCosmicNames:
   - Enceladus
 constraints: {}
+selection:
+    purpose: Cites external validation — registrations, mentions, endorsements — that backs the provider's claims.
+    useWhen:
+    - Third-party validation strengthens the page's credibility.
+    avoidWhen:
+    -   when: Client voices as quotes rather than external citations.
+        use: gratitude
+    -   when: Measurable outcomes rather than citations.
+        use: impact

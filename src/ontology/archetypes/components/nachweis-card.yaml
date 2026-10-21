@@ -41,3 +41,10 @@ propsSchema:
 acceptedCosmicNames:
   - Nix
 constraints: {}
+selection:
+    purpose: Presents one verification record — result, scope, quote, source, and status — as a readable entry.
+    useWhen:
+    - A published verification record is displayed to the visitor.
+    avoidWhen:
+    -   when: The full detail view including cryptographic data.
+        use: nachweis-detail

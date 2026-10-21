@@ -22,3 +22,10 @@ propsSchema:
 acceptedCosmicNames:
   - Narvi
 constraints: {}
+selection:
+    purpose: Assembles the complete document for a referral-partner landing under the referral shell.
+    useWhen:
+    - The generated referral landing route needs its full document composition.
+    avoidWhen:
+    -   when: The referral landing content without the document wrapper.
+        use: layout.referral-partner-page

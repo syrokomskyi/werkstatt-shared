@@ -24,3 +24,10 @@ propsSchema:
 acceptedCosmicNames:
   - Thebe
 constraints: {}
+selection:
+    purpose: Shows where the current page sits in the site hierarchy and lets the visitor walk back up.
+    useWhen:
+    - Deep pages where orientation and upward navigation matter.
+    avoidWhen:
+    -   when: Site-wide primary navigation rather than positional orientation.
+        use: navigation

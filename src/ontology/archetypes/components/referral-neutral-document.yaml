@@ -22,3 +22,10 @@ propsSchema:
 acceptedCosmicNames:
   - Paaliaq
 constraints: {}
+selection:
+    purpose: Assembles the neutral fallback document for unknown or paused referral slugs.
+    useWhen:
+    - A referral slug has no active partner and must answer with the neutral page.
+    avoidWhen:
+    -   when: An active partner's landing document.
+        use: layout.referral-landing-document

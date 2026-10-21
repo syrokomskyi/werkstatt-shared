@@ -23,3 +23,10 @@ propsSchema:
 acceptedCosmicNames:
   - Ariel
 constraints: {}
+selection:
+    purpose: Renders the breadcrumb trail inside the site shell so the visitor can walk the hierarchy.
+    useWhen:
+    - Shell-level breadcrumb chrome on hierarchy pages.
+    avoidWhen:
+    -   when: An in-content breadcrumb section rather than shell chrome.
+        use: breadcrumbs

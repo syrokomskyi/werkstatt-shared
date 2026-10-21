@@ -33,3 +33,11 @@ propsSchema:
 acceptedCosmicNames:
   - Io
 constraints: {}
+selection:
+    purpose: Indexes dated articles so the visitor can browse published writing and pick an entry to read.
+    useWhen:
+    - A page must enumerate the site's dated articles as an index.
+    - A home page surfaces recent writing to demonstrate ongoing expertise.
+    avoidWhen:
+    -   when: Recurring questions and answers rather than dated articles.
+        use: faq-list

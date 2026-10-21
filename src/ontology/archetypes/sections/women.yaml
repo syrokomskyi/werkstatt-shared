@@ -6,7 +6,7 @@
 id: women
 displayName: Women
 version: 1.2.0
-semanticRole: women
+semanticRole: illustrated-narrative
 description: |
   Image + paragraphs body. RFC-0103 bodyKind: paragraphs with section-level image.
 expectedIntents:
@@ -32,3 +32,12 @@ propsSchema:
 acceptedCosmicNames:
   - Iapetus
 constraints: {}
+selection:
+    purpose: Tells a narrative pairing an image with written passages — the illustrated story of the people or work.
+    useWhen:
+    - A story or history is best told as imagery beside running text.
+    avoidWhen:
+    -   when: Prose without imagery.
+        use: markdown
+    -   when: Structured team presentation rather than a story.
+        use: people

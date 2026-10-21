@@ -44,3 +44,10 @@ propsSchema:
 acceptedCosmicNames:
   - Hydra
 constraints: {}
+selection:
+    purpose: Enumerates the published verification records so the visitor can browse what has been attested.
+    useWhen:
+    - An index page enumerates published verification records.
+    avoidWhen:
+    -   when: A single record rather than the index.
+        use: nachweis-card

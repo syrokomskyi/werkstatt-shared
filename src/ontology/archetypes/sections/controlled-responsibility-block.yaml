@@ -37,3 +37,11 @@ constraints:
     - "100% Erfolg"
     - Platz 1 auf Google
     - Verkäufe garantiert
+selection:
+    purpose: States plainly what the service covers and what it does not, so the visitor knows the boundary before committing.
+    useWhen:
+    - Trust pages that must define scope of responsibility explicitly.
+    - Legal-clarity sections separating covered from not-covered items.
+    avoidWhen:
+    -   when: Exit or cancellation terms rather than responsibility scope.
+        use: notausgang-block

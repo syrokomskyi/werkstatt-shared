@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Oberon
 constraints: {}
+selection:
+    purpose: Presents the site header — identity and primary navigation — at the top of every page.
+    useWhen:
+    - The persistent header chrome of every page.
+    avoidWhen: []

@@ -84,3 +84,12 @@ propsSchema:
 acceptedCosmicNames:
   - Ceres
 constraints: {}
+selection:
+    purpose: Captures a free-text message with the visitor's contact details and routes it to the operator.
+    useWhen:
+    - A low-friction message channel is the page's conversion path.
+    avoidWhen:
+    -   when: A closing invitation that needs no message field.
+        use: final-cta
+    -   when: Interactive chat is the contact channel.
+        use: chat-widget

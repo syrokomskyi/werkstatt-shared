@@ -46,3 +46,15 @@ constraints:
     - Notfall
   mandatoryConcepts:
     - Notausgang
+selection:
+    purpose: Visualises the exit or cancellation process as a stage flow so the visitor can see how leaving works.
+    useWhen:
+    - Trust pages must show the steps of exiting a contract or relationship.
+    avoidWhen:
+    -   when: Exit terms as written text rather than a flow diagram.
+        use: notausgang-block
+    variants:
+    -   prop: variant
+        values:
+            linear: Stages flow in one direction from start to exit.
+            loop: Stages form a cycle, e.g. recurring review or renewal steps.

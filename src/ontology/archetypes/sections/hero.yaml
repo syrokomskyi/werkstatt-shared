@@ -14,9 +14,8 @@ expectedIntents:
   - convert-visitor
   - establish-identity
   - clarify-positioning
-expectedIndustryFit:
-  - non-profit
-layoutHint: decision-card
+expectedIndustryFit: []
+layoutHint: split
 bodyKind: composite
 propsSchema:
   $shape: zod
@@ -85,3 +84,27 @@ propsSchema:
 acceptedCosmicNames:
   - Europa
 constraints: {}
+selection:
+    purpose: 'Opens the page: states who or what this is, its positioning, and the one next step the visitor can take.'
+    useWhen:
+    - The first block of a page that must establish identity and positioning.
+    - A page opening carrying primary and secondary calls to action.
+    avoidWhen:
+    -   when: The opening must pair the claim with a decision-support card.
+        use: hero-decision-card
+    -   when: A dated article's title and metadata open the page.
+        use: article-header
+    variants:
+    -   prop: leadImagePlacement
+        values:
+            portrait: Lead image renders as a portrait beside the header text.
+            after-heading: Lead image renders under the heading at text-column width.
+    -   prop: creditDisplay
+        values:
+            shown: The image credit line is visible under the lead image.
+            hidden: The credit is omitted from the rendered output.
+    -   prop: containerVariant
+        values:
+            default: Standard content width.
+            narrow: Reduced width for a focused single-column presentation.
+            full: Full-bleed width for an immersive opening.

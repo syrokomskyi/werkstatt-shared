@@ -6,7 +6,7 @@
 id: impact
 displayName: Impact
 version: 1.2.0
-semanticRole: impact
+semanticRole: quantified-outcomes
 description: |
   Animated stat counters. RFC-0103 bodyKind: stats; GSAP via SectionStats (RFC-0040 bridge).
 expectedIntents:
@@ -26,3 +26,13 @@ propsSchema:
 acceptedCosmicNames:
   - Ganymede
 constraints: {}
+selection:
+    purpose: Proves outcomes with animated numbers — the measurable results the visitor can check at a glance.
+    useWhen:
+    - Quantified results or reach figures must demonstrate impact.
+    - Credibility is expressed as countable achievements.
+    avoidWhen:
+    -   when: One current operational status rather than outcome metrics.
+        use: dynamic-status-block
+    -   when: Short glanceable trust signals rather than numbers.
+        use: trust-strip

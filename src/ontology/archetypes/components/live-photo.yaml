@@ -23,3 +23,12 @@ propsSchema:
 acceptedCosmicNames:
   - Aegaeon
 constraints: {}
+selection:
+    purpose: Shows a living photo — a gently looping video resting on its still image — for a calmer kind of motion.
+    useWhen:
+    - Imagery should feel alive without becoming a feature video.
+    avoidWhen:
+    -   when: A watchable video with controls rather than ambient motion.
+        use: media
+    -   when: A plain still image is sufficient.
+        use: responsive-image

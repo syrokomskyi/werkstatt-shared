@@ -39,3 +39,8 @@ propsSchema:
 acceptedCosmicNames:
   - Styx
 constraints: {}
+selection:
+    purpose: Shows the cryptographic hashes and signature data behind a record so the visitor can verify it independently.
+    useWhen:
+    - A verification view must expose source, derivative, payload, and envelope hashes.
+    avoidWhen: []

@@ -38,3 +38,17 @@ propsSchema:
 acceptedCosmicNames:
   - Elara
 constraints: {}
+selection:
+    purpose: Displays one current status value with a label so the visitor sees live operational state.
+    useWhen:
+    - A page surfaces a single up-to-date status figure or state.
+    avoidWhen:
+    -   when: Several outcome numbers are shown together.
+        use: impact
+    variants:
+    -   prop: valueTone
+        values:
+            default: Neutral presentation of the status value.
+            success: Positive state — the reported value is good news.
+            warning: Attention state — the value signals a caveat or degraded condition.
+            muted: Low-emphasis presentation for secondary context.

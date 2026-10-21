@@ -6,7 +6,7 @@
 id: agent-surface-overview
 displayName: Agent surface overview
 version: 1.0.0
-semanticRole: entity-composition-grid
+semanticRole: agent-surface-disclosure
 description: |
   Human-facing projection of the Agent Surface Manifest (RFC-1170).
   Interfaces, capabilities with side-effect labels, limits, and knowledge
@@ -38,3 +38,11 @@ propsSchema:
 acceptedCosmicNames:
   - Varuna
 constraints: {}
+selection:
+    purpose: 'Discloses what the site''s agent-facing surface offers: interfaces, capabilities with side-effect labels, limits, and knowledge domains.'
+    useWhen:
+    - A site publishes an agent surface and must disclose its capabilities and boundaries to humans.
+    - Trust and legal-clarity pages that show what automation may do on the visitor's behalf.
+    avoidWhen:
+    -   when: A generic collection of entities or offerings without agent-surface semantics.
+        use: entity-grid

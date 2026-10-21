@@ -22,3 +22,8 @@ propsSchema:
 acceptedCosmicNames:
   - Charon
 constraints: {}
+selection:
+    purpose: Renders the copyright line so the visitor sees the site's ownership notice.
+    useWhen:
+    - The footer legal line on every page.
+    avoidWhen: []

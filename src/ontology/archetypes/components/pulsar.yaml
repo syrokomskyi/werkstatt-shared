@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Despina
 constraints: {}
+selection:
+    purpose: Shows the build's heartbeat — a freshness indicator signalling how current this deployment is.
+    useWhen:
+    - A status surface needs a live build-freshness indicator.
+    avoidWhen: []

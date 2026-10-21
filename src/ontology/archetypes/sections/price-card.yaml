@@ -73,3 +73,11 @@ constraints:
     - weniger als ein Kaffee
     - Schnäppchen
   enforceTabularNumerals: true
+selection:
+    purpose: Discloses the price openly with what it includes, so the visitor can judge cost before any contact.
+    useWhen:
+    - Offer pages must state price and inclusions without requiring inquiry.
+    - Trust-oriented pricing that forbids discount framing.
+    avoidWhen:
+    -   when: Weighing alternatives rather than stating one price.
+        use: comparison-cards

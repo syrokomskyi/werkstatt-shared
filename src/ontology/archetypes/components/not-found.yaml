@@ -25,3 +25,10 @@ propsSchema:
 acceptedCosmicNames:
   - Cressida
 constraints: {}
+selection:
+    purpose: Orients a lost visitor inside the not-found shell and preserves their paths back into the site.
+    useWhen:
+    - The not-found content within the site shell.
+    avoidWhen:
+    -   when: The complete not-found document rather than the inner shell.
+        use: layout.not-found-document

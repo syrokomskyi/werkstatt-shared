@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Cordelia
 constraints: {}
+selection:
+    purpose: Displays a material's credit and provenance data so the visitor can trace where it came from.
+    useWhen:
+    - Credited media must show attribution and structured provenance.
+    avoidWhen: []

@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Adrastea
 constraints: {}
+selection:
+    purpose: Visualises the system architecture as a star map so the visitor can explore the component graph.
+    useWhen:
+    - The passport view renders the architecture as a navigable map.
+    avoidWhen: []

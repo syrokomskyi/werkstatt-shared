@@ -25,3 +25,8 @@ propsSchema:
 acceptedCosmicNames:
   - Daphnis
 constraints: {}
+selection:
+    purpose: Offers a floating control that returns the visitor to the top after long scrolling.
+    useWhen:
+    - Long pages benefit from a quick way back to the top.
+    avoidWhen: []

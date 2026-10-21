@@ -36,3 +36,10 @@ propsSchema:
 acceptedCosmicNames:
   - Quaoar
 constraints: {}
+selection:
+    purpose: Features a content video with poster and controls so the visitor can watch the subject explained.
+    useWhen:
+    - A page feature is best shown as a video rather than written.
+    avoidWhen:
+    -   when: Running text rather than video carries the content.
+        use: markdown

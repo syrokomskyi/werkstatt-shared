@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Caliban
 constraints: {}
+selection:
+    purpose: Renders the page's composed body — every section the visitor reads and interacts with.
+    useWhen:
+    - The page body region inside the document shell.
+    avoidWhen: []

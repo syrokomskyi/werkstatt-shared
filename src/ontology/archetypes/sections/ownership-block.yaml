@@ -60,3 +60,10 @@ constraints:
   mandatoryConcepts:
     - Domain
     - Daten
+selection:
+    purpose: Enumerates what belongs to the client — domain, data, agreed materials — so ownership is never ambiguous.
+    useWhen:
+    - Trust pages must enumerate client-owned assets explicitly.
+    avoidWhen:
+    -   when: Responsibility scope rather than asset ownership.
+        use: controlled-responsibility-block

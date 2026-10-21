@@ -26,3 +26,13 @@ propsSchema:
 acceptedCosmicNames:
   - Titan
 constraints: {}
+selection:
+    purpose: Explains how the provider works — its method, principles, or process — so the visitor can judge fit before engaging.
+    useWhen:
+    - The page must explain methodology or working principles in short themed units.
+    - Building trust by showing how the work is done, not only its outcomes.
+    avoidWhen:
+    -   when: Named people rather than methods are introduced.
+        use: people
+    -   when: Alternatives are weighed side by side.
+        use: comparison-cards

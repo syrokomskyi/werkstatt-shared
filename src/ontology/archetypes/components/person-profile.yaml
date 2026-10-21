@@ -23,3 +23,10 @@ propsSchema:
 acceptedCosmicNames:
   - Miranda
 constraints: {}
+selection:
+    purpose: Introduces one person — role, expertise, story — so the visitor knows who is behind the work.
+    useWhen:
+    - A single team member is presented in detail.
+    avoidWhen:
+    -   when: Several people together rather than one profile.
+        use: people

@@ -6,7 +6,7 @@
 id: markdown
 displayName: Markdown
 version: 1.3.0
-semanticRole: markdown
+semanticRole: long-form-narrative
 description: |
   Long-form prose section — composite layout with bespoke header (heading +
   lead), multi-language columns, and contentRef → prose collection rendering.
@@ -47,3 +47,18 @@ propsSchema:
 acceptedCosmicNames:
   - Hyperion
 constraints: {}
+selection:
+    purpose: Renders long-form prose — the running text a visitor reads for detail, documentation, or legal content.
+    useWhen:
+    - The page carries extended written content from a prose source.
+    - Legal or policy text that must render faithfully.
+    avoidWhen:
+    -   when: Short structured answers rather than running text.
+        use: faq-list
+    -   when: A narrative pairing imagery with text.
+        use: women
+    variants:
+    -   prop: variant
+        values:
+            default: Standard prose rendering.
+            open-source: Prose styled for open-source project documentation.

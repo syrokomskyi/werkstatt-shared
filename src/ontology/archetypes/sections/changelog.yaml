@@ -25,3 +25,8 @@ propsSchema:
 acceptedCosmicNames:
   - Prometheus
 constraints: {}
+selection:
+    purpose: Shows what changed on the site or product over time so the visitor can see it is maintained.
+    useWhen:
+    - A page documents the project's change history for visitors.
+    avoidWhen: []

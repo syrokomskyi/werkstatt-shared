@@ -22,3 +22,12 @@ propsSchema:
 acceptedCosmicNames:
   - Belinda
 constraints: {}
+selection:
+    purpose: Renders a provider-agnostic image sized for the visitor's device.
+    useWhen:
+    - Any still image placed on a page.
+    avoidWhen:
+    -   when: Ambient motion on top of the still.
+        use: live-photo
+    -   when: A watchable video rather than an image.
+        use: media

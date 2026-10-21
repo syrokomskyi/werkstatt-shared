@@ -34,3 +34,10 @@ constraints:
     - billiger als
     - schlechter als
     - Konkurrent
+selection:
+    purpose: Lays alternatives side by side so the visitor can weigh options and see the differentiation clearly.
+    useWhen:
+    - The page must contrast alternatives, competitors, or approaches row by row.
+    avoidWhen:
+    -   when: Audience segments rather than options are described.
+        use: audience-cards

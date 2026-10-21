@@ -24,3 +24,12 @@ propsSchema:
 acceptedCosmicNames:
   - Sycorax
 constraints: {}
+selection:
+    purpose: Renders the platform's unified media primitive — every content video through one profile-driven player.
+    useWhen:
+    - A page needs a feature video with controls, poster, and adaptive playback.
+    avoidWhen:
+    -   when: Ambient looping imagery rather than a watchable video.
+        use: live-photo
+    -   when: A still image only.
+        use: responsive-image

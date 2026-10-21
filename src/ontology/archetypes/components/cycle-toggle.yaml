@@ -23,3 +23,8 @@ propsSchema:
 acceptedCosmicNames:
   - Cupid
 constraints: {}
+selection:
+    purpose: Gives the visitor one button that cycles through options and remembers the choice.
+    useWhen:
+    - A page needs a small multi-option switch that persists its selection.
+    avoidWhen: []

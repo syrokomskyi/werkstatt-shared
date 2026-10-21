@@ -56,3 +56,13 @@ constraints:
   forbidPhrases:
     - alle Branchen
     - jeder Kunde
+selection:
+    purpose: Lets each visitor recognise themselves in a named audience segment and see what the offer means for them.
+    useWhen:
+    - The offer serves distinct visitor segments that need separate framing.
+    - Positioning is clarified by naming who the offer is for.
+    avoidWhen:
+    -   when: Offerings rather than audiences are presented.
+        use: product-line-cards
+    -   when: Alternatives are weighed against each other.
+        use: comparison-cards

@@ -56,3 +56,13 @@ propsSchema:
 acceptedCosmicNames:
   - Dione
 constraints: {}
+selection:
+    purpose: Closes the page with a single clear invitation — the one next step the visitor is asked to take.
+    useWhen:
+    - The last block of a conversion-oriented page.
+    - Any page ending that must direct the visitor to contact or signup.
+    avoidWhen:
+    -   when: The opening identity block at the top of the page.
+        use: hero
+    -   when: Message capture with a free-text field is required.
+        use: send-message

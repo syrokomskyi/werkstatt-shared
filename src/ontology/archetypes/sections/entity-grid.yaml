@@ -6,7 +6,7 @@
 id: entity-grid
 displayName: Engineering entity grid
 version: 1.0.0
-semanticRole: entity-composition-grid
+semanticRole: entity-collection
 description: |
   Engineering-style entity composition grid with numbered markers and
   boundaries. No glass effects. RFC-1062.
@@ -49,3 +49,16 @@ constraints:
   forbidPhrases:
     - alle Branchen
     - jeder Kunde
+selection:
+    purpose: Presents a structured collection of entities with numbered markers and boundaries in an engineering-style overview.
+    useWhen:
+    - The page must show the composition of a system, offering, or structure as discrete entities.
+    - Legal-clarity pages that enumerate components or parties.
+    avoidWhen:
+    -   when: Disclosing what the agent-facing surface can do.
+        use: agent-surface-overview
+    variants:
+    -   prop: density
+        values:
+            compact: Tighter spacing when many entities must fit a small band.
+            normal: Default spacing for regular section use.

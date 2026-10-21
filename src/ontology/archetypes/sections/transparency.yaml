@@ -51,3 +51,10 @@ propsSchema:
 acceptedCosmicNames:
   - Tethys
 constraints: {}
+selection:
+    purpose: Discloses transparency information with an optional report link for visitors who want the evidence.
+    useWhen:
+    - The page must show openness signals and link to a fuller report.
+    avoidWhen:
+    -   when: Ownership disclosure rather than transparency reporting.
+        use: ownership-block

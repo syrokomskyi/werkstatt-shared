@@ -60,3 +60,12 @@ constraints:
     - Strafgebühr
   mandatoryConcepts:
     - Notausgang
+selection:
+    purpose: States the exit terms explicitly — how the visitor can end the engagement and what happens then.
+    useWhen:
+    - Legal-clarity pages must disclose cancellation or exit terms in writing.
+    avoidWhen:
+    -   when: The exit process shown as a stage diagram rather than terms.
+        use: exit-diagram
+    -   when: Scope of responsibility rather than exit terms.
+        use: controlled-responsibility-block
