@@ -24,7 +24,18 @@ acceptedCosmicNames:
   - Oberon
 constraints: {}
 selection:
-    purpose: Presents the site header — identity and primary navigation — at the top of every page.
-    useWhen:
+  purpose: Presents the site header — identity and primary navigation — at the top of every page.
+  useWhen:
     - The persistent header chrome of every page.
-    avoidWhen: []
+  avoidWhen: []
+  variants:
+    - prop: brandLockup
+      values:
+        inline: Wordmark and motto sit on one line beside the navigation.
+        stacked: Wordmark above the motto in a fixed-width block; nav moves
+          into overflow before the lockup wraps.
+    - prop: langSwitcher
+      values:
+        pill: The current locale renders as a pill button opening the switcher.
+        text: Every locale code renders as text with thin dividers; the
+          current one is emphasised.

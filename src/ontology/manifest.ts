@@ -16,6 +16,7 @@ Exports a discriminated union on `layer` so TypeScript narrows the `role` and
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1356: imageSlots[].depicts accepts a string or a non-empty list — consumers match "any of" (hero featureImage: illustration|atmosphere|represented-product).</item>
   <item>RFC-1346/AMD-010: imageSlots entries gain optional aspect (W:H) — declared manifests win over brief aspectHint at fulfilment.</item>
   <item>RFC-1345: imageSlots on section manifests — image prop paths + depicts kind for MEDIA-01 and future asset.slot.fulfill</item>
   <item>RFC-1204: effectsParity flag on section manifests + resolver lookup</item>
@@ -330,15 +331,33 @@ export const sectionManifestSchema = manifestBaseSchema.extend({
       z
         .object({
           prop: z.string().min(1),
-          depicts: z.enum([
-            "any",
-            "atmosphere",
-            "illustration",
-            "abstract",
-            "represented-product",
-            "brand-mark",
-            "people",
-            "place",
+          // RFC-1356: a slot may accept one depicts kind or a list —
+          // consumers match "any of" (MEDIA-01, asset.slot.fulfill).
+          depicts: z.union([
+            z.enum([
+              "any",
+              "atmosphere",
+              "illustration",
+              "abstract",
+              "represented-product",
+              "brand-mark",
+              "people",
+              "place",
+            ]),
+            z
+              .array(
+                z.enum([
+                  "any",
+                  "atmosphere",
+                  "illustration",
+                  "abstract",
+                  "represented-product",
+                  "brand-mark",
+                  "people",
+                  "place",
+                ]),
+              )
+              .min(1),
           ]),
           /**
            * RFC-1346: `W:H` aspect the slot renders at — declared manifests

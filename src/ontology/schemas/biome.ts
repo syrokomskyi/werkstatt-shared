@@ -14,6 +14,7 @@ Applied via html[data-biome="<id>"] in the cascade layer stack.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1356: presentation block (hero/header first-fold variant defaults, value-agnostic strings — BIOME-PRES-01 checks enum parity against the bound manifests) + components.heroInk/heroVeil.</item>
   <item>RFC-0371: Add optional <code>fonts</code> field for biome-driven Fontsource CSS imports.</item>
   <item>RFC-1298: biomeProvenanceSchema becomes a union — legacy gen/site shape or intake shape (client, intakeId, selectedConcept, intakeSha256).</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
@@ -108,6 +109,10 @@ export const biomeComponentsSchema = z
   .object({
     heroOverlay: cssValue.optional(),
     heroText: cssValue.optional(),
+    // RFC-1356: light-surface hero ink + directional veil (default:
+    // palette.ink / palette.surface at 0.92 alpha via token projection).
+    heroInk: cssValue.optional(),
+    heroVeil: cssValue.optional(),
     surfaceGlass: cssValue.optional(),
     sectionAltBase: cssValue.optional(),
     sectionAltText: cssValue.optional(),
@@ -285,6 +290,33 @@ export const biomeFontEntrySchema = z
 
 export const biomeFontsSchema = z.array(biomeFontEntrySchema).optional();
 
+// RFC-1356: first-fold presentation defaults. Values are enum members of the
+// matching variant props on the hero section and header component manifests —
+// BIOME-PRES-01 (biome.contract.validate) checks them against the manifests so
+// the vocabulary cannot drift; the schema stays value-agnostic here.
+export const biomePresentationSchema = z
+  .object({
+    hero: z
+      .object({
+        layout: z.string().min(1).optional(),
+        surfaceTone: z.string().min(1).optional(),
+        textSide: z.string().min(1).optional(),
+        eyebrowStyle: z.string().min(1).optional(),
+        ctaTrailingIcon: z.string().min(1).optional(),
+      })
+      .strict()
+      .optional(),
+    header: z
+      .object({
+        brandLockup: z.string().min(1).optional(),
+        langSwitcher: z.string().min(1).optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict()
+  .optional();
+
 export const biomeSchema = z
   .object({
     id: kebabId,
@@ -310,6 +342,8 @@ export const biomeSchema = z
     // RFC-0371: optional Fontsource CSS import declarations. When absent,
     // the biome relies on system font fallbacks only.
     fonts: biomeFontsSchema,
+    // RFC-1356: first-fold presentation defaults (hero + header variants).
+    presentation: biomePresentationSchema,
     constraints: biomeConstraintsSchema,
   })
   .strict();
@@ -328,4 +362,5 @@ export type BiomeConstraints = z.infer<typeof biomeConstraintsSchema>;
 export type BiomeSiteBackground = z.infer<typeof biomeSiteBackgroundSchema>;
 export type BiomeFontEntry = z.infer<typeof biomeFontEntrySchema>;
 export type BiomeFontsConfig = z.infer<typeof biomeFontsSchema>;
+export type BiomePresentation = z.infer<typeof biomePresentationSchema>;
 export type Biome = z.infer<typeof biomeSchema>;

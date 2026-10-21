@@ -85,26 +85,51 @@ acceptedCosmicNames:
   - Europa
 constraints: {}
 selection:
-    purpose: 'Opens the page: states who or what this is, its positioning, and the one next step the visitor can take.'
-    useWhen:
+  purpose: "Opens the page: states who or what this is, its positioning, and the one next step the visitor can take."
+  useWhen:
     - The first block of a page that must establish identity and positioning.
     - A page opening carrying primary and secondary calls to action.
-    avoidWhen:
-    -   when: The opening must pair the claim with a decision-support card.
-        use: hero-decision-card
-    -   when: A dated article's title and metadata open the page.
-        use: article-header
-    variants:
-    -   prop: leadImagePlacement
-        values:
-            portrait: Lead image renders as a portrait beside the header text.
-            after-heading: Lead image renders under the heading at text-column width.
-    -   prop: creditDisplay
-        values:
-            shown: The image credit line is visible under the lead image.
-            hidden: The credit is omitted from the rendered output.
-    -   prop: containerVariant
-        values:
-            default: Standard content width.
-            narrow: Reduced width for a focused single-column presentation.
-            full: Full-bleed width for an immersive opening.
+  avoidWhen:
+    - when: The opening must pair the claim with a decision-support card.
+      use: hero-decision-card
+    - when: A dated article's title and metadata open the page.
+      use: article-header
+    - when: The band should carry evidence-backed trust signals — highlights
+        state positioning, they are not a trust strip.
+      use: trust-strip
+  variants:
+    - prop: layout
+      values:
+        cover: Full-bleed background image behind the text (the classic form).
+        split-editorial: Text column beside a feature image — the surface is
+          the biome background, no overlay.
+    - prop: surfaceTone
+      values:
+        light: Dark ink text on the biome background; cover images get a
+          directional veil, never a uniform overlay.
+        dark: Light text over a dark overlay on the cover image.
+    - prop: textSide
+      values:
+        left: Text column on the left; feature image (or veil origin) right.
+        right: Text column on the right; feature image (or veil origin) left.
+    - prop: eyebrowStyle
+      values:
+        plain: Tagline renders as an uppercase body-family eyebrow in the accent colour.
+        rule: The eyebrow gains a short leading rule line.
+    - prop: ctaTrailingIcon
+      values:
+        none: CTAs render label only.
+        arrow: Internal-target CTAs gain a trailing arrow.
+    - prop: leadImagePlacement
+      values:
+        portrait: Lead image renders as a portrait beside the header text.
+        after-heading: Lead image renders under the heading at text-column width.
+    - prop: creditDisplay
+      values:
+        shown: The image credit line is visible under the lead image.
+        hidden: The credit is omitted from the rendered output.
+    - prop: containerVariant
+      values:
+        default: Standard content width.
+        narrow: Reduced width for a focused single-column presentation.
+        full: Full-bleed width for an immersive opening.

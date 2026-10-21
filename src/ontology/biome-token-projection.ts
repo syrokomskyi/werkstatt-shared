@@ -12,6 +12,7 @@ divergent copies of the same mapping.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1356: components.heroInk/heroVeil project --ds-color-hero-ink/--ds-color-hero-veil; derived defaults fall back to palette.ink / palette.surface at 0.92 alpha when the component fields are unset.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -44,6 +45,9 @@ export const BIOME_TO_TOKEN_MAP = {
   // Components
   "components.heroOverlay": "--ds-color-hero-overlay",
   "components.heroText": "--ds-color-hero-text",
+  // RFC-1356: light-surface hero ink + directional veil.
+  "components.heroInk": "--ds-color-hero-ink",
+  "components.heroVeil": "--ds-color-hero-veil",
   "components.surfaceGlass": "--ds-color-surface-glass",
   "components.sectionAltBase": "--ds-color-section-alt-base",
   "components.sectionAltText": "--ds-color-section-alt-text",
@@ -141,6 +145,40 @@ export interface BiomeTokenDerived {
 }
 
 export const BIOME_TOKEN_DERIVED: readonly BiomeTokenDerived[] = [
+  {
+    // RFC-1356: hero ink defaults to palette.ink when components.heroInk is unset.
+    token: "--ds-color-hero-ink",
+    compute: (biome) => {
+      const components = biome.components as Record<string, string> | undefined;
+      if (components?.heroInk !== undefined) return undefined;
+      const palette = biome.palette as Record<string, string> | undefined;
+      return palette?.ink;
+    },
+  },
+  {
+    // RFC-1356: hero veil defaults to the biome surface colour at 0.92 alpha.
+    token: "--ds-color-hero-veil",
+    compute: (biome) => {
+      const components = biome.components as Record<string, string> | undefined;
+      if (components?.heroVeil !== undefined) return undefined;
+      const palette = biome.palette as Record<string, string> | undefined;
+      const surface = palette?.surface;
+      if (!surface) return undefined;
+      const hex = surface.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i)?.[1];
+      if (!hex) return undefined;
+      const full =
+        hex.length === 3
+          ? hex
+              .split("")
+              .map((c) => c + c)
+              .join("")
+          : hex;
+      const r = parseInt(full.slice(0, 2), 16);
+      const g = parseInt(full.slice(2, 4), 16);
+      const b = parseInt(full.slice(4, 6), 16);
+      return `rgb(${r} ${g} ${b} / 0.92)`;
+    },
+  },
   {
     token: "--ds-text-sm",
     compute: (biome) => {
