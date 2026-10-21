@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>ADR-0105: remediation entries for the DIST-LEAK-01..05 rule family (serialization-leak guard).</item>
   <item>RFC-1201: remediation entry for PARITY-MD-CONSTRUCT-COUNT (inline-construct parity).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
-  <history>RFC-1027, RFC-1185, warpgogol-m000196</history>
+  <item>RFC-1365: step 4 — DNA-115, CONF-* remediation entries, agents-generate convention section</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -584,6 +584,54 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "packages/werkstatt-site/src/domain/ui/**",
       "packages/werkstatt-shared/src/client-scripts/**",
     ],
+  },
+  {
+    ruleId: "CONF-01",
+    action:
+      "Fix the contractProducers[] entry in forge.yaml — id, emit.argv, consumer.root, and consumer.validator.argv are required; emit.argv and consumer.validator.argv must carry a {bundle} placeholder so legs can locate the forge-provided bundle dir.",
+    docRef:
+      "docs/rfcs/rfc-1365-require-golden-conformance-runs-against-authoritative-consumers-for-declared-contract-producers.md",
+    targetFiles: ["forge.yaml"],
+  },
+  {
+    ruleId: "CONF-02",
+    action:
+      "Wire the declared test to real conformance coverage — the test file must exist and reference @warpgogol/forge/conformance (helper import) or forge.conformance.run (shelled command); a bare producer-id mention is not wiring.",
+    docRef:
+      "docs/rfcs/rfc-1365-require-golden-conformance-runs-against-authoritative-consumers-for-declared-contract-producers.md",
+    targetFiles: ["forge.yaml"],
+  },
+  {
+    ruleId: "CONF-03",
+    action:
+      "Fix the script path inside the reported argv — producer-side paths resolve from the repo root, consumer.validator.argv paths resolve from consumer.root; flag-value tokens and bare binary names are skipped, argv with no path-looking element passes vacuously.",
+    docRef:
+      "docs/rfcs/rfc-1365-require-golden-conformance-runs-against-authoritative-consumers-for-declared-contract-producers.md",
+    targetFiles: ["forge.yaml"],
+  },
+  {
+    ruleId: "CONF-04",
+    action:
+      "consumer.root is absent on this machine — runs self-skip here (explicit skip verdict). Where the consumer checkout is guaranteed, enforce --require-consumer or FORGE_CONFORMANCE_REQUIRE=1 so the guard cannot silently degrade.",
+    docRef:
+      "docs/rfcs/rfc-1365-require-golden-conformance-runs-against-authoritative-consumers-for-declared-contract-producers.md",
+    targetFiles: ["forge.yaml"],
+  },
+  {
+    ruleId: "CONF-05",
+    action:
+      "Rename or remove the duplicate producer id — contractProducers[] ids must be unique; forge.conformance.run --producer selects by id.",
+    docRef:
+      "docs/rfcs/rfc-1365-require-golden-conformance-runs-against-authoritative-consumers-for-declared-contract-producers.md",
+    targetFiles: ["forge.yaml"],
+  },
+  {
+    ruleId: "CONF-06",
+    action:
+      "Declare mirror.argv for the producer — the same-input mirror leg detects stricter-than-consumer drift before the consumer validator runs; omitting it leaves that drift class unarmed.",
+    docRef:
+      "docs/rfcs/rfc-1365-require-golden-conformance-runs-against-authoritative-consumers-for-declared-contract-producers.md",
+    targetFiles: ["forge.yaml"],
   },
 ];
 
