@@ -13,6 +13,7 @@ section number, optional level override.
 <CHANGE_SUMMARY>
   <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
   <item>RFC-1196: step 1 — sectionHeadingId() resolver + sectionId prop</item>
+  <item>RFC-1356: headingSegmentSchema gains programmatic-only `class` — hero emits `.hero__accent` on the headingAccent substring segment; authored JSON fragment unchanged (still text+tone only).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -27,6 +28,13 @@ export const headingSegmentSchema = z
   .object({
     text: z.string().min(1),
     tone: headingToneSchema.optional(),
+    /**
+     * RFC-1356 — programmatic-only extra class on the rendered segment span
+     * (e.g. `.hero__accent` for headingAccent). The authored JSON-schema
+     * fragment (shared-section-props/visual-header.ts) stays additionalProperties:false,
+     * so page content cannot inject classes; only code-side segment builders can.
+     */
+    class: z.string().optional(),
   })
   .strict();
 export type HeadingSegment = z.infer<typeof headingSegmentSchema>;

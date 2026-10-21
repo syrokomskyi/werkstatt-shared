@@ -14,8 +14,6 @@ Applied via html[data-biome="<id>"] in the cascade layer stack.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1356: presentation block (hero/header first-fold variant defaults, value-agnostic strings — BIOME-PRES-01 checks enum parity against the bound manifests) + components.heroInk/heroVeil.</item>
-  <item>RFC-0371: Add optional <code>fonts</code> field for biome-driven Fontsource CSS imports.</item>
   <item>RFC-1298: biomeProvenanceSchema becomes a union — legacy gen/site shape or intake shape (client, intakeId, selectedConcept, intakeSha256).</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
@@ -24,7 +22,8 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1298: REVIEW-CODE-2026-10-16-01 findings — kebab flag guards, safeParse, reads declaration, family-append ordering, FONTS-SCRIPT-02 unverifiable-stack warning</item>
-  <history>RFC-0071</history>
+  <item>RFC-1356: editorial hero variants and header lockup styling (RFC-1356)</item>
+  <history>RFC-0071, RFC-0371, RFC-1356</history>
 </CHANGE_SUMMARY>
 */
 
@@ -149,6 +148,10 @@ export const biomeTypographySchema = z
     measureBody: cssValue,
     measureHeading: cssValue,
     numericFeatures: cssValue,
+    // RFC-1356: optional editorial treatments — hero eyebrow tracking and lead
+    // paragraph size. Absent ⇒ the tokens.css catalog defaults hold.
+    eyebrowTracking: cssValue.optional(),
+    leadSize: cssValue.optional(),
   })
   .strict();
 
