@@ -27,14 +27,37 @@ propsSchema:
       tagline: z.string().optional(),
       subheading: z.string().optional(),
       description: z.string().optional(),
-      imageAlt: z.string().min(1),
+      imageAlt: z.string().min(1).optional(),
       backgroundImage: z.string().optional(),
       portraitImage: z.string().optional(),
+      leadImage: z.object({ src: z.string().min(1), alt: z.string().min(1) }).strict().optional(),
+      leadImageFade: z.object({
+        top: z.boolean().optional(), bottom: z.boolean().optional(),
+        left: z.boolean().optional(), right: z.boolean().optional(),
+        width: z.number().min(0).max(0.5).optional(),
+      }).strict().optional(),
+      leadImagePlacement: z.enum(["portrait", "after-heading"]).optional(),
+      layout: z.enum(["cover", "split-editorial"]).optional(),
+      surfaceTone: z.enum(["light", "dark"]).optional(),
+      textSide: z.enum(["left", "right"]).optional(),
+      eyebrowStyle: z.enum(["plain", "rule"]).optional(),
+      ctaTrailingIcon: z.enum(["none", "arrow"]).optional(),
+      featureImage: z.string().optional(),
+      featureImageAlt: z.string().optional(),
+      headingAccent: z.string().optional(),
+      highlights: z.array(z.object({
+        text: z.string().min(1),
+        icon: z.object({
+          vendor: z.string(), collection: z.string(), name: z.string(),
+          size: z.number().optional(),
+        }).strict().optional(),
+      }).strict()).min(2).max(4).optional(),
       ctaPrimaryLabel: z.string().optional(),
       ctaPrimaryAriaLabel: z.string().optional(),
       ctaSecondaryLabel: z.string().optional(),
       ctaSecondaryAriaLabel: z.string().optional(),
       ctaPrimaryUrl: z.string().optional(),
+      ctaSecondaryUrl: z.string().optional(),
       primaryCtaTarget: z.discriminatedUnion("kind", [
         z.object({
           kind: z.literal("internal"),
@@ -79,7 +102,7 @@ propsSchema:
         suffix: z.string().optional(),
         decimals: z.number().int().nonnegative().optional(),
         duration: z.number().positive().optional(),
-      })).min(1),
+      })).min(0).optional(),
     }).strict()
 acceptedCosmicNames:
   - Europa
