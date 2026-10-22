@@ -419,6 +419,10 @@
       "types": "./src/media/placeholder.ts",
       "default": "./src/media/placeholder.ts"
     },
+    "./media/sniff-media-type": {
+      "types": "./src/media/sniff-media-type.ts",
+      "default": "./src/media/sniff-media-type.ts"
+    },
     "./schemas/media": {
       "types": "./src/schemas/media.ts",
       "default": "./src/schemas/media.ts"

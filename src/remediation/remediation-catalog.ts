@@ -11,6 +11,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1368: INTAKE-34 remediation entry (declared-vs-sniffed media type).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
@@ -70,6 +71,14 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     action:
       "Regenerate generated files by running the owning kernel command, then commit the updated output.",
     docRef: "docs/authoring/generated-files-and-templates.md",
+  },
+  {
+    ruleId: "INTAKE-34",
+    action:
+      "Align the declared mediaType (or the filename) with the asset's actual bytes — the sniffed signature is authoritative; regenerate the asset only when the payload itself is wrong.",
+    docRef:
+      "docs/rfcs/rfc-1368-verify-declared-asset-media-types-against-magic-bytes-during-intake-validation.md",
+    targetFiles: ["onboarding/<id>/.input/intake/intake.json"],
   },
   {
     ruleId: "RAUT-01",
