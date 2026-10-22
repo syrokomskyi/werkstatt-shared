@@ -11,12 +11,12 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1306: KernelRuntimeContext.invoke — optional host-populated command-execution port (KernelInvokeCommand) for in-process sibling-command delegation; absent under autonomous hosts so commands fail closed.</item>
   <item>RFC-1306: review-r1 — io-native writes, cacheable off on chain generators, EVIDENCE-SYNC-02 on invoke throws</item>
   <item>RFC-1327: run-twice idempotency — declarations, command.idempotency.validate, rerun tests, reconcile/ship/abort convergence fixes</item>
   <item>RFC-1354: review r1 — AC-1 regression test via executeKernelCommand, delegated-write attribution docs on mutatesState, site-to-system ownership tokens, requiresNetwork on remote commands, execOnReadOnly wording</item>
   <item>RFC-1354: review r2 — approved/info; closes three info notes: requiresNetwork on remaining remote commands, ForgeCommandMetadata mirror JSDoc, baseline widened to full module-slice blind spot</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303</history>
+  <item>RFC-1366: kernel resolves mission workpieceEnv + KERNEL-ENV-01 gate on required envInputs</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306</history>
 </CHANGE_SUMMARY>
 */
 
@@ -91,6 +91,17 @@ export interface KernelCommandInput {
  */
 export type KernelCommandCoverage = "operator" | "ci" | "delegated";
 
+/**
+ * RFC-1366: a declared env input — `name` matches `^[A-Z_][A-Z0-9_]*$`;
+ * `required: true` names are enforced by the kernel's KERNEL-ENV-01
+ * pre-handler gate (process.env → workpieceEnv, empty string = absent);
+ * `required: false` entries participate only in the result-cache digest.
+ */
+export interface EnvInputDecl {
+  name: string;
+  required: boolean;
+}
+
 export interface KernelCommandMetadata {
   description: string;
   scope: KernelCommandScope;
@@ -151,8 +162,12 @@ export interface KernelCommandMetadata {
    * environment. Names only (`^[A-Z_][A-Z0-9_]*$`). Undeclared env reads on a
    * cacheable command emit ENV-INPUT-01 (error); on non-cacheable commands,
    * a warning.
+   * RFC-1366: entries carry `required` — the kernel's KERNEL-ENV-01 gate
+   * resolves `required: true` names against `process.env` then
+   * `context.workpieceEnv` (empty string counts as absent) before the
+   * handler runs. `required: false` entries are digest-only.
    */
-  envInputs?: string[];
+  envInputs?: EnvInputDecl[];
   /**
    * RFC-1303: directory prefixes (e.g. `".cache/"`) that this
    * `mutatesState: false` command may legitimately write — cache-class
