@@ -11,11 +11,11 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1306: review-r1 — io-native writes, cacheable off on chain generators, EVIDENCE-SYNC-02 on invoke throws</item>
   <item>RFC-1327: run-twice idempotency — declarations, command.idempotency.validate, rerun tests, reconcile/ship/abort convergence fixes</item>
   <item>RFC-1354: review r1 — AC-1 regression test via executeKernelCommand, delegated-write attribution docs on mutatesState, site-to-system ownership tokens, requiresNetwork on remote commands, execOnReadOnly wording</item>
   <item>RFC-1354: review r2 — approved/info; closes three info notes: requiresNetwork on remaining remote commands, ForgeCommandMetadata mirror JSDoc, baseline widened to full module-slice blind spot</item>
   <item>RFC-1366: kernel resolves mission workpieceEnv + KERNEL-ENV-01 gate on required envInputs</item>
+  <item>RFC-1366: review r1 — conditional fulfill creds, io.exists port, env-resolution contract alignment</item>
   <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306</history>
 </CHANGE_SUMMARY>
 */
@@ -440,11 +440,12 @@ export interface KernelRuntimeContext {
    */
   ownershipMap?: GeneratorOwnershipEntry[];
   /**
-   * RFC-1126: parsed `.env` of the resolved site workspace (mission workpiece
-   * for mission.* commands, cache clone otherwise). Populated by the executor
-   * from `context.site.directory/.env` via dotenv.parse; absent or empty when
-   * no site is resolved or no .env exists. Fallback only — `process.env`
-   * always wins: `process.env["KEY"] ?? context.workpieceEnv?.get("KEY")`.
+   * RFC-1126/1366: parsed `.env` of the resolved workspace — the site's `.env`
+   * for app-scoped commands, `missions/<id>/workpiece/.env` when `--mission`
+   * resolves on any command. Populated by `executeRegisteredCommand`; absent
+   * or empty when no site/mission resolves or no .env exists. Fallback only —
+   * `process.env` always wins: `process.env["KEY"] || context.workpieceEnv?.get("KEY")`
+   * (`||`, not `??` — an empty-string process value counts as absent).
    */
   workpieceEnv?: ReadonlyMap<string, string>;
   /**
