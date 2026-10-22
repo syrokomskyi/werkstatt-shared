@@ -19,6 +19,7 @@ export that producers vendor byte-exact
   <item>Zod is the source of truth (spec D2)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1357/AMD-012: first-fold art direction — required visual.artDirection (firstFold composition/surface/textSide/imageSubject/slotRef, imagery style/avoid, mockAssetRef); slotBriefs gain required placement + subjectKind and optional framing; subjectKind ⇔ role schema binding (represented-product only on depicts-represented-product); LAYOUT_VOCABULARY export for INTAKE-30.</item>
   <item>RFC-1353/AMD-011: faq block — intakeFaqTopicSchema/intakeFaqEntrySchema (status conditionals), faqEntryTier(), envelope faq:, provenance.familyQuestionsSnapshot.</item>
   <item>RFC-1345/AMD-009: v2 asset cut — origin gains `extracted` (+derivedFrom provenance, schema-required iff extracted); `mediaHints` on kind:document; `depicts` required on image-bearing kinds (photo/product-photo/illustration); rights.gapRef replaced by rights.blockers[]; export title corrected to "Werkstatt Intake v2 envelope" in the pbpEntitySchemas branch.</item>
   <item>RFC-1342/AMD-007: werkstatt:intake/v2 cut — gap.kind typed (proof/rights/approval/scope-extension/operational); annotation gapRef replaced by blockers[] (≥1 on every non-published non-internal entity, schema-level) + ceiling draft|preview; operatorDecisions gain required effect plus appliesTo and grantsTier (conditional superRefine); pageSetIntent gains optional entityRefs; voice profile toneOfVoice/culturalRules non-null again; INTAKE-13 coverage widened to ceiling:preview entities.</item>
@@ -347,9 +348,72 @@ const INTAKE_VISUAL_AXES_KEYS = [
   "borderWeight",
 ] as const;
 
+/**
+ * RFC-1357/AMD-012: the closed page-layout vocabulary refused inside image
+ * prompts and art-direction subject/style prose (INTAKE-30) — image models
+ * render layout words literally (the dp7 "rounded-corner panel" failure).
+ * Whole-word / whole-phrase, case-insensitive. Exported so the validator and
+ * the AMD text share one list.
+ */
+export const LAYOUT_VOCABULARY = [
+  "headline",
+  "heading",
+  "text overlay",
+  "overlay",
+  "layout",
+  "web page",
+  "website",
+  "user interface",
+  "ui",
+  "panel",
+  "rounded corner",
+  "rounded-corner",
+  "mockup",
+  "mock-up",
+  "banner",
+  "reserved for",
+  "negative space for",
+  "copy space for",
+] as const;
+
+/**
+ * RFC-1357/AMD-012: the approved first-fold direction decided at G-V — an
+ * abstract vocabulary (`text-beside-image`, not a Werkstatt prop name) that
+ * `biome.from-intake` maps onto hero variants. `slotRef` is present iff
+ * `composition` is not `text-only` (INTAKE-33).
+ */
+export const artDirectionSchema = z
+  .object({
+    firstFold: z
+      .object({
+        composition: z.enum(["text-beside-image", "text-over-image", "text-only"]),
+        surface: z.enum(["light", "dark"]),
+        textSide: z.enum(["left", "right"]),
+        /** What the first-fold image shows — no layout words (INTAKE-30). */
+        imageSubject: z.string().min(1).max(240),
+        /** The first-fold slot brief id (INTAKE-31/33). */
+        slotRef: z.string().regex(/^SLOT-[0-9]{2,}$/).optional(),
+      })
+      .strict(),
+    imagery: z
+      .object({
+        /** Light, lens, materials, palette mood — no layout words. */
+        style: z.string().min(1).max(400),
+        avoid: z.array(z.string().min(1)).max(10).optional(),
+      })
+      .strict(),
+    /** The approved first-fold mock (`kind: mood`) of the chosen concept. */
+    mockAssetRef: z.string().regex(/^AST-[0-9]{2,}$/),
+  })
+  .strict();
+
+export type IntakeArtDirection = z.infer<typeof artDirectionSchema>;
+
 const visualSchema = z
   .object({
     conceptId: z.string(),
+    /** RFC-1357/AMD-012: the operator-approved first-fold direction. */
+    artDirection: artDirectionSchema,
     rejectedConceptIds: z.array(z.string()).optional(),
     axes: z.looseObject(
       Object.fromEntries(INTAKE_VISUAL_AXES_KEYS.map((key) => [key, z.unknown()])) as Record<
@@ -692,12 +756,49 @@ const slotBriefRoleSchema = z.enum([
   "depicts-represented-product",
 ]);
 
+/**
+ * RFC-1357/AMD-012: what a slot's image depicts — the `depicts.kind`
+ * vocabulary minus brand-mark/abstract, so slot ↔ section-slot compatibility
+ * is a mechanical `subjectKind` vs `imageSlots[].depicts` check (COMP-SLOT-01).
+ */
+export const intakeSubjectKindSchema = z.enum([
+  "atmosphere",
+  "illustration",
+  "people",
+  "place",
+  "represented-product",
+]);
+
 export const intakeSlotBriefSchema = z
   .object({
     id: z.string().regex(/^SLOT-[0-9]{2,}$/),
     /** A `classification.pageSetIntent[].intent` entry (INTAKE-25). */
     intent: z.string().min(1),
     role: slotBriefRoleSchema,
+    /**
+     * RFC-1357/AMD-012: where on a page the slot lands. `slotKind` is the
+     * section-slot shape (background/feature/portrait/card-image) — it does
+     * NOT name a prop (`slotKind: portrait` ≠ `portraitImage`).
+     */
+    placement: z
+      .object({
+        surface: z.enum(["first-fold", "section", "card"]),
+        slotKind: z.enum(["background", "feature", "portrait", "card-image"]),
+      })
+      .strict(),
+    /** The `depicts.kind` vocabulary entry the fulfilled asset must carry. */
+    subjectKind: intakeSubjectKindSchema,
+    /**
+     * The only carrier of composition intent for the image itself —
+     * positioning hints fulfilment translates into photographic language.
+     */
+    framing: z
+      .object({
+        subjectPosition: z.enum(["left-third", "center", "right-third"]).optional(),
+        copySpace: z.enum(["left", "right", "top", "none"]).optional(),
+      })
+      .strict()
+      .optional(),
     /** Short label rendered on the deterministic register placeholder. */
     label: z.string().min(1),
     /**
@@ -719,6 +820,25 @@ export const intakeSlotBriefSchema = z
   })
   .strict()
   .superRefine((brief, ctx) => {
+    // RFC-1357/AMD-012: subjectKind ⇔ role binding — `represented-product`
+    // is permitted only on (and required of) `depicts-represented-product`
+    // briefs, so COMP-SLOT-01 can trust the subjectKind alone.
+    if (brief.subjectKind === "represented-product" && brief.role !== "depicts-represented-product") {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "subjectKind 'represented-product' is permitted only on role 'depicts-represented-product'",
+        path: ["subjectKind"],
+      });
+    }
+    if (brief.role === "depicts-represented-product" && brief.subjectKind !== "represented-product") {
+      ctx.addIssue({
+        code: "custom",
+        message:
+          "role 'depicts-represented-product' requires subjectKind 'represented-product'",
+        path: ["subjectKind"],
+      });
+    }
     if (brief.role !== "depicts-represented-product") return;
     if (brief.prompt !== undefined) {
       ctx.addIssue({

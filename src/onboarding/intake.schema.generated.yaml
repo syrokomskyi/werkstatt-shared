@@ -551,6 +551,65 @@ properties:
     properties:
       conceptId:
         type: string
+      artDirection:
+        type: object
+        properties:
+          firstFold:
+            type: object
+            properties:
+              composition:
+                type: string
+                enum:
+                  - text-beside-image
+                  - text-over-image
+                  - text-only
+              surface:
+                type: string
+                enum:
+                  - light
+                  - dark
+              textSide:
+                type: string
+                enum:
+                  - left
+                  - right
+              imageSubject:
+                type: string
+                minLength: 1
+                maxLength: 240
+              slotRef:
+                type: string
+                pattern: ^SLOT-[0-9]{2,}$
+            required:
+              - composition
+              - surface
+              - textSide
+              - imageSubject
+            additionalProperties: false
+          imagery:
+            type: object
+            properties:
+              style:
+                type: string
+                minLength: 1
+                maxLength: 400
+              avoid:
+                maxItems: 10
+                type: array
+                items:
+                  type: string
+                  minLength: 1
+            required:
+              - style
+            additionalProperties: false
+          mockAssetRef:
+            type: string
+            pattern: ^AST-[0-9]{2,}$
+        required:
+          - firstFold
+          - imagery
+          - mockAssetRef
+        additionalProperties: false
       rejectedConceptIds:
         type: array
         items:
@@ -624,6 +683,7 @@ properties:
         type: string
     required:
       - conceptId
+      - artDirection
       - axes
       - palette
       - fonts
@@ -882,6 +942,51 @@ properties:
             - atmosphere
             - illustration
             - depicts-represented-product
+        placement:
+          type: object
+          properties:
+            surface:
+              type: string
+              enum:
+                - first-fold
+                - section
+                - card
+            slotKind:
+              type: string
+              enum:
+                - background
+                - feature
+                - portrait
+                - card-image
+          required:
+            - surface
+            - slotKind
+          additionalProperties: false
+        subjectKind:
+          type: string
+          enum:
+            - atmosphere
+            - illustration
+            - people
+            - place
+            - represented-product
+        framing:
+          type: object
+          properties:
+            subjectPosition:
+              type: string
+              enum:
+                - left-third
+                - center
+                - right-third
+            copySpace:
+              type: string
+              enum:
+                - left
+                - right
+                - top
+                - none
+          additionalProperties: false
         label:
           type: string
           minLength: 1
@@ -913,6 +1018,8 @@ properties:
         - id
         - intent
         - role
+        - placement
+        - subjectKind
         - label
       additionalProperties: false
   faq:

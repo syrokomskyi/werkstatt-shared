@@ -28,6 +28,7 @@ ledgers per RFC-1343/AMD-008).
   <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
   <item>RFC-1317: step 5: docs sync + Compass header repair — AGENTS.md onboarding composer contract, technology.xml/knowledge-graph.xml nodes, app-onboarding-guide commands, regenerated command/ecosystem manifests, /MODULE_CONTRACT closers + KD trims on RFC-1317 files</item>
   <item>RFC-1336: answeredBy/delegatedBy/delegationId provenance fields (strict parity with the spec's if/then) — agent:<id> answers require delegation provenance.</item>
+  <item>RFC-1357/AMD-012: ONBOARDING_DECISION_TOPICS gains art-direction-deviation — the answered-entry escape for departing from visual.artDirection.firstFold (COMP-ARTDIR-01 cites the field in refs).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -52,6 +53,11 @@ export const ONBOARDING_DECISION_TOPICS = [
    * `Approve` gates `asset.slot.fulfill` (post-approval image fulfilment).
    */
   "visual-review",
+  /**
+   * RFC-1357: an answered entry citing an `artDirection.firstFold` field is
+   * the only way a composed hero may deviate from the intake art direction.
+   */
+  "art-direction-deviation",
   "auto-resolved-log",
 ] as const;
 
