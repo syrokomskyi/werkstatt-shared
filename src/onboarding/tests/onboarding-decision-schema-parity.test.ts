@@ -12,11 +12,10 @@ the entry-level $ref resolves, mirroring intake-schema-parity.test.ts.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1357/AMD-012: +1 fixture — art-direction-deviation topic pins the closed enum on both schema sides.</item>
   <item>RFC-1343/AMD-008: +7 fixtures — rulesVersion literal, rulingRefs pattern, option tier enum, override reason enum + evidence min-1.</item>
-  <item>RFC-1317: created — 11-fixture Zod/JSON-Schema verdict-parity test.</item>
-  <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
-  <item>RFC-1317: step 5: docs sync + Compass header repair — AGENTS.md onboarding composer contract, technology.xml/knowledge-graph.xml nodes, app-onboarding-guide commands, regenerated command/ecosystem manifests, /MODULE_CONTRACT closers + KD trims on RFC-1317 files</item>
   <item>RFC-1317: review r1 — negative date-time fixtures (bad-createdAt, bad-answeredAt).</item>
+  <history>RFC-1317</history>
 </CHANGE_SUMMARY>
 */
 
@@ -284,6 +283,22 @@ const FIXTURES: ParityFixture[] = [
       (l.items as Record<string, unknown>[])[0].overrides = [
         { ruling: "OPD-08", reason: "ruling-out-of-scope" },
       ];
+      return l;
+    },
+  },
+  // ─── RFC-1357/AMD-012: the art-direction-deviation topic (enum drift pin)
+  {
+    name: "valid-art-direction-deviation-entry",
+    build: () => {
+      const l = baseLedger();
+      const entry = openEntry();
+      entry.topic = "art-direction-deviation";
+      entry.refs = ["artDirection.firstFold.surface"];
+      entry.status = "answered";
+      entry.resolutionPath = "evidence";
+      entry.answer = "Approved — dark hero despite the light direction, see evidence.";
+      entry.answeredAt = "2026-10-17T12:05:00Z";
+      l.items = [entry];
       return l;
     },
   },

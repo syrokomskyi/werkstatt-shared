@@ -11,11 +11,11 @@ from docs/specs/werkstatt-onboarding/schemas/ and compiled with Ajv
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1357/AMD-012: baseEnvelope carries the required visual.artDirection + SLOT-01 brief + mood mock — the positive fixture asserts true parity again; +2 fixtures (artDirection-missing, subjectKind⇔role zodOnly).</item>
   <item>RFC-1346/AMD-010: registered intake-slot-brief.schema.yaml with Ajv — the envelope now cross-refs slot briefs.</item>
   <item>RFC-1342/AMD-007: parity set migrated to v2 — wrong-schema-const targets the retired v1 major; new fixtures cover gap.kind, decision effect/grantsTier conditionals, empty blockers (the draft⇒blockers correlation is Zod-only — the vendored schema cannot key annotations to pbp ids, per AMD-007).</item>
-  <item>RFC-1281: created — 13-fixture Zod/JSON-Schema verdict-parity test.</item>
-  <item>RFC-1281: intake contract and onboarding.intake.validate</item>
   <item>ADR-0114: review fixes: runtime-parity navIds, naming-bound ledger cover, supported-locale legal loop, scaffold-keyed LEGAL-JUR-02, spec schema parity</item>
+  <history>RFC-1281</history>
 </CHANGE_SUMMARY>
 */
 
@@ -162,7 +162,30 @@ function baseEnvelope(): Record<string, unknown> {
         },
       ],
       rationale: "quiet, factual",
+      // AMD-012/RFC-1357: approved first-fold art direction — required.
+      artDirection: {
+        firstFold: {
+          composition: "text-beside-image",
+          surface: "light",
+          textSide: "left",
+          imageSubject: "quiet workshop interior, morning light",
+          slotRef: "SLOT-01",
+        },
+        imagery: { style: "documentary photography, muted palette" },
+        mockAssetRef: "AST-02",
+      },
     },
+    slotBriefs: [
+      {
+        id: "SLOT-01",
+        intent: "home",
+        role: "atmosphere",
+        placement: { surface: "first-fold", slotKind: "background" },
+        subjectKind: "atmosphere",
+        label: "First fold backdrop",
+        prompt: "soft morning light over quiet workbenches",
+      },
+    ],
     assets: [
       {
         id: "AST-01",
@@ -176,6 +199,22 @@ function baseEnvelope(): Record<string, unknown> {
           model: "flux-1",
           promptSha256: SHA,
           generatedAt: "2026-10-15T10:00:00Z",
+        },
+      },
+      {
+        id: "AST-02",
+        kind: "mood",
+        file: `assets/${"c".repeat(64)}.webp`,
+        sha256: "sha256:" + "c".repeat(64),
+        mediaType: "image/webp",
+        origin: "generated",
+        rights: { state: "generated" },
+        depicts: { kind: "atmosphere" },
+        generator: {
+          model: "flux-1",
+          promptSha256: SHA,
+          generatedAt: "2026-10-15T10:00:00Z",
+          conceptId: "concept-1",
         },
       },
     ],
@@ -395,6 +434,25 @@ const FIXTURES: ParityFixture[] = [
       const profile = (e.voice as Record<string, Record<string, unknown>>).profile;
       profile.toneOfVoice = null;
       profile.culturalRules = null;
+      return e;
+    },
+  },
+  {
+    name: "artDirection-missing",
+    build: () => {
+      const e = baseEnvelope();
+      delete (e.visual as Record<string, unknown>).artDirection;
+      return e;
+    },
+  },
+  {
+    name: "subjectKind-role-mismatch",
+    zodOnly: true,
+    build: () => {
+      const e = baseEnvelope();
+      // represented-product is permitted only on depicts-represented-product —
+      // a superRefine correlation the generated JSON-schema cannot express.
+      (e.slotBriefs as Record<string, unknown>[])[0].subjectKind = "represented-product";
       return e;
     },
   },

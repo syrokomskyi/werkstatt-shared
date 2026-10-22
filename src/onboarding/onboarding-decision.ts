@@ -24,11 +24,10 @@ ledgers per RFC-1343/AMD-008).
 <CHANGE_SUMMARY>
   <item>RFC-1346/AMD-010: ONBOARDING_DECISION_TOPICS gains visual-review — the answered Approve gate for asset.slot.fulfill.</item>
   <item>RFC-1343/AMD-008: option tier enum, entry rulingRefs/recommendedOption/overrides (closed reason enum, evidence min 1), ledger rulesVersion (absent = 1) — additive, v1 ledgers still parse.</item>
-  <item>RFC-1317: created — ONBOARDING_DECISION_SCHEMA_ID, topic/resolutionPath/status tuples, entry + ledger schemas, inferred types.</item>
-  <item>RFC-1317: step 1 — onboarding-decision Zod contract + parity test</item>
-  <item>RFC-1317: step 5: docs sync + Compass header repair — AGENTS.md onboarding composer contract, technology.xml/knowledge-graph.xml nodes, app-onboarding-guide commands, regenerated command/ecosystem manifests, /MODULE_CONTRACT closers + KD trims on RFC-1317 files</item>
   <item>RFC-1336: answeredBy/delegatedBy/delegationId provenance fields (strict parity with the spec's if/then) — agent:<id> answers require delegation provenance.</item>
   <item>RFC-1357/AMD-012: ONBOARDING_DECISION_TOPICS gains art-direction-deviation — the answered-entry escape for departing from visual.artDirection.firstFold (COMP-ARTDIR-01 cites the field in refs).</item>
+  <item>RFC-1357: resolve rfc-1357 review r1 — canonical items[].image slot paths, INTAKE-31 home-intent binding, text-only biome derivation, fail-closed artDirection, supported-locale coverage, refs-only waiver citations</item>
+  <history>RFC-1317</history>
 </CHANGE_SUMMARY>
 */
 
