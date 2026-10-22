@@ -8,6 +8,7 @@ undefined so callers can apply their own policy.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1368 review r2: pdf window-scan pins — binary-junk prefix detects pdf; printable-prose and in-markup %PDF- mentions stay non-pdf.</item>
   <item>RFC-1368: created — full signature matrix + negatives; review r1 — generic-XML/lookalike prolog regressions.</item>
 </CHANGE_SUMMARY>
 */
@@ -47,6 +48,15 @@ const SVG_FULL_PROLOG = new TextEncoder().encode(
 const GENERIC_XML = new TextEncoder().encode(`<?xml version="1.0"?><config a="1"/>`);
 const XML_NO_PROLOG = new TextEncoder().encode(`<rss version="2.0"></rss>`);
 const SVG_LOOKALIKE = new TextEncoder().encode(`<svgx not-svg="1"/>`);
+const PDF_JUNK_PREFIX = new Uint8Array([
+  0x00,
+  0x0f,
+  0xf0,
+  0x0a,
+  ...new TextEncoder().encode(`%PDF-1.7`),
+]);
+const PDF_PROSE_MENTION = new TextEncoder().encode(`release notes: export as %PDF-1.4 next`);
+const SVG_PDF_MENTION = new TextEncoder().encode(`<svg><!-- was %PDF-1.4 --></svg>`);
 const UNKNOWN_BIN = new Uint8Array([0x00, 0x11, 0x22, 0x33, 0x44, 0x55]);
 const TEXT = new TextEncoder().encode(`# A markdown asset\n`);
 
@@ -57,6 +67,7 @@ describe("sniffMediaType — signature coverage", () => {
     ["image/gif", GIF],
     ["image/webp", WEBP],
     ["application/pdf", PDF],
+    ["application/pdf", PDF_JUNK_PREFIX],
     ["image/avif", AVIF],
     ["video/mp4", MP4],
     ["video/webm", WEBM],
@@ -111,5 +122,13 @@ describe("sniffMediaType — negatives", () => {
 
   it("a tag merely starting with 'svg' is NOT svg — the root boundary is checked", () => {
     expect(sniffMediaType(SVG_LOOKALIKE)).toBeUndefined();
+  });
+
+  it("a %PDF- token inside printable prose is NOT pdf — the header needs a binary prefix", () => {
+    expect(sniffMediaType(PDF_PROSE_MENTION)).toBeUndefined();
+  });
+
+  it("markup mentioning %PDF- stays markup, never pdf", () => {
+    expect(sniffMediaType(SVG_PDF_MENTION)).toBe("image/svg+xml");
   });
 });

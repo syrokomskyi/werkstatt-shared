@@ -6,11 +6,12 @@ accept/reject verdicts on the fixture parity set. Spec schemas are loaded
 from docs/specs/werkstatt-onboarding/schemas/ and compiled with Ajv
 (draft 2020-12 + formats), mirroring how a producer's vendored copy behaves.</purpose>
 <non-goals>
-  <item>Do not exercise bundle-level INTAKE-01…20 rules — those are engine-side.</item>
+  <item>Do not exercise bundle-level INTAKE-01…34 rules — those are engine-side.</item>
   <item>Do not mutate the spec schemas — they are the normative reference.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1368 review r2: non-goal rule range updated to INTAKE-01…34.</item>
   <item>RFC-1357/AMD-012: baseEnvelope carries the required visual.artDirection + SLOT-01 brief + mood mock — the positive fixture asserts true parity again; +2 fixtures (artDirection-missing, subjectKind⇔role zodOnly).</item>
   <item>RFC-1346/AMD-010: registered intake-slot-brief.schema.yaml with Ajv — the envelope now cross-refs slot briefs.</item>
   <item>RFC-1342/AMD-007: parity set migrated to v2 — wrong-schema-const targets the retired v1 major; new fixtures cover gap.kind, decision effect/grantsTier conditionals, empty blockers (the draft⇒blockers correlation is Zod-only — the vendored schema cannot key annotations to pbp ids, per AMD-007).</item>

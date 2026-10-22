@@ -11,6 +11,7 @@ default unknown signatures.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1368 review r2: %PDF- detection widened to the spec's first-1024-bytes window — guarded so markup-led payloads and printable-prose mentions never sniff as pdf (a binary prefix byte is required when the header is not at the canonical post-BOM/whitespace offset).</item>
   <item>RFC-1368: created — sniffMediaType single-sources the magic-byte signature table (png/jpeg/gif/webp/svg/pdf/avif/mp4/webm/woff/woff2) for INTAKE-34 plus the visual-review/asset-quality consumers; review r1 — prolog handling constrained so generic XML no longer sniffs as image/svg+xml.</item>
 </CHANGE_SUMMARY>
 */
@@ -60,10 +61,24 @@ export function sniffMediaType(head: Uint8Array): string | undefined {
   if (ascii(head, 0, 4) === "wOF2") return "font/woff2";
 
   // Markup-class + PDF: a UTF-8 BOM then ASCII whitespace may precede the
-  // signature; generators also prefix PDF headers with stray whitespace.
+  // signature. The PDF spec tolerates the %PDF- header anywhere in the first
+  // 1024 bytes (linearized/spool outputs prepend binary junk). Two guards
+  // keep that honest: markup-led payloads that merely mention %PDF- are not
+  // PDFs, and a purely printable-text prefix means the token is prose, not a
+  // header — the junk prefix must carry a non-text byte.
   let i = hasPrefix(head, [0xef, 0xbb, 0xbf]) ? 3 : 0;
   while (i < head.length && ASCII_WS.has(head[i])) i++;
-  if (ascii(head, i, 5) === "%PDF-") return "application/pdf";
+  if (head[i] !== 0x3c) {
+    const pdfIdx = indexOfSequence(head, "%PDF-", 0);
+    if (pdfIdx >= 0 && pdfIdx < 1024) {
+      let binaryPrefix = pdfIdx === i;
+      for (let j = i; !binaryPrefix && j < pdfIdx; j++) {
+        const b = head[j];
+        if (b === 0 || b >= 0x7f || (b < 0x20 && !ASCII_WS.has(b))) binaryPrefix = true;
+      }
+      if (binaryPrefix) return "application/pdf";
+    }
+  }
 
   // Legal SVG prologs may carry the <?xml PI, comments, DOCTYPE, or other
   // declarations before the root tag — skip a bounded run of prolog segments,

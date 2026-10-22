@@ -10,7 +10,7 @@ export that producers vendor byte-exact
 (intake.schema.generated.yaml, owner command onboarding.intake.schema.export).</purpose>
 <non-goals>
   <item>Do not redeclare PBP entity shapes (DNA-103) — full entity validation runs in @warpgogol/werkstatt-engine via pbpSchemaById (INTAKE-03); this package cannot import @warpgogol/pbp without a dependency cycle.</item>
-  <item>Do not touch the filesystem or run bundle-level checks — INTAKE-01…11 live in @warpgogol/werkstatt-engine.</item>
+  <item>Do not touch the filesystem or run bundle-level checks — INTAKE-01…34 live in @warpgogol/werkstatt-engine.</item>
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
@@ -19,6 +19,7 @@ export that producers vendor byte-exact
   <item>Zod is the source of truth (spec D2)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1368 review r2: non-goal rule range updated to INTAKE-01…34.</item>
   <item>RFC-1357/AMD-012: first-fold art direction — required visual.artDirection (firstFold composition/surface/textSide/imageSubject/slotRef, imagery style/avoid, mockAssetRef); slotBriefs gain required placement + subjectKind and optional framing; subjectKind ⇔ role schema binding (represented-product only on depicts-represented-product); LAYOUT_VOCABULARY export for INTAKE-30.</item>
   <item>RFC-1353/AMD-011: faq block — intakeFaqTopicSchema/intakeFaqEntrySchema (status conditionals), faqEntryTier(), envelope faq:, provenance.familyQuestionsSnapshot.</item>
   <item>RFC-1345/AMD-009: v2 asset cut — origin gains `extracted` (+derivedFrom provenance, schema-required iff extracted); `mediaHints` on kind:document; `depicts` required on image-bearing kinds (photo/product-photo/illustration); rights.gapRef replaced by rights.blockers[]; export title corrected to "Werkstatt Intake v2 envelope" in the pbpEntitySchemas branch.</item>
