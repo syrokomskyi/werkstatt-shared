@@ -11,8 +11,7 @@ default unknown signatures.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1368: created — sniffMediaType covering the intake asset signature set (png/jpeg/gif/webp/svg/pdf/avif/mp4/webm/woff/woff2).</item>
-  <item>RFC-1368: INTAKE-34 — declared asset mediaType verified against magic bytes at intake birth; shared sniffMediaType single-sources the signature table (werkstatt-shared/media), visual-review + asset-quality local copies removed</item>
+  <item>RFC-1368: created — sniffMediaType single-sources the magic-byte signature table (png/jpeg/gif/webp/svg/pdf/avif/mp4/webm/woff/woff2) for INTAKE-34 plus the visual-review/asset-quality consumers; review r1 — prolog handling constrained so generic XML no longer sniffs as image/svg+xml.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -26,10 +25,21 @@ const ascii = (head: Uint8Array, offset: number, length: number): string =>
 
 const ASCII_WS = new Set([0x20, 0x09, 0x0a, 0x0d]);
 
+/** Offset of `seq` inside `head` at or after `from`, or -1. */
+const indexOfSequence = (head: Uint8Array, seq: string, from: number): number => {
+  const bytes = [...seq].map((c) => c.charCodeAt(0));
+  outer: for (let i = from; i + bytes.length <= head.length; i++) {
+    for (let j = 0; j < bytes.length; j++) if (head[i + j] !== bytes[j]) continue outer;
+    return i;
+  }
+  return -1;
+};
+
 /**
  * Media type from a payload's leading bytes, or `undefined` when no known
- * signature matches. `head` need only carry the signature window — 16 bytes
- * covers every entry; callers already holding the full buffer pass it whole.
+ * signature matches. `head` need only carry the signature window — 64 bytes
+ * covers every entry including comment/doctype-led markup; callers already
+ * holding the full buffer pass it whole.
  */
 export function sniffMediaType(head: Uint8Array): string | undefined {
   // ISO-BMFF family: size(4) "ftyp" major-brand(4) — avif/heic cousins share
@@ -44,17 +54,51 @@ export function sniffMediaType(head: Uint8Array): string | undefined {
   if (hasPrefix(head, [0xff, 0xd8, 0xff])) return "image/jpeg";
   if (ascii(head, 0, 4) === "GIF8") return "image/gif";
   if (ascii(head, 0, 4) === "RIFF" && ascii(head, 8, 4) === "WEBP") return "image/webp";
-  if (ascii(head, 0, 5) === "%PDF-") return "application/pdf";
   // EBML header — Matroska shares it; the intake set only permits WebM.
   if (hasPrefix(head, [0x1a, 0x45, 0xdf, 0xa3])) return "video/webm";
   if (ascii(head, 0, 4) === "wOFF") return "font/woff";
   if (ascii(head, 0, 4) === "wOF2") return "font/woff2";
 
-  // Markup-class: a UTF-8 BOM then ASCII whitespace may precede the tag.
+  // Markup-class + PDF: a UTF-8 BOM then ASCII whitespace may precede the
+  // signature; generators also prefix PDF headers with stray whitespace.
   let i = hasPrefix(head, [0xef, 0xbb, 0xbf]) ? 3 : 0;
   while (i < head.length && ASCII_WS.has(head[i])) i++;
-  const tag = ascii(head, i, 5);
-  if (tag.startsWith("<svg") || tag.startsWith("<?xml")) return "image/svg+xml";
+  if (ascii(head, i, 5) === "%PDF-") return "application/pdf";
+
+  // Legal SVG prologs may carry the <?xml PI, comments, DOCTYPE, or other
+  // declarations before the root tag — skip a bounded run of prolog segments,
+  // then demand the <svg root. Generic XML never classifies as SVG.
+  for (let guard = 0; guard < 8 && i < head.length; guard++) {
+    if (ascii(head, i, 2) === "<?") {
+      const end = indexOfSequence(head, "?>", i + 2);
+      if (end < 0) return undefined;
+      i = end + 2;
+    } else if (ascii(head, i, 4) === "<!--") {
+      const end = indexOfSequence(head, "-->", i + 4);
+      if (end < 0) return undefined;
+      i = end + 3;
+    } else if (ascii(head, i, 2) === "<!") {
+      // Internal-subset DOCTYPEs carry [ … ] — honor the bracket before `>`.
+      const bracket = head.indexOf(0x5b, i + 2);
+      const gt = head.indexOf(0x3e, i + 2);
+      if (bracket >= 0 && (gt < 0 || bracket < gt)) {
+        const end = indexOfSequence(head, "]>", bracket + 1);
+        if (end < 0) return undefined;
+        i = end + 2;
+      } else {
+        if (gt < 0) return undefined;
+        i = gt + 1;
+      }
+    } else {
+      break;
+    }
+    while (i < head.length && ASCII_WS.has(head[i])) i++;
+  }
+  if (ascii(head, i, 4) === "<svg") {
+    const next = head[i + 4];
+    if (next === undefined || ASCII_WS.has(next) || next === 0x3e || next === 0x2f)
+      return "image/svg+xml";
+  }
 
   return undefined;
 }

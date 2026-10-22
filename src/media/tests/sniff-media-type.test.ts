@@ -3,7 +3,13 @@
 <purpose>RFC-1368: signature-matrix tests for sniffMediaType — every media type
 the intake bundle permits is detected, and unknown/text-class payloads return
 undefined so callers can apply their own policy.</purpose>
+<non-goals>
+  <item>Do not test INTAKE-34 policy here — declared-vs-sniffed verdicts live in intake-validate.test.ts; this file pins signature detection only.</item>
+</non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1368: created — full signature matrix + negatives; review r1 — generic-XML/lookalike prolog regressions.</item>
+</CHANGE_SUMMARY>
 */
 
 import { describe, expect, it } from "vitest";
@@ -30,6 +36,17 @@ const SVG = new TextEncoder().encode(`<svg xmlns="http://www.w3.org/2000/svg"/>`
 const SVG_XML_PROLOG = new TextEncoder().encode(`<?xml version="1.0"?><svg/>`);
 const SVG_WS = new TextEncoder().encode(`  \n\t<svg/>`);
 const SVG_BOM = new Uint8Array([0xef, 0xbb, 0xbf, ...new TextEncoder().encode(`<svg/>`)]);
+const SVG_COMMENT = new TextEncoder().encode(`<!-- generated --><svg/>`);
+const SVG_DOCTYPE = new TextEncoder().encode(
+  `<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg/>`,
+);
+const SVG_DOCTYPE_SUBSET = new TextEncoder().encode(`<!DOCTYPE svg [ <!ENTITY x "y"> ]><svg/>`);
+const SVG_FULL_PROLOG = new TextEncoder().encode(
+  `<?xml version="1.0" encoding="UTF-8"?>\n<!-- c -->\n<svg/>`,
+);
+const GENERIC_XML = new TextEncoder().encode(`<?xml version="1.0"?><config a="1"/>`);
+const XML_NO_PROLOG = new TextEncoder().encode(`<rss version="2.0"></rss>`);
+const SVG_LOOKALIKE = new TextEncoder().encode(`<svgx not-svg="1"/>`);
 const UNKNOWN_BIN = new Uint8Array([0x00, 0x11, 0x22, 0x33, 0x44, 0x55]);
 const TEXT = new TextEncoder().encode(`# A markdown asset\n`);
 
@@ -49,6 +66,10 @@ describe("sniffMediaType — signature coverage", () => {
     ["image/svg+xml", SVG_XML_PROLOG],
     ["image/svg+xml", SVG_WS],
     ["image/svg+xml", SVG_BOM],
+    ["image/svg+xml", SVG_COMMENT],
+    ["image/svg+xml", SVG_DOCTYPE],
+    ["image/svg+xml", SVG_DOCTYPE_SUBSET],
+    ["image/svg+xml", SVG_FULL_PROLOG],
   ])("detects %s", (expected, bytes) => {
     expect(sniffMediaType(bytes)).toBe(expected);
   });
@@ -81,5 +102,14 @@ describe("sniffMediaType — negatives", () => {
       0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00, 0x41, 0x56, 0x49, 0x20,
     ]);
     expect(sniffMediaType(avi)).toBeUndefined();
+  });
+
+  it("generic XML with an <?xml prolog is NOT svg (review r1 false positive)", () => {
+    expect(sniffMediaType(GENERIC_XML)).toBeUndefined();
+    expect(sniffMediaType(XML_NO_PROLOG)).toBeUndefined();
+  });
+
+  it("a tag merely starting with 'svg' is NOT svg — the root boundary is checked", () => {
+    expect(sniffMediaType(SVG_LOOKALIKE)).toBeUndefined();
   });
 });

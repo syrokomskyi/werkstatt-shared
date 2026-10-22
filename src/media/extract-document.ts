@@ -19,6 +19,7 @@ inherit the source's blockers verbatim (extraction never upgrades rights).</purp
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1345/AMD-009: created — extractDocumentMedia + credit/register record builders.</item>
+  <item>RFC-1368 review r1: pngDimensions' local PNG_SIG guard replaced by sniffMediaType — the signature table stays single-sourced.</item>
   <item>RFC-1345: carry source-derived media from client documents through the intake as extracted assets</item>
 </CHANGE_SUMMARY>
 */
@@ -27,6 +28,7 @@ import { createHash } from "node:crypto";
 import { basename, join } from "node:path";
 
 import type { WorkspaceIO } from "../kernel/workspace-io.ts";
+import { sniffMediaType } from "./sniff-media-type.ts";
 import type { MaterialCredit } from "../schemas/material-credit.ts";
 import type {
   PublicationBlocker,
@@ -103,8 +105,7 @@ function sha256Tag(bytes: Uint8Array): string {
 
 /** Width/height of a PNG from its IHDR (bytes 16–24, big-endian). */
 export function pngDimensions(png: Uint8Array): { width: number; height: number } | null {
-  const PNG_SIG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
-  if (png.length < 24 || PNG_SIG.some((b, i) => png[i] !== b)) return null;
+  if (png.length < 24 || sniffMediaType(png) !== "image/png") return null;
   const view = new DataView(png.buffer, png.byteOffset, png.byteLength);
   return { width: view.getUint32(16), height: view.getUint32(20) };
 }
