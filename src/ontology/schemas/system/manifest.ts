@@ -6,6 +6,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1374: pseo autonomy scope sinceAt accepts YAML-native Date scalars via isoDateString — parse normalizes to ISO-8601 strings.</item>
   <item>RFC-1283: step 1 — publication.gate in systemManifestSchema
 
 Per-site PBP publication gate mode (warn | enforce, absent = warn) consumed
@@ -59,6 +60,7 @@ import { systemShellContractSchema } from "./shell-contract.ts";
 import { camAuthoritySchema } from "./authority.ts";
 import { resourceBudgetConfigSchema } from "../../../policy/resource-budget.ts";
 import { semanticPageTypeSchema, articleMetadataSchema, pageOutputSchema } from "./page-output.ts";
+import { isoDateString } from "../iso-date.ts";
 
 /**
  * The per-app system.yaml manifest. Binds the client app to its cosmic identity.
@@ -531,7 +533,7 @@ export const systemManifestSchema = z.object({
                       locale: z.string().min(1),
                       level: z.string().min(1).optional(),
                       ceiling: z.string().min(1).optional(),
-                      sinceAt: z.string().min(1).optional(),
+                      sinceAt: isoDateString(z.string().min(1)).optional(),
                       evidenceRef: z.string().min(1).optional(),
                     }),
                   )

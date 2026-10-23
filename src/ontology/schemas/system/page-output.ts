@@ -6,6 +6,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1374: articleMetadata publishedAt/updatedAt and sitemapProjection lastmod accept YAML-native Date scalars via isoDateString — parse normalizes to ISO-8601 strings.</item>
   <item>RFC-0303 Phase 3: extracted from schemas/system.ts as part of the domain split.</item>
   <item>RFC-1106: step 4 — single-source SemanticPageType
 
@@ -14,6 +15,8 @@ semanticPageTypeSchema (ontology/schemas/system/page-output.ts) is now the sole 
 */
 
 import { z } from "zod";
+
+import { isoDateString } from "../iso-date.ts";
 
 /**
  * RFC-0042/RFC-0050: the semantic role of a page. Drives semantic model
@@ -40,8 +43,8 @@ export const semanticPageTypeSchema = z.enum([
 /** RFC-0167: per-page article metadata (Article/BlogPosting JSON-LD + dates + author). */
 export const articleMetadataSchema = z
   .object({
-    publishedAt: z.string().min(1),
-    updatedAt: z.string().min(1).optional(),
+    publishedAt: isoDateString(z.string().min(1)),
+    updatedAt: isoDateString(z.string().min(1)).optional(),
     author: z.string().min(1).optional(),
     tags: z.array(z.string().min(1)).optional(),
   })
@@ -66,7 +69,7 @@ export const sitemapProjectionSchema = z.union([
     .object({
       include: z.boolean().optional(),
       category: z.string().min(1).optional(),
-      lastmod: z.string().min(1).optional(),
+      lastmod: isoDateString(z.string().min(1)).optional(),
       includeLastmod: z.boolean().optional(),
     })
     .strict(),
