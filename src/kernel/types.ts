@@ -11,13 +11,12 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1369: review round 2 — KernelInvokeCommand gains an optional { siteName } options bag so delegated calls can target app-scope children (argv --site never reaches ensureTargetSites)</item>
-  <item>RFC-1327: run-twice idempotency — declarations, command.idempotency.validate, rerun tests, reconcile/ship/abort convergence fixes</item>
   <item>RFC-1354: review r1 — AC-1 regression test via executeKernelCommand, delegated-write attribution docs on mutatesState, site-to-system ownership tokens, requiresNetwork on remote commands, execOnReadOnly wording</item>
   <item>RFC-1354: review r2 — approved/info; closes three info notes: requiresNetwork on remaining remote commands, ForgeCommandMetadata mirror JSDoc, baseline widened to full module-slice blind spot</item>
   <item>RFC-1366: kernel resolves mission workpieceEnv + KERNEL-ENV-01 gate on required envInputs</item>
   <item>RFC-1366: review r1 — conditional fulfill creds, io.exists port, env-resolution contract alignment</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306</history>
+  <item>RFC-1385: scoped closed-rebuild write mode for release.prepare</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1369</history>
 </CHANGE_SUMMARY>
 */
 
@@ -414,6 +413,13 @@ export interface KernelRuntimeContext {
    * `all` flag and passed the `acceptsAllFlag` gate.
    */
   allSites?: boolean;
+  /**
+   * RFC-1385: scoped closed-rebuild write mode — when true, the closed-workpiece
+   * guard admits mutating commands on `.closed` workpieces and journals their
+   * writes as `closedWrites`. Only `release.prepare` may bind this flag;
+   * commits stay blocked by the RFC-0878 workpiece hook.
+   */
+  allowClosedWrites?: boolean;
   outputFormat: KernelOutputFormat;
   /**
    * RFC-0267: the WorkspaceIO port. The executor selects the adapter:
@@ -600,6 +606,13 @@ export interface KernelExecutionReport<TData = unknown> {
    * node:fs, IO-01 baseline). Derived from the tracing adapter's WriteIntent[].
    */
   filesModified?: string[];
+  /**
+   * RFC-1385: workspace-root-relative paths written on a `.closed` workpiece
+   * while the scoped `allowClosedWrites` mode was bound — union of declared
+   * `writes[]` (resolved inside the site directory) and actual `filesModified`
+   * entries under it. Present only when the mode ran and the set is non-empty.
+   */
+  closedWrites?: string[];
   /** RFC-0390: true when this report was served from the command-result cache instead of real execution. */
   cached?: boolean;
   /**
@@ -695,6 +708,12 @@ export interface ExecuteKernelCommandOptions {
   siteExplicit?: boolean;
   /** RFC-1309: suppress registry/config loading preamble on stderr; command diagnostics are unaffected. */
   quiet?: boolean;
+  /**
+   * RFC-1385: permit mutating commands on `.closed` workpieces and journal
+   * their writes as `closedWrites`. Only `release.prepare` may set this —
+   * the flag is a scoped escape hatch, not a general CLI option.
+   */
+  allowClosedWrites?: boolean;
 }
 
 export interface ExecuteKernelPipelineOptions {
@@ -722,6 +741,12 @@ export interface ExecuteKernelPipelineOptions {
   collectErrors?: boolean;
   /** RFC-1309: suppress pipeline progressLine preamble on stderr; step diagnostics are unaffected. */
   quiet?: boolean;
+  /**
+   * RFC-1385: permit mutating steps on `.closed` workpieces and journal
+   * their writes as `closedWrites` on each step report. Only `release.prepare`
+   * may set this — the flag is a scoped escape hatch, not a CLI option.
+   */
+  allowClosedWrites?: boolean;
 }
 
 export interface SiteWorkspacesListResult {
