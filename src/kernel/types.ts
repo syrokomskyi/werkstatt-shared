@@ -11,12 +11,12 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1354: review r1 — AC-1 regression test via executeKernelCommand, delegated-write attribution docs on mutatesState, site-to-system ownership tokens, requiresNetwork on remote commands, execOnReadOnly wording</item>
   <item>RFC-1354: review r2 — approved/info; closes three info notes: requiresNetwork on remaining remote commands, ForgeCommandMetadata mirror JSDoc, baseline widened to full module-slice blind spot</item>
   <item>RFC-1366: kernel resolves mission workpieceEnv + KERNEL-ENV-01 gate on required envInputs</item>
   <item>RFC-1366: review r1 — conditional fulfill creds, io.exists port, env-resolution contract alignment</item>
   <item>RFC-1385: scoped closed-rebuild write mode for release.prepare</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1369</history>
+  <item>RFC-1385: close RFC-1385 review warnings — invoke siteWorkspace forwarding, error-path closedWrites, AC-4 hook clause</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1354, RFC-1369</history>
 </CHANGE_SUMMARY>
 */
 
@@ -714,6 +714,14 @@ export interface ExecuteKernelCommandOptions {
    * the flag is a scoped escape hatch, not a general CLI option.
    */
   allowClosedWrites?: boolean;
+  /**
+   * Pre-resolved site workspace — bypasses site discovery when provided
+   * (mirrors ExecuteKernelPipelineOptions.siteWorkspace). RFC-1385: under the
+   * scoped closed-write mode, delegated calls forward the parent's resolved
+   * workpiece here — discovery would resolve the cache clone on closed
+   * missions (currentMission is null).
+   */
+  siteWorkspace?: DiscoveredSiteWorkspace;
 }
 
 export interface ExecuteKernelPipelineOptions {
