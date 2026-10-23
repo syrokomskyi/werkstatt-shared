@@ -22,6 +22,7 @@
   <item>A live holder is never reclaimed regardless of lock age — a multi-minute browser download is legitimate work.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1380 review follow-up: observe exec exit codes (EXEC-EXITCODE-01) — failed mkdir -p on the lock parent throws immediately instead of spinning to the timeout; failed rm -rf is tolerated (release stays idempotent).</item>
   <item>RFC-1377: review follow-up — removeLockDir gates the io.rm attempt behind !io.readonly (the ratchet-recognized guard); read-only adapters skip the doomed KERNEL-META-01 throw and go straight to exec rm -rf. Clears the latent guarded-mutation hit the registry-integrity scan attributes to all ensureChromium consumers.</item>
   <item>RFC-1376: initial implementation — mkdir-claim lock with owner-pid marker, liveness-driven dead-holder reclaim, bounded wait, DirLockTimeoutError carrying holder context.</item>
   <item>RFC-1376: serialize playwright browser installs via dir-lock</item>
@@ -111,7 +112,11 @@ async function removeLockDir(lockPath: string, io: WorkspaceIO): Promise<void> {
       /* fall through to exec */
     }
   }
-  await io.exec("rm", ["-rf", lockPath]);
+  // Best-effort release: a non-zero rm leaves a stale dir that holder-liveness
+  // or mtime staleness will reclaim — release() is documented idempotent, so
+  // the exit code is observed but tolerated.
+  const rm = await io.exec("rm", ["-rf", lockPath]);
+  if (rm.exitCode !== 0) return;
 }
 
 async function readHolderPid(lockPath: string, io: WorkspaceIO): Promise<number | null> {
@@ -148,8 +153,15 @@ export async function acquireDirLock(
 
   // The lock's parent may not exist yet (e.g. first-ever install before the
   // browser store is created) — a bare `mkdir` would fail ENOENT and look
-  // indistinguishable from a held lock. `-p` is a no-op when it exists.
-  await io.exec("mkdir", ["-p", dirname(lockPath)]);
+  // indistinguishable from a held lock. `-p` is a no-op when it exists. A
+  // failed -p makes every claim attempt fail non-EEXIST — fail fast instead
+  // of spinning to the timeout on a path that can never be claimed.
+  const mkdirParent = await io.exec("mkdir", ["-p", dirname(lockPath)]);
+  if (mkdirParent.exitCode !== 0) {
+    throw new Error(
+      `dir-lock: cannot create lock parent ${dirname(lockPath)} — ${mkdirParent.stderr.trim() || `exit ${mkdirParent.exitCode}`}`,
+    );
+  }
 
   for (;;) {
     // Atomic claim — mkdir fails EEXIST while any holder owns the lock.
@@ -157,11 +169,14 @@ export async function acquireDirLock(
     if (claim.exitCode === 0) {
       // Record ownership as a directory entry — writeFile is closed under
       // read-only adapters; a second mkdir inside the claimed dir is not.
-      await io.exec("mkdir", [join(lockPath, `${OWNER_PREFIX}${process.pid}`)]).catch(() => ({
-        exitCode: 1,
-        stdout: "",
-        stderr: "",
-      }));
+      // Best-effort: a failed marker degrades dead-holder detection to the
+      // mtime-staleness path — correctness of the claim itself is unaffected.
+      const marker = await io
+        .exec("mkdir", [join(lockPath, `${OWNER_PREFIX}${process.pid}`)])
+        .catch(() => ({ exitCode: 1, stdout: "", stderr: "" }));
+      if (marker.exitCode !== 0) {
+        /* tolerate — see comment above */
+      }
       let released = false;
       return {
         release: async () => {
