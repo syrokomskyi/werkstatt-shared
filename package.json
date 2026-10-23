@@ -115,6 +115,10 @@
       "types": "./src/kernel/validation-baseline.ts",
       "default": "./src/kernel/validation-baseline.ts"
     },
+    "./kernel/dir-lock": {
+      "types": "./src/kernel/dir-lock.ts",
+      "default": "./src/kernel/dir-lock.ts"
+    },
     "./component": {
       "types": "./src/component/index.ts",
       "default": "./src/component/index.ts"
