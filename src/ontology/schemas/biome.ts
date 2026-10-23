@@ -24,6 +24,7 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
   <item>RFC-1298: REVIEW-CODE-2026-10-16-01 findings — kebab flag guards, safeParse, reads declaration, family-append ordering, FONTS-SCRIPT-02 unverifiable-stack warning</item>
   <item>RFC-1356: editorial hero variants and header lockup styling (RFC-1356)</item>
   <history>RFC-0071, RFC-0371, RFC-1356</history>
+  <item>RFC-1379: optional components.heroEyebrow cssValue — eyebrow/tagline colour slot on hero surfaces.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -112,6 +113,9 @@ export const biomeComponentsSchema = z
     // palette.ink / palette.surface at 0.92 alpha via token projection).
     heroInk: cssValue.optional(),
     heroVeil: cssValue.optional(),
+    // RFC-1379: eyebrow/tagline colour on hero surfaces (default: accent on
+    // dark, hero ink on light — tokens.css + hero-section.css layer it).
+    heroEyebrow: cssValue.optional(),
     surfaceGlass: cssValue.optional(),
     sectionAltBase: cssValue.optional(),
     sectionAltText: cssValue.optional(),

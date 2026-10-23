@@ -20,6 +20,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten â
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1356: editorial hero variants and header lockup styling (RFC-1356)</item>
+  <item>RFC-1379: components.heroEyebrow projects to --ds-color-hero-eyebrow; unset stays absent (CSS layer owns the accent/ink defaults).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -49,6 +50,8 @@ export const BIOME_TO_TOKEN_MAP = {
   // RFC-1356: light-surface hero ink + directional veil.
   "components.heroInk": "--ds-color-hero-ink",
   "components.heroVeil": "--ds-color-hero-veil",
+  // RFC-1379: eyebrow/tagline on hero surfaces (light heroes flip it to ink).
+  "components.heroEyebrow": "--ds-color-hero-eyebrow",
   "components.surfaceGlass": "--ds-color-surface-glass",
   "components.sectionAltBase": "--ds-color-section-alt-base",
   "components.sectionAltText": "--ds-color-section-alt-text",
