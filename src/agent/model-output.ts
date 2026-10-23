@@ -17,7 +17,8 @@ required fields still fail closed, and persisted artifacts keep .strict().
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1371: initial implementation — stripModelJsonFence, modelAuthored marker, parseModelJson tri-state boundary.</item>
+  <item>RFC-1371: initial implementation — stripModelJsonFence, modelAuthored marker, parseModelJson ok/error boundary.</item>
+  <item>RFC-1371 review r1 — JSON-parse failures report "not valid JSON" so callers can distinguish parse errors from schema failures honestly.</item>
   <item>RFC-1371: implement rfc-1371 — shared parseModelJson boundary at both vision seams</item>
 </CHANGE_SUMMARY>
 */
@@ -42,15 +43,11 @@ export function stripModelJsonFence(text: string): string {
  * Identity-bearing structures (key→id maps like the `scores` criterion map)
  * declare `.strict()` instead — an unrequested key is a contract violation.
  */
-export function modelAuthored<T extends z.ZodRawShape>(
-  shape: T,
-): z.ZodObject<T> {
+export function modelAuthored<T extends z.ZodRawShape>(shape: T): z.ZodObject<T> {
   return z.object(shape);
 }
 
-export type ParseModelJsonResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; error: string };
+export type ParseModelJsonResult<T> = { ok: true; value: T } | { ok: false; error: string };
 
 /**
  * RFC-1371: the single LLM-output parse boundary — fence strip → JSON.parse →
@@ -59,16 +56,13 @@ export type ParseModelJsonResult<T> =
  * identically. Failure `error` is the JSON.parse message or the first zod
  * issue message — never throws on model input.
  */
-export function parseModelJson<T>(
-  raw: unknown,
-  schema: z.ZodType<T>,
-): ParseModelJsonResult<T> {
+export function parseModelJson<T>(raw: unknown, schema: z.ZodType<T>): ParseModelJsonResult<T> {
   let candidate: unknown = raw;
   if (typeof raw === "string") {
     try {
       candidate = JSON.parse(stripModelJsonFence(raw));
     } catch (e) {
-      return { ok: false, error: (e as Error).message };
+      return { ok: false, error: `not valid JSON: ${(e as Error).message}` };
     }
   }
   const parsed = schema.safeParse(candidate);
