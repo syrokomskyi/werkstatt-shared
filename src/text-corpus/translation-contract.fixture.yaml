@@ -1,0 +1,71 @@
+# RFC-1372 acceptance fixture — werkstatt/translation-contract@1
+schema: werkstatt/translation-contract@1
+lifecycle:
+  status: draft
+  reviewedAt: null
+  reviewedBy: null
+reviewPolicy:
+  reviewIntervalDays: 90
+terms:
+  - id: setup-fee
+    concept: One-time setup fee for Digitales Fundament
+    forms:
+      de:
+        canonical: Einrichtungsgebühr
+        forbidden: [Aktivierungsbeitrag, Aktivierungsgebühr]
+      uk:
+        canonical: плата за налаштування
+        forbidden: []
+    wholeWord: true
+    caseSensitive: true
+    severity: error
+voice:
+  forbiddenPhrases: [billig]
+  preferredPhrasings:
+    - avoid: günstig
+      prefer: fair kalkuliert
+  mandatoryPhrases: []
+note:
+  audience: German-speaking small business owners
+  voice: Clear, direct, concrete service language
+  doNotTranslate: [pageIds, URLs, brand names]
+  preserveExactly: [numbers, dates, prices, legal references]
+  transcreateGuidance: Keep the source fact load, sound native
+  forbiddenMoves: [Do not invent reviews or prices]
+  examples: []
+  locales:
+    de:
+      voice: Formell, Sie-Form
+    uk: {}
+modules:
+  pseo:
+    terms:
+      - id: module-digital-foundation
+        concept: Digitales Fundament product name
+        forms:
+          uk:
+            canonical: цифровий фундамент
+          de:
+            canonical: Digitales Fundament
+            forbidden: [billig]
+        severity: warning
+    note:
+      audience: small German craft businesses
+      locales:
+        de:
+          forbiddenMoves: [Do not invent project evidence]
+    lifecycle:
+      status: draft
+      reviewedAt: null
+      reviewedBy: null
+    provenance:
+      approved: false
+      generatedAt: "2026-10-23T00:00:00.000Z"
+      promptId: translator-note-v1
+      model: deterministic
+    moduleContextHash: "sha256:example"
+provenance:
+  promptId: translation-contract-v1
+  model: deterministic
+  generatedAt: "2026-10-23T00:00:00.000Z"
+  approved: false

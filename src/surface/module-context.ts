@@ -14,6 +14,7 @@
   <item>RFC-0271: add module context contracts for masterLocale, publishedLocales, entitlement, glossary refs, translator-note refs, and generation/approval policy.</item>
   <item>RFC-0277: add stage and urlPolicy fields for PSEO lifecycle governance.</item>
   <item>warpgogol-m000185: add noindexLocales/noindexDepths module policies — locale-scoped and depth-scoped index suppression for generated pages (pages stay live, robots noindex + sitemap/llms exclusion).</item>
+  <item>RFC-1372: mark localization.glossaryRefs/translatorNoteRefs as legacy pointers — the translation contract's modules.&lt;id&gt; overlay is authoritative.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -84,7 +85,11 @@ export const surfaceModuleContextSchema = z.object({
     .default({ requireHumanApproval: true, requireReadyForTranslation: true }),
   localization: z
     .object({
+      /** RFC-1372: legacy pointer to retired `_translation-glossaries` files —
+       *  the contract's `modules.<id>.terms` is authoritative now. */
       glossaryRefs: z.record(z.string(), z.string()).optional(),
+      /** RFC-1372: legacy pointer to retired `_translation-notes` files —
+       *  the contract's `modules.<id>.note` overlay is authoritative now. */
       translatorNoteRefs: z.record(z.string(), z.string()).optional(),
       reviewPolicy: z.record(z.string(), moduleReviewPolicySchema).optional(),
     })
