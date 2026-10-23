@@ -10,6 +10,7 @@ here (knowledge, capability, openapi, proof) and re-export them from this barrel
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1371: re-export model-output module (parseModelJson/modelAuthored/stripModelJsonFence — LLM-output parse boundary).</item>
   <item>RFC-1112: re-export receipt module (ActionReceipt, AgentProblemDetails, deriveActionEventId).</item>
   <item>RFC-1172: closed agent.traffic telemetry — ports.telemetry sink, TrafficRecorder + boundary emit via withTrafficEmit</item>
   <item>RFC-1113: re-export skill-md module (per-domain SKILL.md projection for ARD agent-skills entries).</item>
@@ -36,6 +37,7 @@ export * from "./skill-md.ts";
 export * from "./search.ts";
 export * from "./receipt.ts";
 export * from "./guidance.ts";
+export * from "./model-output.ts";
 export * from "./health.ts";
 export * from "./registration.ts";
 export * from "./agent-jwt.ts";

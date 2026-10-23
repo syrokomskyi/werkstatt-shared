@@ -771,6 +771,10 @@
       "types": "./src/agent/manifest.ts",
       "default": "./src/agent/manifest.ts"
     },
+    "./agent/model-output": {
+      "types": "./src/agent/model-output.ts",
+      "default": "./src/agent/model-output.ts"
+    },
     "./agent/mcp-card": {
       "types": "./src/agent/mcp-card.ts",
       "default": "./src/agent/mcp-card.ts"
