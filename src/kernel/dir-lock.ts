@@ -22,6 +22,7 @@
   <item>A live holder is never reclaimed regardless of lock age — a multi-minute browser download is legitimate work.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1377: review follow-up — removeLockDir gates the io.rm attempt behind !io.readonly (the ratchet-recognized guard); read-only adapters skip the doomed KERNEL-META-01 throw and go straight to exec rm -rf. Clears the latent guarded-mutation hit the registry-integrity scan attributes to all ensureChromium consumers.</item>
   <item>RFC-1376: initial implementation — mkdir-claim lock with owner-pid marker, liveness-driven dead-holder reclaim, bounded wait, DirLockTimeoutError carrying holder context.</item>
   <item>RFC-1376: serialize playwright browser installs via dir-lock</item>
 </CHANGE_SUMMARY>
@@ -98,12 +99,17 @@ function defaultSleep(ms: number): Promise<void> {
 async function removeLockDir(lockPath: string, io: WorkspaceIO): Promise<void> {
   // io.rm first (works on real/recording adapters and Windows); under the
   // read-only adapter it throws KERNEL-META-01, so fall back to `rm -rf`
-  // through exec (open when the caller declares execOnReadOnly).
-  try {
-    await io.rm(lockPath, { recursive: true });
-    return;
-  } catch {
-    /* fall through to exec */
+  // through exec (open when the caller declares execOnReadOnly). The explicit
+  // !io.readonly gate skips the doomed port call — it is also the guard the
+  // registry-integrity ratchet recognizes for fs mutations under
+  // mutatesState:false commands (review-r1 follow-up).
+  if (!io.readonly) {
+    try {
+      await io.rm(lockPath, { recursive: true });
+      return;
+    } catch {
+      /* fall through to exec */
+    }
   }
   await io.exec("rm", ["-rf", lockPath]);
 }
