@@ -1,10 +1,12 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-  RFC-1291: term-registry contract — a site's .author/terms.yaml declares
-  canonical terms per language with their forbidden variants, optionally
-  scoped to segment kinds/route prefixes and pinned to a PBP field (pbpRef).
-  text.corpus.validate enforces it over the rendered-text corpus (TERM-01..04).
+  RFC-1291/1372: term-entry contract — the per-locale term shape
+  (`canonical`/`forbidden` + kinds/routes/pbpRef/severity scoping) the corpus
+  matchers consume. The site's `.author/translation-contract.yaml`
+  `terms[].forms[lang]` projects into TermEntry; the standalone
+  `.author/terms.yaml` registry carrier is retired (CONTRACT-07).
+  text.corpus.validate enforces it over the rendered-text corpus (TERM-01/03).
 </purpose>
 <non-goals>
   <item>No global all-sites list — terms are per site.</item>
@@ -14,6 +16,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-1291: initial — termEntrySchema/termRegistrySchema (werkstatt/term-registry@1).</item>
   <item>RFC-1291: per-site term registry over the rendered corpus</item>
+  <item>RFC-1372: termRegistrySchema/TermRegistry retired with the .author/terms.yaml carrier — TermEntry survives as the per-locale projection of contract terms[].forms[lang] (review F-23).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -43,11 +46,3 @@ export const termEntrySchema = z
   })
   .strict();
 export type TermEntry = z.infer<typeof termEntrySchema>;
-
-export const termRegistrySchema = z
-  .object({
-    schema: z.literal("werkstatt/term-registry@1"),
-    terms: z.array(termEntrySchema),
-  })
-  .strict();
-export type TermRegistry = z.infer<typeof termRegistrySchema>;
