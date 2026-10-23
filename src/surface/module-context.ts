@@ -14,6 +14,7 @@
   <item>RFC-0271: add module context contracts for masterLocale, publishedLocales, entitlement, glossary refs, translator-note refs, and generation/approval policy.</item>
   <item>RFC-0277: add stage and urlPolicy fields for PSEO lifecycle governance.</item>
   <item>warpgogol-m000185: add noindexLocales/noindexDepths module policies — locale-scoped and depth-scoped index suppression for generated pages (pages stay live, robots noindex + sitemap/llms exclusion).</item>
+  <item>RFC-1378: schema-header comment pins the moduleContextHash input-set contract (MODULE_GLOSSARY_HASH_FIELDS is authoritative).</item>
   <item>RFC-1372: mark localization.glossaryRefs/translatorNoteRefs as legacy pointers — the translation contract's modules.&lt;id&gt; overlay is authoritative.</item>
 </CHANGE_SUMMARY>
 */
@@ -32,6 +33,14 @@ export const moduleReviewPolicySchema = z.object({
   claims: z.enum(["human", "sample", "machine"]).optional(),
 });
 
+/**
+ * RFC-1378 hash-domain contract: the translation contract's moduleContextHash
+ * covers ONLY {id, masterLocale, publishedLocales, context.audience,
+ * context.forbiddenClaims} — the fields glossary/note derivation reads (see
+ * MODULE_GLOSSARY_HASH_FIELDS in checks/surface-translation.ts). All other
+ * fields below are intentionally outside the hash domain; adding a derivation
+ * read requires extending that constant, not re-broadening the hash.
+ */
 export const surfaceModuleContextSchema = z.object({
   id: z.string().min(1).optional(),
   entitlement: z.string().min(1),
