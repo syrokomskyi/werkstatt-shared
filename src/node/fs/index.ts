@@ -8,6 +8,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0303: extracted as the single canonical home for fs helpers previously duplicated across packages/os/*.</item>
+  <item>RFC-1373: collectFiles gains onScanAbort — non-ENOENT/ENOTDIR readdir failures per branch surface to the caller instead of silent partial coverage.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -24,6 +25,12 @@ export interface CollectFilesOptions {
   ignore?: (name: string) => boolean;
   /** Include directory paths in the result too. Default false (files only). */
   withDirs?: boolean;
+  /**
+   * RFC-1373: called when a directory branch cannot be read for a reason other
+   * than ENOENT/ENOTDIR (a missing optional dir is legitimate empty coverage).
+   * Without it, a failed branch silently reports partial scope.
+   */
+  onScanAbort?: (directory: string, error: string) => void;
 }
 
 function defaultIgnore(name: string): boolean {
@@ -38,14 +45,18 @@ export async function collectFiles(
   root: string,
   options: CollectFilesOptions = {},
 ): Promise<string[]> {
-  const { extensions, ignore = defaultIgnore, withDirs = false } = options;
+  const { extensions, ignore = defaultIgnore, withDirs = false, onScanAbort } = options;
   const results: string[] = [];
 
   async function walk(dir: string): Promise<void> {
     let entries;
     try {
       entries = await readdir(dir, { withFileTypes: true });
-    } catch {
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException | undefined)?.code;
+      if (code !== "ENOENT" && code !== "ENOTDIR") {
+        onScanAbort?.(dir, error instanceof Error ? error.message : String(error));
+      }
       return;
     }
 
