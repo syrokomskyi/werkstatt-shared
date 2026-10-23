@@ -11,6 +11,7 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1369: review round 2 — KernelInvokeCommand gains an optional { siteName } options bag so delegated calls can target app-scope children (argv --site never reaches ensureTargetSites)</item>
   <item>RFC-1327: run-twice idempotency — declarations, command.idempotency.validate, rerun tests, reconcile/ship/abort convergence fixes</item>
   <item>RFC-1354: review r1 — AC-1 regression test via executeKernelCommand, delegated-write attribution docs on mutatesState, site-to-system ownership tokens, requiresNetwork on remote commands, execOnReadOnly wording</item>
   <item>RFC-1354: review r2 — approved/info; closes three info notes: requiresNetwork on remaining remote commands, ForgeCommandMetadata mirror JSDoc, baseline widened to full module-slice blind spot</item>
@@ -557,10 +558,15 @@ export interface KernelAppConfig {
  * `KernelRuntimeContext.invoke` — delegates to a sibling command by name,
  * flags serialized to argv by the executor. Always resolves to a single
  * report (the port never passes `--all`).
+ * RFC-1369: `options.siteName` targets an app-scope child explicitly — the
+ * serialized `--site` argv is canonical only for workspace-scope children;
+ * app-scope commands resolve their site via `executeKernelCommand`'s
+ * `siteName` option (ensureTargetSites never reads argv).
  */
 export type KernelInvokeCommand = (
   commandName: string,
   flags?: Record<string, KernelFlagValue>,
+  options?: { siteName?: string },
 ) => Promise<KernelExecutionReport>;
 
 export interface KernelExecutionReport<TData = unknown> {
