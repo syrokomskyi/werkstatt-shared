@@ -11,6 +11,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1369: review round 1 — GEN-FILES-01 repair guidance (per-path-class --repair commands, cache-clone carve-out).</item>
   <item>RFC-1368: INTAKE-34 remediation entry (declared-vs-sniffed media type).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
@@ -69,7 +70,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "GEN-FILES-01",
     action:
-      "Regenerate generated files by running the owning kernel command, then commit the updated output.",
+      "Regenerate generated files by running the owning kernel command — or run `generated.files.validate --repair` to invoke every invocable owner in one sweep — then commit the updated output.",
     docRef: "docs/authoring/generated-files-and-templates.md",
   },
   {
