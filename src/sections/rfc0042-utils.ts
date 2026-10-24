@@ -8,6 +8,7 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0042: Created shared utilities to centralize NEED_THIS_* pattern and type casting.</item>
+  <item>RFC-1390: close review findings on invariant binding machinery</item>
 </CHANGE_SUMMARY>
 */
 
@@ -49,7 +50,7 @@ export function need<T>(fieldName: string, value: T | undefined | null): T | str
  * [RFC-0042] Type-safe casting function for pageOverride to section content types.
  * Use this instead of `as unknown as T` to make type casting explicit and searchable.
  *
- * @ai-invariant Use this function when casting pageOverride to a specific section content type.
+ * @ai-invariant: Use this function when casting pageOverride to a specific section content type.
  *
  * @param pageOverride - The pageOverride from SectionProps (blocks[].props)
  * @returns The same object cast to type T

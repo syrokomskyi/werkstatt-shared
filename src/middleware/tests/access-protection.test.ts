@@ -10,16 +10,17 @@
 </KEY_DECISIONS>
 
 <CHANGE_SUMMARY>
-  <item>RFC-0899: Initial middleware unit tests.</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
   <item>RFC-0899: protect workers.dev dev and alt channels with the PIN and noindex</item>
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1340</item>
+  <item>RFC-1390: close review findings on invariant binding machinery</item>
+  <history>RFC-0899</history>
 </CHANGE_SUMMARY>
 */
-// @ai-invariant fixtures must not couple to internals beyond the public surface under test
+// @ai-invariant: fixtures must not couple to internals beyond the public surface under test
 
 import { describe, expect, it, vi } from "vitest";
 
