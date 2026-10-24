@@ -6,6 +6,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-0384: pseo block — cardinalityLimit (default 10_000 override) + highCardinalityExperiment for surface.plan.generate.</item>
   <item>RFC-1374: pseo autonomy scope sinceAt accepts YAML-native Date scalars via isoDateString — parse normalizes to ISO-8601 strings.</item>
   <item>RFC-1283: step 1 — publication.gate in systemManifestSchema
 
@@ -41,11 +42,7 @@ neutral 'Lokaler Kontext' — plus a Quellen block listing each distinct
 sourceUrl with its asOf date. Live warpgogol run: 40 LOCALFACT-01 warnings
 across the 12 city demand records — the owner's research backlog; no excerpts,
 review records, or gate flips authored. Canary C11 active.</item>
-  <item>ADR-0114: identity.legal gains optional name/vatId — the seed mapping carries the full pbp/legal-identity surface (legalName + publicIdentifiers.vatId) alongside responsibleName/address/email.</item>
-  <item>RFC-1307: step 6 — onboarding docs switched to intake path, manifest comment re-sourced, generated artifacts refreshed</item>
-  <item>RFC-1307: canonical org-singleton PBP paths, seeded hreflang+publication.gate, full rollback</item>
-  <item>RFC-1341: publication block gains optional ceiling: public | preview — opts a site into badged below-public rendering (absent = public).</item>
-  <history>ADR-0062, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229</history>
+  <history>ADR-0062, ADR-0114, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229, RFC-1307, RFC-1341</history>
 </CHANGE_SUMMARY>
 */
 
@@ -503,6 +500,19 @@ export const systemManifestSchema = z.object({
    * When present, wins over Stripe resolution.
    */
   entitlementsOverride: z.array(z.string().min(1)).optional(),
+
+  /**
+   * RFC-0384: Programmatic Surface plan policy. `cardinalityLimit` overrides the 10_000
+   * default single-site candidate-page limit; `highCardinalityExperiment` suppresses the
+   * cardinality warning/gate entirely for declared experiments.
+   */
+  pseo: z
+    .object({
+      cardinalityLimit: z.number().int().min(1).optional(),
+      highCardinalityExperiment: z.boolean().optional(),
+    })
+    .strict()
+    .optional(),
 
   /**
    * RFC-0193: explicit Programmatic Surface adoption. `surface.blueprints` lists the Blueprint ids
