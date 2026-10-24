@@ -6,7 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0264 cleanup: root barrel delegates governance exports to the governance subpath.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -17,7 +16,8 @@ Sweep batch 3: rewrote ~95 purposes across werkstatt-knowledge, werkstatt-shared
 
 surface/blueprint.ts now holds the blueprintSchema (sole declaration), all ~30 contract type names derived via z.infer, parseBlueprint, and the pure helpers. Deleted satellites blueprint-types.ts + blueprint-schema.ts, their package.json export entries, and the zero-consumer site shims (domain/surface/blueprint{,-types,-schema}.ts + 2 load-verification tests). All barrel consumers unchanged.</item>
   <item>RFC-1289</item>
-  <history>RFC-0192, RFC-0271, RFC-0276, RFC-0278, RFC-0280, RFC-0282, RFC-0284</history>
+  <item>RFC-0383: add surface.graph.validate link-structure diagnostics (GRAPH-01..07)</item>
+  <history>RFC-0192, RFC-0264, RFC-0271, RFC-0276, RFC-0278, RFC-0280, RFC-0282, RFC-0284</history>
 </CHANGE_SUMMARY>
 */
 
@@ -200,9 +200,11 @@ export {
 
 export {
   buildTokenDocFreq,
+  extractLinkTargets,
   pageText,
   scoreSubstance,
   tokenize,
+  type LinkTarget,
   type SubstanceComponents,
   type SubstanceScore,
 } from "./substance.ts";

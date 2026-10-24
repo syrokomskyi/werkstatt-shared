@@ -13,6 +13,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-0383: generalize the link-target walker into exported `extractLinkTargets` (typed LinkTarget set); `countLinkTargets` delegates — scoring unchanged.</item>
   <item>RFC-0194: initial scorer.</item>
   <item>RFC-0274: walk nested visible props so substance/duplicate checks see rendered semantic text.</item>
   <item>RFC-1257: structured CtaTarget + scenario-plumbed contact links</item>
@@ -97,12 +98,32 @@ export function buildTokenDocFreq(pages: readonly PageEntry[]): Map<string, numb
   return freq;
 }
 
-/** Count distinct internal-link targets referenced in a page's block props. */
-function countLinkTargets(page: PageEntry): number {
-  const targets = new Set<string>();
+/**
+ * A distinct link target extracted from a page's block props (RFC-0383).
+ * `route` is a relative `/…` internal path; `absolute` is an `https?://` URL whose
+ * host cannot be classified at this layer (consumers resolve or drop it);
+ * `pageId` is an RFC-1257 structured CtaTarget node destination.
+ */
+export type LinkTarget =
+  | { kind: "route"; href: string }
+  | { kind: "absolute"; href: string }
+  | { kind: "pageId"; pageId: string };
+
+/**
+ * Extract the distinct link targets referenced in a page's block props. Walks
+ * nested arrays/objects; string values matching `/^(\/|https?:)/` classify as
+ * route or absolute targets, and RFC-1257 `CtaTarget` nodes
+ * (`{kind:"internal", pageId}`) count their pageId and do not recurse. Dedup is
+ * by canonical `kind:value` key — identical raw targets collapse to one entry.
+ */
+export function extractLinkTargets(page: PageEntry): Set<LinkTarget> {
+  const targets = new Map<string, LinkTarget>();
   const visit = (value: unknown): void => {
     if (typeof value === "string") {
-      if (/^(\/|https?:)/.test(value)) targets.add(value);
+      if (/^\//.test(value)) targets.set(`route:${value}`, { kind: "route", href: value });
+      else if (/^https?:/.test(value)) {
+        targets.set(`absolute:${value}`, { kind: "absolute", href: value });
+      }
       return;
     }
     if (Array.isArray(value)) {
@@ -115,14 +136,19 @@ function countLinkTargets(page: PageEntry): number {
       // pageId as a link destination; external hrefs fall through to the
       // string visitor below.
       if (record.kind === "internal" && typeof record.pageId === "string") {
-        targets.add(record.pageId);
+        targets.set(`pageId:${record.pageId}`, { kind: "pageId", pageId: record.pageId });
         return;
       }
       for (const v of Object.values(record)) visit(v);
     }
   };
   for (const block of page.blocks) visit(block.props);
-  return targets.size;
+  return new Set(targets.values());
+}
+
+/** Count distinct internal-link targets referenced in a page's block props. */
+function countLinkTargets(page: PageEntry): number {
+  return extractLinkTargets(page).size;
 }
 
 /**
