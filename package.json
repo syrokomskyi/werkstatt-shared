@@ -119,6 +119,14 @@
       "types": "./src/kernel/dir-lock.ts",
       "default": "./src/kernel/dir-lock.ts"
     },
+    "./kernel/journal": {
+      "types": "./src/kernel/journal.ts",
+      "default": "./src/kernel/journal.ts"
+    },
+    "./kernel/ship-inflight": {
+      "types": "./src/kernel/ship-inflight.ts",
+      "default": "./src/kernel/ship-inflight.ts"
+    },
     "./component": {
       "types": "./src/component/index.ts",
       "default": "./src/component/index.ts"
