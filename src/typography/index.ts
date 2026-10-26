@@ -32,6 +32,7 @@ export {
 export {
   TIER1_RULES,
   DEFAULT_ALLOWED_TOKENS,
+  CYRILLIC_SCRIPT_LOCALES,
   createTypographyContext,
   type TypographyRuleId,
   type TypographyRuleFamily,
