@@ -21,6 +21,8 @@ import {
   materialCreditStatusSchema,
   usageBasisTypeSchema,
   materialCreditLabelsSchema,
+  labelForMaterialCreditRole,
+  type MaterialCreditLabels,
 } from "../material-credit.ts";
 
 describe("materialKindSchema", () => {
@@ -133,5 +135,20 @@ describe("materialCreditLabelsSchema.partyKindLabels (RFC-1189)", () => {
       partyKindLabels: fullPartyKindLabels,
     });
     expect(result.success).toBe(true);
+  });
+});
+
+describe("labelForMaterialCreditRole", () => {
+  it("never leaks a raw role token for producer-like roles", () => {
+    const labels = { createdBy: "Автор" } as MaterialCreditLabels;
+    for (const role of [
+      "producer",
+      "photographer",
+      "illustrator",
+      "editor",
+      "contributor",
+    ] as const) {
+      expect(labelForMaterialCreditRole(role, labels)).toBe("Автор");
+    }
   });
 });

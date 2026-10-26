@@ -293,7 +293,17 @@ function namesFor(credit: MaterialCredit, roles: CreditRole[]): string[] {
 }
 
 export function labelForMaterialCreditRole(role: CreditRole, labels: MaterialCreditLabels): string {
-  if (role === "creator" || role === "coCreator") return labels.createdBy;
+  if (
+    role === "creator" ||
+    role === "coCreator" ||
+    role === "producer" ||
+    role === "photographer" ||
+    role === "illustrator" ||
+    role === "editor" ||
+    role === "contributor"
+  ) {
+    return labels.createdBy;
+  }
   if (role === "aiAgent" || role === "aiModel" || role === "aiPlatform") return labels.createdWith;
   if (role === "promptAuthor" || role === "workflowAuthor") return labels.promptBy;
   if (role === "reviewer" || role === "approver") return labels.reviewedBy;
