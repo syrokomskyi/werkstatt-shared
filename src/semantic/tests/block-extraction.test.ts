@@ -46,3 +46,26 @@ describe("BLOCK_EXTRACTORS", () => {
     expect(BLOCK_EXTRACTORS.listTypes().length).toBeGreaterThan(0);
   });
 });
+
+describe("product-line-cards extractor", () => {
+  it("extracts each line with its manufacturer attribution", () => {
+    const result = BLOCK_EXTRACTORS.get("product-line-cards")?.extract({
+      header: { heading: "Lines" },
+      body: {
+        kind: "product-lines",
+        items: [
+          { name: "Sandorini", attribution: "CMD Naturkosmetik", summary: "Sea buckthorn care" },
+        ],
+      },
+    });
+    expect(result).toEqual({
+      heading: "Lines",
+      lead: undefined,
+      items: [{ title: "Sandorini (CMD Naturkosmetik)", description: "Sea buckthorn care" }],
+    });
+  });
+
+  it("registers breadcrumbs as a content-free block", () => {
+    expect(BLOCK_EXTRACTORS.get("breadcrumbs")?.extract({})).toEqual({});
+  });
+});

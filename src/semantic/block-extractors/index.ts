@@ -201,6 +201,43 @@ BLOCK_EXTRACTORS.register<Record<string, unknown>>({
 });
 
 // ---------------------------------------------------------------------------
+// product-line-cards — each represented line with its manufacturer attribution
+// ---------------------------------------------------------------------------
+BLOCK_EXTRACTORS.register<Record<string, unknown>>({
+  blockType: "product-line-cards",
+  extract(props) {
+    const heading = safeString(safeGet(props, "header.heading"));
+    const lead = safeString(safeGet(props, "header.subheading"));
+    const items = safeArray(safeGet(props, "body.items"), (item) => {
+      const name = safeString(safeGet(item, "name"));
+      if (!name) return undefined;
+      const attribution = safeString(safeGet(item, "attribution"));
+      const description = [
+        safeString(safeGet(item, "summary")),
+        safeString(safeGet(item, "audience")),
+      ]
+        .filter((part): part is string => part !== undefined)
+        .join(" ");
+      return {
+        title: attribution ? `${name} (${attribution})` : name,
+        description: description.length > 0 ? description : undefined,
+      };
+    });
+    return { heading, lead, items };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// breadcrumbs — positional navigation only; carries no extractable content
+// ---------------------------------------------------------------------------
+BLOCK_EXTRACTORS.register<Record<string, unknown>>({
+  blockType: "breadcrumbs",
+  extract() {
+    return {};
+  },
+});
+
+// ---------------------------------------------------------------------------
 // final-cta
 // ---------------------------------------------------------------------------
 BLOCK_EXTRACTORS.register<Record<string, unknown>>({
