@@ -59,6 +59,10 @@
       "types": "./src/checks/lib/i18n.ts",
       "default": "./src/checks/lib/i18n.ts"
     },
+    "./checks/lib/dist-routes": {
+      "types": "./src/checks/lib/dist-routes.ts",
+      "default": "./src/checks/lib/dist-routes.ts"
+    },
     "./checks/result-helpers": {
       "types": "./src/checks/result-helpers.ts",
       "default": "./src/checks/result-helpers.ts"

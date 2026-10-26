@@ -8,6 +8,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-1397: initial tests.</item>
   <item>RFC-1397: guard mission lifecycle moves during in-flight ship operations (RFC-1397)</item>
+  <item>RFC-1399: bound post-deploy dev mission.check to a 20-URL fidelity sample on matching same-artifact certify evidence</item>
 </CHANGE_SUMMARY>
 */
 
@@ -65,7 +66,11 @@ describe("isShipInFlight", () => {
       seq: 3,
       at: "2026-10-25T10:05:00.000Z",
     });
-    const res = await isShipInFlight(workspaceRoot, SYSTEM_ID, MISSION_ID);
+    const res = await isShipInFlight(workspaceRoot, SYSTEM_ID, MISSION_ID, undefined, {
+      // frozen journal times need a frozen `now` — otherwise the stale window
+      // (6h) drifts past the fixture and the assertion time-bombs.
+      now: "2026-10-25T10:30:00.000Z",
+    });
     expect(res.inFlight).toBe(true);
     expect(res.stale).toBe(false);
     expect(res.opId).toBe("op-aaa");
