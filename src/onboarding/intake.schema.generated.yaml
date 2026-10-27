@@ -429,6 +429,38 @@ properties:
   voice:
     type: object
     properties:
+      contractSeed:
+        type: object
+        properties:
+          terms:
+            type: array
+            items:
+              type: object
+              properties:
+                term:
+                  type: string
+                translation:
+                  type: string
+              required:
+                - term
+                - translation
+              additionalProperties: false
+          doNotTranslate:
+            type: array
+            items:
+              type: string
+          forbiddenPhrases:
+            type: array
+            items:
+              type: string
+          notesByLocale:
+            type: object
+            propertyNames:
+              type: string
+              pattern: ^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$
+            additionalProperties:
+              type: string
+        additionalProperties: false
       verbatim:
         type: array
         items:
@@ -1348,6 +1380,67 @@ $defs:
       canonicalUri:
         type: string
         minLength: 1
+      timing:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: object
+          properties:
+            startEvent:
+              type: string
+              pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+            clock:
+              type: string
+              enum:
+                - calendar
+                - business
+            timezone:
+              type: string
+              minLength: 1
+            businessHours:
+              type: object
+              properties:
+                days:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - mon
+                      - tue
+                      - wed
+                      - thu
+                      - fri
+                      - sat
+                      - sun
+                from:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                to:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                excludesPublicHolidaysOf:
+                  type: string
+              required:
+                - days
+                - from
+                - to
+              additionalProperties: false
+            boundary:
+              default: exact
+              type: string
+              enum:
+                - exact
+                - end-of-day
+                - end-of-calendar-month
+            note:
+              type: string
+          required:
+            - startEvent
+            - clock
+            - timezone
+          additionalProperties: false
       description:
         type: string
         minLength: 1
@@ -1569,6 +1662,67 @@ $defs:
       canonicalUri:
         type: string
         minLength: 1
+      timing:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: object
+          properties:
+            startEvent:
+              type: string
+              pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+            clock:
+              type: string
+              enum:
+                - calendar
+                - business
+            timezone:
+              type: string
+              minLength: 1
+            businessHours:
+              type: object
+              properties:
+                days:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - mon
+                      - tue
+                      - wed
+                      - thu
+                      - fri
+                      - sat
+                      - sun
+                from:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                to:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                excludesPublicHolidaysOf:
+                  type: string
+              required:
+                - days
+                - from
+                - to
+              additionalProperties: false
+            boundary:
+              default: exact
+              type: string
+              enum:
+                - exact
+                - end-of-day
+                - end-of-calendar-month
+            note:
+              type: string
+          required:
+            - startEvent
+            - clock
+            - timezone
+          additionalProperties: false
       legalName:
         type: string
         minLength: 1
@@ -1725,6 +1879,67 @@ $defs:
       canonicalUri:
         type: string
         minLength: 1
+      timing:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: object
+          properties:
+            startEvent:
+              type: string
+              pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+            clock:
+              type: string
+              enum:
+                - calendar
+                - business
+            timezone:
+              type: string
+              minLength: 1
+            businessHours:
+              type: object
+              properties:
+                days:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - mon
+                      - tue
+                      - wed
+                      - thu
+                      - fri
+                      - sat
+                      - sun
+                from:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                to:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                excludesPublicHolidaysOf:
+                  type: string
+              required:
+                - days
+                - from
+                - to
+              additionalProperties: false
+            boundary:
+              default: exact
+              type: string
+              enum:
+                - exact
+                - end-of-day
+                - end-of-calendar-month
+            note:
+              type: string
+          required:
+            - startEvent
+            - clock
+            - timezone
+          additionalProperties: false
       businessRef:
         type: object
         properties:
@@ -2250,6 +2465,67 @@ $defs:
       canonicalUri:
         type: string
         minLength: 1
+      timing:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: object
+          properties:
+            startEvent:
+              type: string
+              pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+            clock:
+              type: string
+              enum:
+                - calendar
+                - business
+            timezone:
+              type: string
+              minLength: 1
+            businessHours:
+              type: object
+              properties:
+                days:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - mon
+                      - tue
+                      - wed
+                      - thu
+                      - fri
+                      - sat
+                      - sun
+                from:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                to:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                excludesPublicHolidaysOf:
+                  type: string
+              required:
+                - days
+                - from
+                - to
+              additionalProperties: false
+            boundary:
+              default: exact
+              type: string
+              enum:
+                - exact
+                - end-of-day
+                - end-of-calendar-month
+            note:
+              type: string
+          required:
+            - startEvent
+            - clock
+            - timezone
+          additionalProperties: false
       claimClass:
         type: string
         enum:
@@ -2393,6 +2669,67 @@ $defs:
       canonicalUri:
         type: string
         minLength: 1
+      timing:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: object
+          properties:
+            startEvent:
+              type: string
+              pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+            clock:
+              type: string
+              enum:
+                - calendar
+                - business
+            timezone:
+              type: string
+              minLength: 1
+            businessHours:
+              type: object
+              properties:
+                days:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - mon
+                      - tue
+                      - wed
+                      - thu
+                      - fri
+                      - sat
+                      - sun
+                from:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                to:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                excludesPublicHolidaysOf:
+                  type: string
+              required:
+                - days
+                - from
+                - to
+              additionalProperties: false
+            boundary:
+              default: exact
+              type: string
+              enum:
+                - exact
+                - end-of-day
+                - end-of-calendar-month
+            note:
+              type: string
+          required:
+            - startEvent
+            - clock
+            - timezone
+          additionalProperties: false
       kind:
         type: string
         enum:
@@ -2810,6 +3147,67 @@ $defs:
       canonicalUri:
         type: string
         minLength: 1
+      timing:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: object
+          properties:
+            startEvent:
+              type: string
+              pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+            clock:
+              type: string
+              enum:
+                - calendar
+                - business
+            timezone:
+              type: string
+              minLength: 1
+            businessHours:
+              type: object
+              properties:
+                days:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - mon
+                      - tue
+                      - wed
+                      - thu
+                      - fri
+                      - sat
+                      - sun
+                from:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                to:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                excludesPublicHolidaysOf:
+                  type: string
+              required:
+                - days
+                - from
+                - to
+              additionalProperties: false
+            boundary:
+              default: exact
+              type: string
+              enum:
+                - exact
+                - end-of-day
+                - end-of-calendar-month
+            note:
+              type: string
+          required:
+            - startEvent
+            - clock
+            - timezone
+          additionalProperties: false
       kind:
         type: string
         enum:
@@ -2924,6 +3322,67 @@ $defs:
       canonicalUri:
         type: string
         minLength: 1
+      timing:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: object
+          properties:
+            startEvent:
+              type: string
+              pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+            clock:
+              type: string
+              enum:
+                - calendar
+                - business
+            timezone:
+              type: string
+              minLength: 1
+            businessHours:
+              type: object
+              properties:
+                days:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - mon
+                      - tue
+                      - wed
+                      - thu
+                      - fri
+                      - sat
+                      - sun
+                from:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                to:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                excludesPublicHolidaysOf:
+                  type: string
+              required:
+                - days
+                - from
+                - to
+              additionalProperties: false
+            boundary:
+              default: exact
+              type: string
+              enum:
+                - exact
+                - end-of-day
+                - end-of-calendar-month
+            note:
+              type: string
+          required:
+            - startEvent
+            - clock
+            - timezone
+          additionalProperties: false
       channel:
         type: string
         enum:
@@ -3016,6 +3475,67 @@ $defs:
       canonicalUri:
         type: string
         minLength: 1
+      timing:
+        type: object
+        propertyNames:
+          type: string
+        additionalProperties:
+          type: object
+          properties:
+            startEvent:
+              type: string
+              pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+            clock:
+              type: string
+              enum:
+                - calendar
+                - business
+            timezone:
+              type: string
+              minLength: 1
+            businessHours:
+              type: object
+              properties:
+                days:
+                  minItems: 1
+                  type: array
+                  items:
+                    type: string
+                    enum:
+                      - mon
+                      - tue
+                      - wed
+                      - thu
+                      - fri
+                      - sat
+                      - sun
+                from:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                to:
+                  type: string
+                  pattern: ^\d{2}:\d{2}$
+                excludesPublicHolidaysOf:
+                  type: string
+              required:
+                - days
+                - from
+                - to
+              additionalProperties: false
+            boundary:
+              default: exact
+              type: string
+              enum:
+                - exact
+                - end-of-day
+                - end-of-calendar-month
+            note:
+              type: string
+          required:
+            - startEvent
+            - clock
+            - timezone
+          additionalProperties: false
       tagline:
         type: string
         minLength: 1

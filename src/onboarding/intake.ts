@@ -19,6 +19,7 @@ export that producers vendor byte-exact
   <item>Zod is the source of truth (spec D2)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1408/AMD-013: voice.contractSeed — optional producer-projected translation seed (terms/doNotTranslate/forbiddenPhrases/notesByLocale).</item>
   <item>RFC-1368 review r2: non-goal rule range updated to INTAKE-01…34.</item>
   <item>RFC-1357/AMD-012: first-fold art direction — required visual.artDirection (firstFold composition/surface/textSide/imageSubject/slotRef, imagery style/avoid, mockAssetRef); slotBriefs gain required placement + subjectKind and optional framing; subjectKind ⇔ role schema binding (represented-product only on depicts-represented-product); LAYOUT_VOCABULARY export for INTAKE-30.</item>
   <item>RFC-1353/AMD-011: faq block — intakeFaqTopicSchema/intakeFaqEntrySchema (status conditionals), faqEntryTier(), envelope faq:, provenance.familyQuestionsSnapshot.</item>
@@ -325,6 +326,16 @@ const voiceProfileSchema = z
 
 const voiceSchema = z
   .object({
+    // AMD-013/RFC-1408: producer-projected translation-contract seed.
+    contractSeed: z
+      .object({
+        terms: z.array(z.object({ term: z.string(), translation: z.string() }).strict()).optional(),
+        doNotTranslate: z.array(z.string()).optional(),
+        forbiddenPhrases: z.array(z.string()).optional(),
+        notesByLocale: z.record(bcp47Tag, z.string()).optional(),
+      })
+      .strict()
+      .optional(),
     verbatim: z.array(voiceVerbatimSchema),
     directives: z.array(voiceDirectiveSchema),
     profile: voiceProfileSchema,
