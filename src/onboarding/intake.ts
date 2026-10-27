@@ -19,6 +19,7 @@ export that producers vendor byte-exact
   <item>Zod is the source of truth (spec D2)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1410: intentLatinAlias + canonicalIntentPageId — single contract home for the localized-intent alias convention ('главная (home)' → page id 'home'), consumed by compose scaffold + both validator callsites.</item>
   <item>RFC-1408/AMD-015: voice.contractSeed — optional producer-projected translation seed (terms/doNotTranslate/forbiddenPhrases/notesByLocale).</item>
   <item>RFC-1368 review r2: non-goal rule range updated to INTAKE-01…34.</item>
   <item>RFC-1357/AMD-012: first-fold art direction — required visual.artDirection (firstFold composition/surface/textSide/imageSubject/slotRef, imagery style/avoid, mockAssetRef); slotBriefs gain required placement + subjectKind and optional framing; subjectKind ⇔ role schema binding (represented-product only on depicts-represented-product); LAYOUT_VOCABULARY export for INTAKE-30.</item>
@@ -1032,6 +1033,25 @@ export type IntakeEnvelope = z.infer<typeof intakeEnvelopeSchema>;
 export type IntakeGap = z.infer<typeof intakeGapSchema>;
 export type IntakeAsset = z.infer<typeof intakeAssetSchema>;
 export type IntakeSlotBrief = z.infer<typeof intakeSlotBriefSchema>;
+
+/**
+ * Latin-script parenthetical alias of a localized intent — the contract's
+ * canonical page-id form: "контакты (contacts)" → "contacts". Single home for
+ * the convention validators and composers must share (RFC-1410).
+ */
+export function intentLatinAlias(intent: string): string | undefined {
+  const m = /\(([a-z][a-z0-9 -]*)\)/i.exec(intent);
+  return m?.[1]?.trim().replace(/\s+/g, "-");
+}
+
+/**
+ * Canonical page id for an authored pageSetIntent intent — the latin alias
+ * when present, else the intent verbatim. Authored intents are localized
+ * ("главная (home)"); the page-set machinery treats the alias as the page id.
+ */
+export function canonicalIntentPageId(intent: string): string {
+  return intentLatinAlias(intent) ?? intent;
+}
 
 const INTAKE_EXPORT_ID =
   "https://werkstatt.local/specs/onboarding/v0.1.0/werkstatt-intake.schema.yaml";
