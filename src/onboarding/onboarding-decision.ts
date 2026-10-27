@@ -22,6 +22,7 @@ ledgers per RFC-1343/AMD-008).
   <item>recommendation is a required first-class field; options carry label+consequence only.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1400/AMD-014: ONBOARDING_DECISION_TOPICS gains translation-contract — the contract-review decision backing delegated translation.contract.review --approve (TCAPPROVE-03/04, ONDEC-13 contract:sha256 ref).</item>
   <item>RFC-1346/AMD-010: ONBOARDING_DECISION_TOPICS gains visual-review — the answered Approve gate for asset.slot.fulfill.</item>
   <item>RFC-1343/AMD-008: option tier enum, entry rulingRefs/recommendedOption/overrides (closed reason enum, evidence min 1), ledger rulesVersion (absent = 1) — additive, v1 ledgers still parse.</item>
   <item>RFC-1336: answeredBy/delegatedBy/delegationId provenance fields (strict parity with the spec's if/then) — agent:<id> answers require delegation provenance.</item>
@@ -58,6 +59,12 @@ export const ONBOARDING_DECISION_TOPICS = [
    * the only way a composed hero may deviate from the intake art direction.
    */
   "art-direction-deviation",
+  /**
+   * RFC-1400/AMD-014: the contract-review decision — an answered `Approve`
+   * entry carrying a `contract:sha256:<hash>` ref backs a delegated
+   * `translation.contract.review --approve` (TCAPPROVE-03/04).
+   */
+  "translation-contract",
   "auto-resolved-log",
 ] as const;
 

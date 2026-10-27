@@ -19,6 +19,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1400/AMD-014: lifecycle gains optional delegatedBy/delegationId/decisionRef/contractSha256 — approval provenance stamped only on delegated agent approvals.</item>
   <item>RFC-1372: initial — contract schema, TRANSLATION_CONTRACT_REL, resolveTranslatorNote overlay merge (site → locales → module → module locales).</item>
   <item>RFC-1372: unify terminology, voice, and translator guidance into a per-site translation contract (RFC-1372)</item>
 </CHANGE_SUMMARY>
@@ -131,6 +132,17 @@ export const contractLifecycleSchema = z
     status: z.enum(["draft", "approved"]),
     reviewedAt: z.string().nullable().default(null),
     reviewedBy: z.string().nullable().default(null),
+    /**
+     * RFC-1400/AMD-014: approval provenance — present only when a delegated
+     * `agent:<id>` approved under an active translation.contract.approve
+     * grant (TCAPPROVE-05); all absent on a direct human approval.
+     */
+    delegatedBy: z.string().nullable().optional(),
+    delegationId: z.string().nullable().optional(),
+    /** The onboarding decision entry (OD-NN) whose selectedOption "Approve" backs this approval. */
+    decisionRef: z.string().nullable().optional(),
+    /** sha256 of the contract bytes the decision cited — TCAPPROVE-04 binds it at approve time. */
+    contractSha256: z.string().nullable().optional(),
   })
   .strict();
 export type ContractLifecycle = z.infer<typeof contractLifecycleSchema>;
