@@ -130,6 +130,7 @@ selection:
       values:
         light: Dark ink text on the biome background; cover images get a
           directional veil, never a uniform overlay.
+          # RFC-1420: --ds-color-hero-overlay is dark, --ds-color-hero-veil is light.
         dark: Light text over a dark overlay on the cover image.
     - prop: textSide
       values:
