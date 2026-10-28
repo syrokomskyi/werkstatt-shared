@@ -4,7 +4,7 @@
 # Edit instead: the archetype.registry.build generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 schemaVersion: 1.0.0
-totalCount: 87
+totalCount: 88
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
@@ -708,6 +708,15 @@ entries:
       - Hermippe
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/shell/site-background.yaml
     layer: component
+  - id: site-search
+    displayName: Site Search
+    semanticRole: search
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Urania
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/site-search.yaml
+    layer: section
   - id: social-meta
     displayName: Social meta
     semanticRole: component-social-meta
@@ -827,6 +836,7 @@ sectionRoles:
   - product-line-presentation
   - quantified-outcomes
   - scope-of-responsibility-disclosure
+  - search
   - side-by-side-comparison
   - social-proof
   - table-of-contents
@@ -916,6 +926,7 @@ planetImportPaths:
   Flora: "@warpgogol/werkstatt-site/ui/sections/product-line-cards"
   Ceres: "@warpgogol/werkstatt-site/ui/sections/send-message"
   Sedna: "@warpgogol/werkstatt-site/ui/sections/service-metadata-block"
+  Urania: "@warpgogol/werkstatt-site/ui/sections/site-search"
   Enceladus: "@warpgogol/werkstatt-site/ui/sections/social-proof"
   Metis: "@warpgogol/werkstatt-site/ui/sections/toc"
   Tethys: "@warpgogol/werkstatt-site/ui/sections/transparency"
@@ -1017,6 +1028,7 @@ blockTypeToCosmicName:
   product-line-cards: Flora
   send-message: Ceres
   service-metadata-block: Sedna
+  site-search: Urania
   social-proof: Enceladus
   toc: Metis
   transparency: Tethys
@@ -1124,6 +1136,7 @@ roleByCosmicName:
   Flora: product-line-presentation
   Ceres: lead-message-capture
   Sedna: page-metadata-footer
+  Urania: navigation
   Enceladus: social-proof
   Metis: table-of-contents
   Tethys: transparency
