@@ -18,6 +18,7 @@ full golden-journey list.
   <item>RFC-1116: initial contracts — AgentHealth, AgentContractCheckResult, AgentContractProbeId.</item>
   <item>RFC-1169: AgentPreviewCheckId + previewChecks on the check result — readiness evidence fails closed on old-shape (422) surfaces.</item>
   <item>RFC-1171: AgentDeprecationCheck + deprecationChecks on the check result — per-deprecation alias header/successor evidence.</item>
+  <item>RFC-1413: agent-surface interface drift — interfaces.* enumeration + SURF-DRIFT-01..06 in contract.check, deploy-leg gate escalation, --skip-surface-drift waiver</item>
 </CHANGE_SUMMARY>
 */
 
@@ -95,14 +96,47 @@ export interface AgentDeprecationCheck {
   detail?: string;
 }
 
+/**
+ * RFC-1413: one row per advertised `interfaces.*` entry — every URL the
+ * manifest declares is probed on the live channel against a per-kind
+ * expectation map. "skipped" covers entries that carry no fetchable URL
+ * (e.g. the `twins` glob pattern) so silence never masquerades as verified.
+ */
+export interface AgentInterfaceProbeResult {
+  /** Manifest path, e.g. "interfaces.nlweb". */
+  ref: string;
+  /** Resolved URL on the channel (absolute), or the raw declared value. */
+  url: string;
+  outcome: "ok" | "drift" | "unreachable" | "skipped";
+  httpStatus?: number;
+  detail?: string;
+}
+
+/** RFC-1413: SURF-DRIFT-* finding emitted alongside the probe evidence. */
+export interface AgentSurfaceDiagnostic {
+  ruleId: `SURF-DRIFT-0${1 | 2 | 3 | 4 | 5 | 6}`;
+  severity: "error" | "warning" | "info";
+  message: string;
+  /** Manifest ref or probe id the diagnostic refers to. */
+  ref?: string;
+}
+
 /** Diagnostics payload of agent.surface.contract.check (RFC-1116, DNA-82). */
 export interface AgentContractCheckResult {
   command: "agent.surface.contract.check";
   status: "pass" | "fail";
   url: string;
+  /** RFC-1413: channel the probe ran against ("direct" for --url mode). */
+  channel: string;
+  /** RFC-1413: the served agent.json fetched and parsed — SURF-DRIFT-01 when false. */
+  manifestPresent: boolean;
   probes: AgentContractProbe[];
   /** RFC-1169: preview readiness evidence — fails closed on old-shape surfaces. */
   previewChecks: AgentPreviewCheck[];
   /** RFC-1171: per-deprecation alias/successor evidence — fails closed when a declared alias lacks headers or the successor is dead. */
   deprecationChecks: AgentDeprecationCheck[];
+  /** RFC-1413: per-interfaces.* enumeration evidence — closes the drift gap. */
+  interfaces: AgentInterfaceProbeResult[];
+  /** RFC-1413: SURF-DRIFT-* findings; any "error" severity → status "fail". */
+  diagnostics: AgentSurfaceDiagnostic[];
 }
