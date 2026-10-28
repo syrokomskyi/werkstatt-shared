@@ -8,6 +8,7 @@ Unit tests for scroll spy covering initScrollSpy. It also guards the documented 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1419: added first-section exemption cases — main-scoped exempt element, pre-main overlay, single-section page, id-less/modal exclusion, document-order fallback; mock closest() now tracks main ancestry.</item>
   <item>RFC-1311: Compass header sweep — declares the scroll suite's contract for test-file scaffold coverage.</item>
 </CHANGE_SUMMARY>
 */
@@ -59,9 +60,16 @@ function parseSections(html: string, selector: string): MockElement[] {
     const lastModalOpen = modalBefore.lastIndexOf('class="wl-modal"');
     const lastModalClose = modalBefore.lastIndexOf("</div>");
     const inModal = lastModalOpen > lastModalClose;
+    const lastMainOpen = modalBefore.lastIndexOf("<main");
+    const lastMainClose = modalBefore.lastIndexOf("</main>");
+    const inMain = lastMainOpen > lastMainClose;
     const el = {
       id: match[1],
-      closest: (sel: string) => (sel === ".wl-modal" && inModal ? {} : null),
+      closest: (sel: string) => {
+        if (sel === ".wl-modal") return inModal ? {} : null;
+        if (sel === "main") return inMain ? {} : null;
+        return null;
+      },
       getBoundingClientRect: () => ({ top: 0 }),
     };
     sectionCache.set(match[1], el);
@@ -259,5 +267,106 @@ describe("initScrollSpy", () => {
     expect(observerInstances.length).toBe(1);
     expect(observerInstances[0].observe).toHaveBeenCalledTimes(1);
     expect(observerInstances[0].observe).toHaveBeenCalledWith(sectionCache.get("page-section"));
+  });
+
+  it("RFC-1419 AC-1/AC-2: exempts the first section[id] inside <main> regardless of slug", () => {
+    mockDocument.body.innerHTML =
+      '<main id="main-content"><section id="about-company">About</section>' +
+      '<section id="faq-about">Faq</section></main>';
+    const cleanup = initScrollSpy();
+    const about = sectionCache.get("about-company")!;
+    const faq = sectionCache.get("faq-about")!;
+
+    observerCallbacks[0]([
+      { target: about, isIntersecting: true, boundingClientRect: { top: 0 } },
+    ]);
+    expect(mockHistory.replaceState).not.toHaveBeenCalledWith(null, "", "#about-company");
+
+    observerCallbacks[0]([
+      { target: faq, isIntersecting: true, boundingClientRect: { top: 50 } },
+    ]);
+    expect(mockHistory.replaceState).toHaveBeenCalledWith(null, "", "#faq-about");
+
+    observerCallbacks[0]([
+      { target: about, isIntersecting: true, boundingClientRect: { top: 0 } },
+      { target: faq, isIntersecting: false, boundingClientRect: { top: 800 } },
+    ]);
+    expect(mockHistory.replaceState).toHaveBeenLastCalledWith(null, "", "/page");
+    cleanup();
+  });
+
+  it("RFC-1419 AC-3: a section[id] before <main> does not steal the exemption", () => {
+    mockDocument.body.innerHTML =
+      '<section id="overlay-search">Overlay</section>' +
+      '<main id="main-content"><section id="about">About</section>' +
+      '<section id="faq">Faq</section></main>';
+    const cleanup = initScrollSpy();
+    const about = sectionCache.get("about")!;
+    const faq = sectionCache.get("faq")!;
+
+    observerCallbacks[0]([
+      { target: about, isIntersecting: true, boundingClientRect: { top: 0 } },
+    ]);
+    expect(mockHistory.replaceState).not.toHaveBeenCalledWith(null, "", "#about");
+
+    observerCallbacks[0]([
+      { target: faq, isIntersecting: true, boundingClientRect: { top: 50 } },
+    ]);
+    expect(mockHistory.replaceState).toHaveBeenCalledWith(null, "", "#faq");
+    cleanup();
+  });
+
+  it("RFC-1419 AC-4: a single-section page never writes a fragment", () => {
+    mockDocument.body.innerHTML =
+      '<main id="main-content"><section id="privacy">Privacy</section></main>';
+    const cleanup = initScrollSpy();
+    const privacy = sectionCache.get("privacy")!;
+
+    observerCallbacks[0]([
+      { target: privacy, isIntersecting: true, boundingClientRect: { top: 0 } },
+    ]);
+    expect(mockHistory.replaceState).not.toHaveBeenCalledWith(null, "", "#privacy");
+    cleanup();
+  });
+
+  it("RFC-1419 AC-5: id-less and .wl-modal sections do not count toward the exempt element", () => {
+    mockDocument.body.innerHTML =
+      '<main id="main-content">' +
+      '<section class="breadcrumbs-section">Crumbs</section>' +
+      '<div class="wl-modal"><section id="modal-first">Modal</section></div>' +
+      '<section id="intro">Intro</section><section id="lines">Lines</section></main>';
+    const cleanup = initScrollSpy();
+    const intro = sectionCache.get("intro")!;
+    const lines = sectionCache.get("lines")!;
+
+    observerCallbacks[0]([
+      { target: intro, isIntersecting: true, boundingClientRect: { top: 0 } },
+    ]);
+    expect(mockHistory.replaceState).not.toHaveBeenCalledWith(null, "", "#intro");
+
+    observerCallbacks[0]([
+      { target: lines, isIntersecting: true, boundingClientRect: { top: 50 } },
+    ]);
+    expect(mockHistory.replaceState).toHaveBeenCalledWith(null, "", "#lines");
+    cleanup();
+  });
+
+  it("RFC-1419 AC-2 fallback: without <main>, document order decides the exempt element", () => {
+    mockDocument.body.innerHTML =
+      '<section id="first">First</section><section id="second">Second</section>';
+    const cleanup = initScrollSpy();
+    const first = sectionCache.get("first")!;
+    const second = sectionCache.get("second")!;
+
+    observerCallbacks[0]([
+      { target: first, isIntersecting: true, boundingClientRect: { top: 0 } },
+    ]);
+    expect(mockHistory.replaceState).not.toHaveBeenCalledWith(null, "", "#first");
+
+    observerCallbacks[0]([
+      { target: second, isIntersecting: true, boundingClientRect: { top: 50 } },
+    ]);
+    expect(mockHistory.replaceState).toHaveBeenCalledWith(null, "", "#second");
+    cleanup();
   });
 });

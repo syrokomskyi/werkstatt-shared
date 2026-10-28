@@ -441,6 +441,7 @@ Rules:
 - Always-on — no opt-in flag in `OrchestrationOptions`. The orchestrator calls `initScrollSpy()` unconditionally as step 12.
 - Uses `history.replaceState` (not `pushState`) to avoid polluting browser history.
 - Excludes sections inside `.wl-modal` elements.
+- The first-section exemption (RFC-1419): the first observed `section[id]` inside `main` (fallback: document order) never receives a hash — while it is topmost, the URL stays hash-free. Any first section qualifies (hero or content alike); overlay sections before `main` cannot steal the exemption.
 - Graceful degradation: returns no-op cleanup if `IntersectionObserver` is unsupported or no `section[id]` elements exist.
 - Idempotent: calling twice disconnects the previous observer before creating a new one.
 

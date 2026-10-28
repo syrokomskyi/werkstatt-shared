@@ -1,6 +1,6 @@
 /*
 <MODULE_CONTRACT>
-<purpose>scroll-spy — watches section elements via IntersectionObserver and updates the URL hash via history.replaceState as the user scrolls (RFC-1061). The first section in document order is exempt: while it is topmost, the URL stays hash-free.</purpose>
+<purpose>scroll-spy — watches section elements via IntersectionObserver and updates the URL hash via history.replaceState as the user scrolls (RFC-1061). The first-section exemption (RFC-1419): exactly one observed section[id] per page is exempt — the first inside <main> (fallback: document order) — while it is topmost, the URL stays hash-free.</purpose>
 <singleton-state>
   <item>Module-level `activeObserver` and `activeCleanup` enforce single-instance idempotency (AC-9). Calling `initScrollSpy` twice disconnects the previous observer before creating a new one.</item>
 </singleton-state>
@@ -11,6 +11,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1419: Codified the first-section exemption — exempt element resolved to the first observed section[id] inside &lt;main&gt; (fallback: document order), protecting it from overlay sections rendered before main.</item>
   <item>RFC-1061: Created scroll-spy script with IntersectionObserver-based section tracking and URL hash updates.</item>
   <item>RFC-1097: sweep — tail packages clean
 
@@ -56,6 +57,10 @@ export function initScrollSpy(options?: ScrollSpyOptions): () => void {
     return () => {};
   }
 
+  // RFC-1419: the exempt element is the first observed section inside <main>
+  // (fallback: document order) — resolved once per init.
+  const exemptSection = sections.find((el) => el.closest("main")) ?? sections[0];
+
   let currentId: string | null = null;
 
   const updateHash = (id: string | null) => {
@@ -83,7 +88,7 @@ export function initScrollSpy(options?: ScrollSpyOptions): () => void {
         }
       }
 
-      if (topmostVisible && topmostVisible !== sections[0]) {
+      if (topmostVisible && topmostVisible !== exemptSection) {
         updateHash(topmostVisible.id);
       } else {
         updateHash(null);
