@@ -11,6 +11,7 @@ schema validation for the RFC-0134 glass-first effects model.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1420: one-line contract notes — lighten is the uniform tint (fade is the directional edge gradient); groundwork for the COMP-HYG-05 scrim/surfaceTone gate.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -120,6 +121,7 @@ export const tiltEffectSchema = z
   .strict();
 export type TiltEffect = z.infer<typeof tiltEffectSchema>;
 
+/** RFC-1420: lighten is a uniform tint over the whole target — for a directional edge fade use kind: fade. */
 export const lightenEffectSchema = z
   .object({
     kind: z.literal("lighten"),
@@ -132,6 +134,7 @@ export const lightenEffectSchema = z
   .strict();
 export type LightenEffect = z.infer<typeof lightenEffectSchema>;
 
+/** RFC-1420: fade is the directional gradient from an edge — the light-surface hero veil mechanism. */
 export const fadeEffectSchema = z
   .object({
     kind: z.literal("fade"),

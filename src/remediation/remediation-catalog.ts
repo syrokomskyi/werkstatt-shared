@@ -11,14 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1420: COMP-HYG-05 remediation entry — uniform scrim replaced by kind: fade + edge; dark scrims belong on dark surfaces.</item>
   <item>RFC-1369: review round 1 — GEN-FILES-01 repair guidance (per-path-class --repair commands, cache-clone carve-out).</item>
   <item>RFC-1368: INTAKE-34 remediation entry (declared-vs-sniffed media type).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
-  <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
-  <item>RFC-1365: step 4 — DNA-115, CONF-* remediation entries, agents-generate convention section</item>
-  <item>RFC-1365: review round 1 — CONF-03 rescoped producer-side (Q-9), producers[] json shape, crash guard + leg output, transport attribution, env semantics, writes declared, regen sweep</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, warpgogol-m000196</history>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1210, RFC-1365, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -66,6 +64,14 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     action:
       "Align inline markdown constructs (code spans, links, images, footnote references) between the localized block and its counterpart locale, or record an intentional difference via translation.parity.suppress.",
     docRef: "docs/authoring/preventive-measures-parity-and-templates.md",
+  },
+  {
+    ruleId: "COMP-HYG-05",
+    action:
+      "Replace the uniform scrim with a directional fade — declare kind: fade with edge on the background effects stack. Dark scrims (--ds-color-hero-overlay, --ds-color-overlay, --ds-color-overlay-strong, dark literals) belong on surfaceTone: dark; light surfaces use the veil (--ds-color-hero-veil) via kind: fade.",
+    docRef:
+      "docs/rfcs/rfc-1420-gate-hero-background-scrims-against-surface-tone-contrast.md",
+    targetFiles: ["src/content/pages/**/*.md"],
   },
   {
     ruleId: "GEN-FILES-01",
