@@ -14,6 +14,8 @@ independent from the global SiteBackground shell block (RFC-0105).
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1423: position field on the image variant — closed keyword enum
+  consumed as object-position by section-shell and the footer chrome layer.</item>
   <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
 </CHANGE_SUMMARY>
 */
@@ -38,6 +40,14 @@ const sectionBackgroundImageSchema = z
     /** Bare image name (RFC-0053); resolved by <SectionShell> via shared image utils. */
     imageName: z.string().min(1),
     fit: z.enum(["cover", "tile", "stretch-width", "stretch-height"]).optional(),
+    /** RFC-1423: crop anchor consumed as object-position. Closed keyword enum. */
+    position: z
+      .enum([
+        "center", "top", "bottom", "left", "right",
+        "left top", "left bottom", "right top", "right bottom",
+        "center top", "center bottom",
+      ])
+      .optional(),
     quality: z.enum(["low", "mid", "high", "max"]).optional(),
     /** 0..1; tint overlay opacity using --ds-color-bg above the image. */
     tintOpacity: z.number().min(0).max(1).optional(),
