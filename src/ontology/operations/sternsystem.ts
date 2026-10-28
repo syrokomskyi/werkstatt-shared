@@ -16,8 +16,6 @@ RFC-0790: add systemConfigSchema, systemStateSchema, servicesRegistrySchema for 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1342/AMD-007: onboarding provenance comment names the v2 intake bundle</item>
-  <item>RFC-1263</item>
   <item>RFC-1284: systemStateSchema gains nullable accessPinSuspended {at,by,operationId} — durable crash-safe suspension marker; accessPin stays the desired-state authority</item>
   <item>RFC-1307: step 1 — shared PBP layout map, canonical writer, typed onboarding state</item>
   <item>RFC-1335: implement RFC-1335: fail-fast editorial gate, adaptive certify budget, gate-bound producer ordering
@@ -51,7 +49,8 @@ override key. RFC-0668 retry contract unchanged.
 
 Test-Reason: regression — fixed 15min mission.check cliff on dev-deploy
 (warpgogol-m000202 class, RFC-1335 review open question).</item>
-  <history>ADR-0091, RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065, RFC-1097, RFC-1210</history>
+  <item>RFC-1412: post-ship rendered visual regression gate — visual.regression.check/.baseline commands, masked pixelmatch diffing, sha256-verified release baselines, bounded LLM review, journaled ship step with waiver</item>
+  <history>ADR-0091, RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065, RFC-1097, RFC-1210, RFC-1263, RFC-1342</history>
 </CHANGE_SUMMARY>
 */
 
@@ -214,6 +213,44 @@ export const systemConfigSchema = z.looseObject({
     })
     .optional()
     .describe("RFC-1335/ADR-0111: leitstand runtime overrides"),
+  visualRegression: z
+    .looseObject({
+      priorityRoutes: z
+        .array(z.string())
+        .optional()
+        .describe(
+          "RFC-1412: canonical routes always captured by the visual regression gate " +
+            "(home per locale + authored high-traffic routes) so silent drift on " +
+            "priority pages is caught even when the route-diff set is empty.",
+        ),
+      maskSelectors: z
+        .array(z.string())
+        .optional()
+        .describe(
+          "RFC-1412: CSS selectors whose regions are excluded from pixel diffing " +
+            "(in addition to data-visual-ignore elements and third-party iframes, " +
+            "which are always masked).",
+        ),
+      thresholds: z
+        .looseObject({
+          default: z
+            .number()
+            .min(0)
+            .max(1)
+            .optional()
+            .describe(
+              "RFC-1412: changed-pixel ratio above which a route is flagged " +
+                "(default 0.005 = 0.5%).",
+            ),
+          perRoute: z
+            .record(z.string(), z.number().min(0).max(1))
+            .optional()
+            .describe("RFC-1412: per-route threshold overrides keyed by canonical route."),
+        })
+        .optional(),
+    })
+    .optional()
+    .describe("RFC-1412: post-ship rendered visual regression gate config"),
 });
 
 // Loose for the same reason as systemConfigSchema — system-state.yaml is
