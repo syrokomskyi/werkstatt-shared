@@ -21,6 +21,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1341: BlockEntry gains optional requires (claim:<pbp-entry-id>, AND-ed); BuildPageOptions.publication evaluates claims against the site ceiling — below-ceiling claims omit the block via onOmitted, preview-tier claims mark ResolvedBlock.publicationTier/publicationNote; absent option keeps pre-RFC byte-identical output.</item>
+  <item>RFC-1422: AUTO_INJECTED_BLOCK_TYPES + AUTO_INJECTED_COSMIC_NAMES — shared source of truth for pipeline-injected block types (breadcrumbs→Thebe); consumed by render-side dedupe and page.block.validate B-10 / manifest.planets.validate MP-03.</item>
   <history>RFC-0091</history>
 </CHANGE_SUMMARY>
 */
@@ -217,6 +218,20 @@ export function normalizeBlockType(block: BlockEntry): string {
   }
   return BLOCK_TYPE_TO_COSMIC_NAME[selector] ?? selector;
 }
+
+// RFC-1422: the render pipeline owns these block types — they are injected at
+// render and MUST NEVER be authored in page content (an authored copy is a
+// second, divergent source of the same surface). One shared set is consumed by
+// the render-side dedupe and by page.block.validate (B-10) /
+// manifest.planets.validate (MP-03).
+
+/** Block `type` values the page pipeline injects at render — never authored (RFC-1422). */
+export const AUTO_INJECTED_BLOCK_TYPES = ["breadcrumbs"] as const;
+
+/** Cosmic names resolved from AUTO_INJECTED_BLOCK_TYPES via the registry map (RFC-1422). */
+export const AUTO_INJECTED_COSMIC_NAMES: ReadonlySet<string> = new Set(
+  AUTO_INJECTED_BLOCK_TYPES.map((t) => BLOCK_TYPE_TO_COSMIC_NAME[t] ?? t),
+);
 
 /**
  * Resolves a PlanetName to the stable import path of its section component.
