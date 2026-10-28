@@ -21,6 +21,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1347: IndustryValues gains trade-and-distribution (Handel & Distribution) for the brand-line-showcase industry's fit — DNA-19 closed vocabulary, one RFC-gated value.</item>
+  <item>RFC-1417: add second-tier site families — gastro, beauty, medical</item>
 </CHANGE_SUMMARY>
 */
 
@@ -166,3 +167,107 @@ export const IndustryLabels: Record<Industry, string> = {
   "creative-studios": "Kreative Branchen & Studios",
   "trade-and-distribution": "Handel & Distribution",
 };
+
+// ---------------------------------------------------------------------------
+// Detection vocabulary (RFC-1417)
+// ---------------------------------------------------------------------------
+
+/**
+ * Closed vocabulary for site-family `detection.signals` values — the neutral
+ * tokens intake classification surfaces match against. CLOSED — adding a
+ * value requires a superseding RFC (DNA-19). Every token a family.yaml
+ * detection signal uses MUST resolve here; `vocabulary.test.ts` enforces it.
+ */
+
+/** detection.signals.archetypePrimary values. */
+export const DetectionArchetypeValues = [
+  "b2b-trust-system",
+  "product-line-showcase",
+  "donation-funnel",
+  "quality-audit-tool",
+  // RFC-1417 second-tier families
+  "local-hospitality",
+  "local-service-evidence",
+  "local-care-trust",
+] as const;
+
+/** detection.signals.audienceAny values. */
+export const DetectionAudienceValues = [
+  "firms",
+  "retailers",
+  "distributors",
+  "consumers",
+  "partner",
+  "donors",
+  "supporters",
+  "volunteers",
+  "webmasters",
+  "operators",
+  "agencies",
+  "handwerker",
+  "maler-lackierer",
+  "kleinunternehmen",
+  // RFC-1417 second-tier families
+  "restaurant",
+  "cafe",
+  "catering",
+  "salon",
+  "kosmetik",
+  "studio",
+  "praxis",
+  "physio",
+  "dental",
+] as const;
+
+/** detection.signals.conversionPrimary values. */
+export const DetectionConversionValues = [
+  "information-browse",
+  "donation-intent",
+  "check-initiated",
+  "qualified-project-inquiry",
+  // RFC-1417 second-tier families
+  "reservation-or-visit-inquiry",
+  "booking-request",
+  "appointment-request",
+] as const;
+
+/** detection.signals.materialMentionsAny values (incl. incumbent plural forms). */
+export const DetectionMaterialValues = [
+  "booklet",
+  "brochure",
+  "catalog",
+  "trademarks",
+  "certification",
+  "sku",
+  "booklets",
+  "brochures",
+  "catalogs",
+  "donation",
+  "transparency",
+  "recurring-support",
+  "url-check",
+  "quality-report",
+  "action-pack",
+  "audit",
+  "notausgang",
+  "vendor-lock-in",
+  "controlled-responsibility",
+  // RFC-1417 second-tier families
+  "menu",
+  "wine-list",
+  "lunch-specials",
+  "portfolio",
+  "before-after-photos",
+  "certificates",
+  "credentials",
+  "treatment-list",
+  "practice-team",
+] as const;
+
+/** One accessor per signal kind — keeps the vocabulary test structural. */
+export const DetectionVocabulary = {
+  archetypePrimary: DetectionArchetypeValues,
+  audienceAny: DetectionAudienceValues,
+  conversionPrimary: DetectionConversionValues,
+  materialMentionsAny: DetectionMaterialValues,
+} as const;
