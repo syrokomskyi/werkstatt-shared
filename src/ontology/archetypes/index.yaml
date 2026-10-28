@@ -4,7 +4,7 @@
 # Edit instead: the archetype.registry.build generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 schemaVersion: 1.0.0
-totalCount: 88
+totalCount: 89
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
@@ -59,6 +59,15 @@ entries:
     acceptedCosmicNames:
       - Echo
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/before-after-gallery.yaml
+    layer: section
+  - id: booking
+    displayName: Booking Request
+    semanticRole: booking
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Klotho
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/booking.yaml
     layer: section
   - id: brand-label
     displayName: Brand Label
@@ -804,6 +813,7 @@ sectionRoles:
   - article-index
   - article-metadata-header
   - audience-self-identification
+  - booking
   - breadcrumbs
   - changelog-history
   - client-gratitude
@@ -895,6 +905,7 @@ planetImportPaths:
   Io: "@warpgogol/werkstatt-site/ui/sections/article-list"
   Epimetheus: "@warpgogol/werkstatt-site/ui/sections/audience-cards"
   Echo: "@warpgogol/werkstatt-site/ui/sections/before-after-gallery"
+  Klotho: "@warpgogol/werkstatt-site/ui/sections/booking"
   Thebe: "@warpgogol/werkstatt-site/ui/sections/breadcrumbs"
   Prometheus: "@warpgogol/werkstatt-site/ui/sections/changelog"
   Amalthea: "@warpgogol/werkstatt-site/ui/sections/chat-widget"
@@ -997,6 +1008,7 @@ blockTypeToCosmicName:
   article-list: Io
   audience-cards: Epimetheus
   before-after-gallery: Echo
+  booking: Klotho
   breadcrumbs: Thebe
   changelog: Prometheus
   chat-widget: Amalthea
@@ -1105,6 +1117,7 @@ roleByCosmicName:
   Io: approach
   Epimetheus: audience-self-identification
   Echo: gallery
+  Klotho: contact
   Thebe: navigation
   Prometheus: changelog-history
   Amalthea: consent-gated-chat-launcher
