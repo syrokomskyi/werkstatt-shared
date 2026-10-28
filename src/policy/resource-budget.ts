@@ -16,6 +16,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-1209: initial contract — schemas, workspace baselines, resolve() merge path, deterministic report shape (buildContentHash, no wall-clock fields — DNA-58).</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
+  <item>RFC-1418: split rendered css into external shared sheet and per-page inline</item>
 </CHANGE_SUMMARY>
 */
 
@@ -35,6 +36,19 @@ export const resourceBudgetConfigSchema = z
     maxRequests: z.number().int().positive(),
     /** Distinct third-party origins referenced. */
     maxThirdPartyOrigins: z.number().int().min(0),
+    /**
+     * RFC-1418: per-route ceiling on raw inline `<style>` bytes. Independent
+     * `mode` — a blocking inline-CSS budget stays blocking even when the
+     * numeric budgets run advisory. Absent → INLINE_CSS_BUDGET_DEFAULT.
+     */
+    inlineCssBytes: z
+      .object({
+        /** Raw byte ceiling summed over all `<style>` elements on a route. */
+        limit: z.number().int().positive(),
+        mode: z.enum(["advisory", "blocking"]),
+      })
+      .strict()
+      .optional(),
     /** advisory = warnings only; blocking = errors + non-zero exit. */
     enforce: z.enum(["advisory", "blocking"]),
     /** Per-route overrides keyed by route path (e.g. "/leistungen/"). */
@@ -62,6 +76,8 @@ export interface RouteResourceMeasurement {
   jsKb: number;
   requests: number;
   thirdPartyOrigins: string[];
+  /** RFC-1418: raw byte sum of all `<style>` element contents on the route. */
+  inlineCssBytes: number;
 }
 
 export const resourceBudgetReportSchema = z
@@ -78,6 +94,8 @@ export const resourceBudgetReportSchema = z
       p95PageWeightKb: z.number().min(0),
       maxPageWeightKb: z.number().min(0),
       totalJsKb: z.number().min(0),
+      /** RFC-1418: largest per-route inline `<style>` byte sum measured. */
+      maxInlineCssBytes: z.number().int().min(0),
     }),
     verdict: z.enum(["within", "exceeded-advisory", "exceeded-blocking"]),
   })
@@ -92,11 +110,21 @@ export type ResourceBudgetReport = z.infer<typeof resourceBudgetReportSchema>;
 // (advisory rollout means nothing blocks on these anyway).
 // ---------------------------------------------------------------------------
 
+/** RFC-1418: shared default when a site declares no `inlineCssBytes` — 24 KB
+ *  per-route inline-CSS ceiling, blocking. The split-CSS strategy externalizes
+ *  shared styles; a runaway inline block is a regression signal, not a tuning
+ *  choice, so the default blocks. */
+export const INLINE_CSS_BUDGET_DEFAULT = {
+  limit: 24576,
+  mode: "blocking",
+} as const;
+
 export const RESOURCE_BUDGET_BASELINE: ResourceBudgetConfig = {
   maxPageWeightKb: 2048,
   maxJsKb: 512,
   maxRequests: 80,
   maxThirdPartyOrigins: 8,
+  inlineCssBytes: INLINE_CSS_BUDGET_DEFAULT,
   enforce: "advisory",
 };
 
