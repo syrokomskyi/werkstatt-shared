@@ -4,7 +4,7 @@
 # Edit instead: the archetype.registry.build generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 schemaVersion: 1.0.0
-totalCount: 84
+totalCount: 87
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
@@ -50,6 +50,15 @@ entries:
     acceptedCosmicNames:
       - Epimetheus
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/audience-cards.yaml
+    layer: section
+  - id: before-after-gallery
+    displayName: Before-After Gallery
+    semanticRole: gallery
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Echo
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/before-after-gallery.yaml
     layer: section
   - id: brand-label
     displayName: Brand Label
@@ -366,6 +375,15 @@ entries:
       - Aegaeon
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/live-photo.yaml
     layer: component
+  - id: map-embed
+    displayName: Map Embed
+    semanticRole: location
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Iris
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/map-embed.yaml
+    layer: section
   - id: markdown
     displayName: Markdown
     semanticRole: long-form-narrative
@@ -464,6 +482,15 @@ entries:
     acceptedCosmicNames:
       - Orcus
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/open-source-registry.yaml
+    layer: section
+  - id: opening-hours
+    displayName: Opening Hours
+    semanticRole: contact
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Aurora
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/opening-hours.yaml
     layer: section
   - id: ownership-block
     displayName: Ownership block
@@ -773,6 +800,7 @@ sectionRoles:
   - client-gratitude
   - client-ownership-disclosure
   - consent-gated-chat-launcher
+  - contact
   - credits-gallery
   - data-driven-status-indicator
   - decision-opening
@@ -783,9 +811,11 @@ sectionRoles:
   - exit-flow-visualization
   - faq
   - final-cta
+  - gallery
   - hero
   - illustrated-narrative
   - lead-message-capture
+  - location
   - long-form-narrative
   - maturity-visualization
   - navigation
@@ -854,6 +884,7 @@ planetImportPaths:
   Himalia: "@warpgogol/werkstatt-site/ui/sections/article-header"
   Io: "@warpgogol/werkstatt-site/ui/sections/article-list"
   Epimetheus: "@warpgogol/werkstatt-site/ui/sections/audience-cards"
+  Echo: "@warpgogol/werkstatt-site/ui/sections/before-after-gallery"
   Thebe: "@warpgogol/werkstatt-site/ui/sections/breadcrumbs"
   Prometheus: "@warpgogol/werkstatt-site/ui/sections/changelog"
   Amalthea: "@warpgogol/werkstatt-site/ui/sections/chat-widget"
@@ -871,11 +902,13 @@ planetImportPaths:
   Europa: "@warpgogol/werkstatt-site/ui/sections/hero"
   Phobos: "@warpgogol/werkstatt-site/ui/sections/hero-decision-card"
   Ganymede: "@warpgogol/werkstatt-site/ui/sections/impact"
+  Iris: "@warpgogol/werkstatt-site/ui/sections/map-embed"
   Hyperion: "@warpgogol/werkstatt-site/ui/sections/markdown"
   Eris: "@warpgogol/werkstatt-site/ui/sections/mountain-journey"
   Phoebe: "@warpgogol/werkstatt-site/ui/sections/navigation"
   Telesto: "@warpgogol/werkstatt-site/ui/sections/notausgang-block"
   Orcus: "@warpgogol/werkstatt-site/ui/sections/open-source-registry"
+  Aurora: "@warpgogol/werkstatt-site/ui/sections/opening-hours"
   Helene: "@warpgogol/werkstatt-site/ui/sections/ownership-block"
   Mimas: "@warpgogol/werkstatt-site/ui/sections/people"
   Pan: "@warpgogol/werkstatt-site/ui/sections/price-card"
@@ -952,6 +985,7 @@ blockTypeToCosmicName:
   article-header: Himalia
   article-list: Io
   audience-cards: Epimetheus
+  before-after-gallery: Echo
   breadcrumbs: Thebe
   changelog: Prometheus
   chat-widget: Amalthea
@@ -969,11 +1003,13 @@ blockTypeToCosmicName:
   hero: Europa
   hero-decision-card: Phobos
   impact: Ganymede
+  map-embed: Iris
   markdown: Hyperion
   mountain-journey: Eris
   navigation: Phoebe
   notausgang-block: Telesto
   open-source-registry: Orcus
+  opening-hours: Aurora
   ownership-block: Helene
   people: Mimas
   price-card: Pan
@@ -1056,6 +1092,7 @@ roleByCosmicName:
   Himalia: article-metadata-header
   Io: approach
   Epimetheus: audience-self-identification
+  Echo: gallery
   Thebe: navigation
   Prometheus: changelog-history
   Amalthea: consent-gated-chat-launcher
@@ -1073,11 +1110,13 @@ roleByCosmicName:
   Europa: hero
   Phobos: hero
   Ganymede: quantified-outcomes
+  Iris: location
   Hyperion: long-form-narrative
   Eris: maturity-visualization
   Phoebe: navigation
   Telesto: exit-clause-disclosure
   Orcus: open-source-registry
+  Aurora: contact
   Helene: client-ownership-disclosure
   Mimas: people
   Pan: pricing-disclosure
