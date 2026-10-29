@@ -3,8 +3,11 @@
 <purpose>
   RFC-0231 attribution visibility policy. One vocabulary + one pure resolver that
   decides whether an attribution surface (material credit, prose byline, footer
-  copyright) renders its VISIBLE form. Hiding never affects provenance: callers
-  must keep emitting JSON-LD and the credits-page listing regardless of the result.
+  copyright) renders its VISIBLE form, plus the RFC-1426 credits-page predicate.
+  Hiding never affects provenance: callers keep emitting JSON-LD regardless of
+  the result. The aggregate credits-page listing is the exception — RFC-1426
+  amends the original carve-out: isMaterialCreditPageVisible excludes records
+  whose sourceType is placeholder or whose asset-level display is hidden.
 </purpose>
 <non-goals>
   <item>Do not read content or globs; callers pass the resolved overrides.</item>
@@ -13,10 +16,20 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0231: initial attribution visibility policy resolver + site schema.</item>
+  <item>RFC-1426: shared credits-page projection in werkstatt-shared, both renderers consume it
+
+isMaterialCreditPageVisible (placeholder or display:hidden -> not on page) in
+attribution-display beside the RFC-0231 resolver it amends; selectCreditsPageRecords
+owns selection + visibility + materialTargetKey order. service.ts call sites and
+credits-gallery switch to it; both selectLocalized copies and the barrel re-export
+retired. material.credits.validate gains PAGE-HIDDEN-REFERENCED advisory (rules[]
+registered), report gains pageVisible per record. AGENTS.template documents the
+page-visibility rule.</item>
 </CHANGE_SUMMARY>
 */
 
 import { z } from "zod";
+import type { MaterialCredit } from "../schemas/material-credit.ts";
 
 /** RFC-0231: every visibility level speaks the same two-word vocabulary. */
 export type AttributionDisplay = "shown" | "hidden";
@@ -68,6 +81,24 @@ export function resolveAttributionDisplay(inputs: AttributionDisplayInputs): Att
 
   // byIntent: decorative material is quiet by default; everything else shows.
   return inputs.intent === "decorative" ? "hidden" : "shown";
+}
+
+/**
+ * RFC-1426: whether a record appears on the aggregate credits page (generated
+ * prose projection and credits-gallery section). Hard rules, in order:
+ *   display: "hidden"         -> false (explicit operator opt-out)
+ *   sourceType: "placeholder" -> false (below-public stand-in by construction,
+ *                               RFC-1346; display: "shown" cannot resurrect it)
+ *   otherwise                 -> true
+ * Only the asset-level override and sourceType qualify — the RFC-0231 cascade's
+ * placement/page/site levels do NOT reach the page (the page is the disclosure
+ * registry; a site-wide `attribution.credits: hidden` must not empty it).
+ * Per-asset chips, JSON-LD nodes, and validation gates do NOT consult this.
+ */
+export function isMaterialCreditPageVisible(credit: MaterialCredit): boolean {
+  if (credit.display === "hidden") return false;
+  if (credit.sourceType === "placeholder") return false;
+  return true;
 }
 
 /** RFC-0231: parse the optional site `attribution` block; tolerate absence/garbage. */

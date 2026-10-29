@@ -13,10 +13,20 @@
 <CHANGE_SUMMARY>
   <item>RFC-0220: initial helper surface for material credit sidecars.</item>
   <item>RFC-0227: buildMaterialCreditJsonLd emits @id for page-graph linking.</item>
+  <item>RFC-1426: shared credits-page projection in werkstatt-shared, both renderers consume it
+
+isMaterialCreditPageVisible (placeholder or display:hidden -> not on page) in
+attribution-display beside the RFC-0231 resolver it amends; selectCreditsPageRecords
+owns selection + visibility + materialTargetKey order. service.ts call sites and
+credits-gallery switch to it; both selectLocalized copies and the barrel re-export
+retired. material.credits.validate gains PAGE-HIDDEN-REFERENCED advisory (rules[]
+registered), report gains pageVisible per record. AGENTS.template documents the
+page-visibility rule.</item>
 </CHANGE_SUMMARY>
 */
 
 import { parse as parseYaml } from "yaml";
+import { isMaterialCreditPageVisible } from "./attribution-display.ts";
 import {
   type MaterialCredit,
   type MaterialCreditLabels,
@@ -86,6 +96,52 @@ export function findMaterialCredit(
     if (record) return record.credit;
   }
   return null;
+}
+
+/**
+ * RFC-1426: the credits page's shared projection — per-language selection
+ * (exact → default → language-agnostic), page-visibility filter, canonical
+ * materialTargetKey order. Both credits-page renderers (generated prose and
+ * credits-gallery) consume this so their record set and order can never drift.
+ * Visibility applies AFTER selection: a `hidden` localized record drops its
+ * target rather than silently falling back to a visible lang twin.
+ */
+export function selectCreditsPageRecords(
+  records: MaterialCreditRecord[],
+  lang: string,
+  defaultLang: string,
+): MaterialCreditRecord[] {
+  const resolveLang = (record: MaterialCreditRecord): string | undefined =>
+    record.credit.target.lang ?? record.lang;
+  const identityKey = (record: MaterialCreditRecord): string => {
+    const target = record.credit.target;
+    return [target.kind, target.domain ?? "", target.id].join(":");
+  };
+  const priorityFor = (recordLang: string | undefined): number => {
+    if (recordLang === lang) return 0;
+    if (recordLang === defaultLang) return 1;
+    if (!recordLang) return 2;
+    return -1;
+  };
+
+  const bestByTarget = new Map<string, { record: MaterialCreditRecord; priority: number }>();
+  for (const record of records) {
+    const priority = priorityFor(resolveLang(record));
+    if (priority < 0) continue;
+    const key = identityKey(record);
+    const current = bestByTarget.get(key);
+    if (!current || priority < current.priority) {
+      bestByTarget.set(key, { record, priority });
+    }
+  }
+  return [...bestByTarget.values()]
+    .map((entry) => entry.record)
+    .filter((record) => isMaterialCreditPageVisible(record.credit))
+    .sort((a, b) =>
+      materialTargetKey(a.credit.target, resolveLang(a)).localeCompare(
+        materialTargetKey(b.credit.target, resolveLang(b)),
+      ),
+    );
 }
 
 export function creditByTarget(
