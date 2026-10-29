@@ -4,8 +4,9 @@
   [RFC-0174] Binding-language policy resolver for legal documents.
   Pure functions that turn a page's authored `translation` frontmatter block into
   a render-time decision: is this the binding-language version, what is the locale's
-  translation status, must the mandatory language notice + "unofficial translation"
-  indicator be shown, and where does the binding document live.
+  translation status (including RFC-1425 "untranslated" — the locale serves the
+  binding document itself), must the mandatory language notice + indicator be
+  shown, and where does the binding document live.
 </purpose>
 <non-goals>
   <item>Do not read content or the route registry — the binding URL is injected by the caller.</item>
@@ -15,15 +16,17 @@
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0174: initial binding-language policy resolver.</item>
+  <item>RFC-1425: `untranslated` status — locale serves the binding document itself, deliberately untranslated (neutral notice, never a redirect).</item>
 </CHANGE_SUMMARY>
 */
 
 /** Per-locale translation status for a legal document. */
-export type TranslationStatus = "official" | "unofficial" | "disabled";
+export type TranslationStatus = "official" | "unofficial" | "untranslated" | "disabled";
 
 export const TRANSLATION_STATUSES: readonly TranslationStatus[] = [
   "official",
   "unofficial",
+  "untranslated",
   "disabled",
 ] as const;
 
@@ -44,11 +47,13 @@ export interface PageTranslationPolicy {
    * any non-binding locale is `unofficial`.
    */
   notice?: boolean;
-  /** Persistent "unofficial translation" indicator. Default true. */
+  /** Persistent translation-status indicator chip. Default true. */
   indicator?: boolean;
   /**
    * Per-locale status. A locale absent here that has a translation file is treated
    * as "unofficial". The binding language itself is always treated as official.
+   * "untranslated" means the locale serves the binding document itself,
+   * deliberately untranslated (RFC-1425) — it still carries the language notice.
    */
   locales?: Record<string, TranslationStatus>;
 }
@@ -116,8 +121,12 @@ export function resolveTranslationContext(args: {
   const noticeEnabled = policy.notice !== false;
   const indicatorEnabled = policy.indicator !== false;
 
-  const showNotice = !isBinding && status === "unofficial" && noticeEnabled;
-  const showIndicator = !isBinding && status === "unofficial" && indicatorEnabled;
+  // RFC-1425: the mandatory notice + indicator cover every locale that is NOT
+  // a vetted translation — unofficial service translations and deliberately
+  // untranslated binding-document renders alike.
+  const noticed = status === "unofficial" || status === "untranslated";
+  const showNotice = !isBinding && noticed && noticeEnabled;
+  const showIndicator = !isBinding && noticed && indicatorEnabled;
   const redirectTo = !isBinding && status === "disabled" ? bindingUrl : undefined;
 
   return {
