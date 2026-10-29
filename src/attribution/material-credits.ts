@@ -22,6 +22,18 @@ credits-gallery switch to it; both selectLocalized copies and the barrel re-expo
 retired. material.credits.validate gains PAGE-HIDDEN-REFERENCED advisory (rules[]
 registered), report gains pageVisible per record. AGENTS.template documents the
 page-visibility rule.</item>
+  <item>RFC-1426: address rfc-1426 review r2 findings — record-identity dedupe, page-scoped count, real default locale
+
+REVIEW-CODE-2026-10-29-03: pageHiddenReferenced dedupes by sidecar file
+(credit.id is not schema-unique across distinct targets); the duplicated
+candidate-order scan collapses into findSatisfyingRecord shared by the
+missing-credit gate and the advisory; creditCount counts the union of records
+selected on at least one generated page (non-supported-locale records render
+nowhere, multi-locale records count once); semantic-model accepts the real
+defaultLanguage threaded from createBuildSemanticModel instead of inheriting
+the module-wide de fallback; JSDoc and the RFC Decision record the third
+projection consumer and scope the unchanged claim to per-asset JSON-LD; AC-5
+tests gain the placeholder-referenced branch and fixHint assertions.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -101,8 +113,9 @@ export function findMaterialCredit(
 /**
  * RFC-1426: the credits page's shared projection — per-language selection
  * (exact → default → language-agnostic), page-visibility filter, canonical
- * materialTargetKey order. Both credits-page renderers (generated prose and
- * credits-gallery) consume this so their record set and order can never drift.
+ * materialTargetKey order. Every credits-page projection — generated prose,
+ * the credits-gallery section, and the page's own associatedMedia link set —
+ * consumes this so their record sets and order can never drift.
  * Visibility applies AFTER selection: a `hidden` localized record drops its
  * target rather than silently falling back to a visible lang twin.
  */
