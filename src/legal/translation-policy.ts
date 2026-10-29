@@ -17,6 +17,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0174: initial binding-language policy resolver.</item>
   <item>RFC-1425: `untranslated` status — locale serves the binding document itself, deliberately untranslated (neutral notice, never a redirect).</item>
+  <item>RFC-1425 review r1: JURISDICTION_BINDING_LANG moved here — single source consumed by emitter (legal.scaffold) and validator (legal.translation.validate) doors; showIndicator doc covers untranslated.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -29,6 +30,21 @@ export const TRANSLATION_STATUSES: readonly TranslationStatus[] = [
   "untranslated",
   "disabled",
 ] as const;
+
+/**
+ * RFC-1329: the binding language a `system.md` `legalJurisdiction` (ISO 3166-1
+ * alpha-2) implies. Sites carrying one of these jurisdictions scaffold
+ * Impressum + Datenschutz on every supported locale — the binding text is
+ * inline, so no binding-language page file is required. Single source consumed
+ * by both the emitter (legal.scaffold) and the validator
+ * (legal.translation.validate) — duplicating the set in checks/codegen makes
+ * the two doors diverge silently.
+ */
+export const JURISDICTION_BINDING_LANG: Readonly<Record<string, string>> = {
+  DE: "de",
+  AT: "de",
+  CH: "de",
+};
 
 /**
  * Authored `translation` block, declared once in the binding-language page file
@@ -72,7 +88,7 @@ export interface ResolvedTranslationContext {
   bindingUrl: string;
   /** Inject the mandatory language-notice banner. */
   showNotice: boolean;
-  /** Render the persistent "unofficial translation" indicator. */
+  /** Render the persistent translation-status indicator (unofficial or untranslated). */
   showIndicator: boolean;
   /**
    * When set, this locale is `disabled` and the route should redirect to the
