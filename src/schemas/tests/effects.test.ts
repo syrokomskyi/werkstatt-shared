@@ -8,6 +8,9 @@ Unit tests for effects covering namedEffectTargetSchema; effectTargetSchema; gla
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>dp7-m000006: withDefaultEffects / resolveEffectsForTargetWithDefaults —
+  fill-when-absent, authored-wins (incl. enabled:false opt-out), non-shadow
+  kinds preserved, defaults constants pinned to the canonical cast values.</item>
   <item>RFC-1311: Compass header sweep — declares the effects suite's contract for test-file scaffold coverage.</item>
 </CHANGE_SUMMARY>
 */
@@ -22,7 +25,11 @@ import {
   EFFECT_KIND_META,
   allowedKindsForTarget,
   resolveEffectsForTarget,
+  resolveEffectsForTargetWithDefaults,
+  withDefaultEffects,
   hasEnabledGlassEffect,
+  DEFAULT_SECTION_CAST_DOWN,
+  DEFAULT_SECTION_CAST_UP,
 } from "../effects.ts";
 import type { EffectAssignment } from "../effects.ts";
 import type { z } from "zod";
@@ -209,6 +216,96 @@ describe("resolveEffectsForTarget", () => {
     const assignments: EffectAssignment[] = [{ target: "section", stack: [glassEffect] }];
     const effects = resolveEffectsForTarget(assignments, "section");
     expect(effects).toHaveLength(1);
+  });
+});
+
+describe("platform default casts (dp7-m000006)", () => {
+  it("pins the canonical cast values (warpgogol-authored parity)", () => {
+    expect(DEFAULT_SECTION_CAST_DOWN).toMatchObject({
+      kind: "shadow",
+      enabled: true,
+      offsetY: 24,
+      blur: 48,
+      spread: -16,
+      opacity: 0.3,
+    });
+    expect(DEFAULT_SECTION_CAST_UP).toMatchObject({ offsetY: -24 });
+  });
+
+  it("fills a section shadow when no assignments exist", () => {
+    const merged = withDefaultEffects(undefined, "section", [DEFAULT_SECTION_CAST_DOWN]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0].target).toBe("section");
+    expect(merged[0].stack[0]).toMatchObject({ kind: "shadow", offsetY: 24 });
+  });
+
+  it("appends the default to a target stack that lacks a shadow kind", () => {
+    const assignments: EffectAssignment[] = [
+      {
+        target: "section",
+        stack: [{ kind: "glass", enabled: true }],
+      },
+    ];
+    const merged = withDefaultEffects(assignments, "section", [DEFAULT_SECTION_CAST_DOWN]);
+    expect(merged[0].stack.map((e) => e.kind)).toEqual(["glass", "shadow"]);
+    // does not mutate the input
+    expect(assignments[0].stack).toHaveLength(1);
+  });
+
+  it("does not fill when an authored shadow is enabled", () => {
+    const authored: EffectAssignment[] = [
+      {
+        target: "section",
+        stack: [{ kind: "shadow", enabled: true, offsetY: 4 }],
+      },
+    ];
+    const stack = resolveEffectsForTargetWithDefaults(authored, "section", [
+      DEFAULT_SECTION_CAST_DOWN,
+    ]);
+    expect(stack).toHaveLength(1);
+    expect(stack[0]).toMatchObject({ offsetY: 4 });
+  });
+
+  it("does not fill when an authored shadow is disabled (opt-out)", () => {
+    const authored: EffectAssignment[] = [
+      {
+        target: "section",
+        stack: [{ kind: "shadow", enabled: false }],
+      },
+    ];
+    const stack = resolveEffectsForTargetWithDefaults(authored, "section", [
+      DEFAULT_SECTION_CAST_UP,
+    ]);
+    expect(stack).toHaveLength(1);
+    expect(stack[0].enabled).toBe(false);
+  });
+
+  it("leaves other targets untouched", () => {
+    const assignments: EffectAssignment[] = [
+      {
+        target: "background",
+        stack: [{ kind: "fade", enabled: true, edge: "right" }],
+      },
+    ];
+    const merged = withDefaultEffects(assignments, "section", [DEFAULT_SECTION_CAST_DOWN]);
+    expect(merged).toHaveLength(2);
+    expect(merged[0].target).toBe("background");
+    expect(merged[0].stack[0].kind).toBe("fade");
+    expect(merged[1]).toMatchObject({ target: "section" });
+  });
+
+  it("fills only kinds absent from the authored stack", () => {
+    const assignments: EffectAssignment[] = [
+      {
+        target: "section",
+        stack: [{ kind: "shadow", enabled: true, offsetY: -12 }],
+      },
+    ];
+    const stack = resolveEffectsForTargetWithDefaults(assignments, "section", [
+      DEFAULT_SECTION_CAST_DOWN,
+      { kind: "glass", enabled: true, blur: 8 },
+    ]);
+    expect(stack.map((e) => e.kind)).toEqual(["shadow", "glass"]);
   });
 });
 

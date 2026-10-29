@@ -11,6 +11,11 @@ schema validation for the RFC-0134 glass-first effects model.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>dp7-m000006: platform default surface casts — header shell, hero shell,
+  and footer shell render a cast shadow when the site authors no `kind: shadow`
+  on `target: section`; `withDefaultEffects` /
+  `resolveEffectsForTargetWithDefaults` implement the authored-wins-per-kind
+  fill rule (`enabled: false` is the opt-out).</item>
   <item>RFC-1420: one-line contract notes — lighten is the uniform tint (fade is the directional edge gradient); groundwork for the COMP-HYG-05 scrim/surfaceTone gate.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
@@ -261,6 +266,69 @@ export function resolveEffectsForTarget(
   target: EffectTarget,
 ): Effect[] {
   return assignments?.find((assignment) => assignment.target === target)?.stack ?? [];
+}
+
+/**
+ * dp7-m000006 — platform default surface casts. A surface that authors no
+ * `kind: shadow` on `target: section` renders the default cast: downward under
+ * the header and hero shells, upward above the footer shell. Authored always
+ * wins per-kind — a `kind: shadow` stack item, enabled or not, supersedes the
+ * default, so an explicit `enabled: false` is the per-site opt-out.
+ */
+export const DEFAULT_SECTION_CAST_DOWN: ShadowEffect = {
+  kind: "shadow",
+  enabled: true,
+  offsetX: 0,
+  offsetY: 24,
+  blur: 48,
+  spread: -16,
+  opacity: 0.3,
+};
+export const DEFAULT_SECTION_CAST_UP: ShadowEffect = {
+  ...DEFAULT_SECTION_CAST_DOWN,
+  offsetY: -24,
+};
+
+/**
+ * Merge platform defaults into an assignments list: each default whose kind is
+ * absent from the target's authored stack is appended to that stack (the target
+ * entry is created when missing). Authored always wins per-kind — an authored
+ * item of the same kind, even a disabled one, owns that kind's presence on the
+ * target, so the default never fills in on top of it.
+ */
+export function withDefaultEffects(
+  assignments: readonly EffectAssignment[] | undefined,
+  target: EffectTarget,
+  defaults: readonly Effect[],
+): EffectAssignment[] {
+  const authoredKinds = new Set(
+    resolveEffectsForTarget(assignments, target).map((effect) => effect.kind),
+  );
+  const fill = defaults.filter((effect) => !authoredKinds.has(effect.kind));
+  const merged: EffectAssignment[] = (assignments ?? []).map((assignment) => ({
+    ...assignment,
+    stack: [...assignment.stack],
+  }));
+  if (fill.length === 0) return merged;
+  const index = merged.findIndex((assignment) => assignment.target === target);
+  if (index === -1) {
+    merged.push({ target, stack: [...fill] });
+  } else {
+    merged[index]!.stack.push(...fill);
+  }
+  return merged;
+}
+
+/**
+ * Resolve a target's stack with platform defaults applied — same per-kind fill
+ * rule as {@link withDefaultEffects}, returning the flat stack directly.
+ */
+export function resolveEffectsForTargetWithDefaults(
+  assignments: readonly EffectAssignment[] | undefined,
+  target: EffectTarget,
+  defaults: readonly Effect[],
+): Effect[] {
+  return resolveEffectsForTarget(withDefaultEffects(assignments, target, defaults), target);
 }
 
 export function hasEnabledGlassEffect(effects: readonly Effect[] | undefined): effects is Effect[] {
