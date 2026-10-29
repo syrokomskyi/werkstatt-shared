@@ -303,12 +303,42 @@ export function createRecordingIO(base: WorkspaceIO): { io: WorkspaceIO; intents
       intents.push({ kind: "mkdir", path: dir });
       return dir;
     },
-    async exec() {
-      throw new Error("createRecordingIO: exec() is not supported under --dry-run.");
+    async exec(command, args, opts) {
+      // Read-only git subcommands pass through to the base adapter — they
+      // cannot mutate repository state, so a dry-run command may resolve real
+      // state through them (staged-set reads, ancestry checks). Anything else
+      // fails closed: a mutating exec must never run under --dry-run just
+      // because it looks harmless.
+      if (command === "git" && args.length > 0 && RECORDING_IO_READONLY_GIT.has(args[0]!)) {
+        return base.exec(command, args, opts);
+      }
+      const sub = args[0] ? ` ${args[0]}` : "";
+      throw new Error(
+        `createRecordingIO: exec() for \`${command}${sub}\` is not supported under --dry-run (not on the read-only allowlist).`,
+      );
     },
   };
   return { io, intents };
 }
+
+/**
+ * Git subcommands the recording IO executes for real under --dry-run —
+ * strictly read-only state resolution (index/worktree reads, ancestry
+ * checks). `status` may refresh the index mtime — benign, no content change.
+ * Mutating subcommands (add/commit/reset/checkout/…) stay refused.
+ */
+const RECORDING_IO_READONLY_GIT = new Set([
+  "ls-files",
+  "diff",
+  "status",
+  "log",
+  "rev-parse",
+  "show",
+  "merge-base",
+  "branch",
+  "cat-file",
+  "describe",
+]);
 
 /**
  * RFC-1159: canonical exit-code check on `io.exec`. `execImpl` resolves
