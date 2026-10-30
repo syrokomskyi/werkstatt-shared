@@ -9,6 +9,7 @@ Unit tests for text normalize covering its documented public contract and regres
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1311: Compass header sweep — declares the text suite's contract for test-file scaffold coverage.</item>
+  <item>RFC-1446: enforce uzbek apostrophe orthography and russian heading case</item>
 </CHANGE_SUMMARY>
 */
 
@@ -25,6 +26,9 @@ import {
   normalizeMarkdown,
   detectResidual,
   createDevNormalizeMiddleware,
+  localeForRoutePath,
+  htmlLangOf,
+  isOrthographicApostropheLocale,
   type NormalizeConfig,
 } from "../text-normalize.ts";
 
@@ -53,6 +57,59 @@ test("quotes: curly + guillemets become straight", () => {
 test("quotes: U+02BC modifier letter apostrophe becomes straight (RFC-1070)", () => {
   const input = "it\u02BCs";
   expect(normalizeText(input, ALL_ON)).toBe("it's");
+});
+
+// --- RFC-1446: orthographic apostrophe locales -------------------------------
+
+const APOS_BC = "ʼ"; // tutuq belgisi letter in uz orthography
+const APOS_BB = "ʻ"; // oʻ/gʻ letter in uz orthography
+
+test("uz: letter-internal ʼ is a tutuq belgisi — preserved (AC-5)", () => {
+  expect(normalizeText(`ma${APOS_BC}lumotlari`, ALL_ON, { locale: "uz" })).toBe(
+    `ma${APOS_BC}lumotlari`,
+  );
+  expect(
+    normalizeText(`to${APOS_BB}g${APOS_BB}ridan ma${APOS_BC}lumot`, ALL_ON, { locale: "uz" }),
+  ).toBe(`to${APOS_BB}g${APOS_BB}ridan ma${APOS_BC}lumot`);
+});
+
+test("uz-Latn: primary subtag qualifies for the orthographic set", () => {
+  expect(normalizeText(`ma${APOS_BC}lumot`, ALL_ON, { locale: "uz-Latn" })).toBe(
+    `ma${APOS_BC}lumot`,
+  );
+});
+
+test("uz: edge/standalone ʼ is still a quote signal", () => {
+  expect(normalizeText(`${APOS_BC}quoted${APOS_BC}`, ALL_ON, { locale: "uz" })).toBe("'quoted'");
+  expect(normalizeText(`word${APOS_BC}`, ALL_ON, { locale: "uz" })).toBe("word'");
+});
+
+test("uz: real typographic quotes still normalize", () => {
+  expect(normalizeText("it’s «fine»", ALL_ON, { locale: "uz" })).toBe("it's \"fine\"");
+});
+
+test("non-uz locales and missing locale keep the old blanket behavior", () => {
+  expect(normalizeText(`ma${APOS_BC}lumot`, ALL_ON)).toBe("ma'lumot");
+  expect(normalizeText(`ma${APOS_BC}lumot`, ALL_ON, { locale: "ru" })).toBe("ma'lumot");
+  expect(normalizeText(`ma${APOS_BC}lumot`, ALL_ON, { locale: "en" })).toBe("ma'lumot");
+});
+
+test("normalizeHtml honors the page locale inside text nodes and JSON-LD", () => {
+  const html = `<html lang="uz"><body><p>ma${APOS_BC}lumot</p><script type="application/ld+json">{"name":"ma${APOS_BC}lumot"}</script></body></html>`;
+  const out = normalizeHtml(html, ALL_ON, { locale: "uz" });
+  expect(out).toContain(`ma${APOS_BC}lumot`);
+  expect(out).not.toContain("ma'lumot");
+});
+
+test("locale helpers: route path + html lang + orthographic set", () => {
+  expect(localeForRoutePath("/uz/o-kompanii", ["ru", "uz"], "ru")).toBe("uz");
+  expect(localeForRoutePath("/o-kompanii", ["ru", "uz"], "ru")).toBe("ru");
+  expect(localeForRoutePath("/o-kompanii", ["uz"], undefined)).toBeUndefined();
+  expect(htmlLangOf(`<html lang="uz-Latn"><body></body></html>`)).toBe("uz-Latn");
+  expect(htmlLangOf(`<body>no html</body>`)).toBeUndefined();
+  expect(isOrthographicApostropheLocale("uz-Latn")).toBe(true);
+  expect(isOrthographicApostropheLocale("ru")).toBe(false);
+  expect(isOrthographicApostropheLocale(undefined)).toBe(false);
 });
 
 test("ellipsis: single char becomes three dots", () => {

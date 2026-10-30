@@ -12,6 +12,7 @@ whitelisted in FIXABLE_RULE_IDS populate the fix field on TypographyFinding.</pu
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>warpgogol-m000193: whitelisted TYPO-HEAD-04 for autofix — missing terminal punctuation on a multi-sentence heading is a mechanical insert of ".".</item>
+  <item>RFC-1446: enforce uzbek apostrophe orthography and russian heading case</item>
   <history>RFC-1072</history>
 </CHANGE_SUMMARY>
 */
@@ -48,6 +49,8 @@ export const FIXABLE_RULE_IDS: readonly string[] = [
   "TYPO-SPACE-02",
   "TYPO-APOS-01",
   "TYPO-APOS-02",
+  "TYPO-APOS-03",
+  "TYPO-APOS-04",
   "TYPO-ABBR-01",
   "TYPO-ABBR-02",
   "TYPO-HEAD-04",

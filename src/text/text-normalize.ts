@@ -19,6 +19,7 @@ never touched; this only transforms output strings.
   <item>RFC-0235: initial egress text normalizer.</item>
   <item>RFC-0569: add createDevNormalizeMiddleware for dev/prod egress parity.</item>
   <item>RFC-1070: add U+02BC modifier letter apostrophe to quotes signal.</item>
+  <item>RFC-1446: enforce uzbek apostrophe orthography and russian heading case</item>
 </CHANGE_SUMMARY>
 */
 
@@ -151,6 +152,11 @@ const RE_DASHES = /[‐‑‒–—―−]/g;
 const RE_QUOTES_DOUBLE = /[«»“”„‟]/g;
 // U+2018 U+2019 U+201A U+201B U+02BC (modifier letter apostrophe, RFC-1070)
 const RE_QUOTES_SINGLE = /[‘’‚‛ʼ]/g;
+// U+2018 U+2019 U+201A U+201B — always typographic, in every locale.
+const RE_QUOTES_SINGLE_BASE = /[‘’‚‛]/g;
+// U+02BC NOT between letters — a bare or edge ʼ is still a quote signal even
+// in orthographic locales; only the letter-internal ʼ is a tutuq belgisi.
+const RE_ORTHO_STANDALONE_APOS = /(?<!\p{L})ʼ|ʼ(?!\p{L})/gu;
 const RE_ELLIPSIS = /…/g;
 // U+00A0 nbsp, U+1680 ogham, U+2000-U+200A, U+202F narrow nbsp, U+205F medium math,
 // U+3000 ideographic space.
@@ -165,12 +171,67 @@ const RE_ZERO_WIDTH = /[\u00ad\u061c\u180e\u200b\u200c\u2060\u2061-\u2064\ufeff]
 const EMOJI_PART = "[\\p{Extended_Pictographic}\\uFE0F\\u{1F3FB}-\\u{1F3FF}]";
 const RE_STANDALONE_ZWJ = new RegExp(`(?<!${EMOJI_PART})\\u200D|\\u200D(?!${EMOJI_PART})`, "gu");
 
-function applyCharSignals(input: string, cfg: NormalizeConfig): string {
+/**
+ * RFC-1446: primary subtags whose orthography treats U+02BC as a LETTER
+ * (Uzbek tutuq belgisi), not a quote. Extend only with a reviewed letter
+ * list for the new locale — the `quotes` signal keeps its old behavior for
+ * every locale outside this set.
+ */
+export const ORTHOGRAPHIC_APOSTROPHE_LOCALES: ReadonlySet<string> = new Set(["uz"]);
+
+/** BCP-47 primary subtag, lowercased — "uz-Latn" → "uz". */
+export function primaryLocaleSubtag(locale: string | null | undefined): string | undefined {
+  if (!locale) return undefined;
+  const primary = locale.trim().toLowerCase().split(/[-_]/, 2)[0];
+  return primary || undefined;
+}
+
+export function isOrthographicApostropheLocale(locale: string | null | undefined): boolean {
+  const primary = primaryLocaleSubtag(locale);
+  return primary !== undefined && ORTHOGRAPHIC_APOSTROPHE_LOCALES.has(primary);
+}
+
+/** Per-call options. `locale` consults ORTHOGRAPHIC_APOSTROPHE_LOCALES only. */
+export interface NormalizeOptions {
+  locale?: string;
+}
+
+/**
+ * RFC-1446: derive a site-relative route path's locale — first path segment
+ * when it names a supported locale ("/uz/o-kompanii" → "uz"), else the
+ * manifest default. Returns undefined when neither is known; callers record
+ * the artifact instead of guessing.
+ */
+export function localeForRoutePath(
+  routePath: string,
+  supportedLocales: readonly string[],
+  defaultLocale?: string,
+): string | undefined {
+  const first = routePath.replace(/^\/+/, "").split("/", 2)[0];
+  if (first && supportedLocales.includes(first)) return first;
+  return defaultLocale;
+}
+
+const RE_HTML_LANG = /<html\b[^>]*\blang\s*=\s*["']([^"']+)["']/i;
+
+/** Extract `<html lang="…">` — the authoritative locale of a rendered page. */
+export function htmlLangOf(html: string): string | undefined {
+  return RE_HTML_LANG.exec(html)?.[1];
+}
+
+function applyCharSignals(
+  input: string,
+  cfg: NormalizeConfig,
+  opts?: NormalizeOptions,
+): string {
   let s = input;
   if (cfg.signals.dashes) s = s.replace(RE_DASHES, "-");
   if (cfg.signals.ellipsis) s = s.replace(RE_ELLIPSIS, "...");
   if (cfg.signals.quotes) {
-    s = s.replace(RE_QUOTES_DOUBLE, '"').replace(RE_QUOTES_SINGLE, "'");
+    s = s.replace(RE_QUOTES_DOUBLE, '"');
+    s = isOrthographicApostropheLocale(opts?.locale)
+      ? s.replace(RE_QUOTES_SINGLE_BASE, "'").replace(RE_ORTHO_STANDALONE_APOS, "'")
+      : s.replace(RE_QUOTES_SINGLE, "'");
   }
   if (cfg.signals.spaces) s = s.replace(RE_SPACES, " ");
   if (cfg.signals.zeroWidth) {
@@ -274,11 +335,15 @@ function decodeTypographicEntities(input: string): string {
 // ---------------------------------------------------------------------------
 
 /** Normalize a plain-text string (also used for HTML text nodes and attr values). */
-export function normalizeText(input: string, cfg: NormalizeConfig): string {
+export function normalizeText(
+  input: string,
+  cfg: NormalizeConfig,
+  opts?: NormalizeOptions,
+): string {
   if (!cfg.enabled || !input) return input;
   let s = input;
   if (cfg.signals.htmlEntities) s = decodeTypographicEntities(s);
-  s = applyCharSignals(s, cfg);
+  s = applyCharSignals(s, cfg, opts);
   return s;
 }
 
@@ -302,25 +367,33 @@ function escapeAttr(value: string, quote: '"' | "'"): string {
   return quote === '"' ? value.replace(/"/g, "&quot;") : value.replace(/'/g, "&#39;");
 }
 
-function normalizeOpeningTagAttrs(tag: string, cfg: NormalizeConfig): string {
+function normalizeOpeningTagAttrs(
+  tag: string,
+  cfg: NormalizeConfig,
+  opts?: NormalizeOptions,
+): string {
   const re = new RegExp(`\\b(${ATTR_WHITELIST.join("|")})\\s*=\\s*("([^"]*)"|'([^']*)')`, "gi");
   return tag.replace(re, (_full, name: string, _q: string, dq?: string, sq?: string) => {
     const quote: '"' | "'" = dq !== undefined ? '"' : "'";
     const raw = dq !== undefined ? dq : (sq ?? "");
-    const normalized = escapeAttr(normalizeText(raw, cfg), quote);
+    const normalized = escapeAttr(normalizeText(raw, cfg, opts), quote);
     return `${name}=${quote}${normalized}${quote}`;
   });
 }
 
 /** Normalize an HTML string: text nodes, whitelisted attributes, and inline JSON-LD. */
-export function normalizeHtml(input: string, cfg: NormalizeConfig): string {
+export function normalizeHtml(
+  input: string,
+  cfg: NormalizeConfig,
+  opts?: NormalizeOptions,
+): string {
   if (!cfg.enabled || !input) return input;
 
   // 1. Inline JSON-LD: normalize string values via the JSON path (re-escapes safely).
   const html = input.replace(
     RE_JSONLD_BLOCK,
     (_full, open: string, body: string, close: string) => {
-      return `${open}${normalizeJson(body, cfg)}${close}`;
+      return `${open}${normalizeJson(body, cfg, opts)}${close}`;
     },
   );
 
@@ -340,14 +413,14 @@ export function normalizeHtml(input: string, cfg: NormalizeConfig): string {
       if (!isComment && !isClosing) {
         const inSkip = skipStack.length > 0;
         if (HTML_SKIP_TAGS.has(name)) skipStack.push(name);
-        out.push(inSkip ? token : normalizeOpeningTagAttrs(token, cfg));
+        out.push(inSkip ? token : normalizeOpeningTagAttrs(token, cfg, opts));
         continue;
       }
       if (isClosing && skipStack[skipStack.length - 1] === name) skipStack.pop();
       out.push(token);
       continue;
     }
-    out.push(skipStack.length > 0 ? token : normalizeText(token, cfg));
+    out.push(skipStack.length > 0 ? token : normalizeText(token, cfg, opts));
   }
   return out.join("");
 }
@@ -360,19 +433,20 @@ function normalizeJsonValue(
   value: unknown,
   cfg: NormalizeConfig,
   state: { changed: boolean },
+  opts?: NormalizeOptions,
 ): unknown {
   if (typeof value === "string") {
-    const next = normalizeText(value, cfg);
+    const next = normalizeText(value, cfg, opts);
     if (next !== value) state.changed = true;
     return next;
   }
   if (Array.isArray(value)) {
-    return value.map((v) => normalizeJsonValue(v, cfg, state));
+    return value.map((v) => normalizeJsonValue(v, cfg, state, opts));
   }
   if (value && typeof value === "object") {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value)) {
-      out[k] = normalizeJsonValue(v, cfg, state); // keys left untouched
+      out[k] = normalizeJsonValue(v, cfg, state, opts); // keys left untouched
     }
     return out;
   }
@@ -380,17 +454,21 @@ function normalizeJsonValue(
 }
 
 /** Normalize string VALUES in a JSON document. Returns the original text if nothing changed. */
-export function normalizeJson(input: string, cfg: NormalizeConfig): string {
+export function normalizeJson(
+  input: string,
+  cfg: NormalizeConfig,
+  opts?: NormalizeOptions,
+): string {
   if (!cfg.enabled || !input.trim()) return input;
   let parsed: unknown;
   try {
     parsed = JSON.parse(input);
   } catch {
     // Not parseable as JSON — fall back to a text-safe normalize.
-    return normalizeText(input, cfg);
+    return normalizeText(input, cfg, opts);
   }
   const state = { changed: false };
-  const next = normalizeJsonValue(parsed, cfg, state);
+  const next = normalizeJsonValue(parsed, cfg, state, opts);
   if (!state.changed) return input; // preserve original formatting when clean
   return JSON.stringify(next, null, 2);
 }
@@ -402,20 +480,24 @@ export function normalizeJson(input: string, cfg: NormalizeConfig): string {
 const RE_CDATA = /(<!\[CDATA\[)([\s\S]*?)(\]\]>)/g;
 
 /** Normalize XML text content and CDATA. CDATA bodies are treated as HTML. */
-export function normalizeXml(input: string, cfg: NormalizeConfig): string {
+export function normalizeXml(
+  input: string,
+  cfg: NormalizeConfig,
+  opts?: NormalizeOptions,
+): string {
   if (!cfg.enabled || !input) return input;
 
   // 1. CDATA blocks (RSS descriptions hold HTML) — normalize via the HTML path.
   const cdataParts: string[] = [];
   let xml = input.replace(RE_CDATA, (_full, open: string, body: string, close: string) => {
-    cdataParts.push(`${open}${normalizeHtml(body, cfg)}${close}`);
+    cdataParts.push(`${open}${normalizeHtml(body, cfg, opts)}${close}`);
     return ` CDATA${cdataParts.length - 1} `;
   });
 
   // 2. Element text content (between tags). XML attributes rarely carry prose; skip them.
   // Only match real XML tags (starting with letter, /, or !) — not stray < in content.
   const tokens = xml.split(/(<[a-zA-Z/!][^>]*>)/);
-  xml = tokens.map((t) => (t.startsWith("<") ? t : normalizeText(t, cfg))).join("");
+  xml = tokens.map((t) => (t.startsWith("<") ? t : normalizeText(t, cfg, opts))).join("");
 
   // 3. Restore CDATA placeholders.
   xml = xml.replace(/ CDATA(\d+) /g, (_m, i: string) => cdataParts[Number(i)]);
@@ -429,11 +511,15 @@ export function normalizeXml(input: string, cfg: NormalizeConfig): string {
 const RE_MD_CODE = /(```[\s\S]*?```|~~~[\s\S]*?~~~|`[^`\n]*`)/g;
 
 /** Normalize Markdown prose while leaving fenced and inline code untouched. */
-export function normalizeMarkdown(input: string, cfg: NormalizeConfig): string {
+export function normalizeMarkdown(
+  input: string,
+  cfg: NormalizeConfig,
+  opts?: NormalizeOptions,
+): string {
   if (!cfg.enabled || !input) return input;
   // Capturing split keeps code spans at odd indices.
   const parts = input.split(RE_MD_CODE);
-  return parts.map((part, i) => (i % 2 === 1 ? part : normalizeText(part, cfg))).join("");
+  return parts.map((part, i) => (i % 2 === 1 ? part : normalizeText(part, cfg, opts))).join("");
 }
 
 // ---------------------------------------------------------------------------
@@ -459,19 +545,20 @@ export function normalizeByKind(
   input: string,
   kind: NormalizableKind,
   cfg: NormalizeConfig,
+  opts?: NormalizeOptions,
 ): string {
   switch (kind) {
     case "html":
-      return normalizeHtml(input, cfg);
+      return normalizeHtml(input, cfg, opts);
     case "json":
-      return normalizeJson(input, cfg);
+      return normalizeJson(input, cfg, opts);
     case "xml":
     case "svg":
-      return normalizeXml(input, cfg);
+      return normalizeXml(input, cfg, opts);
     case "md":
-      return normalizeMarkdown(input, cfg);
+      return normalizeMarkdown(input, cfg, opts);
     case "txt":
-      return normalizeText(input, cfg);
+      return normalizeText(input, cfg, opts);
   }
 }
 
@@ -491,9 +578,10 @@ export function detectResidual(
   input: string,
   kind: NormalizableKind,
   cfg: NormalizeConfig,
+  opts?: NormalizeOptions,
 ): ResidualFinding | null {
   if (!cfg.enabled) return null;
-  const normalized = normalizeByKind(input, kind, cfg);
+  const normalized = normalizeByKind(input, kind, cfg, opts);
   if (normalized === input) return null;
 
   const signals: SignalId[] = [];
@@ -501,7 +589,7 @@ export function detectResidual(
     if (!cfg.signals[id]) continue;
     const single: NormalizeConfig = { enabled: true, signals: {} as Record<SignalId, boolean> };
     for (const other of SIGNAL_IDS) single.signals[other] = other === id;
-    if (normalizeByKind(input, kind, single) !== input) signals.push(id);
+    if (normalizeByKind(input, kind, single, opts) !== input) signals.push(id);
   }
 
   const a = input.split("\n");
@@ -533,7 +621,9 @@ export function createDevNormalizeMiddleware(config: NormalizeConfig): Middlewar
     if (!contentType?.includes("text/html")) return response;
     try {
       const body = await response.text();
-      const normalized = normalizeHtml(body, config);
+      // RFC-1446: the rendered page declares its own locale — use it so the
+      // dev path preserves orthographic apostrophes exactly like the dist sweep.
+      const normalized = normalizeHtml(body, config, { locale: htmlLangOf(body) });
       return new Response(normalized, {
         status: response.status,
         statusText: response.statusText,

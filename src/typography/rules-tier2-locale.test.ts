@@ -11,6 +11,7 @@ is tested for positive detection, negative (no finding), and key exclusions.</pu
 <CHANGE_SUMMARY>
   <item>RFC-1070: initial creation with unit tests for 7 Tier 2 locale rules.</item>
   <item>RFC-1324: ABBR-01 digit-required coverage — Art citation vs noun; No citation vs determiner.</item>
+  <item>RFC-1446: enforce uzbek apostrophe orthography and russian heading case</item>
 </CHANGE_SUMMARY>
 */
 
@@ -285,12 +286,125 @@ describe("TYPO-APOS-02 — Modifier letter apostrophe in Ukrainian", () => {
 });
 
 // ---------------------------------------------------------------------------
+// TYPO-APOS-03: Uzbek oʻ/gʻ — o/g + wrong apostrophe + letter (RFC-1446)
+// ---------------------------------------------------------------------------
+
+describe("TYPO-APOS-03 — Uzbek oʻ/gʻ apostrophe (RFC-1446 AC-1/AC-3)", () => {
+  const MOD_APOS = "ʼ"; // U+02BC — wrong after o/g, correct elsewhere
+  const TURNED = "ʻ"; // U+02BB — the oʻ/gʻ letter
+
+  it("detects toʼgʼridan and fixes to toʻgʻridan (AC-1)", () => {
+    const findings = runRule("TYPO-APOS-03", `Bu to${MOD_APOS}g${MOD_APOS}ridan gap.`, "uz");
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.fix).toEqual({
+      type: "replace",
+      old: `to${MOD_APOS}g${MOD_APOS}ridan`,
+      new: `to${TURNED}g${TURNED}ridan`,
+    });
+  });
+
+  it("detects ASCII-typed to'g'ri and fixes to toʻgʻri", () => {
+    const findings = runRule("TYPO-APOS-03", "to'g'ri", "uz");
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.fix).toEqual({
+      type: "replace",
+      old: "to'g'ri",
+      new: `to${TURNED}g${TURNED}ri`,
+    });
+  });
+
+  it("fixes O'zbekiston → Oʻzbekiston with U+02BB", () => {
+    const findings = runRule("TYPO-APOS-03", "O'zbekiston", "uz");
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.fix).toEqual({
+      type: "replace",
+      old: "O'zbekiston",
+      new: `O${TURNED}zbekiston`,
+    });
+  });
+
+  it("emits warning severity (decision Q-2 — warning until native review)", () => {
+    const rule = TIER2_LOCALE_RULES.find((r) => r.id === "TYPO-APOS-03")!;
+    expect(rule.severity).toBe("warning");
+  });
+
+  it("does not fire in ru or en (AC-3)", () => {
+    expectNoFinding("TYPO-APOS-03", "to'g'ridan", "ru");
+    expectNoFinding("TYPO-APOS-03", "to'g'ridan", "en");
+  });
+
+  it("does not fire on correct oʻ / gʻ", () => {
+    expectNoFinding("TYPO-APOS-03", `to${TURNED}g${TURNED}ridan go${TURNED}zal`, "uz");
+  });
+
+  it("does not convert a real glottal word after o — mo'jaz → moʼjaz not moʻjaz", () => {
+    const findings = runRule("TYPO-APOS-03", "mo'jaz", "uz");
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.fix).toEqual({ type: "replace", old: "mo'jaz", new: `mo${MOD_APOS}jaz` });
+  });
+
+  it("stays silent on an already-correct glottal seed word (moʼtabar)", () => {
+    expectNoFinding("TYPO-APOS-03", `mo${MOD_APOS}tabar`, "uz");
+  });
+
+  it("respects allowedTokens exclusion", () => {
+    const segment = makeSegment("to'g'ri", "uz");
+    const ctx = makeCtx("uz", new Set(["to'g'ri"]));
+    const rule = TIER2_LOCALE_RULES.find((r) => r.id === "TYPO-APOS-03")!;
+    expect(rule.check(segment, ctx)).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TYPO-APOS-04: Uzbek ʼ — letter (not o/g) + ASCII/curly apostrophe + letter
+// ---------------------------------------------------------------------------
+
+describe("TYPO-APOS-04 — Uzbek glottal stop (RFC-1446 AC-2/AC-3)", () => {
+  const MOD_APOS = "ʼ"; // U+02BC — the correct tutuq belgisi
+
+  it("detects ma'lumot and fixes to maʼlumot (AC-2)", () => {
+    const findings = runRule("TYPO-APOS-04", "Bu ma'lumot.", "uz");
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.fix).toEqual({
+      type: "replace",
+      old: "ma'lumot",
+      new: `ma${MOD_APOS}lumot`,
+    });
+  });
+
+  it("emits error severity", () => {
+    const rule = TIER2_LOCALE_RULES.find((r) => r.id === "TYPO-APOS-04")!;
+    expect(rule.severity).toBe("error");
+  });
+
+  it("does not fire in ru or en (AC-3)", () => {
+    expectNoFinding("TYPO-APOS-04", "ma'lumot", "ru");
+    expectNoFinding("TYPO-APOS-04", "it's fine", "en");
+  });
+
+  it("does not fire on correct maʼlumot", () => {
+    expectNoFinding("TYPO-APOS-04", `ma${MOD_APOS}lumot`, "uz");
+  });
+
+  it("leaves o/g apostrophes to APOS-03 — no double-firing on to'g'ri", () => {
+    expectNoFinding("TYPO-APOS-04", "to'g'ri", "uz");
+  });
+
+  it("still fixes o/g apostrophes inside seed words (mo'jaz → moʼjaz)", () => {
+    const findings = runRule("TYPO-APOS-04", "mo'jaz", "uz");
+    // APOS-04 owns the non-o/g positions only — o' is APOS-03 territory, so
+    // this word is not an APOS-04 finding.
+    expect(findings).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Export count verification
 // ---------------------------------------------------------------------------
 
 describe("TIER2_LOCALE_RULES export", () => {
-  it("exports exactly 7 rules", () => {
-    expect(TIER2_LOCALE_RULES).toHaveLength(7);
+  it("exports exactly 9 rules", () => {
+    expect(TIER2_LOCALE_RULES).toHaveLength(9);
   });
 
   it("all rules are tier 2", () => {

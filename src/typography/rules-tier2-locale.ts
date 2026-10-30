@@ -16,10 +16,12 @@ All regexes use the `u` flag and Unicode property escapes where applicable.</pur
   <item>RFC-1072: populated fix on ABBR-01, ABBR-02, APOS-01, APOS-02.</item>
   <item>RFC-1324 cold-run defect: TYPO-ABBR-01 false-positive — bare `Art` is a common German noun (jede Art der Verwertung); DIGIT_REQUIRED_BARE gates it to citation context (Art 6 DSGVO).</item>
   <item>RFC-1324 cold-run defect: same class in `en` — bare `No` is the determiner (No preview available); joins DIGIT_REQUIRED_BARE (No. 5 stays flagged).</item>
+  <item>RFC-1446: enforce uzbek apostrophe orthography and russian heading case</item>
 </CHANGE_SUMMARY>
 */
 
 import { finding, type TypographyFinding, type TypographyRule } from "./rules-tier1.ts";
+import type { TextSegment } from "./text-surface.ts";
 import type { FixAction } from "./fix.ts";
 
 // ---------------------------------------------------------------------------
@@ -401,6 +403,140 @@ function escapeRegex(s: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Uzbek apostrophe orthography (RFC-1446)
+//
+// Uzbek Latin has two apostrophe-shaped LETTERS: U+02BB (ʻ — after o/g as
+// oʻ/gʻ) and U+02BC (ʼ — tutuq belgisi, the glottal stop). ASCII ', U+2018,
+// U+2019, U+02BC after o/g, and the backtick are never correct in those
+// positions. `segment.locale` carries the primary subtag — `uz` and `uz-*`
+// (uz-Latn) are in scope; every other locale returns early.
+// ---------------------------------------------------------------------------
+
+const UZ_LOCALE = /^uz(?:-|$)/i;
+
+function isUzLocale(locale: string): boolean {
+  return UZ_LOCALE.test(locale);
+}
+
+/** Word scan — a word may carry several apostrophe-shaped characters. */
+const UZ_WORD_PATTERN = /[\p{L}\p{M}][\p{L}\p{M}'‘’ʼ`]*/gu;
+/**
+ * Apostrophe-like characters that are never the oʻ/gʻ letter: ' ` ‘ ’ ʼ.
+ * Lookahead for the following letter — consuming it would hide a directly
+ * adjacent second apostrophe (`oʼgʼ` must fix both spots in one pass).
+ */
+const APOS_AFTER_OG = /([oOgG])['‘’ʼ`](?=\p{L})/gu;
+/**
+ * Apostrophe-like characters that are never the glottal stop: ' ‘ ’.
+ * The preceding letter must not be o/g — those belong to APOS-03's oʻ/gʻ
+ * class; firing both rules on one word would emit conflicting fixes.
+ */
+const APOS_GLOTTAL = /((?![oOgG])\p{L})['‘’](?=\p{L})/gu;
+
+const APOS_MARKER = "~";
+
+/** Position-preserving word skeleton — every apostrophe-like char → `~`. */
+function aposSkeleton(word: string): string {
+  return word.toLowerCase().replace(/['‘’ʼʻ`]/g, APOS_MARKER);
+}
+
+/**
+ * Uzbek words where o+ʼ is the real glottal stop, not oʻ — APOS-03 must not
+ * "fix" them. Compared by apostrophe-position skeleton, so an ASCII-typed
+ * source word (`mo'tabar`) matches its ʼ-form entry. Reviewed by a native
+ * speaker before APOS-03 flips from warning to error (decision Q-2).
+ */
+export const UZ_GLOTTAL_AFTER_O: ReadonlySet<string> = new Set(
+  ["moʼtabar", "moʼmin", "moʼjaz"].map(aposSkeleton),
+);
+
+function uzWordFindings(
+  ruleId: TypographyRule["id"],
+  segment: TextSegment,
+  allowedTokens: ReadonlySet<string>,
+  pattern: RegExp,
+  replacement: string,
+  describe: (fixed: string) => { message: string; fixHint: string },
+): TypographyFinding[] {
+  const findings: TypographyFinding[] = [];
+  for (const wm of segment.text.matchAll(UZ_WORD_PATTERN)) {
+    const word = wm[0];
+    if (allowedTokens.has(word) || allowedTokens.has(aposSkeleton(word))) continue;
+    // A real-glottal word after o (moʼtabar, mo'jaz) gets ʼ, not ʻ — the seed
+    // picks the replacement; already-correct forms produce a no-op fix, which
+    // is dropped below so clean words emit nothing.
+    const rep = UZ_GLOTTAL_AFTER_O.has(aposSkeleton(word)) ? "ʼ" : replacement;
+    let flagged = false;
+    const fixed = word.replace(pattern, (_m, a: string) => {
+      flagged = true;
+      return `${a}${rep}`;
+    });
+    if (!flagged || fixed === word) continue;
+    const { message, fixHint } = describe(fixed);
+    findings.push(
+      finding(ruleId, segment, word, wm.index ?? 0, message, fixHint, {
+        type: "replace",
+        old: word,
+        new: fixed,
+      } satisfies FixAction),
+    );
+  }
+  return findings;
+}
+
+// ---------------------------------------------------------------------------
+// TYPO-APOS-03: Uzbek ʻ — o/g followed by an apostrophe that is not U+02BB
+// Warning until the UZ_GLOTTAL_AFTER_O seed list passes native review (Q-2).
+// ---------------------------------------------------------------------------
+
+export const apos03: TypographyRule = {
+  id: "TYPO-APOS-03",
+  family: "APOS",
+  tier: 2,
+  severity: "warning",
+  check(segment, ctx) {
+    if (!isUzLocale(segment.locale)) return [];
+    return uzWordFindings(
+      "TYPO-APOS-03",
+      segment,
+      ctx.allowedTokens,
+      APOS_AFTER_OG,
+      "ʻ",
+      (fixed) => ({
+        message: `Uzbek apostrophe after o/g should be ʻ (U+02BB): "${fixed}" — oʻ/gʻ are letters, not quotes.`,
+        fixHint: "Replace the apostrophe after o/g with U+02BB (ʻ).",
+      }),
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// TYPO-APOS-04: Uzbek ʼ — a letter (not o/g) + ASCII ', U+2019 or U+2018 + letter
+// Error: ASCII ' between letters in uz text is never a correct letter.
+// ---------------------------------------------------------------------------
+
+export const apos04: TypographyRule = {
+  id: "TYPO-APOS-04",
+  family: "APOS",
+  tier: 2,
+  severity: "error",
+  check(segment, ctx) {
+    if (!isUzLocale(segment.locale)) return [];
+    return uzWordFindings(
+      "TYPO-APOS-04",
+      segment,
+      ctx.allowedTokens,
+      APOS_GLOTTAL,
+      "ʼ",
+      (fixed) => ({
+        message: `Uzbek glottal stop should be ʼ (U+02BC): "${fixed}" — tutuq belgisi is a letter, not a quote.`,
+        fixHint: "Replace the straight/curly apostrophe with U+02BC (ʼ).",
+      }),
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Export all Tier 2 locale rules
 // ---------------------------------------------------------------------------
 
@@ -412,4 +548,6 @@ export const TIER2_LOCALE_RULES: readonly TypographyRule[] = [
   abbr02,
   apos01,
   apos02,
+  apos03,
+  apos04,
 ];
