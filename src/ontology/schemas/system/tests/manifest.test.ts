@@ -10,10 +10,13 @@ Unit tests for manifest covering systemManifestSchema; systemCollectionSchema. I
 <CHANGE_SUMMARY>
   <item>RFC-1311: Compass header sweep — declares the manifest suite's contract for test-file scaffold coverage.</item>
   <item>RFC-1442: strict i18n.companion schema, companion-locale typography checks</item>
+  <item>RFC-1442: bcp47Tag parity guard vs vendored intake pattern</item>
 </CHANGE_SUMMARY>
 */
 
 import { describe, it, expect } from "vitest";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { systemManifestSchema, systemCollectionSchema } from "../manifest.ts";
 
 describe("systemManifestSchema", () => {
@@ -86,5 +89,38 @@ describe("systemCollectionSchema", () => {
 
   it("rejects null", () => {
     expect(() => systemCollectionSchema.parse(null)).toThrow();
+  });
+});
+
+describe("i18n.companion bcp47Tag parity (RFC-1442 review)", () => {
+  it("stays byte-identical to the vendored intake $defs pattern", async () => {
+    const schemaSource = await readFile(
+      new URL("../manifest.ts", import.meta.url),
+      "utf8",
+    );
+    const declared = schemaSource.match(
+      /const bcp47Tag[\s\S]*?\.regex\(\s*\/(.+?)\//,
+    )?.[1];
+    const vendored = await readFile(
+      join(
+        process.cwd(),
+        "..",
+        "..",
+        "docs",
+        "specs",
+        "werkstatt-onboarding",
+        "schemas",
+        "werkstatt-intake.schema.yaml",
+      ),
+      "utf8",
+    );
+    const specPattern = vendored.match(
+      /pattern: (\^\[a-z\]\{2,3\}.+?\$)/,
+    )?.[1];
+    expect(specPattern, "vendored spec must carry the bcp47Tag pattern").toBeTruthy();
+    expect(
+      declared,
+      "i18n.companion bcp47Tag drifted from the vendored intake $defs pattern — update both copies or hoist a shared const",
+    ).toBe(specPattern);
   });
 });
