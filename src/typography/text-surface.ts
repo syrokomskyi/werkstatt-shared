@@ -15,6 +15,7 @@ parse errors and maps them to a structured yamlError field.</purpose>
   <item>RFC-1068: initial creation.</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
   <item>RFC-1324 cold-run defect: declared frontmatter `lang` now wins over the directory segment — RFC-1329 binding legal documents live under non-binding locale dirs carrying `lang: de`; directory-keyed checking was a false-positive by locale mismatch.</item>
+  <item>RFC-1436: review r1 — autonoe rename, prose containment, companion substitution guard</item>
 </CHANGE_SUMMARY>
 */
 
@@ -91,6 +92,10 @@ export const TECHNICAL_KEYS = new Set([
   "email",
   "phone",
   "proseId",
+  // RFC-1436: companion renditions carry companion-locale text inside a
+  // routed-locale file — checking them under the file's locale produces
+  // false positives. Companion prose files are covered by their own lang.
+  "companion",
 ]);
 
 // Parent key → child keys whose values are technical (never text)

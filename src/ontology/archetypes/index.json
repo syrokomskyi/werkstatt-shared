@@ -166,7 +166,7 @@
       "version": "1.0.0",
       "layoutHint": "single-column",
       "acceptedCosmicNames": [
-        "Aoede"
+        "Autonoe"
       ],
       "sourceFile": "packages/werkstatt-site/src/domain/ontology/archetypes/components/companion-rendition.yaml",
       "layer": "component"
@@ -1227,7 +1227,7 @@
     "Proteus": "@warpgogol/werkstatt-site/ui/components/brand-label",
     "Orthosie": "@warpgogol/werkstatt-site/ui/components/check-questions",
     "Portia": "@warpgogol/werkstatt-site/ui/components/commitment-table",
-    "Aoede": "@warpgogol/werkstatt-site/ui/components/companion-rendition",
+    "Autonoe": "@warpgogol/werkstatt-site/ui/components/companion-rendition",
     "Charon": "@warpgogol/werkstatt-site/ui/components/copyright",
     "Rosalind": "@warpgogol/werkstatt-site/ui/components/currency-aware-price-display",
     "Cupid": "@warpgogol/werkstatt-site/ui/components/cycle-toggle",
@@ -1270,6 +1270,7 @@
     "Aitne": "@warpgogol/werkstatt-site/ui/components/comparison",
     "Sinope": "@warpgogol/werkstatt-site/ui/components/list",
     "Thalassa": "@warpgogol/werkstatt-site/ui/components/offer-capacity",
+    "Aoede": "@warpgogol/werkstatt-site/ui/components/paragraphs",
     "Kalyke": "@warpgogol/werkstatt-site/ui/components/rich",
     "Lysithea": "@warpgogol/werkstatt-site/ui/components/split-list",
     "Hegemone": "@warpgogol/werkstatt-site/ui/components/stats",
@@ -1331,7 +1332,7 @@
     "brand-label": "Proteus",
     "check-questions": "Orthosie",
     "commitment-table": "Portia",
-    "companion-rendition": "Aoede",
+    "companion-rendition": "Autonoe",
     "copyright": "Charon",
     "currency-aware-price-display": "Rosalind",
     "cycle-toggle": "Cupid",
@@ -1445,7 +1446,7 @@
     "Ariel": "breadcrumbs",
     "Orthosie": "section-body",
     "Portia": "section-body",
-    "Aoede": "companion-rendition",
+    "Autonoe": "companion-rendition",
     "Charon": "copyright",
     "Rosalind": "price-display",
     "Cupid": "cycle-toggle",
@@ -1492,6 +1493,7 @@
     "Aitne": "section-body",
     "Sinope": "section-body",
     "Thalassa": "section-body",
+    "Aoede": "section-body",
     "Kalyke": "section-body",
     "Lysithea": "section-body",
     "Hegemone": "section-body",

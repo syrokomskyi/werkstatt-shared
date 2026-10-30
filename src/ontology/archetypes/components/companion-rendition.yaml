@@ -20,7 +20,7 @@ propsSchema:
   shape: |
     z.object({}).passthrough()
 acceptedCosmicNames:
-  - Aoede
+  - Autonoe
 constraints: {}
 selection:
     purpose: Renders companion-language content inside a primary-language section.
