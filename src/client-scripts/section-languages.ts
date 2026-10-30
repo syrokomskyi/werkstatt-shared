@@ -18,6 +18,7 @@
   <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
   <item>RFC-1444: section-language switcher in the section header — styled code tabs with endonym labels, switch alternates keep heading look (h1-only demotion), unique ids, SECTION-LANG-03 covers rendition prose</item>
   <item>RFC-1444: scroll to a section-language deep-link target once its rendition is shown</item>
+  <item>RFC-1444: mission.validate blockers — pbp.profile anchors required schemas on i18n.default (not first lang dir), initSectionLanguages emits data-section-languages-initialized</item>
 </CHANGE_SUMMARY>
 */
 
@@ -103,4 +104,7 @@ export function initSectionLanguages(root: Document | HTMLElement): void {
       document.getElementById(hash)?.scrollIntoView();
     }
   }
+  // SMOKE-INIT-01: smoke tests synchronize on this marker — set it after
+  // the last addEventListener.
+  document.documentElement.setAttribute("data-section-languages-initialized", "true");
 }
