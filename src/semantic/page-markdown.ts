@@ -13,6 +13,7 @@ Data / APIs, User flows, Constraints) plus optional People, Initiatives, and FAQ
   <item>RFC-0166: initial implementation — build-time per-page Markdown twin.</item>
   <item>RFC-0372: buildPageMarkdown now renders from unified page.blocks instead of answerBlocks + contentBlocks.</item>
   <item>RFC-0377: restructured body into standardized sections (Summary, Business context, Data / APIs, User flows, Constraints) with heuristic block classification.</item>
+  <item>RFC-1444: review fixes — rendition projection reaches llms-full and markdown twins, demote alternate headings in both layouts</item>
 </CHANGE_SUMMARY>
 */
 
@@ -40,7 +41,12 @@ function clean(page: SemanticPageModel, text: string | undefined): string {
 
 function blockHasContent(block: SemanticBlock): boolean {
   return Boolean(
-    block.heading || block.summary || block.body || block.facts?.length || block.items?.length,
+    block.heading ||
+      block.summary ||
+      block.body ||
+      block.facts?.length ||
+      block.items?.length ||
+      block.renditions?.length,
   );
 }
 
@@ -130,6 +136,32 @@ function renderBlock(page: SemanticPageModel, block: SemanticBlock, depth = 3): 
         lines.push(clean(page, item.description));
       }
       lines.push("");
+    }
+  }
+  // RFC-1444: alternate-language renditions emit as nested sections so the
+  // Markdown twin carries the same content the HTML wrapper renders.
+  for (const rendition of block.renditions ?? []) {
+    const label = rendition.name ?? rendition.lang;
+    lines.push("");
+    lines.push(`${"#".repeat(depth + 1)} ${rendition.heading || block.heading} (${label})`);
+    if (rendition.summary) {
+      lines.push("");
+      lines.push(clean(page, rendition.summary));
+    }
+    if (rendition.body) {
+      lines.push("");
+      lines.push(clean(page, rendition.body));
+    }
+    if (rendition.items?.length) {
+      lines.push("");
+      for (const item of rendition.items) {
+        lines.push(`${"#".repeat(depth + 2)} ${item.title}`);
+        if (item.description) {
+          lines.push("");
+          lines.push(clean(page, item.description));
+        }
+        lines.push("");
+      }
     }
   }
 

@@ -7,7 +7,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1075: emit canonicalUri for organization and offer in llms-full.txt.</item>
   <item>RFC-1076: add formatClaims section in buildLlmsFull for claim provenance.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
@@ -16,7 +15,8 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1113: add ARD catalog discovery line — /.well-known/ard.json (v0.91 canonical path) joins the agentLinks blockquote set in buildLlmsIndex.</item>
-  <history>RFC-0184, RFC-0372</history>
+  <item>RFC-1444: review fixes — rendition projection reaches llms-full and markdown twins, demote alternate headings in both layouts</item>
+  <history>RFC-0184, RFC-0372, RFC-1075</history>
 </CHANGE_SUMMARY>
 */
 
@@ -69,7 +69,14 @@ function formatBlocks(page: SemanticPageModel): string {
   const excludeIds = new Set(page.output?.llms?.sections?.exclude ?? []);
   return page.blocks
     .filter((block) => block.heading && !excludeIds.has(block.id))
-    .filter((block) => block.summary || block.body || block.facts?.length || block.items?.length)
+    .filter(
+      (block) =>
+        block.summary ||
+        block.body ||
+        block.facts?.length ||
+        block.items?.length ||
+        block.renditions?.length,
+    )
     .map((block) => {
       const parts = [`### ${block.heading}`];
       if (block.summary) {
@@ -90,6 +97,25 @@ function formatBlocks(page: SemanticPageModel): string {
           const desc = item.description ? `: ${item.description}` : "";
           parts.push(`- ${item.title}${desc}`);
         }
+      }
+      // RFC-1444: alternate-language renditions emit as nested sections so
+      // llms-full carries the same content the HTML wrapper renders.
+      for (const rendition of block.renditions ?? []) {
+        const label = rendition.name ?? rendition.lang;
+        const renditionParts = [`#### ${rendition.heading || block.heading} (${label})`];
+        if (rendition.summary) {
+          renditionParts.push(canonicalizePageText(page, rendition.summary));
+        }
+        if (rendition.body) {
+          renditionParts.push(canonicalizePageText(page, rendition.body));
+        }
+        if (rendition.items?.length) {
+          for (const item of rendition.items) {
+            const desc = item.description ? `: ${item.description}` : "";
+            renditionParts.push(`- ${item.title}${desc}`);
+          }
+        }
+        parts.push(renditionParts.join("\n\n"));
       }
       return parts.join("\n\n");
     })
