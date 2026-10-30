@@ -12,15 +12,14 @@ Exports BlockEntrySchema and PageEntrySchema — pure declarative schemas, no I/
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>ADR-0116: BlockEntrySchema gains optional strict `copyHygiene: { allowPromise }` — the COMP-PROMISE-01 per-block opt-out with an authored reason.</item>
   <item>RFC-1341: BlockEntrySchema gains optional `requires` — `claim:<entry-id>` references (AND-ed) evaluated against the publication tiers at render time.</item>
   <item>RFC-1344: BlockEntrySchema gains optional `answers` — kebab-case ids of the site family's visitorQuestions; PAGE-ANSWERS-01 + COMP-QUESTIONS-01 consume.</item>
+  <item>RFC-1436: companion-language renditions inside blocks and shell components</item>
+  <history>RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -153,6 +152,20 @@ export const BlockEntrySchema = z
      */
     answers: z
       .array(z.string().regex(/^[a-z][a-z0-9-]*$/, "question id must be kebab-case"))
+      .optional(),
+
+    /**
+     * RFC-1436: opt this block into the site's companion language. `true`
+     * resolves the companion prose file (archetype `companion.mode: prose`);
+     * `{props: {...}}` carries the companion subset inline (archetype
+     * `companion.mode: props`). Only allowed when the archetype manifest
+     * declares `companion` support (COMPANION-03).
+     */
+    companion: z
+      .union([
+        z.literal(true),
+        z.object({ props: z.record(z.string(), z.unknown()).default({}) }).strict(),
+      ])
       .optional(),
   })
   .superRefine((data, ctx) => {

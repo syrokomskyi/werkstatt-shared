@@ -18,6 +18,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten â
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1355: step 1 â€” archetype selection schema + SECTION-SEM-01..06 at warning severity</item>
+  <item>RFC-1436: companion-language renditions inside blocks and shell components</item>
 </CHANGE_SUMMARY>
 */
 
@@ -53,6 +54,7 @@ export {
   sectionManifestSchema,
   componentManifestSchema,
   manifestSchema,
+  manifestCompanionSchema,
 } from "./manifest.ts";
 export type {
   KnownIntent,
@@ -60,6 +62,7 @@ export type {
   SectionManifest,
   ComponentManifest,
   Manifest,
+  ManifestCompanionDeclaration,
 } from "./manifest.ts";
 
 // ---------------------------------------------------------------------------

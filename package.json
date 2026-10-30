@@ -235,6 +235,10 @@
       "types": "./src/content/business-profile-references.ts",
       "default": "./src/content/business-profile-references.ts"
     },
+    "./content/companion": {
+      "types": "./src/content/companion.ts",
+      "default": "./src/content/companion.ts"
+    },
     "./content/content-reference": {
       "types": "./src/content/content-reference.ts",
       "default": "./src/content/content-reference.ts"

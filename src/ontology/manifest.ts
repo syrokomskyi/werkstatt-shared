@@ -16,13 +16,12 @@ Exports a discriminated union on `layer` so TypeScript narrows the `role` and
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1356: imageSlots[].depicts accepts a string or a non-empty list — consumers match "any of" (hero featureImage: illustration|atmosphere|represented-product).</item>
-  <item>RFC-1346/AMD-010: imageSlots entries gain optional aspect (W:H) — declared manifests win over brief aspectHint at fulfilment.</item>
   <item>RFC-1345: imageSlots on section manifests — image prop paths + depicts kind for MEDIA-01 and future asset.slot.fulfill</item>
   <item>RFC-1204: effectsParity flag on section manifests + resolver lookup</item>
   <item>RFC-1261</item>
   <item>RFC-1340: mandatory api routes compose into every SSR site — probe-mandatory endpoints emitted regardless of section use</item>
-  <history>RFC-1097</history>
+  <item>RFC-1436: companion-language renditions inside blocks and shell components</item>
+  <history>RFC-1097, RFC-1346, RFC-1356</history>
 </CHANGE_SUMMARY>
 */
 
@@ -102,6 +101,35 @@ const archetypeIdSchema = z
     /^[a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)*$/,
     "archetype must be kebab-case segments separated by dots",
   );
+
+// ---------------------------------------------------------------------------
+// RFC-1436 companion-language declaration
+// ---------------------------------------------------------------------------
+
+/**
+ * RFC-1436: how an archetype opts into the site's non-routed companion
+ * language. `mode: "prose"` resolves `prose/<companion>/<contentRef>.md` into
+ * companion html; `mode: "props"` passes through only the declared `fields`
+ * subset of `blocks[].companion.props`. `shell` (component layer) names the
+ * closed-vocabulary label keys the shell component pairs.
+ */
+export const manifestCompanionSchema = z.union([
+  z
+    .object({
+      mode: z.enum(["prose", "props"]),
+      /** props mode only: the localized prop keys eligible for `companion.props`. */
+      fields: z.array(kebabSchema).optional(),
+    })
+    .strict(),
+  z
+    .object({
+      /** Closed vocabulary of label keys the shell component pairs (RFC-1436). */
+      shell: z.array(z.string().min(1)).min(1),
+    })
+    .strict(),
+]);
+
+export type ManifestCompanionDeclaration = z.infer<typeof manifestCompanionSchema>;
 
 // ---------------------------------------------------------------------------
 // Shared base schema
@@ -372,6 +400,15 @@ export const sectionManifestSchema = manifestBaseSchema.extend({
         .strict(),
     )
     .optional(),
+
+  /**
+   * RFC-1436: companion-language support declaration. `mode: "prose"`
+   * resolves `prose/<companion>/<contentRef>.md`; `mode: "props"` passes
+   * through only `fields` from `blocks[].companion.props`. Blocks opt in via
+   * the block-level `companion` key — opt-in on an archetype without this
+   * declaration is COMPANION-03.
+   */
+  companion: manifestCompanionSchema.optional(),
 });
 
 /**
@@ -413,6 +450,13 @@ export const componentManifestSchema = manifestBaseSchema.extend({
    * component resolves from content files.
    */
   propsSchema: z.record(z.string(), z.unknown()).optional(),
+
+  /**
+   * RFC-1436: companion-language support declaration. Shell components use
+   * the `shell` variant — the closed vocabulary of label keys they pair
+   * (footer.navGroups.*, header.motto, navigation.legal).
+   */
+  companion: manifestCompanionSchema.optional(),
 });
 
 /**

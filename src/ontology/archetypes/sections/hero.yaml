@@ -40,6 +40,7 @@ propsSchema:
       layout: z.enum(["cover", "split-editorial"]).optional(),
       surfaceTone: z.enum(["light", "dark"]).optional(),
       textSide: z.enum(["left", "right"]).optional(),
+      textBackdrop: z.enum(["none", "scrim", "plate"]).optional(),
       eyebrowStyle: z.enum(["plain", "rule"]).optional(),
       ctaTrailingIcon: z.enum(["none", "arrow"]).optional(),
       featureImage: z.string().optional(),
@@ -136,6 +137,13 @@ selection:
       values:
         left: Text column on the left; feature image (or veil origin) right.
         right: Text column on the right; feature image (or veil origin) left.
+    - prop: textBackdrop
+      values:
+        none: The image is calm behind the text area — no backdrop.
+        scrim: The image has detail but should stay dominant — a directional
+          gradient behind the text block.
+        plate: Detailed image or illustration where text must be read without
+          competing — a translucent panel behind the text block.
     - prop: eyebrowStyle
       values:
         plain: Tagline renders as an uppercase body-family eyebrow in the accent colour.

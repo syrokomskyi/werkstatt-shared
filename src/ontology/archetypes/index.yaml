@@ -4,7 +4,7 @@
 # Edit instead: the archetype.registry.build generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 schemaVersion: 1.0.0
-totalCount: 89
+totalCount: 90
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
@@ -122,6 +122,15 @@ entries:
     acceptedCosmicNames:
       - Portia
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/commitment-table.yaml
+    layer: component
+  - id: companion-rendition
+    displayName: Companion Rendition
+    semanticRole: component-companion-rendition
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Aoede
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/companion-rendition.yaml
     layer: component
   - id: comparison-cards
     displayName: Comparison cards
@@ -857,6 +866,7 @@ componentRoles:
   - component-brand-label
   - component-check-questions
   - component-commitment-table
+  - component-companion-rendition
   - component-copyright
   - component-currency-aware-price-display
   - component-cycle-toggle
@@ -947,6 +957,7 @@ planetImportPaths:
   Proteus: "@warpgogol/werkstatt-site/ui/components/brand-label"
   Orthosie: "@warpgogol/werkstatt-site/ui/components/check-questions"
   Portia: "@warpgogol/werkstatt-site/ui/components/commitment-table"
+  Aoede: "@warpgogol/werkstatt-site/ui/components/companion-rendition"
   Charon: "@warpgogol/werkstatt-site/ui/components/copyright"
   Rosalind: "@warpgogol/werkstatt-site/ui/components/currency-aware-price-display"
   Cupid: "@warpgogol/werkstatt-site/ui/components/cycle-toggle"
@@ -989,7 +1000,6 @@ planetImportPaths:
   Aitne: "@warpgogol/werkstatt-site/ui/components/comparison"
   Sinope: "@warpgogol/werkstatt-site/ui/components/list"
   Thalassa: "@warpgogol/werkstatt-site/ui/components/offer-capacity"
-  Aoede: "@warpgogol/werkstatt-site/ui/components/paragraphs"
   Kalyke: "@warpgogol/werkstatt-site/ui/components/rich"
   Lysithea: "@warpgogol/werkstatt-site/ui/components/split-list"
   Hegemone: "@warpgogol/werkstatt-site/ui/components/stats"
@@ -1050,6 +1060,7 @@ blockTypeToCosmicName:
   brand-label: Proteus
   check-questions: Orthosie
   commitment-table: Portia
+  companion-rendition: Aoede
   copyright: Charon
   currency-aware-price-display: Rosalind
   cycle-toggle: Cupid
@@ -1161,6 +1172,7 @@ roleByCosmicName:
   Ariel: breadcrumbs
   Orthosie: section-body
   Portia: section-body
+  Aoede: companion-rendition
   Charon: copyright
   Rosalind: price-display
   Cupid: cycle-toggle
@@ -1207,7 +1219,6 @@ roleByCosmicName:
   Aitne: section-body
   Sinope: section-body
   Thalassa: section-body
-  Aoede: section-body
   Kalyke: section-body
   Lysithea: section-body
   Hegemone: section-body
@@ -1220,4 +1231,23 @@ roleByCosmicName:
   Triton: header
   Hermippe: site-background
   Mneme: section-body
+companionByCosmicName:
+  Europa:
+    mode: props
+    fields:
+      - subheading
+      - description
+      - tagline
+  Hyperion:
+    mode: prose
+  Titania:
+    shell:
+      - footer.navGroups.navigationTitle
+      - footer.navGroups.legalTitle
+      - footer.navGroups.contactTitle
+      - footer.taglineLines
+      - navigation.legal
+  Oberon:
+    shell:
+      - header.motto
 
