@@ -17,6 +17,7 @@
   <item>RFC-1444: initial client script — tab toggle, arrow keys, hash deep link.</item>
   <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
   <item>RFC-1444: section-language switcher in the section header — styled code tabs with endonym labels, switch alternates keep heading look (h1-only demotion), unique ids, SECTION-LANG-03 covers rendition prose</item>
+  <item>RFC-1444: scroll to a section-language deep-link target once its rendition is shown</item>
 </CHANGE_SUMMARY>
 */
 
@@ -97,7 +98,9 @@ export function initSectionLanguages(root: Document | HTMLElement): void {
     );
     if (wrapper) {
       selectRendition(wrapper, lang);
+      // The target rendition was hidden at load, so the browser's own
+      // fragment scroll found nothing — scroll once it is visible.
+      document.getElementById(hash)?.scrollIntoView();
     }
   }
 }
-
