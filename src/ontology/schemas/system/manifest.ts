@@ -6,7 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0384: pseo block — cardinalityLimit (default 10_000 override) + highCardinalityExperiment for surface.plan.generate.</item>
   <item>RFC-1374: pseo autonomy scope sinceAt accepts YAML-native Date scalars via isoDateString — parse normalizes to ISO-8601 strings.</item>
   <item>RFC-1283: step 1 — publication.gate in systemManifestSchema
 
@@ -42,7 +41,8 @@ neutral 'Lokaler Kontext' — plus a Quellen block listing each distinct
 sourceUrl with its asOf date. Live warpgogol run: 40 LOCALFACT-01 warnings
 across the 12 city demand records — the owner's research backlog; no excerpts,
 review records, or gate flips authored. Canary C11 active.</item>
-  <history>ADR-0062, ADR-0114, RFC-0303, RFC-0377, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229, RFC-1307, RFC-1341</history>
+  <item>RFC-1438: rfc-1438 legal-form-aware impressum from legal identity</item>
+  <history>ADR-0062, ADR-0114, RFC-0303, RFC-0377, RFC-0384, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229, RFC-1307, RFC-1341</history>
 </CHANGE_SUMMARY>
 */
 
@@ -166,6 +166,26 @@ export const systemManifestSchema = z.object({
         email: z.string().min(1).optional(),
         name: z.string().min(1).optional(),
         vatId: z.string().min(1).optional(),
+        // RFC-1438: legal-form-aware Impressum — the form, authored
+        // representative titles (roleTitle verbatim, never inferred), and
+        // the commercial-register entry.
+        legalForm: z
+          .enum(["gmbh", "ug", "ag", "ek", "gbr", "sole-trader"])
+          .optional(),
+        representatives: z
+          .array(
+            z.object({
+              name: z.string().min(1),
+              roleTitle: z.string().min(1),
+            }),
+          )
+          .optional(),
+        register: z
+          .object({
+            court: z.string().min(1),
+            number: z.string().min(1),
+          })
+          .optional(),
       })
       .optional(),
   }),
