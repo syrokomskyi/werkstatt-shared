@@ -7,12 +7,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0372: Unified SemanticBlock type replaces SemanticAnswerBlock + SemanticContentBlock; SemanticPageModel.blocks replaces answerBlocks/contentBlocks/bodyText.</item>
   <item>RFC-0912: Added VideoSeoData type and optional SemanticBlock.video field for opted-in content video structured data.</item>
   <item>RFC-1254: drain latent lint debt — dead imports/vars, no-as-any casts, restricted imports</item>
   <item>RFC-1282: SemanticPageModel.htmlLang — the BCP 47 tag emitted as <html lang> (falls back to the lang segment when unset).</item>
   <item>warpgogol-m000202: SemanticPageModel.canonicalPageId — marks canonical-collapse pages whose WebPage assertion belongs to a parent pageId; the render layer suppresses their JSON-LD @graph (JSONLD-URL.DUPLICATE-WEBPAGE-ID fix).</item>
-  <history>RFC-0133, RFC-0165, RFC-0328, RFC-0490, RFC-0508</history>
+  <item>RFC-1444: project section-language renditions into llms-full and parity surfaces (RFC-1444)</item>
+  <history>RFC-0133, RFC-0165, RFC-0328, RFC-0372, RFC-0490, RFC-0508</history>
 </CHANGE_SUMMARY>
 */
 
@@ -63,6 +63,22 @@ export type SemanticBlock = {
   extractorVersion?: string;
   /** RFC-0912: video SEO data for opted-in content video blocks (seo.videoObject: true). Populated by buildSemanticPageModelWith from the variant manifest. */
   video?: VideoSeoData;
+  /**
+   * RFC-1444: alternate-language renditions resolved by the page builder for
+   * blocks opting into `languages` — attached post-extraction in the semantic
+   * projection stage so llms-full/Markdown/agent surfaces emit the same
+   * alternate-language content the HTML wrapper renders.
+   */
+  renditions?: Array<{
+    lang: string;
+    name?: string;
+    primary?: boolean;
+    heading: string;
+    summary?: string;
+    body?: string;
+    facts?: string[];
+    items?: Array<{ title: string; description?: string }>;
+  }>;
 };
 
 /* RFC-0142: per-page llms inclusion depth. */
