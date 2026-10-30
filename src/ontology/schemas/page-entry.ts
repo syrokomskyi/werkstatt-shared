@@ -12,12 +12,12 @@ Exports BlockEntrySchema and PageEntrySchema — pure declarative schemas, no I/
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>ADR-0116: BlockEntrySchema gains optional strict `copyHygiene: { allowPromise }` — the COMP-PROMISE-01 per-block opt-out with an authored reason.</item>
   <item>RFC-1341: BlockEntrySchema gains optional `requires` — `claim:<entry-id>` references (AND-ed) evaluated against the publication tiers at render time.</item>
   <item>RFC-1344: BlockEntrySchema gains optional `answers` — kebab-case ids of the site family's visitorQuestions; PAGE-ANSWERS-01 + COMP-QUESTIONS-01 consume.</item>
   <item>RFC-1436: companion-language renditions inside blocks and shell components</item>
   <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
-  <history>RFC-1097</history>
+  <item>RFC-1444: non-routed partial pages inherit page-level metadata (RFC-1444)</item>
+  <history>ADR-0116, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -226,19 +226,29 @@ export const PageEntrySchema = z
      * the cosmicName of the page's manifest.yaml.
      * Cross-reference against system.yaml is validated by page.block.validate.
      */
-    cosmicStar: z.enum(StarCatalog),
+    // RFC-1444: non-routed partial pages (`routed: false`) inherit page-level
+    // metadata (cosmicStar/title/description) from the primary page — only
+    // same-id rendition blocks are authored.
+    cosmicStar: z.enum(StarCatalog).optional(),
 
     /** Page <title> and social/SEO title. */
-    title: z.string().min(1),
+    title: z.string().min(1).optional(),
 
     /** Page meta description for SEO and social cards. */
-    description: z.string().min(1),
+    description: z.string().min(1).optional(),
 
     /**
      * BCP-47 language code matching the file's language suffix (e.g. "de", "en").
      * The pipeline uses this as the locale for RuntimeContext.
      */
     lang: z.string().min(1),
+
+    /**
+     * RFC-1444: `routed: false` marks a non-routed partial page — same-id
+     * rendition blocks for opted-in sections, never a route/sitemap/hreflang
+     * member. Page-level metadata is inherited from the primary page.
+     */
+    routed: z.literal(false).optional(),
 
     /**
      * Ordered list of blocks composing this page.
@@ -272,6 +282,19 @@ export const PageEntrySchema = z
         path: ["blocks"],
         message: "A page must have at least one block",
       });
+    }
+    // RFC-1444: routed pages carry full page-level metadata; non-routed
+    // partial pages (`routed: false`) inherit it from the primary page.
+    if (data.routed !== false && data.kind === "page") {
+      for (const field of ["cosmicStar", "title", "description"] as const) {
+        if (data[field] === undefined) {
+          ctx.addIssue({
+            code: "custom",
+            path: [field],
+            message: `${field} is required on routed pages (non-routed partial pages inherit it)`,
+          });
+        }
+      }
     }
   });
 
