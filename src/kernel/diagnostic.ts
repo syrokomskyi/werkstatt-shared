@@ -14,6 +14,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0852: Move canonical Diagnostic ownership from site plugin into the engine.</item>
   <item>RFC-1027: Add structured remediation hints — remediationRefSchema and remediation field on Diagnostic.</item>
+  <item>RFC-1445: Machine-applicable edit descriptors — diagnosticEditSchema (replace|choose, optional target), generatedOwnerSchema, diagnosticCommandSchema; remediationRefSchema gains edit/autofixCommand/verifyCommand/generatedOwner; diagnosticSchema superRefine enforces the edit-requires-file, generatedOwner-target, and multiline-find invariants.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -41,6 +42,7 @@ export const DIAGNOSTIC_LIMITS = {
   diagnosticsPerResult: 1000,
   remediationActionBytes: 512,
   remediationTargetFiles: 8,
+  editTextBytes: 1024,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -249,8 +251,86 @@ export const diagnosticEvidenceSchema = z
 export type DiagnosticEvidence = z.infer<typeof diagnosticEvidenceSchema>;
 
 // ---------------------------------------------------------------------------
-// Remediation reference (RFC-1027)
+// Remediation reference (RFC-1027) + machine-applicable edit (RFC-1445)
 // ---------------------------------------------------------------------------
+
+/**
+ * RFC-1445: full command argv string starting with the closed `werkstatt run `
+ * or `werkstatt pipeline ` prefix (same vocabulary as RFC-0268 run probes).
+ * Stored without the `pnpm exec` launcher prefix.
+ */
+export const diagnosticCommandSchema = redactedDiagnosticTextSchema(
+  DIAGNOSTIC_LIMITS.remediationActionBytes,
+).refine(
+  (value) => value.startsWith("werkstatt run ") || value.startsWith("werkstatt pipeline "),
+  {
+    message:
+      'CERT-DIAGNOSTIC-SCHEMA-01: command must start with "werkstatt run " or "werkstatt pipeline "',
+  },
+);
+
+/** `replace` may be the empty string (a deletion) — all-whitespace is still rejected. */
+const editTextSchema = z.union([
+  z.literal(""),
+  redactedDiagnosticTextSchema(DIAGNOSTIC_LIMITS.editTextBytes),
+]);
+
+/**
+ * RFC-1445: a machine-applicable edit descriptor. `target` names the file the
+ * edit applies to; absent means `Diagnostic.file`. When `generatedOwner` is
+ * present on the remediation, `target` must equal `generatedOwner.template` —
+ * enforced by diagnosticSchema's superRefine (an edit may never target a
+ * generated file).
+ */
+export const diagnosticEditSchema = z.discriminatedUnion("kind", [
+  z
+    .object({
+      kind: z.literal("replace"),
+      find: redactedDiagnosticTextSchema(DIAGNOSTIC_LIMITS.editTextBytes),
+      replace: editTextSchema,
+      /** 1-based occurrence; absent ⇒ `find` must be unique in the file. */
+      occurrence: z.number().int().positive().optional(),
+      target: safeWorkspaceRelativePathSchema.optional(),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal("choose"),
+      find: redactedDiagnosticTextSchema(DIAGNOSTIC_LIMITS.editTextBytes),
+      options: z
+        .array(
+          z
+            .object({
+              label: redactedDiagnosticTextSchema(DIAGNOSTIC_LIMITS.remediationActionBytes),
+              replace: editTextSchema,
+              consequence: redactedDiagnosticTextSchema(
+                DIAGNOSTIC_LIMITS.remediationActionBytes,
+              ),
+              recommended: z.boolean().optional(),
+            })
+            .strict(),
+        )
+        .min(2)
+        .max(4),
+      target: safeWorkspaceRelativePathSchema.optional(),
+    })
+    .strict(),
+]);
+
+export type DiagnosticEdit = z.infer<typeof diagnosticEditSchema>;
+
+/**
+ * RFC-1445: marks `Diagnostic.file` as a generated artifact — do not edit it;
+ * change `template` and re-run `command` instead.
+ */
+export const generatedOwnerSchema = z
+  .object({
+    command: diagnosticCommandSchema,
+    template: safeWorkspaceRelativePathSchema.optional(),
+  })
+  .strict();
+
+export type GeneratedOwner = z.infer<typeof generatedOwnerSchema>;
 
 export const remediationRefSchema = z
   .object({
@@ -262,6 +342,10 @@ export const remediationRefSchema = z
       .array(safeWorkspaceRelativePathSchema)
       .max(DIAGNOSTIC_LIMITS.remediationTargetFiles)
       .optional(),
+    edit: diagnosticEditSchema.optional(),
+    autofixCommand: diagnosticCommandSchema.optional(),
+    verifyCommand: diagnosticCommandSchema.optional(),
+    generatedOwner: generatedOwnerSchema.optional(),
   })
   .strict();
 
@@ -284,6 +368,50 @@ export const diagnosticSchema = z
     evidence: z.array(diagnosticEvidenceSchema).max(DIAGNOSTIC_LIMITS.evidenceItems).optional(),
     data: canonicalJsonObjectV1Schema.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((d, ctx) => {
+    // RFC-1445 invariants on remediation.edit.
+    const edit = d.remediation?.edit;
+    if (edit !== undefined) {
+      if (d.file === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["remediation", "edit"],
+          message:
+            "CERT-DIAGNOSTIC-SCHEMA-01: remediation.edit requires Diagnostic.file — the edit applies to that source file",
+        });
+      }
+      const owner = d.remediation?.generatedOwner;
+      if (owner !== undefined) {
+        // `file` names the generated artifact — an edit may only target the
+        // owning template. Absent `target` defaults to `file` → reject.
+        const targetOk =
+          owner.template !== undefined && edit.target !== undefined && edit.target === owner.template;
+        if (!targetOk) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["remediation", "edit", "target"],
+            message:
+              "CERT-DIAGNOSTIC-SCHEMA-01: with generatedOwner present, edit.target must name generatedOwner.template — never the generated file",
+          });
+        }
+      } else if (edit.target !== undefined && d.file !== undefined && edit.target !== d.file) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["remediation", "edit", "target"],
+          message:
+            "CERT-DIAGNOSTIC-SCHEMA-01: without generatedOwner, edit.target must equal Diagnostic.file",
+        });
+      }
+      if (edit.find.includes("\n") && d.data?.multiline !== true) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["remediation", "edit", "find"],
+          message:
+            "CERT-DIAGNOSTIC-SCHEMA-01: edit.find must not contain a newline unless data.multiline is true",
+        });
+      }
+    }
+  });
 
 export type Diagnostic = z.infer<typeof diagnosticSchema>;
