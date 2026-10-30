@@ -25,6 +25,7 @@
   <item>RFC-1290: initial — corpusSegment/CorpusPage/TextCorpus schemas + computeHtmlTreeHash shared by site generator and engine release gate.</item>
   <item>RFC-1290</item>
   <item>RFC-1290: rendered-text corpus + release text diff</item>
+  <item>RFC-1450: gate rendered text for locale leaks and internal identifiers (RFC-1450)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -55,6 +56,12 @@ export const corpusSegmentSchema = z
     path: z.string().min(1),
     /** Nearest ancestor element carrying data-slug. */
     section: z.string().optional(),
+    /**
+     * RFC-1450: nearest ancestor `lang` attribute — recorded only when it
+     * differs from the page language, so foreign-language islands are
+     * distinguishable from unmarked text.
+     */
+    lang: z.string().min(2).optional(),
   })
   .strict();
 export type CorpusSegment = z.infer<typeof corpusSegmentSchema>;
