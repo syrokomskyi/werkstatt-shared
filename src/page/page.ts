@@ -11,16 +11,14 @@ pipeline for each block defined in a page's content.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1341: BlockEntry gains optional requires (claim:<pbp-entry-id>, AND-ed); BuildPageOptions.publication evaluates claims against the site ceiling — below-ceiling claims omit the block via onOmitted, preview-tier claims mark ResolvedBlock.publicationTier/publicationNote; absent option keeps pre-RFC byte-identical output.</item>
   <item>RFC-1422: AUTO_INJECTED_BLOCK_TYPES + AUTO_INJECTED_COSMIC_NAMES — shared source of truth for pipeline-injected block types (breadcrumbs→Thebe); consumed by render-side dedupe and page.block.validate B-10 / manifest.planets.validate MP-03.</item>
   <item>RFC-1436: companion-language renditions inside blocks and shell components</item>
-  <history>RFC-0091, RFC-0262, RFC-0263, RFC-0264</history>
+  <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
+  <history>RFC-0091, RFC-0262, RFC-0263, RFC-0264, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -69,13 +67,14 @@ export interface BlockEntry {
   /** Block layer — shell blocks render before content blocks (RFC-0036). */
   layer?: "shell" | "section";
   /**
-   * RFC-1436: block-level companion-language opt-in. `true` resolves
-   * `prose/<companion>/<contentRef>.md` (prose mode); `{props}` passes the
-   * archetype-declared field subset through (props mode). Resolved into
-   * `ResolvedBlock.companion` by the page-build pipeline — never rendered as a
+   * RFC-1444: block-level section-languages opt-in. `true` uses the site
+   * defaults (all declared languages, site defaultLayout/switcherVariant);
+   * the object form overrides the axis subset (`only`), layout and switcher
+   * variant. Carried verbatim into `ResolvedBlock.languages` — the site-side
+   * pipeline resolves it into the SectionLanguagesModel; never rendered as a
    * raw prop.
    */
-  companion?: true | { props: Record<string, unknown> };
+  languages?: true | { only?: string[]; layout?: "switch" | "stacked"; switcherVariant?: "pill" | "text" };
 }
 
 // ---------------------------------------------------------------------------
@@ -126,12 +125,18 @@ export interface ResolvedBlock {
   /** Badge note text (already localized) for preview-tier blocks. */
   readonly publicationNote?: string;
   /**
-   * RFC-1436: the authored companion opt-in (`true` → prose mode;
-   * `{props}` → inline props mode), carried verbatim from the BlockEntry so
-   * the site-side pipeline can resolve it into `props.companion`
-   * (CompanionRendition) — the raw opt-in is never a render prop.
+   * RFC-1444: the authored section-languages opt-in, carried verbatim from
+   * the BlockEntry so the site-side pipeline can resolve it into the
+   * SectionLanguagesModel — the raw opt-in is never a render prop.
    */
-  readonly companion?: true | { props: Record<string, unknown> };
+  readonly languages?: true | { only?: string[]; layout?: "switch" | "stacked"; switcherVariant?: "pill" | "text" };
+  /**
+   * RFC-1444: the resolved section-languages model (axis renditions, layout,
+   * switcher variant) — attached by the site-side pipeline when the block
+   * opted in and more than one rendition resolved. BlocksRenderer dispatches
+   * such blocks through the section-languages wrapper.
+   */
+  readonly sectionLanguages?: import("../content/section-languages.ts").SectionLanguagesModel;
 }
 
 /**
@@ -435,7 +440,7 @@ export async function buildPage(
       visibility: block.visibility ?? null,
       layer: block.layer ?? "section",
       publicationTier,
-      companion: block.companion,
+      languages: block.languages,
     });
   }
 

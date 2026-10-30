@@ -11,6 +11,7 @@ Unit tests for manifest covering systemManifestSchema; systemCollectionSchema. I
   <item>RFC-1311: Compass header sweep — declares the manifest suite's contract for test-file scaffold coverage.</item>
   <item>RFC-1442: strict i18n.companion schema, companion-locale typography checks</item>
   <item>RFC-1442: bcp47Tag parity guard vs vendored intake pattern</item>
+  <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -43,41 +44,60 @@ const MINIMAL_MANIFEST = {
   },
 };
 
-function manifestWithCompanion(companion: unknown) {
+function manifestWithSectionLanguages(sectionLanguages: unknown) {
   return {
     ...MINIMAL_MANIFEST,
-    i18n: { ...MINIMAL_MANIFEST.i18n, companion },
+    i18n: { ...MINIMAL_MANIFEST.i18n, sectionLanguages },
   };
 }
 
-describe("i18n.companion strict schema (RFC-1442)", () => {
-  it("i18n.companion rejects unknown keys under the strict schema", () => {
-    for (const companion of [
-      { lang: "de", name: "Deutsch", langg: "de" },
-      { lang: "de", name: "Deutsch", shells: ["footer.taglineLines"] },
-      { lang: "de", name: "Deutsch", mode: "props" },
+describe("i18n.sectionLanguages strict schema (RFC-1444)", () => {
+  it("i18n.sectionLanguages rejects unknown keys under the strict schema", () => {
+    for (const decl of [
+      { languages: { de: { name: "Deutsch" } }, langg: "de" },
+      { languages: { de: { name: "Deutsch" } }, mode: "props" },
+      { languages: { de: { name: "Deutsch", nam: "x" } } },
     ]) {
-      expect(() => systemManifestSchema.parse(manifestWithCompanion(companion))).toThrow();
+      expect(() => systemManifestSchema.parse(manifestWithSectionLanguages(decl))).toThrow();
     }
   });
 
-  it("i18n.companion rejects a lang value that is not a BCP 47 tag", () => {
-    for (const lang of ["DE", "german", "de_DE", "d", "de-", "not-a-lang!"]) {
-      const companion = { lang, name: "Deutsch" };
-      expect(() => systemManifestSchema.parse(manifestWithCompanion(companion))).toThrow();
+  it("i18n.sectionLanguages rejects a languages key that is not a BCP 47 tag", () => {
+    for (const key of ["de_DE", "deutsch!", "123", ""]) {
+      const decl = { languages: { [key]: { name: "Deutsch" } } };
+      expect(() => systemManifestSchema.parse(manifestWithSectionLanguages(decl))).toThrow();
     }
   });
 
-  it("i18n.companion accepts valid declarations including script and region subtags", () => {
-    for (const companion of [
-      { lang: "de", name: "Deutsch" },
-      { lang: "ru", name: "Русский", shell: ["footer.navGroups.legalTitle"] },
-      { lang: "uz-Latn", name: "Oʻzbekcha" },
-      { lang: "es-419", name: "Español" },
-      { lang: "zh-Hant-TW", name: "Fan-ti" },
+  it("i18n.sectionLanguages accepts valid declarations including script and region subtags", () => {
+    for (const key of ["de", "pt-BR", "zh-Hant"]) {
+      const decl = { languages: { [key]: { name: "Deutsch" } } };
+      const parsed = systemManifestSchema.parse(manifestWithSectionLanguages(decl));
+      expect(Object.keys(parsed.i18n?.sectionLanguages?.languages ?? {})).toContain(key);
+      expect(parsed.i18n?.sectionLanguages?.languages?.[key]?.name).toBe("Deutsch");
+    }
+  });
+
+  it("accepts layout, switcher variant and shell key declarations", () => {
+    const decl = {
+      languages: { de: { name: "Deutsch" } },
+      defaultLayout: "switch",
+      switcherVariant: "text",
+      shell: ["footer.navGroups.legalTitle", "header.motto"],
+    };
+    const parsed = systemManifestSchema.parse(manifestWithSectionLanguages(decl));
+    expect(parsed.i18n?.sectionLanguages?.defaultLayout).toBe("switch");
+    expect(parsed.i18n?.sectionLanguages?.switcherVariant).toBe("text");
+    expect(parsed.i18n?.sectionLanguages?.shell).toHaveLength(2);
+  });
+
+  it("rejects invalid layout and switcher variant enum values", () => {
+    for (const decl of [
+      { languages: { de: { name: "Deutsch" } }, defaultLayout: "columns" },
+      { languages: { de: { name: "Deutsch" } }, switcherVariant: "dropdown" },
+      { languages: { de: { name: "Deutsch" } }, shell: [] },
     ]) {
-      const parsed = systemManifestSchema.parse(manifestWithCompanion(companion));
-      expect(parsed.i18n?.companion?.lang).toBe(companion.lang);
+      expect(() => systemManifestSchema.parse(manifestWithSectionLanguages(decl))).toThrow();
     }
   });
 });
@@ -92,7 +112,7 @@ describe("systemCollectionSchema", () => {
   });
 });
 
-describe("i18n.companion bcp47Tag parity (RFC-1442 review)", () => {
+describe("i18n.sectionLanguages bcp47Tag parity (RFC-1444)", () => {
   it("stays byte-identical to the vendored intake $defs pattern", async () => {
     const schemaSource = await readFile(
       new URL("../manifest.ts", import.meta.url),

@@ -123,15 +123,6 @@ entries:
       - Portia
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/commitment-table.yaml
     layer: component
-  - id: companion-rendition
-    displayName: Companion Rendition
-    semanticRole: component-companion-rendition
-    version: 1.0.0
-    layoutHint: single-column
-    acceptedCosmicNames:
-      - Autonoe
-    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/companion-rendition.yaml
-    layer: component
   - id: comparison-cards
     displayName: Comparison cards
     semanticRole: side-by-side-comparison
@@ -645,6 +636,15 @@ entries:
       - Thalassa
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/offer-capacity.yaml
     layer: component
+  - id: section-languages
+    displayName: Section Languages
+    semanticRole: component-section-languages
+    version: 1.0.0
+    layoutHint: single-column
+    acceptedCosmicNames:
+      - Kore
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/components/section-languages.yaml
+    layer: component
   - id: send-message
     displayName: Send message
     semanticRole: lead-message-capture
@@ -866,7 +866,6 @@ componentRoles:
   - component-brand-label
   - component-check-questions
   - component-commitment-table
-  - component-companion-rendition
   - component-copyright
   - component-currency-aware-price-display
   - component-cycle-toggle
@@ -894,6 +893,7 @@ componentRoles:
   - component-responsive-image
   - component-scroll-to-top
   - component-section-body.offer-capacity
+  - component-section-languages
   - component-shell.agent-webmcp
   - component-shell.breadcrumbs
   - component-shell.footer
@@ -957,7 +957,6 @@ planetImportPaths:
   Proteus: "@warpgogol/werkstatt-site/ui/components/brand-label"
   Orthosie: "@warpgogol/werkstatt-site/ui/components/check-questions"
   Portia: "@warpgogol/werkstatt-site/ui/components/commitment-table"
-  Autonoe: "@warpgogol/werkstatt-site/ui/components/companion-rendition"
   Charon: "@warpgogol/werkstatt-site/ui/components/copyright"
   Rosalind: "@warpgogol/werkstatt-site/ui/components/currency-aware-price-display"
   Cupid: "@warpgogol/werkstatt-site/ui/components/cycle-toggle"
@@ -1008,6 +1007,7 @@ planetImportPaths:
   Arche: "@warpgogol/werkstatt-site/ui/components/section-cta-group"
   Pasiphae: "@warpgogol/werkstatt-site/ui/components/section-header"
   Taygete: "@warpgogol/werkstatt-site/ui/components/section-image"
+  Kore: "@warpgogol/werkstatt-site/ui/components/section-languages"
   Ananke: "@warpgogol/werkstatt-site/ui/components/section-shell"
   Naiad: "@warpgogol/werkstatt-site/ui/components/social-meta"
   Triton: "@warpgogol/werkstatt-site/ui/components/structured-data"
@@ -1061,7 +1061,6 @@ blockTypeToCosmicName:
   brand-label: Proteus
   check-questions: Orthosie
   commitment-table: Portia
-  companion-rendition: Autonoe
   copyright: Charon
   currency-aware-price-display: Rosalind
   cycle-toggle: Cupid
@@ -1111,6 +1110,7 @@ blockTypeToCosmicName:
   section-cta-group: Arche
   section-header: Pasiphae
   section-image: Taygete
+  section-languages: Kore
   social-meta: Naiad
   structured-data: Triton
   verifiable-case: Mneme
@@ -1173,7 +1173,6 @@ roleByCosmicName:
   Ariel: breadcrumbs
   Orthosie: section-body
   Portia: section-body
-  Autonoe: companion-rendition
   Charon: copyright
   Rosalind: price-display
   Cupid: cycle-toggle
@@ -1228,28 +1227,12 @@ roleByCosmicName:
   Arche: section-cta
   Pasiphae: section-header
   Taygete: section-image
+  Kore: section-languages
   Ananke: section-shell
   Naiad: header
   Triton: header
   Hermippe: site-background
   Mneme: section-body
-companionByCosmicName:
-  Europa:
-    mode: props
-    fields:
-      - subheading
-      - description
-      - tagline
-  Hyperion:
-    mode: prose
-  Titania:
-    shell:
-      - footer.navGroups.navigationTitle
-      - footer.navGroups.legalTitle
-      - footer.navGroups.contactTitle
-      - footer.taglineLines
-      - navigation.legal
-  Oberon:
-    shell:
-      - header.motto
+sectionLanguagesByCosmicName:
+  Hyperion: supported
 

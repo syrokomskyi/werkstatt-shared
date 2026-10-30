@@ -6,7 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1175: initBackgroundVideos for video[data-bg-video] — capability-gated background autoplay (always-on step; the marker replaces the native autoplay attribute in media.astro).</item>
   <item>RFC-1175: close Lighthouse gaps — directive-allowlist robots (Schemamap retired, ROBOTS-SURFACE-01), capability-gated video (preload=none, data-bg-video, saveData/reduced-motion), single fetchpriority=high per page (IMG-DELIVERY-05), inlined shared texture token, 24px QR touch targets; RFC-1177 security-headers draft</item>
   <item>RFC-1175 AC-5: single-chunk orchestrator — all self-gating feature modules statically imported (scheduler, gsap-*, inline-number, live-photos, video-player, background-video, external-link-qr), so the entry script's one dynamic import resolves the whole dispatch graph; heavy deps stay lazy inside each init.</item>
   <item>warpgogol-m000170: initLenis moved behind scheduleTask — it was the only awaited feature init, pulling the lenis chunk into the critical request chain Lighthouse reported.</item>
@@ -20,7 +19,8 @@ partners.yaml, referral_partner_slug/name on the Lagebild ingress contract,
 legacy /?ref -> /r/<slug> 302 in the generated worker, and full removal of
 the cookie capture module (wg_ref, referral.attribution entitlement,
 payload.attribution).</item>
-  <history>RFC-1097</history>
+  <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
+  <history>RFC-1097, RFC-1175</history>
 </CHANGE_SUMMARY>
 */
 
@@ -35,6 +35,7 @@ import "./trusted-types.ts";
 // script. Heavy third-party deps (gsap, plyr, hls.js, @lordicon/element,
 // qrcode, lenis) stay lazy: each init loads them only when its trigger exists.
 import { applyExternalLinkBehavior } from "./external-links.ts";
+import { initSectionLanguages } from "./section-languages.ts";
 import { initLordIconOnDemand } from "./lordicon.ts";
 import { initLenis } from "./lenis.ts";
 import { initScrollSpy } from "./scroll-spy.ts";
@@ -97,6 +98,11 @@ export async function runStandardLayoutOrchestration(
     } else {
       applyExternalLinkBehavior({ externalLinkQrEntitled: options.externalLinkQrEntitled });
     }
+  }
+
+  // RFC-1444: section-scoped language switchers (mandatory when present)
+  if (has("[data-section-languages]")) {
+    initSectionLanguages(document);
   }
 
   // 2. LordIcon hydration (deferred to load event to avoid blocking LCP)

@@ -12,11 +12,12 @@ parse errors and maps them to a structured yamlError field.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1068: initial creation.</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
   <item>RFC-1324 cold-run defect: declared frontmatter `lang` now wins over the directory segment — RFC-1329 binding legal documents live under non-binding locale dirs carrying `lang: de`; directory-keyed checking was a false-positive by locale mismatch.</item>
   <item>RFC-1436: review r1 — autonoe rename, prose containment, companion substitution guard</item>
   <item>RFC-1442: companion object subtrees extracted under the declared companion locale (companionLanguage option) instead of skipped; companion lang joins the directory-locale pool</item>
+  <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
+  <history>RFC-1068</history>
 </CHANGE_SUMMARY>
 */
 
@@ -53,14 +54,12 @@ export interface TextSurfaceOptions {
   languages: readonly string[];
   defaultLanguage: string;
   /**
-   * RFC-1442: the declared non-routed companion language
-   * (`system.md i18n.companion.lang`). When set, `companion` object subtrees
-   * are extracted with this locale instead of staying technical, and the tag
-   * joins the directory-locale pool so `<collection>/<companion>/` files
-   * resolve to the companion locale even without a `lang:` marker. When
-   * absent, companion subtrees are skipped as technical (RFC-1436 behavior).
+   * RFC-1444: the declared section languages (`system.md
+   * i18n.sectionLanguages.languages` keys). Each joins the directory-locale
+   * pool so `<collection>/<lang>/` partial-tree files resolve to their
+   * rendition locale even without a `lang:` marker.
    */
-  companionLanguage?: string;
+  sectionLanguages?: readonly string[];
 }
 
 export interface YamlError {
@@ -102,12 +101,11 @@ export const TECHNICAL_KEYS = new Set([
   "email",
   "phone",
   "proseId",
-  // RFC-1436/RFC-1442: `companion: true` dual markers and scalar forms are
-  // never text. Companion OBJECT subtrees carry companion-locale text —
-  // they are handled by the explicit `companion` interception in
-  // extractFrontmatterStrings (walked under `companionLanguage` when the
-  // site declares i18n.companion, skipped otherwise).
+  // RFC-1436/RFC-1442 legacy marker key — always technical (RFC-1444 removed
+  // companion subtrees; the key only survives in history).
   "companion",
+  // RFC-1444: `routed: false` non-routed marker — boolean, never text.
+  "routed",
 ]);
 
 // Parent key → child keys whose values are technical (never text)
@@ -116,11 +114,6 @@ const TECHNICAL_PARENT_CHILD: Record<string, Set<string>> = {
   // labels.md shell switches: enum values (byIntent, shown, hidden), not text.
   attribution: new Set(["credits", "proseAuthorship", "footerCopyright"]),
 };
-
-// RFC-1442: the block-level companion opt-in key (`blocks[].companion`,
-// `companion: true` on companion files). Intercepted before the skipKeys
-// subtree check so object subtrees can be walked under the companion locale.
-const COMPANION_KEY = "companion";
 
 // ---------------------------------------------------------------------------
 // Identifier heuristic — values without whitespace that contain /, _, or .
@@ -167,7 +160,7 @@ interface FrontmatterStringEntry {
   value: string;
   /** 1-based line within the frontmatter block (relative to frontmatter start). */
   lineInFrontmatter: number;
-  /** RFC-1442: locale override for companion subtrees; absent = file locale. */
+  /** RFC-1444: locale override for rendition subtrees; absent = file locale. */
   locale?: string;
 }
 
@@ -177,7 +170,6 @@ function extractFrontmatterStrings(
   skipKeys: ReadonlySet<string>,
   lineCounter: YAML.LineCounter | null,
   frontmatterText: string,
-  companionLanguage?: string,
 ): FrontmatterStringEntry[] {
   const results: FrontmatterStringEntry[] = [];
 
@@ -228,25 +220,6 @@ function extractFrontmatterStrings(
     if (value !== null && typeof value === "object") {
       for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
         const newParent = key;
-        // RFC-1442: `companion` object subtrees carry companion-locale text
-        // inside a routed-locale file. With a declared companion language they
-        // are walked under it; without one they stay technical — like the
-        // `companion: true` dual marker, which is never text either way.
-        if (key === COMPANION_KEY) {
-          if (
-            companionLanguage !== undefined &&
-            child !== null &&
-            typeof child === "object"
-          ) {
-            walk(
-              child,
-              currentPath === "$" ? `$.${key}` : `${currentPath}.${key}`,
-              newParent,
-              companionLanguage,
-            );
-          }
-          continue;
-        }
         // Check if this key itself is technical (skip entire subtree)
         if (skipKeys.has(key)) continue;
         if (parent !== null && TECHNICAL_PARENT_CHILD[parent]?.has(key) === true) continue;
@@ -358,15 +331,13 @@ export function extractTextSurface(
   options: TextSurfaceOptions,
 ): ExtractTextSurfaceResult {
   const skipKeys = options.skipKeys ?? TECHNICAL_KEYS;
-  // RFC-1442: the declared companion language joins the directory-locale
-  // pool, so a file under `<collection>/<companion>/` resolves to the
-  // companion locale even when its `lang:` marker is missing (COMPANION-02
-  // territory — the content is companion-language regardless of the marker).
-  const localePool =
-    options.companionLanguage !== undefined &&
-    !options.languages.includes(options.companionLanguage)
-      ? [...options.languages, options.companionLanguage]
-      : options.languages;
+  // RFC-1444: the declared section languages join the directory-locale
+  // pool, so a partial-tree file under `<collection>/<lang>/` resolves to
+  // its rendition locale even when its `lang:` marker is missing.
+  const localePool = [
+    ...options.languages,
+    ...(options.sectionLanguages ?? []).filter((l) => !options.languages.includes(l)),
+  ];
   const dirLocale = deriveFileLocale(file, localePool, options.defaultLanguage);
 
   // Parse frontmatter — catch YAML errors
@@ -421,7 +392,6 @@ export function extractTextSurface(
       skipKeys,
       lineCounter,
       frontmatterText,
-      options.companionLanguage,
     );
 
     for (const entry of fmStrings) {

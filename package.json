@@ -235,9 +235,9 @@
       "types": "./src/content/business-profile-references.ts",
       "default": "./src/content/business-profile-references.ts"
     },
-    "./content/companion": {
-      "types": "./src/content/companion.ts",
-      "default": "./src/content/companion.ts"
+    "./content/section-languages": {
+      "types": "./src/content/section-languages.ts",
+      "default": "./src/content/section-languages.ts"
     },
     "./content/content-reference": {
       "types": "./src/content/content-reference.ts",
@@ -974,6 +974,10 @@
     "./client-scripts/gsap-stagger": {
       "types": "./src/client-scripts/gsap-stagger.ts",
       "default": "./src/client-scripts/gsap-stagger.ts"
+    },
+    "./client-scripts/section-languages": {
+      "types": "./src/client-scripts/section-languages.ts",
+      "default": "./src/client-scripts/section-languages.ts"
     },
     "./client-scripts/index": {
       "types": "./src/client-scripts/index.ts",

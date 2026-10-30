@@ -6,20 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1293: require timing semantics on time-bound policy fields via contractTerms.gate (RFC-1293)
-
-policySchema gains an optional timing map (pbpTimingSchema: startEvent, clock,
-timezone, businessHours, boundary) inherited by every specialized policy.
-pbp.content.validate sweeps each pbp/* entity's frontmatter — TIMED_FIELDS
-registry paths plus every ISO-8601 duration literal — and emits
-PBP-TIMING-01..04 at contractTerms.gate severity (warn|enforce in system.md;
-absent = warn). enforce also makes pbp.terms-reference.validate behave as
---strict. New sites register with contractTerms.gate: enforce
-(sternsystem-register stub + both onboarding system templates). Live warpgogol
-run: 129 PBP-TIMING-01 warnings across policies/offerings/documents/claims —
-the owner's contract-decision agenda; no timing values authored, no site gate
-flipped. Known registry gap: renewal.renewalPeriod/reminder are not ISO-shaped
-and escape the sweep (documented in the RFC evidence). Canary C10 active.</item>
   <item>RFC-1294: require verbatim source provenance for external local facts (RFC-1294)
 
 localFacts[] entries gain sourceUrl/excerpt/excerptLang/scope/reviewedBy/
@@ -38,7 +24,8 @@ review records, or gate flips authored. Canary C11 active.</item>
   <item>RFC-1438: rfc-1438 legal-form-aware impressum from legal identity</item>
   <item>RFC-1436: companion-language renditions inside blocks and shell components</item>
   <item>RFC-1442: strict i18n.companion schema, companion-locale typography checks</item>
-  <history>ADR-0062, ADR-0114, RFC-0303, RFC-0377, RFC-0384, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229, RFC-1283, RFC-1307, RFC-1341, RFC-1374</history>
+  <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
+  <history>ADR-0062, ADR-0114, RFC-0303, RFC-0377, RFC-0384, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229, RFC-1283, RFC-1293, RFC-1307, RFC-1341, RFC-1374</history>
 </CHANGE_SUMMARY>
 */
 
@@ -210,21 +197,20 @@ export const systemManifestSchema = z.object({
       default: z.string().min(1),
       supported: z.record(z.string(), z.any()),
       /**
-       * RFC-1436: one non-routed companion language rendered inside
-       * blocks and shell labels on the routed locales' pages. `lang`
-       * MUST NOT be a key of `supported` (COMPANION-01 in
-       * mirroring.validate). `shell` is a closed vocabulary of label
-       * keys paired by shell components (vocabulary enforced rule-level
-       * by COMPANION-04, not schema-level).
-       * RFC-1442: strict shape — unknown keys fail the parse, and `lang`
-       * is a BCP 47 tag (emitted as `lang="…"`, drives companion-locale
-       * typography checks).
+       * RFC-1444: section-scoped alternate languages rendered inside opted-in
+       * blocks on the routed locales' pages. Keys MUST NOT collide with keys
+       * of `supported` (SECTION-LANG-01 in mirroring.validate). `shell` is a
+       * closed vocabulary of label keys paired by shell components
+       * (vocabulary enforced rule-level by SECTION-LANG rules, not
+       * schema-level). Keys are BCP 47 tags (emitted as `lang="…"`, drive
+       * rendition-locale typography checks).
        */
-      companion: z
+      sectionLanguages: z
         .object({
-          lang: bcp47Tag,
-          name: z.string().min(1),
-          shell: z.array(z.string().min(1)).optional(),
+          languages: z.record(bcp47Tag, z.object({ name: z.string().min(1) }).strict()),
+          defaultLayout: z.enum(["switch", "stacked"]).optional(),
+          switcherVariant: z.enum(["pill", "text"]).optional(),
+          shell: z.array(z.string().min(1)).min(1).optional(),
         })
         .strict()
         .optional(),

@@ -16,12 +16,12 @@ Exports a discriminated union on `layer` so TypeScript narrows the `role` and
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1345: imageSlots on section manifests — image prop paths + depicts kind for MEDIA-01 and future asset.slot.fulfill</item>
   <item>RFC-1204: effectsParity flag on section manifests + resolver lookup</item>
   <item>RFC-1261</item>
   <item>RFC-1340: mandatory api routes compose into every SSR site — probe-mandatory endpoints emitted regardless of section use</item>
   <item>RFC-1436: companion-language renditions inside blocks and shell components</item>
-  <history>RFC-1097, RFC-1346, RFC-1356</history>
+  <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
+  <history>RFC-1097, RFC-1345, RFC-1346, RFC-1356</history>
 </CHANGE_SUMMARY>
 */
 
@@ -103,33 +103,19 @@ const archetypeIdSchema = z
   );
 
 // ---------------------------------------------------------------------------
-// RFC-1436 companion-language declaration
+// RFC-1444 section-languages declaration
 // ---------------------------------------------------------------------------
 
 /**
- * RFC-1436: how an archetype opts into the site's non-routed companion
- * language. `mode: "prose"` resolves `prose/<companion>/<contentRef>.md` into
- * companion html; `mode: "props"` passes through only the declared `fields`
- * subset of `blocks[].companion.props`. `shell` (component layer) names the
- * closed-vocabulary label keys the shell component pairs.
+ * RFC-1444: how an archetype opts into the site's section-scoped alternate
+ * languages. `supported` marks the archetype as eligible for block-level
+ * `languages` opt-ins (SECTION-LANG-04 gates undeclared archetypes). The
+ * section-languages wrapper renders the archetype's own component once per
+ * rendition — no per-archetype implementation is needed.
  */
-export const manifestCompanionSchema = z.union([
-  z
-    .object({
-      mode: z.enum(["prose", "props"]),
-      /** props mode only: the localized prop keys eligible for `companion.props`. */
-      fields: z.array(kebabSchema).optional(),
-    })
-    .strict(),
-  z
-    .object({
-      /** Closed vocabulary of label keys the shell component pairs (RFC-1436). */
-      shell: z.array(z.string().min(1)).min(1),
-    })
-    .strict(),
-]);
+export const manifestSectionLanguagesSchema = z.literal("supported");
 
-export type ManifestCompanionDeclaration = z.infer<typeof manifestCompanionSchema>;
+export type ManifestSectionLanguagesDeclaration = z.infer<typeof manifestSectionLanguagesSchema>;
 
 // ---------------------------------------------------------------------------
 // Shared base schema
@@ -402,13 +388,20 @@ export const sectionManifestSchema = manifestBaseSchema.extend({
     .optional(),
 
   /**
-   * RFC-1436: companion-language support declaration. `mode: "prose"`
-   * resolves `prose/<companion>/<contentRef>.md`; `mode: "props"` passes
-   * through only `fields` from `blocks[].companion.props`. Blocks opt in via
-   * the block-level `companion` key — opt-in on an archetype without this
-   * declaration is COMPANION-03.
+   * RFC-1444: section-languages support declaration. `supported` marks the
+   * archetype as eligible for block-level `languages` opt-ins; the
+   * section-languages wrapper renders the archetype's component once per
+   * rendition. Opt-in on an archetype without this declaration is
+   * SECTION-LANG-04.
    */
-  companion: manifestCompanionSchema.optional(),
+  sectionLanguages: manifestSectionLanguagesSchema.optional(),
+
+  /**
+   * RFC-1444: the section manifest declares a `languageSwitcher` slot —
+   * the wrapper casts the section-scoped switcher into it instead of the
+   * top end.
+   */
+  languageSwitcher: z.boolean().optional(),
 });
 
 /**
@@ -452,11 +445,29 @@ export const componentManifestSchema = manifestBaseSchema.extend({
   propsSchema: z.record(z.string(), z.unknown()).optional(),
 
   /**
-   * RFC-1436: companion-language support declaration. Shell components use
-   * the `shell` variant — the closed vocabulary of label keys they pair
+   * RFC-1444: section-languages support declaration. `supported` marks the
+   * archetype as eligible for block-level `languages` opt-ins; the
+   * section-languages wrapper renders the archetype's component once per
+   * rendition. Opt-in on an archetype without this declaration is
+   * SECTION-LANG-04.
+   */
+  sectionLanguages: manifestSectionLanguagesSchema.optional(),
+
+  /**
+   * RFC-1444: the section manifest declares a `languageSwitcher` slot —
+   * the wrapper casts the section-scoped switcher into it instead of the
+   * top end.
+   */
+  languageSwitcher: z.boolean().optional(),
+  /**
+   * RFC-1444: shell components declare the closed vocabulary of label keys
+   * they pair with the site's first declared section language
    * (footer.navGroups.*, header.motto, navigation.legal).
    */
-  companion: manifestCompanionSchema.optional(),
+  sectionLanguageShell: z
+    .object({ shell: z.array(z.string().min(1)).min(1) })
+    .strict()
+    .optional(),
 });
 
 /**
