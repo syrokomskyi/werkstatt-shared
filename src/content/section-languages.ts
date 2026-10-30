@@ -14,6 +14,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-1444: section-scoped alternate languages with a section-scoped switcher — supersedes RFC-1436.</item>
   <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
+  <item>RFC-1444: section-language switcher in the section header — styled code tabs with endonym labels, switch alternates keep heading look (h1-only demotion), unique ids, SECTION-LANG-03 covers rendition prose</item>
 </CHANGE_SUMMARY>
 */
 
@@ -90,5 +91,18 @@ export function demoteSectionLanguageHeadings(html: string): string {
   return html.replace(
     /<h[1-6](?:\s[^>]*)?>([\s\S]*?)<\/h[1-6]>/g,
     '<p class="section-languages__heading">$1</p>',
+  );
+}
+
+/**
+ * RFC-1444 switch layout: a non-primary rendition is shown INSTEAD of the
+ * primary, so it keeps its h2–h6 outline; only `<h1>` is demoted (HTML-STRUCT-03
+ * counts DOM h1s, hidden renditions included) — to a heading-role paragraph so
+ * assistive technology still reads it as a level-1 heading once visible.
+ */
+export function demoteSectionLanguageH1(html: string): string {
+  return html.replace(
+    /<h1(?:\s[^>]*)?>([\s\S]*?)<\/h1>/g,
+    '<p class="section-languages__heading" role="heading" aria-level="1">$1</p>',
   );
 }
