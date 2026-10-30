@@ -14,17 +14,14 @@ Applied via html[data-biome="<id>"] in the cascade layer stack.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1298: biomeProvenanceSchema becomes a union — legacy gen/site shape or intake shape (client, intakeId, selectedConcept, intakeSha256).</item>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1298: REVIEW-CODE-2026-10-16-01 findings — kebab flag guards, safeParse, reads declaration, family-append ordering, FONTS-SCRIPT-02 unverifiable-stack warning</item>
   <item>RFC-1356: editorial hero variants and header lockup styling (RFC-1356)</item>
-  <history>RFC-0071, RFC-0371, RFC-1356</history>
   <item>RFC-1379: optional components.heroEyebrow cssValue — eyebrow/tagline colour slot on hero surfaces.</item>
+  <item>RFC-1439: contrast-guaranteed textBackdrop variant for the cover hero</item>
+  <history>RFC-0071, RFC-0371, RFC-1097, RFC-1298, RFC-1356</history>
 </CHANGE_SUMMARY>
 */
 
@@ -310,6 +307,10 @@ export const biomePresentationSchema = z
         textSide: z.string().min(1).optional(),
         eyebrowStyle: z.string().min(1).optional(),
         ctaTrailingIcon: z.string().min(1).optional(),
+        // RFC-1439: optional contrast-guaranteed hero text backdrop —
+        // enum members live on the hero manifest x-variant; value validated
+        // by BIOME-PRES-01, contrast floor by BIOME-CONTRAST-HERO-01.
+        textBackdrop: z.string().min(1).optional(),
       })
       .strict()
       .optional(),
