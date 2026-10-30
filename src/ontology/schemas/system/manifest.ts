@@ -6,11 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1283: step 1 — publication.gate in systemManifestSchema
-
-Per-site PBP publication gate mode (warn | enforce, absent = warn) consumed
-by PUBGATE-01 in pbp.content.validate and PUBGATE-02 in
-dist.content-references.validate.</item>
   <item>RFC-1293: require timing semantics on time-bound policy fields via contractTerms.gate (RFC-1293)
 
 policySchema gains an optional timing map (pbpTimingSchema: startEvent, clock,
@@ -42,7 +37,8 @@ across the 12 city demand records — the owner's research backlog; no excerpts,
 review records, or gate flips authored. Canary C11 active.</item>
   <item>RFC-1438: rfc-1438 legal-form-aware impressum from legal identity</item>
   <item>RFC-1436: companion-language renditions inside blocks and shell components</item>
-  <history>ADR-0062, ADR-0114, RFC-0303, RFC-0377, RFC-0384, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229, RFC-1307, RFC-1341, RFC-1374</history>
+  <item>RFC-1442: strict i18n.companion schema, companion-locale typography checks</item>
+  <history>ADR-0062, ADR-0114, RFC-0303, RFC-0377, RFC-0384, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229, RFC-1283, RFC-1307, RFC-1341, RFC-1374</history>
 </CHANGE_SUMMARY>
 */
 
@@ -78,6 +74,21 @@ import { isoDateString } from "../iso-date.ts";
  * AI-training bot group from it (ai-train=no → Disallow group for
  * AI_TRAINING_CRAWLER_REGISTRY train tokens).
  */
+/**
+ * RFC-1442: BCP 47 tag for `i18n.companion.lang` — byte-identical to the
+ * intake `bcp47Tag` $def (vendored at docs/specs/werkstatt-onboarding/schemas/):
+ * primary subtag plus optional script and region — "de", "ru", "uz-Latn",
+ * "es-419". Emitted verbatim as the rendition's `lang` attribute and used as
+ * the locale key for companion-locale typography checks, so a malformed tag
+ * is a declaration error, not a runtime surprise.
+ */
+const bcp47Tag = z
+  .string()
+  .regex(
+    /^[a-z]{2,3}(-[A-Z][a-z]{3})?(-([A-Z]{2}|[0-9]{3}))?$/,
+    "must be a BCP 47 tag (e.g. de, uz-Latn)",
+  );
+
 export const systemRobotsSchema = z.object({
   defaultPolicy: z.enum(["allow", "disallow"]).optional(),
   disallowedPaths: z.array(z.string()).optional(),
@@ -203,14 +214,19 @@ export const systemManifestSchema = z.object({
        * blocks and shell labels on the routed locales' pages. `lang`
        * MUST NOT be a key of `supported` (COMPANION-01 in
        * mirroring.validate). `shell` is a closed vocabulary of label
-       * keys paired by shell components.
+       * keys paired by shell components (vocabulary enforced rule-level
+       * by COMPANION-04, not schema-level).
+       * RFC-1442: strict shape — unknown keys fail the parse, and `lang`
+       * is a BCP 47 tag (emitted as `lang="…"`, drives companion-locale
+       * typography checks).
        */
       companion: z
         .object({
-          lang: z.string().min(1),
+          lang: bcp47Tag,
           name: z.string().min(1),
           shell: z.array(z.string().min(1)).optional(),
         })
+        .strict()
         .optional(),
     })
     .optional(),

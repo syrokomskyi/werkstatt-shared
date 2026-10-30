@@ -16,6 +16,7 @@ parse errors and maps them to a structured yamlError field.</purpose>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
   <item>RFC-1324 cold-run defect: declared frontmatter `lang` now wins over the directory segment — RFC-1329 binding legal documents live under non-binding locale dirs carrying `lang: de`; directory-keyed checking was a false-positive by locale mismatch.</item>
   <item>RFC-1436: review r1 — autonoe rename, prose containment, companion substitution guard</item>
+  <item>RFC-1442: companion object subtrees extracted under the declared companion locale (companionLanguage option) instead of skipped; companion lang joins the directory-locale pool</item>
 </CHANGE_SUMMARY>
 */
 
@@ -51,6 +52,15 @@ export interface TextSurfaceOptions {
   /** Site i18n languages; used to derive file locale. */
   languages: readonly string[];
   defaultLanguage: string;
+  /**
+   * RFC-1442: the declared non-routed companion language
+   * (`system.md i18n.companion.lang`). When set, `companion` object subtrees
+   * are extracted with this locale instead of staying technical, and the tag
+   * joins the directory-locale pool so `<collection>/<companion>/` files
+   * resolve to the companion locale even without a `lang:` marker. When
+   * absent, companion subtrees are skipped as technical (RFC-1436 behavior).
+   */
+  companionLanguage?: string;
 }
 
 export interface YamlError {
@@ -92,9 +102,11 @@ export const TECHNICAL_KEYS = new Set([
   "email",
   "phone",
   "proseId",
-  // RFC-1436: companion renditions carry companion-locale text inside a
-  // routed-locale file — checking them under the file's locale produces
-  // false positives. Companion prose files are covered by their own lang.
+  // RFC-1436/RFC-1442: `companion: true` dual markers and scalar forms are
+  // never text. Companion OBJECT subtrees carry companion-locale text —
+  // they are handled by the explicit `companion` interception in
+  // extractFrontmatterStrings (walked under `companionLanguage` when the
+  // site declares i18n.companion, skipped otherwise).
   "companion",
 ]);
 
@@ -104,6 +116,11 @@ const TECHNICAL_PARENT_CHILD: Record<string, Set<string>> = {
   // labels.md shell switches: enum values (byIntent, shown, hidden), not text.
   attribution: new Set(["credits", "proseAuthorship", "footerCopyright"]),
 };
+
+// RFC-1442: the block-level companion opt-in key (`blocks[].companion`,
+// `companion: true` on companion files). Intercepted before the skipKeys
+// subtree check so object subtrees can be walked under the companion locale.
+const COMPANION_KEY = "companion";
 
 // ---------------------------------------------------------------------------
 // Identifier heuristic — values without whitespace that contain /, _, or .
@@ -150,6 +167,8 @@ interface FrontmatterStringEntry {
   value: string;
   /** 1-based line within the frontmatter block (relative to frontmatter start). */
   lineInFrontmatter: number;
+  /** RFC-1442: locale override for companion subtrees; absent = file locale. */
+  locale?: string;
 }
 
 function extractFrontmatterStrings(
@@ -158,11 +177,17 @@ function extractFrontmatterStrings(
   skipKeys: ReadonlySet<string>,
   lineCounter: YAML.LineCounter | null,
   frontmatterText: string,
+  companionLanguage?: string,
 ): FrontmatterStringEntry[] {
   const results: FrontmatterStringEntry[] = [];
 
   // fs.walk.lint: allow — walks a frontmatter object graph, not the filesystem
-  function walk(value: unknown, currentPath: string, parent: string | null): void {
+  function walk(
+    value: unknown,
+    currentPath: string,
+    parent: string | null,
+    localeOverride: string | undefined,
+  ): void {
     if (typeof value === "string") {
       // Check if this key is technical
       const lastKey = currentPath.split(".").pop() ?? currentPath;
@@ -189,13 +214,13 @@ function extractFrontmatterStrings(
         }
       }
 
-      results.push({ path: currentPath, value, lineInFrontmatter });
+      results.push({ path: currentPath, value, lineInFrontmatter, locale: localeOverride });
       return;
     }
 
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i += 1) {
-        walk(value[i], `${currentPath}[${i}]`, parent);
+        walk(value[i], `${currentPath}[${i}]`, parent, localeOverride);
       }
       return;
     }
@@ -203,16 +228,40 @@ function extractFrontmatterStrings(
     if (value !== null && typeof value === "object") {
       for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
         const newParent = key;
+        // RFC-1442: `companion` object subtrees carry companion-locale text
+        // inside a routed-locale file. With a declared companion language they
+        // are walked under it; without one they stay technical — like the
+        // `companion: true` dual marker, which is never text either way.
+        if (key === COMPANION_KEY) {
+          if (
+            companionLanguage !== undefined &&
+            child !== null &&
+            typeof child === "object"
+          ) {
+            walk(
+              child,
+              currentPath === "$" ? `$.${key}` : `${currentPath}.${key}`,
+              newParent,
+              companionLanguage,
+            );
+          }
+          continue;
+        }
         // Check if this key itself is technical (skip entire subtree)
         if (skipKeys.has(key)) continue;
         if (parent !== null && TECHNICAL_PARENT_CHILD[parent]?.has(key) === true) continue;
-        walk(child, currentPath === "$" ? `$.${key}` : `${currentPath}.${key}`, newParent);
+        walk(
+          child,
+          currentPath === "$" ? `$.${key}` : `${currentPath}.${key}`,
+          newParent,
+          localeOverride,
+        );
       }
       return;
     }
   }
 
-  walk(data, "$", parentKey);
+  walk(data, "$", parentKey, undefined);
   return results;
 }
 
@@ -309,7 +358,16 @@ export function extractTextSurface(
   options: TextSurfaceOptions,
 ): ExtractTextSurfaceResult {
   const skipKeys = options.skipKeys ?? TECHNICAL_KEYS;
-  const dirLocale = deriveFileLocale(file, options.languages, options.defaultLanguage);
+  // RFC-1442: the declared companion language joins the directory-locale
+  // pool, so a file under `<collection>/<companion>/` resolves to the
+  // companion locale even when its `lang:` marker is missing (COMPANION-02
+  // territory — the content is companion-language regardless of the marker).
+  const localePool =
+    options.companionLanguage !== undefined &&
+    !options.languages.includes(options.companionLanguage)
+      ? [...options.languages, options.companionLanguage]
+      : options.languages;
+  const dirLocale = deriveFileLocale(file, localePool, options.defaultLanguage);
 
   // Parse frontmatter — catch YAML errors
   // Strip BOM if present so the frontmatter regex matches
@@ -357,7 +415,14 @@ export function extractTextSurface(
       lineCounter = null;
     }
 
-    const fmStrings = extractFrontmatterStrings(data, null, skipKeys, lineCounter, frontmatterText);
+    const fmStrings = extractFrontmatterStrings(
+      data,
+      null,
+      skipKeys,
+      lineCounter,
+      frontmatterText,
+      options.companionLanguage,
+    );
 
     for (const entry of fmStrings) {
       const stripped = stripBodyLine(entry.value);
@@ -370,7 +435,7 @@ export function extractTextSurface(
         text: stripped,
         raw: entry.value,
         isTableRow: false,
-        locale,
+        locale: entry.locale ?? locale,
       });
     }
   }

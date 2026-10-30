@@ -10,6 +10,7 @@ Unit tests for text surface covering deriveFileLocale; extractTextSurface. It al
 <CHANGE_SUMMARY>
   <item>RFC-1068: initial creation.</item>
   <item>RFC-1324: coverage for the frontmatter `lang` override over directory locale.</item>
+  <item>RFC-1442: strict i18n.companion schema, companion-locale typography checks</item>
 </CHANGE_SUMMARY>
 */
 
@@ -275,6 +276,104 @@ Body.
     const fmSegments = result.segments.filter((s) => s.source === "frontmatter");
     expect(fmSegments.some((s) => s.text.includes("Real text"))).toBe(true);
     expect(fmSegments.some((s) => s.text.includes("src/foo/bar.ts"))).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// RFC-1442: companion subtrees under the companion locale (AC-4, AC-5)
+// ---------------------------------------------------------------------------
+
+describe("extractTextSurface — companion language (RFC-1442)", () => {
+  const COMPANION_PAGE = `---
+title: Главная
+blocks:
+  - id: hero
+    type: hero
+    companion:
+      props:
+        subheading: "Hochwertige Produkte für Gesundheit"
+    props:
+      heading: "Качественные товары"
+---
+Body text.
+`;
+
+  it("companion subtrees are extracted under the companion locale when declared and skipped when undeclared", () => {
+    const file = "src/content/pages/ru/home.md";
+    const options = { languages: ["ru", "uz"], defaultLanguage: "ru" };
+
+    // Declared companion language → companion.props strings scan under "de".
+    const declared = extractTextSurface(file, COMPANION_PAGE, {
+      ...options,
+      companionLanguage: "de",
+    });
+    const companionSeg = declared.segments.find((s) =>
+      s.path.endsWith("companion.props.subheading"),
+    );
+    expect(companionSeg).toBeDefined();
+    expect(companionSeg!.locale).toBe("de");
+    expect(companionSeg!.text).toContain("Hochwertige Produkte");
+
+    // The routed props in the same file keep the file locale.
+    const routedSeg = declared.segments.find((s) => s.path.endsWith("props.heading"));
+    expect(routedSeg).toBeDefined();
+    expect(routedSeg!.locale).toBe("ru");
+
+    // No companion declaration → the subtree stays technical (RFC-1436).
+    const undeclared = extractTextSurface(file, COMPANION_PAGE, options);
+    expect(
+      undeclared.segments.some((s) => s.path.includes("companion.props")),
+    ).toBe(false);
+  });
+
+  it("companion marker and technical keys inside companion subtrees never produce segments", () => {
+    const source = `---
+title: Test
+companion: true
+blocks:
+  - id: hero
+    type: hero
+    companion: true
+  - id: second
+    type: hero
+    companion:
+      props:
+        subheading: "Deutscher Text"
+        href: "https://example.com/x"
+---
+`;
+    const result = extractTextSurface("src/content/site/ru/labels.md", source, {
+      languages: ["ru"],
+      defaultLanguage: "ru",
+      companionLanguage: "de",
+    });
+    const paths = result.segments.map((s) => s.path);
+    // `companion: true` (top-level and block-level) is a marker, not text.
+    expect(paths).not.toContain("$.companion");
+    expect(paths).not.toContain("$.blocks[0].companion");
+    // Technical keys inside the companion subtree stay technical.
+    expect(paths).not.toContain("$.blocks[1].companion.props.href");
+    // The real companion string is present under the companion locale.
+    const seg = result.segments.find((s) => s.path === "$.blocks[1].companion.props.subheading");
+    expect(seg).toBeDefined();
+    expect(seg!.locale).toBe("de");
+    // Boolean/marker values never leak into segment text.
+    expect(result.segments.every((s) => s.text !== "true")).toBe(true);
+  });
+
+  it("files under the companion directory resolve to the companion locale without a lang marker", () => {
+    const source = `---
+title: Hinweis
+---
+Deutscher Fließtext.
+`;
+    const result = extractTextSurface("src/content/prose/de/note.md", source, {
+      languages: ["ru", "uz"],
+      defaultLanguage: "ru",
+      companionLanguage: "de",
+    });
+    expect(result.segments.length).toBeGreaterThan(0);
+    expect(result.segments.every((s) => s.locale === "de")).toBe(true);
   });
 });
 

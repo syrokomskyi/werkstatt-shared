@@ -9,6 +9,7 @@ Unit tests for manifest covering systemManifestSchema; systemCollectionSchema. I
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1311: Compass header sweep — declares the manifest suite's contract for test-file scaffold coverage.</item>
+  <item>RFC-1442: strict i18n.companion schema, companion-locale typography checks</item>
 </CHANGE_SUMMARY>
 */
 
@@ -22,6 +23,59 @@ describe("systemManifestSchema", () => {
 
   it("rejects null", () => {
     expect(() => systemManifestSchema.parse(null)).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// RFC-1442: strict i18n.companion schema (AC-1..AC-3)
+// ---------------------------------------------------------------------------
+
+const MINIMAL_MANIFEST = {
+  app: "test-app",
+  version: "1.0.0",
+  identity: { systemStar: "Vega", biome: "test-biome" },
+  i18n: {
+    default: "ru",
+    supported: { ru: {}, uz: {} },
+  },
+};
+
+function manifestWithCompanion(companion: unknown) {
+  return {
+    ...MINIMAL_MANIFEST,
+    i18n: { ...MINIMAL_MANIFEST.i18n, companion },
+  };
+}
+
+describe("i18n.companion strict schema (RFC-1442)", () => {
+  it("i18n.companion rejects unknown keys under the strict schema", () => {
+    for (const companion of [
+      { lang: "de", name: "Deutsch", langg: "de" },
+      { lang: "de", name: "Deutsch", shells: ["footer.taglineLines"] },
+      { lang: "de", name: "Deutsch", mode: "props" },
+    ]) {
+      expect(() => systemManifestSchema.parse(manifestWithCompanion(companion))).toThrow();
+    }
+  });
+
+  it("i18n.companion rejects a lang value that is not a BCP 47 tag", () => {
+    for (const lang of ["DE", "german", "de_DE", "d", "de-", "not-a-lang!"]) {
+      const companion = { lang, name: "Deutsch" };
+      expect(() => systemManifestSchema.parse(manifestWithCompanion(companion))).toThrow();
+    }
+  });
+
+  it("i18n.companion accepts valid declarations including script and region subtags", () => {
+    for (const companion of [
+      { lang: "de", name: "Deutsch" },
+      { lang: "ru", name: "Русский", shell: ["footer.navGroups.legalTitle"] },
+      { lang: "uz-Latn", name: "Oʻzbekcha" },
+      { lang: "es-419", name: "Español" },
+      { lang: "zh-Hant-TW", name: "Fan-ti" },
+    ]) {
+      const parsed = systemManifestSchema.parse(manifestWithCompanion(companion));
+      expect(parsed.i18n?.companion?.lang).toBe(companion.lang);
+    }
   });
 });
 
