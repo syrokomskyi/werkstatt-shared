@@ -18,6 +18,7 @@
   <item>RFC-0174: initial binding-language policy resolver.</item>
   <item>RFC-1425: `untranslated` status — locale serves the binding document itself, deliberately untranslated (neutral notice, never a redirect).</item>
   <item>RFC-1425 review r1: JURISDICTION_BINDING_LANG moved here — single source consumed by emitter (legal.scaffold) and validator (legal.translation.validate) doors; showIndicator doc covers untranslated.</item>
+  <item>RFC-1437: footer legal-identity panel in the binding legal language</item>
 </CHANGE_SUMMARY>
 */
 
@@ -45,6 +46,19 @@ export const JURISDICTION_BINDING_LANG: Readonly<Record<string, string>> = {
   AT: "de",
   CH: "de",
 };
+
+/**
+ * RFC-1437: canonical accessor for the jurisdiction→binding-language map —
+ * the footer's legal panel resolves the same binding language as the
+ * scaffold/validator doors without a second copy of the table.
+ */
+export function bindingLanguageFor(
+  legalJurisdiction: string | undefined,
+): string | undefined {
+  return legalJurisdiction === undefined
+    ? undefined
+    : JURISDICTION_BINDING_LANG[legalJurisdiction];
+}
 
 /**
  * Authored `translation` block, declared once in the binding-language page file
