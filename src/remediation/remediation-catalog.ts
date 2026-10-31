@@ -11,14 +11,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
   <item>RFC-1461: bind blocking diagnostics to remediation entries and print their remedy (RFC-1461)
 
 Add diagnostic.explain lookup, severity-aware strict coverage (REMEDIATION-03/04), per-error remedy/lookup nextSteps, contract-bearing catalog seeds for every error-severity ruleId, and regenerated manifests.</item>
   <item>RFC-1461: apply REVIEW-R1 findings — reseed defective contracts, include .probe validators, sync rules[] docs (RFC-1461)</item>
   <item>RFC-1461: apply REVIEW-R2 findings — widen artifact sweep to action+all shapes, add REMEDIATION-05 ratchet, sync remaining rules[] docs (RFC-1461)</item>
   <item>RFC-1461: review r3 residue — repair 24 catalog entries, honest SECTION-LANG-PROJ-01 severity, tighten REMEDIATION-05 detector</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, warpgogol-m000196</history>
+  <item>RFC-1461: review r4 — paren-scoped REMEDIATION-05 shapes, honest severity for 11 warn-only rules, authored contracts for 11 catalog entries, persist r2/r3/r4 review reports</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -1259,32 +1259,32 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CJ-DID-01",
-    contract: "Emit the workshop's did:web did.json from a receipt-keys.v1.json — every ring key (active +.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-journal/src/evidence/did.ts.",
+    contract: "The published did.json is a JSON object whose id is a host-form did:web and whose @context leads with the DID v1 context (RFC-1268/D11).",
+    action: "Regenerate did.json with `did.document.emit` and republish it at the did:web document path.",
     docRef: "packages/werkstatt-journal/src/evidence/did.ts",
   },
   {
     ruleId: "CJ-DID-02",
-    contract: "Emit the workshop's did:web did.json from a receipt-keys.v1.json — every ring key (active +.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-journal/src/evidence/did.ts.",
+    contract: "The keyring's current key is published in did.json — receipts signed by it must be verifiable.",
+    action: "Republish did.json via `did.document.emit` so the current ring key appears as a verificationMethod.",
     docRef: "packages/werkstatt-journal/src/evidence/did.ts",
   },
   {
     ruleId: "CJ-DID-03",
-    contract: "Emit the workshop's did:web did.json from a receipt-keys.v1.json — every ring key (active +.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-journal/src/evidence/did.ts.",
+    contract: "Every historical ring key is published in did.json — receipts signed by rotated keys must stay verifiable.",
+    action: "Republish did.json via `did.document.emit` so every historical ring key appears as a verificationMethod.",
     docRef: "packages/werkstatt-journal/src/evidence/did.ts",
   },
   {
     ruleId: "CJ-DID-04",
-    contract: "Emit the workshop's did:web did.json from a receipt-keys.v1.json — every ring key (active +.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-journal/src/evidence/did.ts.",
+    contract: "Every verificationMethod is anchored to the did, typed Ed25519VerificationKey2020, and controller-bound to the did.",
+    action: "Republish did.json via `did.document.emit` — verificationMethod entries are built from the ring with the did as controller.",
     docRef: "packages/werkstatt-journal/src/evidence/did.ts",
   },
   {
     ruleId: "CJ-DID-05",
-    contract: "Emit the workshop's did:web did.json from a receipt-keys.v1.json — every ring key (active +.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-journal/src/evidence/did.ts.",
+    contract: "did.json publishes only keys present in this keyring, and assertionMethod references every published verificationMethod id (foreign keys warn, not fail — a rotated-ahead site may publish keys this ring predates).",
+    action: "Reconcile the keyring with the published did.json — add the foreign key to receipt-keys.v1.json if it is a legitimate rotation, or republish via `did.document.emit`.",
     docRef: "packages/werkstatt-journal/src/evidence/did.ts",
   },
   {
@@ -1545,7 +1545,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-DATA-01",
-    contract: "Implements chrome.data.validate — ADR-0114 COMP-DATA-01. Every id configured in `site/{lang}/labels.md` chrome blocks (`footer.contactIds`, `footer.navIds`, `header.navIds`, `footer.legalIds`, `footer.trustIds`, `footer.…",
+    contract: "Every id configured in `site/{lang}/labels.md` chrome blocks (`footer.contactIds`, `footer.navIds`, `header.navIds`, `footer.legalIds`, `footer.trustIds`, `footer.transparencyIds`) resolves to at least one renderable datum (ADR-0114).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/chrome-data.ts.",
     docRef: "packages/werkstatt-site/src/checks/chrome-data.ts",
   },
@@ -1618,8 +1618,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-VISUAL-01",
-    contract: "no visual-review report at … — run.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
+    contract: "An onboarding-scoped mission carries a visual-review report — run `werkstatt run onboarding.visual.review --mission <id>` before the decision window opens (RFC-1359).",
+    action: "Run `pnpm exec werkstatt run onboarding.visual.review --mission <id>` and commit the report, or answer a visual-review/art-direction-deviation waiver entry citing every residual VR-id.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
   {
@@ -1797,14 +1797,15 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CRC-03",
-    contract: "Move the module under a `src/` or `os/` directory, or fix `modulePath` to point at the real module file.",
+    contract: "A cacheable command's `modulePath` resolves inside the bounded src/os module roots — otherwise the module hash falls back to a constant and the result cache never invalidates on module code changes (RFC-1193).",
     action: "Move the module under a `src/` or `os/` directory, or fix `modulePath` to point at the real module file.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
   {
     ruleId: "CRC-04",
-    action: "Move the module under a `src/` or `os/` directory, or fix `modulePath` to point at the real module file.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
+    contract: "A cacheable command declares `modulePath` — without it the module hash falls back to a constant (`unpatched`) and the result cache never invalidates on module code changes (RFC-1193).",
+    action: "Add `modulePath` pointing at this command's module file.",
+    docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
   {
     ruleId: "CRC-05",
@@ -2779,6 +2780,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "KERNEL-FLAG-10",
+    contract: "A handler resolves dry-run via `context.dryRun` — `consumeCommonFlags` strips `--dry-run` from input.flags before dispatch, so reading `flags[\"dry-run\"]` alone never sees it (RFC-1237).",
     action: "Resolve dry-run as `context.dryRun === true || input.flags[\"dry-run\"] === true` — consumeCommonFlags strips --dry-run into context.dryRun before dispatch (RFC-1237).",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -3417,7 +3419,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "OWN-01",
-    contract: "Add this path to the `generates` array of the command that produces it (e.g. in the command's KernelCommandDefinition alongside its handler), remove it (git rm …), or if it is an authored static asset, add the directory to STATIC_ASSET_EXEMPT_DIRS in generated-stale-validate.ts.",
+    contract: "Every file on disk under the site's public/ directory is covered by a `generates` ownership entry — uncovered files are registry drift (RFC-0612).",
     action: "Add this path to the `generates` array of the command that produces it, remove it (git rm …), or if it is an authored static asset, add the directory to STATIC_ASSET_EXEMPT_DIRS in generated-stale-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/ownership-sync-validate.ts",
   },
