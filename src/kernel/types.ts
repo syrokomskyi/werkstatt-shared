@@ -11,12 +11,12 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1366: kernel resolves mission workpieceEnv + KERNEL-ENV-01 gate on required envInputs</item>
   <item>RFC-1366: review r1 — conditional fulfill creds, io.exists port, env-resolution contract alignment</item>
   <item>RFC-1385: scoped closed-rebuild write mode for release.prepare</item>
   <item>RFC-1385: close RFC-1385 review warnings — invoke siteWorkspace forwarding, error-path closedWrites, AC-4 hook clause</item>
   <item>RFC-1385: stamp RFC-1385 implemented</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1354, RFC-1369</history>
+  <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1354, RFC-1366, RFC-1369</history>
 </CHANGE_SUMMARY>
 */
 
@@ -100,6 +100,15 @@ export type KernelCommandCoverage = "operator" | "ci" | "delegated";
 export interface EnvInputDecl {
   name: string;
   required: boolean;
+}
+
+/** RFC-1461: declared severity for a rule id emitted by a validator or gate. */
+export type CommandRuleSeverity = "error" | "warning";
+
+/** RFC-1461: `rules[]` entry — rule id plus its declared emission severity. */
+export interface CommandRuleDecl {
+  id: string;
+  severity: CommandRuleSeverity;
 }
 
 export interface KernelCommandMetadata {
@@ -256,7 +265,7 @@ export interface GateMetadata {
   phase: GatePhase;
   conditional?: GateConditional;
   surfaces?: string[];
-  rules?: string[];
+  rules?: CommandRuleDecl[];
   blocks?: string[];
 }
 

@@ -11,21 +11,41 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1420: COMP-HYG-05 remediation entry — uniform scrim replaced by kind: fade + edge; dark scrims belong on dark surfaces.</item>
   <item>RFC-1369: review round 1 — GEN-FILES-01 repair guidance (per-path-class --repair commands, cache-clone carve-out).</item>
   <item>RFC-1368: INTAKE-34 remediation entry (declared-vs-sniffed media type).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1210, RFC-1365, warpgogol-m000196</history>
+  <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1210, RFC-1365, RFC-1420, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
 export interface RemediationPattern {
   ruleId: string;
+  /**
+   * RFC-1461: the remediation contract — a one-line mechanical promise of what
+   * the remediation does (e.g. "regenerate X", "align Y with the schema").
+   * Required on new entries (REMEDIATION-01); legacy entries ratchet in via
+   * REMEDIATION-03 warnings until declared.
+   */
+  contract?: string;
   action: string;
   template?: string;
   docRef?: string;
   targetFiles?: string[];
+}
+
+/**
+ * RFC-1461: `diagnostic.explain` result contract — a read-only ruleId →
+ * catalog-entry lookup. `coverage: "covered"` carries the catalog entry;
+ * `coverage: "uncovered"` carries the nextSteps to add one.
+ */
+export interface DiagnosticExplainResult {
+  command: "diagnostic.explain";
+  rule: string;
+  coverage: "covered" | "uncovered";
+  entry?: RemediationPattern;
+  nextSteps?: string[];
 }
 
 const REMEDIATION_ENTRIES: RemediationPattern[] = [

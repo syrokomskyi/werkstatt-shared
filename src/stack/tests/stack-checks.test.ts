@@ -9,6 +9,7 @@ Unit tests for stack checks covering defineStackChecks. It also guards the docum
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1311: Compass header sweep — declares the stack suite's contract for test-file scaffold coverage.</item>
+  <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
 </CHANGE_SUMMARY>
 */
 
@@ -27,7 +28,7 @@ const PASS_SPEC: StackCheckSpec = {
   name: "stack.alpha.validate",
   description: "alpha check",
   contract: "stack",
-  rules: ["STACK-01"],
+  rules: [{ id: "STACK-01", severity: "error" }],
   reads: ["src/**"],
   check: async () => [],
 };
@@ -42,7 +43,7 @@ const FAIL_SPEC: StackCheckSpec = {
   name: "stack.beta.validate",
   description: "beta check",
   contract: "stack",
-  rules: ["STACK-02"],
+  rules: [{ id: "STACK-02", severity: "error" }],
   reads: ["src/**"],
   check: async () => [FAIL_VIOLATION],
 };
@@ -72,7 +73,7 @@ describe("defineStackChecks", () => {
     expect(commands[0]!.name).toBe("stack.alpha.validate");
     expect(commands[0]!.description).toBe("alpha check");
     expect(commands[0]!.contract).toBe("stack");
-    expect(commands[0]!.rules).toEqual(["STACK-01"]);
+    expect(commands[0]!.rules).toEqual([{ id: "STACK-01", severity: "error" }]);
     expect(commands[0]!.reads).toEqual(["src/**"]);
     expect(commands[0]!.scope).toBe("workspace");
     expect(commands[0]!.cacheable).toBe(false);

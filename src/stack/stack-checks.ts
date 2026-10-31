@@ -16,10 +16,12 @@ KernelCommandResult or register commands themselves.</purpose>
   <item>RFC-1100: step 1 — shared tool/fs/check seams (walkFiles, runTool, defineStackChecks)</item>
   <item>RFC-1173: declare mutatesState on all kernel commands — collectDeclarationDiagnostics emits error-severity MUTATES-STATE-DECLARED, command.manifest.validate is the blocking consumer in packages.check, sweep declares the flag on every command definition (factories hardcode false for read-only check specs)</item>
   <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
+  <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
 </CHANGE_SUMMARY>
 */
 
 import type {
+  CommandRuleDecl,
   KernelCommandDefinition,
   KernelCommandResult,
 } from "@warpgogol/werkstatt-shared/kernel";
@@ -49,7 +51,7 @@ export interface StackCheckSpec {
   /** The single contract this check enforces (DNA-91). */
   contract: string;
   /** Rule IDs this check emits (DNA-91). */
-  rules: string[];
+  rules: CommandRuleDecl[];
   /** Workspace-relative path globs this check reads (RFC-0266). */
   reads: string[];
   /** Invariant ID for invariantRows — defaults to rules[0]. */
@@ -122,7 +124,7 @@ export function defineStackChecks(specs: StackCheckSpec[]): StackCheckDeclaratio
   }
 
   const invariantRows = specs
-    .map((spec) => ({ id: spec.invariantId ?? spec.rules[0], command: spec.name }))
+    .map((spec) => ({ id: spec.invariantId ?? spec.rules[0]?.id, command: spec.name }))
     .filter((row): row is { id: string; command: string } => typeof row.id === "string");
 
   return { commands, runCheckGate, invariantRows };
