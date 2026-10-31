@@ -11,11 +11,11 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1366: review r1 — conditional fulfill creds, io.exists port, env-resolution contract alignment</item>
   <item>RFC-1385: scoped closed-rebuild write mode for release.prepare</item>
   <item>RFC-1385: close RFC-1385 review warnings — invoke siteWorkspace forwarding, error-path closedWrites, AC-4 hook clause</item>
   <item>RFC-1385: stamp RFC-1385 implemented</item>
   <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
+  <item>RFC-1463: composite gates report complete violation sets and self-ensure prerequisites — ensure/compositeGate metadata, executor ensure runner, blockedBy skip tracking, ENSURE-01..04 + GATE-CMP-01, runCompositeGate</item>
   <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1354, RFC-1366, RFC-1369</history>
 </CHANGE_SUMMARY>
 */
@@ -245,6 +245,51 @@ export interface KernelCommandMetadata {
   idempotency?: "rerun-safe" | "resume-only" | "not-idempotent";
   /** RFC-1327: explains the class — required for `not-idempotent`, recommended for `resume-only`. */
   idempotencyNote?: string;
+  /**
+   * RFC-1463: declared self-ensure — deterministic prerequisites the executor
+   * runs inside pre-flight before the command's first check. Each target must
+   * resolve to a registered command with `mutatesState: false` or
+   * `idempotency: "rerun-safe"` (declaration lint, blocking — self-ensure may
+   * prepare, never decide). `when` names a key in `ensureConditions`; absent
+   * `when` means the ensure runs on every invocation.
+   */
+  ensure?: EnsureDecl[];
+  /**
+   * RFC-1463: named ensure conditions resolved executor-side pre-dispatch
+   * against the command's declared plan inputs (flags, targeting). An
+   * `ensure[].when` value not present here is a declaration-lint failure —
+   * never silently skipped.
+   */
+  ensureConditions?: Record<string, EnsureConditionResolver>;
+  /**
+   * RFC-1463: marks the command as a composite gate for GATE-CMP-01
+   * completeness scanning — the gate reports the complete violation set
+   * across independent checks in one invocation; a marked command whose
+   * runner still returns on first failure is flagged.
+   */
+  compositeGate?: boolean;
+}
+
+/** RFC-1463: one declared self-ensure target — see `KernelCommandMetadata.ensure`. */
+export interface EnsureDecl {
+  /** Registered command name to run pre-flight (read-only or rerun-safe only). */
+  command: string;
+  /** Named condition key resolved against `ensureConditions` pre-dispatch. */
+  when?: string;
+}
+
+/** RFC-1463: executor-side ensure condition — reads the resolved invocation input. */
+export type EnsureConditionResolver = (input: KernelCommandInput) => boolean;
+
+/** RFC-1463: one recorded self-ensure outcome on `KernelExecutionReport.ensured`. */
+export interface EnsureRecord {
+  /** The ensure target command name. */
+  command: string;
+  status: "ensured" | "skipped" | "failed";
+  /** Present when status === "skipped" — the `when` condition that resolved false. */
+  when?: string;
+  exitCode?: number;
+  durationMs: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -429,6 +474,13 @@ export interface KernelRuntimeContext {
    * commits stay blocked by the RFC-0878 workpiece hook.
    */
   allowClosedWrites?: boolean;
+  /**
+   * RFC-1463: the active self-ensure chain — command names whose ensure
+   * blocks are already executing on this call stack. Executor-internal:
+   * an ensure target already in the chain resolves as a declaration error
+   * (cycle), never an infinite recursion.
+   */
+  ensureChain?: string[];
   outputFormat: KernelOutputFormat;
   /**
    * RFC-0267: the WorkspaceIO port. The executor selects the adapter:
@@ -631,11 +683,24 @@ export interface KernelExecutionReport<TData = unknown> {
    */
   ranAfterFailedDependency?: boolean;
   /**
+   * RFC-1463: on a dependency-skipped step report, names the command whose
+   * failure blocked this step — the nearest blocking ancestor, not a bare
+   * skip reason.
+   */
+  blockedBy?: string;
+  /**
    * RFC-1184: step was declared `warnOnly` and failed — the failure is
    * preserved (exitCode, summary, diagnostics) but `ok` is true so the
    * pipeline continues. Distinguishable from cached/skipped/pass.
    */
   warned?: boolean;
+  /**
+   * RFC-1463: declared self-ensure outcomes recorded by the executor
+   * pre-flight — one entry per `ensure[]` declaration, including
+   * condition-skipped targets. Absent when the command declares no ensures
+   * or `--no-ensure` bypassed them.
+   */
+  ensured?: EnsureRecord[];
 }
 
 /**

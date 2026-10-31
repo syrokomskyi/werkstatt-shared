@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: repair sibling crossings incl PSEO-PROOF off-by-one and wrong-family seeds (r10)</item>
   <item>RFC-1461: drop stale action lines and repoint REV-04 docRef</item>
   <item>RFC-1461: repair r11 census residuals — crossed contract/action pairs, truncated contract, emitter docRefs</item>
   <item>RFC-1461: repair r12 census findings — crossed contracts/actions, seed 11 warning-tier coverage entries</item>
   <item>RFC-1460: recurring frictions escalate to mechanical measures — FRICTION-06/07/08, registry flips, session-retro escalation</item>
+  <item>RFC-1463: composite gates report complete violation sets and self-ensure prerequisites — ensure/compositeGate metadata, executor ensure runner, blockedBy skip tracking, ENSURE-01..04 + GATE-CMP-01, runCompositeGate</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -5866,6 +5866,30 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     contract: "A full-strength lighten veil is redundant under textBackdrop: plate.",
     action: "Drop the lighten entry from the effects block.",
     docRef: "packages/werkstatt-site/src/checks/effects-contract.ts",
+  },
+  {
+    ruleId: "ENSURE-01",
+    contract: "Command … declares ensure target … — no such registered command, or the target is neither read-only (mutatesState: false) nor idempotent (rerun-safe).",
+    action: "Register the ensure target, or point the ensure at a registered command that is read-only or declared rerun-safe.",
+    docRef: "packages/werkstatt-site/src/checks/command-manifest-validate.ts",
+  },
+  {
+    ruleId: "ENSURE-02",
+    contract: "Command … declares ensure … with when … — no matching key in its ensureConditions.",
+    action: "Add the named resolver to the command's ensureConditions map or drop the when clause.",
+    docRef: "packages/werkstatt-site/src/checks/command-manifest-validate.ts",
+  },
+  {
+    ruleId: "ENSURE-03",
+    contract: "ensure … failed — prerequisite could not be prepared.",
+    action: "Run the failing ensure command directly to see its diagnostics, fix the prerequisite it could not satisfy, then re-run the declaring command.",
+    docRef: "packages/werkstatt-engine/src/kernel/runtime/execute-command.ts",
+  },
+  {
+    ruleId: "ENSURE-04",
+    contract: "A declared ensure could not be resolved at runtime — unregistered target or unresolvable when condition.",
+    action: "Fix the ensure declaration so its target resolves and its when names a key in ensureConditions, then re-run.",
+    docRef: "packages/werkstatt-engine/src/kernel/runtime/execute-command.ts",
   },
 ];
 
