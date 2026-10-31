@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: apply REVIEW-R2 findings — widen artifact sweep to action+all shapes, add REMEDIATION-05 ratchet, sync remaining rules[] docs (RFC-1461)</item>
   <item>RFC-1461: review r3 residue — repair 24 catalog entries, honest SECTION-LANG-PROJ-01 severity, tighten REMEDIATION-05 detector</item>
   <item>RFC-1461: review r4 — paren-scoped REMEDIATION-05 shapes, honest severity for 11 warn-only rules, authored contracts for 11 catalog entries, persist r2/r3/r4 review reports</item>
   <item>RFC-1461: review r5 — honest CMD-MAN-02 severity, split 43 contract==action duplicates into authored contracts or ratchet floor, persist r5 report</item>
   <item>RFC-1461: review r6 — repair 8 near-duplicate and 9 crossed contract-action pairs, add normalized-equivalence guard to REMEDIATION-05</item>
+  <item>RFC-1461: repair residual crossed contract-action pairs and info-only severity decls (r7)</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -664,8 +664,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "A11Y-CONTRAST-02",
-    contract: "A flagged contrast pair must satisfy the established color-mix() convention toward var(--ds-text-*) tokens.",
-    action: "Darken the foreground toward the text color or lighten the background — the established convention is color-mix() toward var(--ds-text-*) tokens.",
+    contract: "A same-block color/background pair could not be resolved into sRGB — the pairing is unmeasured.",
+    action: "Resolve the var()/color-mix() chain so the pairing is measurable, or declare the pairing intentional.",
     docRef: "packages/werkstatt-site/src/checks/a11y-contrast-lint.ts",
   },
   {
@@ -869,8 +869,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "API-PROBE-01",
-    contract: "The contact probe message meets the minimum-length contract — `probe@example.invalid` is the probe recipient.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/api-probe-check.ts.",
+    contract: "A malformed-body POST returns contract JSON with a 4xx status.",
+    action: "Fix the probe handler so malformed bodies produce a contract-shaped 4xx response.",
     docRef: "packages/werkstatt-site/src/checks/api-probe-check.ts",
   },
   {
@@ -2108,13 +2108,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "EFF-PARITY-02",
-    contract: "No packages/ui renderer references legacy effect props — the effects-system migration is complete (RFC-0156).",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/effects-contract.ts.",
+    contract: "Every effectsParity: strict section instance carries the sibling-majority effect signature — a divergent instance is a parity violation.",
+    action: "Align the section instance's effect props with the sibling-majority signature.",
     docRef: "packages/werkstatt-site/src/checks/effects-contract.ts",
   },
   {
     ruleId: "ENV-CONTRACT-01",
-    contract: "The site's .env.example is produced by env.example.generate — checked-in drift against the generator output is a contract violation.",
+    contract: "The site's .env.example exists and is produced by env.example.generate — a missing or drifted example is a contract violation.",
     action: "Run: pnpm exec werkstatt run env.example.generate --site.",
     docRef: "packages/werkstatt-site/src/checks/env/env-contract.ts",
   },
@@ -3024,19 +3024,19 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "MDQ-07",
     contract: "Queue \"…\" enables batchPolicy.push.",
-    action: "Add \"…\" to sourceCommands or remove \"…\" from selectors.ruleIds.",
+    action: "Set batchPolicy.push to false; agents must not push queue batches.",
     docRef: "packages/werkstatt-site/src/checks/maintenance/maintenance-debt-queue.ts",
   },
   {
     ruleId: "MDQ-08",
     contract: "Queue \"…\" has no acceptance commands.",
-    action: "Set batchPolicy.push to false; agents must not push queue batches.",
+    action: "Add the validation commands agents must run after each batch.",
     docRef: "packages/werkstatt-site/src/checks/maintenance/maintenance-debt-queue.ts",
   },
   {
     ruleId: "MDQ-09",
     contract: "A queue marked complete carries no open items — current debt must be cleared first.",
-    action: "Mark the queue complete, pause it with rationale, or update its selectors.",
+    action: "Reopen the queue or clear the matching current debt before marking it complete.",
     docRef: "packages/werkstatt-site/src/checks/maintenance/maintenance-debt-queue.ts",
   },
   {
@@ -4335,8 +4335,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RSHAD-00",
-    contract: "A _redirects rule must not shadow a file already present in dist/client.",
-    action: "Remove the static file from dist/client/ or remove the redirect from _redirects.",
+    contract: "The redirect-shadow audit is inconclusive — `_redirects`, `dist/client/`, or the wrangler config is missing.",
+    action: "Build dist/client and ensure _redirects plus the wrangler config exist so the shadow audit can run.",
     docRef: "packages/werkstatt-site/src/checks/redirect-shadow.ts",
   },
   {
@@ -4372,7 +4372,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "SCAN-01",
     contract: "Hardcoded file path in scan function.",
-    action: "Move the path into a declared constant or derive it from the workspace root.",
+    action: "Use discoverSourceFiles(io, srcDir, patterns) instead of a hardcoded path literal.",
     docRef: "packages/werkstatt-site/src/checks/validator-scan-coverage.ts",
   },
   {
@@ -4877,7 +4877,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "STAMP-03",
     contract: "Sitemap lastmod values come from a source-backed update stamp — pages without one emit no lastmod.",
-    action: "Regenerate sitemap with the update-stamp resolver.",
+    action: "Remove lastmod from pages without a source-backed update stamp.",
     docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
   },
   {
