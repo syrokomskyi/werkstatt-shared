@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: review r6 — repair 8 near-duplicate and 9 crossed contract-action pairs, add normalized-equivalence guard to REMEDIATION-05</item>
   <item>RFC-1461: repair residual crossed contract-action pairs and info-only severity decls (r7)</item>
   <item>RFC-1461: exhaustively repair sibling-fixHint crossings and add warning-rule coverage (r8)</item>
   <item>RFC-1461: emitter-keyed census repairs residual crossings and coverage gaps (r9)</item>
   <item>RFC-1461: repair sibling crossings incl PSEO-PROOF off-by-one and wrong-family seeds (r10)</item>
+  <item>RFC-1461: drop stale action lines and repoint REV-04 docRef</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -936,9 +936,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "AUTO-01",
-    contract: "Agent approval lacks confidence.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/ops-fleet.ts.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/ops-fleet.ts",
+    contract: "Agent approval exists below L2 or exceeds the current scope level.",
+    action: "Raise the approval scope level or remove the below-L2 approval.",
+    docRef: "packages/werkstatt-site/src/checks/pseo/pseo-governance.ts",
   },
   {
     ruleId: "AUTO-02",
@@ -1374,8 +1374,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CKL-FRESH-02",
+    contract: "Claim … expires soon (validUntil …).",
     action: "Re-verify and extend validUntil with a new asOf, before it expires.",
-    docRef: "packages/werkstatt-site/src/checks/content-plan.ts",
+    docRef: "packages/werkstatt-site/src/checks/content-freshness.ts",
   },
   {
     ruleId: "CKL-FRESH-05",
@@ -2170,8 +2171,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "ESC-03",
-    contract: "… escalation budget is exhausted.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/pseo/pseo-governance.ts.",
+    contract: "… human-minutes per 1000 pages is not yet near zero — the escalation budget target is unmet.",
+    action: "Reduce human-minutes per 1000 pages toward the near-zero target.",
     docRef: "packages/werkstatt-site/src/checks/pseo/pseo-governance.ts",
   },
   {
@@ -4256,9 +4257,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "REV-04",
-    contract: "… reviewer equals generator.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/ops-fleet.ts.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/ops-fleet.ts",
+    contract: "… low-confidence verdict was approved.",
+    action: "Re-review the artifact at higher confidence before approving.",
+    docRef: "packages/werkstatt-site/src/checks/pseo/pseo-governance.ts",
   },
   {
     ruleId: "REV-06",
@@ -4386,9 +4387,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RUNTIME-WARN-02",
-    contract: "Missing image runtime warning must have a static asset diagnostic equivalent.",
-    action: "Register and wire … so \"…\" is represented as Diagnostic[].",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts",
+    contract: "Missing pageId runtime warning must have a static semantic-target diagnostic equivalent (SEM-TARGET-01).",
+    action: "Register the missing-pageId warning's static equivalent (SEM-TARGET-01) in semantic.targets.validate.",
+    docRef: "packages/werkstatt-site/src/checks/runtime-warnings-lint.ts",
   },
   {
     ruleId: "SCAN-01",
@@ -4415,8 +4416,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SEARCH-02",
-    contract: "indexed route does not resolve to an emitted route: …",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/site-search/index-validate.ts.",
+    contract: "excluded (noindex/disabled) route present in search index: …",
+    action: "Remove the excluded route from the search index or un-exclude the route.",
     docRef: "packages/werkstatt-site/src/checks/site-search/index-validate.ts",
   },
   {
