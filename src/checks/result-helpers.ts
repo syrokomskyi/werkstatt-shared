@@ -14,6 +14,9 @@ ruleId = command; diagnosticsResult takes rich Diagnostic[] with registered ids.
 <CHANGE_SUMMARY>
   <item>RFC-0029 review: Initial creation to fix systemic exit-code bug across check files.</item>
   <item>RFC-1027: Auto-populate Diagnostic.remediation from REMEDIATION_CATALOG in diagnosticsResult().</item>
+  <item>RFC-1461: bind blocking diagnostics to remediation entries and print their remedy (RFC-1461)
+
+Add diagnostic.explain lookup, severity-aware strict coverage (REMEDIATION-03/04), per-error remedy/lookup nextSteps, contract-bearing catalog seeds for every error-severity ruleId, and regenerated manifests.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -32,6 +35,32 @@ function defaultFailNextSteps(command: string): KernelNextStep[] {
       kind: "required",
     },
   ];
+}
+
+/**
+ * RFC-1461: blocking failures self-describe. Every distinct error-severity
+ * ruleId contributes a nextSteps entry — the catalog `contract` (fallback:
+ * inline `remediation.action` / `action`) on covered ids, and the
+ * `diagnostic.explain` lookup on uncovered ones.
+ */
+function failureNextSteps(command: string, diagnostics: Diagnostic[]): KernelNextStep[] {
+  const steps = defaultFailNextSteps(command);
+  const seen = new Set<string>();
+  for (const d of diagnostics) {
+    if (d.severity !== "error" || seen.has(d.ruleId)) continue;
+    seen.add(d.ruleId);
+    const pattern = lookupRemediation(d.ruleId);
+    const remedy = pattern?.contract ?? d.remediation?.action ?? pattern?.action;
+    steps.push(
+      remedy !== undefined
+        ? { action: remedy, kind: "required" }
+        : {
+            action: `werkstatt run diagnostic.explain --rule ${d.ruleId}`,
+            kind: "required",
+          },
+    );
+  }
+  return steps;
 }
 
 /**
@@ -91,7 +120,7 @@ export function diagnosticsResult(
   const status: CheckResult["status"] =
     summary.error > 0 ? "fail" : summary.warning > 0 ? "warn" : "pass";
   const resolvedNextSteps =
-    nextSteps ?? (summary.error > 0 ? defaultFailNextSteps(command) : undefined);
+    nextSteps ?? (summary.error > 0 ? failureNextSteps(command, enrichedDiagnostics) : undefined);
   const counts = formatCounts(summary.error, summary.warning);
   return {
     data: { command, status, diagnostics: enrichedDiagnostics, summary },

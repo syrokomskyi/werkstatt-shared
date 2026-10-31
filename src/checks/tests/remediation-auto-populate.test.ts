@@ -9,6 +9,9 @@ Unit tests for remediation auto populate covering its documented public contract
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1027: initial tests for remediation auto-population from REMEDIATION_CATALOG.</item>
+  <item>RFC-1461: bind blocking diagnostics to remediation entries and print their remedy (RFC-1461)
+
+Add diagnostic.explain lookup, severity-aware strict coverage (REMEDIATION-03/04), per-error remedy/lookup nextSteps, contract-bearing catalog seeds for every error-severity ruleId, and regenerated manifests.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -85,4 +88,42 @@ test("diagnosticsResult: multiple diagnostics get independent remediation", () =
   expect(result.data!.diagnostics[0].remediation?.ruleId).toBe("GEN-FILES-01");
   expect(result.data!.diagnostics[1].remediation?.ruleId).toBe("PARITY-SECTION-COUNT");
   expect(result.data!.diagnostics[2].remediation).toBeUndefined();
+});
+
+test("diagnosticsResult: covered error ruleId prints the catalog remedy as a nextStep (RFC-1461)", () => {
+  const diagnostics: Diagnostic[] = [
+    { ruleId: "GEN-FILES-01", severity: "error", message: "Stale file" },
+  ];
+  const result = diagnosticsResult("test.command", diagnostics);
+  const remedySteps = result.nextSteps!.map((s) => s.action);
+  expect(remedySteps.some((a) => a.includes("Regenerate"))).toBe(true);
+  expect(result.nextSteps!.every((s) => s.kind === "required")).toBe(true);
+});
+
+test("diagnosticsResult: uncovered error ruleId prints the diagnostic.explain lookup (RFC-1461)", () => {
+  const diagnostics: Diagnostic[] = [
+    { ruleId: "UNKNOWN-RULE-999", severity: "error", message: "Boom" },
+  ];
+  const result = diagnosticsResult("test.command", diagnostics);
+  expect(result.nextSteps).toContainEqual({
+    action: "werkstatt run diagnostic.explain --rule UNKNOWN-RULE-999",
+    kind: "required",
+  });
+});
+
+test("diagnosticsResult: each error ruleId contributes one nextStep; warnings stay silent (RFC-1461)", () => {
+  const diagnostics: Diagnostic[] = [
+    { ruleId: "UNKNOWN-A", severity: "error", message: "err" },
+    { ruleId: "UNKNOWN-A", severity: "error", message: "err again" },
+    { ruleId: "UNKNOWN-B", severity: "error", message: "err" },
+    { ruleId: "UNKNOWN-C", severity: "warning", message: "warn" },
+  ];
+  const result = diagnosticsResult("test.command", diagnostics);
+  const explainSteps = result.nextSteps!.filter((s) =>
+    s.action.startsWith("werkstatt run diagnostic.explain"),
+  );
+  expect(explainSteps.map((s) => s.action)).toEqual([
+    "werkstatt run diagnostic.explain --rule UNKNOWN-A",
+    "werkstatt run diagnostic.explain --rule UNKNOWN-B",
+  ]);
 });
