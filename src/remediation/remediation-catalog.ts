@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: repair residual crossed contract-action pairs and info-only severity decls (r7)</item>
   <item>RFC-1461: exhaustively repair sibling-fixHint crossings and add warning-rule coverage (r8)</item>
   <item>RFC-1461: emitter-keyed census repairs residual crossings and coverage gaps (r9)</item>
   <item>RFC-1461: repair sibling crossings incl PSEO-PROOF off-by-one and wrong-family seeds (r10)</item>
   <item>RFC-1461: drop stale action lines and repoint REV-04 docRef</item>
+  <item>RFC-1461: repair r11 census residuals — crossed contract/action pairs, truncated contract, emitter docRefs</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -942,8 +942,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "AUTO-02",
-    contract: "… autonomy state is malformed.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/pseo/pseo-governance.ts.",
+    contract: "The persisted autonomy state maps a key whose level … exceeds its ceiling ….",
+    action: "Lower the autonomy level below the declared ceiling or raise the ceiling for the key.",
     docRef: "packages/werkstatt-site/src/checks/pseo/pseo-governance.ts",
   },
   {
@@ -1466,7 +1466,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CMD-OUTPUT-02",
     contract: "Return path missing summary in …:…",
-    action: "Add exitCode: 0 (success) or exitCode: 1 (failure) to the return object.",
+    action: "Add summary: \"[<cmd>] <description>\" to the return object, prefixed with the command name.",
     docRef: "packages/werkstatt-engine/src/plugin/commands-validate.ts",
   },
   {
@@ -1751,21 +1751,21 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CONTRACT-02",
-    contract: "published locale \"…\" has no note.locales coverage.",
+    contract: "translation contract lifecycle is \"…\" — enforcement requires \"approved\".",
     action: "Curate the draft, then run translation.contract.review --approve.",
-    docRef: "packages/werkstatt-site/src/testing/contract/contract-validator.ts",
+    docRef: "packages/werkstatt-site/src/checks/translation-contract.ts",
   },
   {
     ruleId: "CONTRACT-03",
     contract: "published locale \"…\" has no note.locales coverage.",
     action: "Add note.locales.… guidance ({} is a legal empty override) or unpublish the locale.",
-    docRef: "packages/werkstatt-site/src/testing/contract/contract-validator.ts",
+    docRef: "packages/werkstatt-site/src/checks/translation-contract.ts",
   },
   {
     ruleId: "CONTRACT-04",
     contract: "modules.….terms \"…\" overrides … canonical.",
     action: "Rename the module term id or align the … canonical.",
-    docRef: "packages/werkstatt-site/src/testing/contract/contract-validator.ts",
+    docRef: "packages/werkstatt-site/src/checks/translation-contract.ts",
   },
   {
     ruleId: "CORPUS-01",
@@ -2083,7 +2083,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "DSL-02",
     contract: "ruleId \"…\" is not registered in diagnostics/rules.ts.",
-    action: "Provide a non-empty, registered ruleId from diagnostics/rules.ts.",
+    action: "Add the ruleId to DIAGNOSTIC_RULES in packages/werkstatt-site/src/checks/diagnostics/rules.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
   {
@@ -2851,7 +2851,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "LEGAL-FOOTER-01",
-    contract: "footer.legal.identityPanel is enabled (locale(s) […]) but the resolved.",
+    contract: "footer.legal.identityPanel is enabled (locale(s) […]) but the resolved legal identity fields would suppress the panel at render (absent or NEED_THIS_* placeholder).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/legal-translation.ts.",
     docRef: "packages/werkstatt-site/src/checks/legal-translation.ts",
   },
@@ -3962,7 +3962,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "QUEUE-08",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/queue/manifest.ts.",
+    contract: "A decision-ledger entry is decided but carries no answer to bind, or targets a doc that is not a manifest item — invisible to the queue.",
+    action: "Fill the decision's answer or repoint its target doc to a manifest item.",
     docRef: "packages/forge/os/queue/manifest.ts",
   },
   {
@@ -4679,9 +4680,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SITE-SHELL-07",
-    contract: "pages[] entry \"…\" binds an undeclared shell profile, or a routeProfiles glob resolves no pages.",
-    action: "Declare the profile in shellContract.profiles, remove the binding, or fix the routeProfiles glob.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
+    contract: "pages[] entry \"…\" binds an undeclared shell profile, or a routeProfiles pattern references an undeclared profile.",
+    action: "Declare the profile in shellContract.profiles or remove the binding.",
+    docRef: "packages/werkstatt-site/src/checks/site-shell-contract.ts",
   },
   {
     ruleId: "SITE-SHELL-08",
