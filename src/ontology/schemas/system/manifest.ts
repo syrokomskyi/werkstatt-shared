@@ -6,26 +6,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1294: require verbatim source provenance for external local facts (RFC-1294)
-
-localFacts[] entries gain sourceUrl/excerpt/excerptLang/scope/reviewedBy/
-reviewedAt. surface.evidence.validate sweeps every blueprint dataset record's
-localFacts once per source file and emits LOCALFACT-01 (missing
-sourceUrl/excerpt), LOCALFACT-02 (off-host sourceUrl — dot-boundary subdomains
-of the descriptor endpoint host pass), LOCALFACT-03 (normalized number absent
-from the verbatim excerpt), LOCALFACT-04 (stale asOf+reviewEvery, always a
-warning). systemManifestSchema gains provenance.gate (warn|enforce, absent =
-warn; new sites register enforce). The bake renders 'Geprüfte lokale Fakten'
-only when every rendered fact carries a human review record — otherwise the
-neutral 'Lokaler Kontext' — plus a Quellen block listing each distinct
-sourceUrl with its asOf date. Live warpgogol run: 40 LOCALFACT-01 warnings
-across the 12 city demand records — the owner's research backlog; no excerpts,
-review records, or gate flips authored. Canary C11 active.</item>
   <item>RFC-1438: rfc-1438 legal-form-aware impressum from legal identity</item>
   <item>RFC-1436: companion-language renditions inside blocks and shell components</item>
   <item>RFC-1442: strict i18n.companion schema, companion-locale typography checks</item>
   <item>RFC-1444: replace companion renditions with section-scoped languages (RFC-1444)</item>
-  <history>ADR-0062, ADR-0114, RFC-0303, RFC-0377, RFC-0384, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229, RFC-1283, RFC-1293, RFC-1307, RFC-1341, RFC-1374</history>
+  <item>RFC-1447: add config-claims binding validation to pbp.content.validate</item>
+  <history>ADR-0062, ADR-0114, RFC-0303, RFC-0377, RFC-0384, RFC-1106, RFC-1161, RFC-1187, RFC-1209, RFC-1229, RFC-1283, RFC-1293, RFC-1294, RFC-1307, RFC-1341, RFC-1374</history>
 </CHANGE_SUMMARY>
 */
 
@@ -278,6 +264,26 @@ export const systemManifestSchema = z.object({
   legalJurisdiction: z
     .string()
     .regex(/^[A-Z]{2}$/, "legalJurisdiction must be an ISO 3166-1 alpha-2 code")
+    .optional(),
+
+  /**
+   * RFC-1447: declared bindings between PBP claims and configuration facts
+   * `system.md` owns. A claim listed here restates a configuration value in
+   * prose — `pbp.content.validate` (CLAIM-CONFIG-01/02) fails when the
+   * statement in any locale omits a configured value. Client-editable claim
+   * entities stay schema-frozen; the engineering-owned binding lives here.
+   */
+  configClaims: z
+    .array(
+      z
+        .object({
+          claim: z
+            .string()
+            .regex(/^trust\/claims\/[a-z0-9-]+$/, "configClaims.claim must be a trust/claims/<id> path"),
+          fact: z.enum(["languages", "domain", "legalJurisdiction"]),
+        })
+        .strict(),
+    )
     .optional(),
 
   /**
