@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: emitter-keyed census repairs residual crossings and coverage gaps (r9)</item>
   <item>RFC-1461: repair sibling crossings incl PSEO-PROOF off-by-one and wrong-family seeds (r10)</item>
   <item>RFC-1461: drop stale action lines and repoint REV-04 docRef</item>
   <item>RFC-1461: repair r11 census residuals — crossed contract/action pairs, truncated contract, emitter docRefs</item>
   <item>RFC-1461: repair r12 census findings — crossed contracts/actions, seed 11 warning-tier coverage entries</item>
+  <item>RFC-1460: recurring frictions escalate to mechanical measures — FRICTION-06/07/08, registry flips, session-retro escalation</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -2350,6 +2350,24 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     ruleId: "FRICTION-05",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/friction/types.ts.",
     docRef: "packages/forge/os/friction/types.ts",
+  },
+  {
+    ruleId: "FRICTION-06",
+    contract: "Entry … is addressed on a docs-only measure yet its signature recurred … times — the documented rule did not bind.",
+    action: "Flip the entry to status: escalated and name the mechanical obligation in its measure.",
+    docRef: "packages/forge/os/friction/handlers/friction-validate.ts",
+  },
+  {
+    ruleId: "FRICTION-07",
+    contract: "Entry … is addressed but carries no measureKind — classification debt.",
+    action: "Declare the measure's class via measureKind from the closed enum.",
+    docRef: "packages/forge/os/friction/handlers/friction-validate.ts",
+  },
+  {
+    ruleId: "FRICTION-08",
+    contract: "Entry … is escalated but its measure names no mechanical obligation (RFC/ADR id, docs/queues item, repo path, or backticked command token).",
+    action: "Amend the entry's measure to name the mechanism that will land — an RFC/ADR id, queue item, repo path, or backticked command token.",
+    docRef: "packages/forge/os/friction/handlers/friction-validate.ts",
   },
   {
     ruleId: "GATE-03",
