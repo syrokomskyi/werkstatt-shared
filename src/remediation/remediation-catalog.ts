@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: review r4 — paren-scoped REMEDIATION-05 shapes, honest severity for 11 warn-only rules, authored contracts for 11 catalog entries, persist r2/r3/r4 review reports</item>
   <item>RFC-1461: review r5 — honest CMD-MAN-02 severity, split 43 contract==action duplicates into authored contracts or ratchet floor, persist r5 report</item>
   <item>RFC-1461: review r6 — repair 8 near-duplicate and 9 crossed contract-action pairs, add normalized-equivalence guard to REMEDIATION-05</item>
   <item>RFC-1461: repair residual crossed contract-action pairs and info-only severity decls (r7)</item>
   <item>RFC-1461: exhaustively repair sibling-fixHint crossings and add warning-rule coverage (r8)</item>
+  <item>RFC-1461: emitter-keyed census repairs residual crossings and coverage gaps (r9)</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -242,9 +242,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "AGK-03",
-    action:
-      "Fix the agent gate key — ensure the gate key is unique and matches the declared catalog.",
-    docRef: "docs/agents/domain.md",
+    contract: "The generated knowledge-file set has drifted from the populated/disabled domain set.",
+    action: "Rerun agent.knowledge.generate, or remove the stale file.",
+    docRef: "packages/werkstatt-site/src/checks/agent/agent-knowledge.ts",
   },
   {
     ruleId: "WS-WRITE-02",
@@ -1363,14 +1363,14 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CKL-DERIV-02",
     contract: "Derived claim \"…\" has no derivedFrom.",
-    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
+    action: "Set derivedFrom to the source subject (collection/[lang/]file#field).",
+    docRef: "packages/werkstatt-site/src/checks/content-derived.ts",
   },
   {
     ruleId: "CKL-FRESH-01",
     contract: "Claim … is due for review (cadence lapsed; due …)…",
-    action: "Re-verify and extend validUntil with a new asOf, before it expires.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
+    action: "Re-verify the value and advance asOf (RFC-0218 edit transaction); comparative-commercial claims record verify-noop, verify-update, or withdraw in the claim ledger.",
+    docRef: "packages/werkstatt-site/src/checks/content-freshness.ts",
   },
   {
     ruleId: "CKL-FRESH-02",
@@ -1379,14 +1379,15 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CKL-FRESH-05",
-    action: "Re-verify the value and set a new asOf + validUntil.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
+    contract: "Claim \"…\" carries a validity window but has no sourced value.",
+    action: "Source the value (RFC-0136) before it can carry a validity window.",
+    docRef: "packages/werkstatt-site/src/checks/content-freshness.ts",
   },
   {
     ruleId: "CKL-SRC-01",
     contract: "Source descriptor invalid: …",
-    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
+    action: "Make the descriptor match the source descriptor schema (RFC-0214).",
+    docRef: "packages/werkstatt-site/src/checks/content-source-binding.ts",
   },
   {
     ruleId: "CKL-SRC-02",
@@ -1398,6 +1399,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     ruleId: "CKL-SRC-03",
     contract: "Source … observed \"…\" but site asserts \"…\" (…)",
     action: "Re-verify and update the value (RFC-0218 edit transaction), or record verify-noop.",
+    docRef: "packages/werkstatt-site/src/checks/content-source-binding.ts",
+  },
+  {
+    ruleId: "CKL-SRC-04",
+    contract: "Source … was unreachable at last check (…).",
+    action: "Transient; the monitor retries next cadence. Check the endpoint if persistent.",
     docRef: "packages/werkstatt-site/src/checks/content-source-binding.ts",
   },
   {
@@ -1737,8 +1744,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CONTRACT-01",
-    action: "Run translation.contract.scaffold to draft it, then review --approve.",
-    docRef: "packages/werkstatt-site/src/testing/contract/contract-validator.ts",
+    contract: "The translation contract file is invalid — a term is duplicated, lists its canonical as forbidden, or fails the schema.",
+    action: "Repair the contract — invalid evidence must never pass silently; curate the draft, then run translation.contract.review --approve.",
+    docRef: "packages/werkstatt-site/src/checks/translation-contract.ts",
   },
   {
     ruleId: "CONTRACT-02",
@@ -1866,7 +1874,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     ruleId: "DEDUP-01",
     contract: "Local re-declaration of reserved shared helper '…'.",
     action: "Import { … } from \"…\" instead of re-declaring it.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
+    docRef: "packages/werkstatt-site/src/checks/dedup-helper-lint.ts",
   },
   {
     ruleId: "default-not-in-supported",
@@ -3783,8 +3791,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "PSEO-NOTE-03",
     contract: "Translator note overlay modules.… is stale against module context.",
-    action: "Review and approve the note before translation generation.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
+    action: "Regenerate and re-approve the note after module-context changes.",
+    docRef: "packages/werkstatt-site/src/checks/surface-translation.ts",
   },
   {
     ruleId: "PSEO-NOTE-04",
@@ -4107,8 +4115,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "REFERRAL-RECEIPT-02",
     contract: "… renders the receipt after the form — the receipt must precede it.",
-    action: "The receipt is part of the handoff artifact — it must render on the landing.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
+    action: "Keep the receipt directly above the embedded send-message form.",
+    docRef: "packages/werkstatt-site/src/checks/referral-receipt.ts",
   },
   {
     ruleId: "REFERRAL-RECEIPT-03",
@@ -4875,6 +4883,30 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     docRef: "packages/werkstatt-site/src/checks/generated-stale-validate.ts",
   },
   {
+    ruleId: "CANON-01",
+    contract: "A sitemap URL is not in the expected canonical set.",
+    action: "Regenerate sitemap with canonicalPageUrl.",
+    docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
+  },
+  {
+    ruleId: "CANON-02",
+    contract: "A feed URL is not in the expected canonical set.",
+    action: "Regenerate feed with canonicalPageUrl.",
+    docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
+  },
+  {
+    ruleId: "CANON-03",
+    contract: "An llms.txt URL is not in the expected canonical set.",
+    action: "Regenerate llms with canonicalPageUrl.",
+    docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
+  },
+  {
+    ruleId: "CANON-04",
+    contract: "An HTML canonical href is not in the expected canonical set.",
+    action: "Ensure pageUrl in resolve-route.ts uses canonicalPageUrl with trailingSlash: always.",
+    docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
+  },
+  {
     ruleId: "STAMP-01",
     contract: "Sitemap lastmod for … is not a valid YYYY-MM-DD date: …",
     action: "Use a source-backed update stamp resolver.",
@@ -4890,6 +4922,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     ruleId: "STAMP-03",
     contract: "Sitemap lastmod values come from a source-backed update stamp — pages without one emit no lastmod.",
     action: "Remove lastmod from pages without a source-backed update stamp.",
+    docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
+  },
+  {
+    ruleId: "STAMP-04",
+    contract: "An update stamp equals today's date — it may be the build date rather than a source-backed stamp.",
+    action: "Ensure the update stamp comes from authored content, not new Date().",
     docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
   },
   {
