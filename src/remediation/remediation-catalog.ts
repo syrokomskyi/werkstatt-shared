@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: review r5 — honest CMD-MAN-02 severity, split 43 contract==action duplicates into authored contracts or ratchet floor, persist r5 report</item>
   <item>RFC-1461: review r6 — repair 8 near-duplicate and 9 crossed contract-action pairs, add normalized-equivalence guard to REMEDIATION-05</item>
   <item>RFC-1461: repair residual crossed contract-action pairs and info-only severity decls (r7)</item>
   <item>RFC-1461: exhaustively repair sibling-fixHint crossings and add warning-rule coverage (r8)</item>
   <item>RFC-1461: emitter-keyed census repairs residual crossings and coverage gaps (r9)</item>
+  <item>RFC-1461: repair sibling crossings incl PSEO-PROOF off-by-one and wrong-family seeds (r10)</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -705,15 +705,15 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "AGC-02",
-    contract: "api-catalog linkset entries diverge from the current manifest.",
-    action: "Rerun agent.api-catalog.generate.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts",
+    contract: "api-catalog linkset entries diverge from the current manifest, or a capability declares an unsatisfiable integration.source.",
+    action: "Rerun agent.api-catalog.generate, or fix the capability's integration.source declaration.",
+    docRef: "packages/werkstatt-site/src/checks/agent/agent-api-catalog.ts",
   },
   {
     ruleId: "AGC-03",
-    contract: "agent.enabled is false but api-catalog still exists on disk.",
-    action: "Rerun agent.api-catalog.generate to remove the stale artifact.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts",
+    contract: "agent.enabled is false but api-catalog still exists on disk, or a capability's humanEquivalent parity is violated.",
+    action: "Rerun agent.api-catalog.generate to remove the stale artifact, or align the capability's humanEquivalent with its sideEffect.",
+    docRef: "packages/werkstatt-site/src/checks/agent/agent-api-catalog.ts",
   },
   {
     ruleId: "AGENT-CONTRACT-01",
@@ -1855,7 +1855,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CSP-SINK-02",
-    contract: "Stale allowlist entry — filePattern \"…\" (…) matches no emitted file; remove or update so allowlists decay toward empty.",
+    contract: "A stale allowlist entry's filePattern matches no emitted file, or an entry lacks the required shape — allowlists decay toward empty.",
     action: "Remove or update the stale allowlist entry so the allowlist decays toward empty.",
     docRef: "packages/werkstatt-site/src/checks/csp-sinks.ts",
   },
@@ -2990,7 +2990,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "MATERIAL.CREDITS.PAGE-HIDDEN-REFERENCED",
     contract: "Credit record \"…\" is hidden from the credits page while its asset is referenced editorially.",
-    action: "Unhide the credit on the credits page or remove the editorial reference to the asset.",
+    action: "Unhide the credit on the credits page, remove the editorial reference, or mark it intentionally hidden — a placeholder credit needs no action.",
     docRef: "packages/werkstatt-site/src/checks/material-credits.ts",
   },
   {
@@ -3108,13 +3108,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "METH-VAL-03",
     contract: "Unknown methodology id '…'. Available: ….",
-    action: "Remove 'sampling' from methodology '…', or move it to a performance-vitals methodology.",
+    action: "Fix methodology.id against the declared KNOWN_METHODOLOGY_IDS set.",
     docRef: "packages/werkstatt-site/src/checks/methodologies-validate.ts",
   },
   {
     ruleId: "METH-VAL-04",
     contract: "Unknown instrument type '…' for instrument '…'. Available: ….",
-    action: "Remove 'sampling' from methodology '…', or move it to a performance-vitals methodology.",
+    action: "Fix the instrument type or reference against the declared KNOWN_INSTRUMENT_TYPES vocabulary.",
     docRef: "packages/werkstatt-site/src/checks/methodologies-validate.ts",
   },
   {
@@ -3803,7 +3803,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "PSEO-NOTE-05",
     contract: "Translator note overlays carry reviewed example content after initial translations are approved.",
-    action: "Fill note.… in the modules.… overlay.",
+    action: "Add reviewed examples after initial translations are approved.",
     docRef: "packages/werkstatt-site/src/checks/surface-translation.ts",
   },
   {
@@ -3814,27 +3814,27 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PSEO-PROOF-02",
-    contract: "Demand-map proof input is missing; proof status is not enough data.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
+    contract: "Demand-map proof input has invalid generatedAt metadata or belongs to the wrong blueprint.",
+    action: "Regenerate the demand-map proof input with current metadata for the expected blueprint.",
+    docRef: "packages/werkstatt-site/src/checks/pseo/pseo-proof.ts",
   },
   {
     ruleId: "PSEO-PROOF-03",
-    contract: "Demand-map proof input contains no mapped demand rows; proof status is not enough data.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/pseo/pseo-proof.ts.",
+    contract: "Evidence-join proof input is missing or contains no mapped rows; proof status is not enough data.",
+    action: "Regenerate the evidence-join proof input so the mapped rows reach the proof gate.",
     docRef: "packages/werkstatt-site/src/checks/pseo/pseo-proof.ts",
   },
   {
     ruleId: "PSEO-PROOF-04",
-    contract: "Evidence-join proof input is missing; proof status is not enough data.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/pseo/pseo-proof.ts.",
+    contract: "Evidence-join proof input has invalid generatedAt metadata or belongs to the wrong blueprint.",
+    action: "Regenerate the evidence-join proof input with current metadata for the expected blueprint.",
     docRef: "packages/werkstatt-site/src/checks/pseo/pseo-proof.ts",
   },
   {
     ruleId: "PSEO-PROOF-05",
-    contract: "Evidence-join proof input belongs to blueprint \"…\", expected \"…\".",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
+    contract: "Visibility-outcome proof input is missing, has invalid generatedAt metadata, or is empty.",
+    action: "Regenerate the visibility-outcome proof input with current metadata for the expected blueprint.",
+    docRef: "packages/werkstatt-site/src/checks/pseo/pseo-proof.ts",
   },
   {
     ruleId: "PSEO-QA-01",
@@ -3978,15 +3978,15 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RC-01",
-    contract: "RuntimeContext.segment must be null at MVP. Use EMPTY_RUNTIME_CONTEXT(locale). RFC-0027 activates segment.",
-    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts",
+    contract: "Root page emits a <meta http-equiv=\"refresh\"> stub instead of rendering content.",
+    action: "Render the default-language home directly via resolvePageRoute() so AI crawlers receive content (RFC-0159).",
+    docRef: "packages/werkstatt-site/src/checks/root-canonical.ts",
   },
   {
     ruleId: "RC-02",
-    contract: "RuntimeContext.flags is {} at MVP — EMPTY_RUNTIME_CONTEXT(locale) provides it (RFC-0027 activates flags).",
-    action: "Use EMPTY_RUNTIME_CONTEXT(locale) instead of a hand-built context.",
-    docRef: "packages/werkstatt-site/src/checks/runtime-context-shape.ts",
+    contract: "Root page does not call resolvePageRoute().",
+    action: "Render the default-language home content via resolvePageRoute(), not a redirect-only component (RFC-0159).",
+    docRef: "packages/werkstatt-site/src/checks/root-canonical.ts",
   },
   {
     ruleId: "RC-03",
@@ -4038,8 +4038,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "REFERRAL-LANDING-02",
-    action: "Render the § 5a UWG disclosure as the closing footnote under the submit button.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
+    contract: "The § 5a UWG disclosure is missing or renders out of order relative to the embedded form.",
+    action: "Add the disclosure footnote, or move it directly below the embedded form.",
+    docRef: "packages/werkstatt-site/src/checks/referral-landing.ts",
   },
   {
     ruleId: "REFERRAL-LANDING-03",
@@ -4055,9 +4056,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "REFERRAL-LANDING-06",
-    contract: "paused page … leaks identity or attribution.",
-    action: "Paused slugs fall back to the neutral document — emit no per-slug page.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
+    contract: "A paused, retired, or pending partner page leaks identity or attribution that its lifecycle state forbids.",
+    action: "Emit the lifecycle-correct neutral document — paused/retired/pending slugs carry no partner identity.",
+    docRef: "packages/werkstatt-site/src/checks/referral-landing.ts",
   },
   {
     ruleId: "REFERRAL-LANDING-07",
@@ -4677,8 +4678,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SITE-SHELL-07",
-    contract: "pages[] entry \"…\" binds undeclared shell profile \"…\".",
-    action: "Declare \"…\" in shellContract.profiles or remove the pages[].shell.profile binding.",
+    contract: "pages[] entry \"…\" binds an undeclared shell profile, or a routeProfiles glob resolves no pages.",
+    action: "Declare the profile in shellContract.profiles, remove the binding, or fix the routeProfiles glob.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
@@ -4759,7 +4760,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SMAP-03",
-    contract: "… is missing from the served dist.",
+    contract: "A generated mirror artifact is missing from, or diverges inside, the served dist.",
     action: "Run jsonld.mirror.generate after the build.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -4945,13 +4946,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "SUPPRESS-VAL-08",
     contract: "Rule at index … (ruleId: …) expired on …. It no longer applies — matching findings resurface as active. Remove the rule or extend expiresOn.",
-    action: "Add reviewAfter: <YYYY-MM-DD> to re-confirm the rule on schedule.",
+    action: "Delete the rule, or extend expiresOn if the suppressed condition is still relevant.",
     docRef: "packages/werkstatt-site/src/checks/suppressions-validate.ts",
   },
   {
     ruleId: "SUPPRESS-VAL-09",
     contract: "Rule at index … (ruleId: …) is due for review (reviewAfter: …). The rule still applies — confirm it is still needed.",
-    action: "Delete the rule, or extend expiresOn if the suppressed condition is still relevant.",
+    action: "Re-confirm the rule and bump reviewAfter, or set expiresOn if the condition is transient.",
     docRef: "packages/werkstatt-site/src/checks/suppressions-validate.ts",
   },
   {
@@ -5028,8 +5029,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SURFACE-05",
-    contract: "SIZE-01: flags a packages/** .ts/.tsx source file exceeding a 600-line threshold (warning 601-1200, error 1200+), against a shrink-only ratchet baseline. Pass --write-baseline to regenerate the baseline.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/core/handlers/public-surface.ts.",
+    contract: "Required root files are missing — CONTRIBUTING.md, SECURITY.md, or CHANGELOG.md.",
+    action: "Add the missing root files to the forge package root.",
     docRef: "packages/forge/os/core/handlers/public-surface.ts",
   },
   {
@@ -5088,14 +5089,14 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SVC-REG-04",
-    contract: "Service entry missing required 'id' field.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/services/service-registry-validate.ts.",
+    contract: "The service registry declares a duplicate id or a duplicate workerName.",
+    action: "Deduplicate the id/workerName entries in services/registry.yaml.",
     docRef: "packages/werkstatt-site/src/checks/services/service-registry-validate.ts",
   },
   {
     ruleId: "SVC-REG-05",
-    contract: "Service '…' missing required 'workerName' field.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/services/service-registry-validate.ts.",
+    contract: "Service '…' declares workerName '…' that must equal its id.",
+    action: "Set workerName equal to the service id.",
     docRef: "packages/werkstatt-site/src/checks/services/service-registry-validate.ts",
   },
   {
@@ -5124,8 +5125,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TEMPLATE-IMPORTS-01",
-    contract: "Could not read or parse root package.json.",
-    action: "Ensure package.json exists and is valid JSON.",
+    contract: "A template import cannot be resolved — the imported package is unreadable or the specifier is wrong.",
+    action: "Declare the imported package and keep it readable, or fix the import specifier.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/governance.ts",
   },
   {
@@ -5368,8 +5369,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-APOS-03",
-    contract: "chrome copy \"…\" …: …",
-    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/typography.ts.",
+    contract: "Copy uses a wrong apostrophe variant — the Uzbek apostrophe after o/g must be ʻ (U+02BB).",
+    action: "Replace the wrong apostrophe variant with the canonical U+02BB form.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
   {
@@ -5660,8 +5661,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "WDL-01",
-    contract: "Could not read site-kernel-checks/src/: …",
-    action: "Ensure packages/os/site-kernel-checks/src/ exists and is readable.",
+    contract: "Warning-like findings appear as source prose, string arrays, or passResult summary text instead of canonical Diagnostics.",
+    action: "Emit a Diagnostic with severity warning/info via diagnosticsResult, or add a local warning-diagnostics-ok suppression.",
     docRef: "packages/werkstatt-site/src/checks/warning-diagnostics-lint.ts",
   },
   {
