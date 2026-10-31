@@ -11,13 +11,13 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
   <item>RFC-1461: bind blocking diagnostics to remediation entries and print their remedy (RFC-1461)
 
 Add diagnostic.explain lookup, severity-aware strict coverage (REMEDIATION-03/04), per-error remedy/lookup nextSteps, contract-bearing catalog seeds for every error-severity ruleId, and regenerated manifests.</item>
   <item>RFC-1461: apply REVIEW-R1 findings — reseed defective contracts, include .probe validators, sync rules[] docs (RFC-1461)</item>
   <item>RFC-1461: apply REVIEW-R2 findings — widen artifact sweep to action+all shapes, add REMEDIATION-05 ratchet, sync remaining rules[] docs (RFC-1461)</item>
+  <item>RFC-1461: review r3 residue — repair 24 catalog entries, honest SECTION-LANG-PROJ-01 severity, tighten REMEDIATION-05 detector</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -1798,12 +1798,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CRC-03",
     contract: "Move the module under a `src/` or `os/` directory, or fix `modulePath` to point at the real module file.",
-    action: "Move the module under a \\.",
+    action: "Move the module under a `src/` or `os/` directory, or fix `modulePath` to point at the real module file.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
   {
     ruleId: "CRC-04",
-    action: "Move the module under a \\.",
+    action: "Move the module under a `src/` or `os/` directory, or fix `modulePath` to point at the real module file.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
@@ -1831,8 +1831,10 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CREG-07",
-    contract: "RFC-0732: snapshot resolved page content (block text, prose body, FAQ Q&A) per-route and diff.",
-    action: "The system is not registered or its config is malformed. Register: pnpm exec werkstatt run sternsystem.register --id <id> --cosmicStar <star> --mirrors \"../systems-cache/<id>:non-bare,...\"",
+    contract:
+      "The site's systems-cache/{id}/system-config.yaml resolves and parses — the legacy systems/registry.yaml indirection is removed (RFC-1216).",
+    action:
+      "The system is not registered or its config is malformed — register it: `werkstatt run sternsystem.register --id <id> --cosmicStar <star> --mirrors \"../systems-cache/<id>:non-bare,...\"`.",
     docRef: "packages/werkstatt-site/src/checks/content-regression.ts",
   },
   {
@@ -2375,20 +2377,20 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "GENERATES-PATH-COLLISION",
-    contract: "Non-glob path \\.",
+    contract: "A non-glob generated path is claimed by exactly one command — generated file ownership must be unique.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/runtime/validate-declarations.ts.",
     docRef: "packages/werkstatt-engine/src/runtime/validate-declarations.ts",
   },
   {
     ruleId: "GENERATOR-EXEMPT-MISSING",
-    contract: "Non-glob path \\.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/command-manifest-validate.ts.",
-    docRef: "packages/werkstatt-site/src/checks/command-manifest-validate.ts",
+    contract: "A command with a .generate suffix and empty generates[] must be listed in GENERATOR_OWNERSHIP_EXEMPT with a reason.",
+    action: "Add the command to GENERATOR_OWNERSHIP_EXEMPT with a reason, or declare its actual generates entries.",
+    docRef: "packages/werkstatt-engine/src/runtime/validate-declarations.ts",
   },
   {
     ruleId: "GENERATOR-EXEMPT-STALE",
-    contract: "GENERATOR_OWNERSHIP_EXEMPT entry \\.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/runtime/validate-declarations.ts.",
+    contract: "Every GENERATOR_OWNERSHIP_EXEMPT entry names a registered command — no stale exemptions.",
+    action: "Remove the stale entry or rename it to the command's current registered name.",
     docRef: "packages/werkstatt-engine/src/runtime/validate-declarations.ts",
   },
   {
@@ -2777,7 +2779,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "KERNEL-FLAG-10",
-    action: "Resolve dry-run as \\.",
+    action: "Resolve dry-run as `context.dryRun === true || input.flags[\"dry-run\"] === true` — consumeCommonFlags strips --dry-run into context.dryRun before dispatch (RFC-1237).",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
@@ -3268,12 +3270,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "NACHWEIS-LABELS-01",
     contract: "nachweis-list block #… cardLabels is missing dimensionStatusLabels.",
-    action: "Add to cardLabels:\\n dimensionStatusLabels:\\n unavailable: \"Nicht verfügbar\"\\n notApplicable: \"Nicht anwendbar\"\\n notChecked: \"Nicht geprüft\".",
+    action: "Add to cardLabels: dimensionStatusLabels — unavailable: \"Nicht verfügbar\", notApplicable: \"Nicht anwendbar\", notChecked: \"Nicht geprüft\".",
     docRef: "packages/werkstatt-site/src/checks/nachweis-card-labels-validate.ts",
   },
   {
     ruleId: "NACHWEIS-PROPS-01",
-    contract: "resolveNachweisEvidenceProps does not assign props.…, but component.",
+    contract: "resolveNachweisEvidenceProps does not assign a required component prop.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
@@ -3416,7 +3418,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "OWN-01",
     contract: "Add this path to the `generates` array of the command that produces it (e.g. in the command's KernelCommandDefinition alongside its handler), remove it (git rm …), or if it is an authored static asset, add the directory to STATIC_ASSET_EXEMPT_DIRS in generated-stale-validate.ts.",
-    action: "Add this path to the \\.",
+    action: "Add this path to the `generates` array of the command that produces it, remove it (git rm …), or if it is an authored static asset, add the directory to STATIC_ASSET_EXEMPT_DIRS in generated-stale-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/ownership-sync-validate.ts",
   },
   {
@@ -3959,7 +3961,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "RB-07",
     contract: "inlineCssBytes … exceeds … limit … on route …",
-    action: "Move shared CSS to the external stylesheet (build.inlineStylesheets: \\.",
+    action: "Move shared CSS to the external stylesheet (build.inlineStylesheets: \"auto\") or raise inlineCssBytes.limit in src/content/system.md.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
@@ -3983,7 +3985,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "RC-03",
     contract: "Root page passes a canonicalUrl override.",
-    action: "Remove the canonicalUrl override; under RFC-0160 \"/\" is self-canonical via the layout\\.",
+    action: "Remove the canonicalUrl override; under RFC-0160 \"/\" is self-canonical via the layout's default Astro.url.",
     docRef: "packages/werkstatt-site/src/checks/root-canonical.ts",
   },
   {
@@ -4175,61 +4177,61 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RENDER-BG-01",
-    contract: "error (default) or warning.",
+    contract: "Scrimmed background textures keep visible content — the scrim never fully hides the texture's imagery.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check-rules.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check-rules.ts",
   },
   {
     ruleId: "RENDER-CHROME-01",
-    contract: "error (default) or warning.",
+    contract: "Every chrome string resolves in a supported locale — declared hidden chrome roots included.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check.ts",
   },
   {
     ruleId: "RENDER-CREDIT-01",
-    contract: "error (default) or warning.",
+    contract: "Material credits stay inside their media slot on the rendered surface.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check.ts",
   },
   {
     ruleId: "RENDER-CREDIT-02",
-    contract: "error (default) or warning.",
+    contract: "Material credits keep at least 3:1 contrast against their background.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check.ts",
   },
   {
     ruleId: "RENDER-FOLD-01",
-    contract: "error (default) or warning.",
+    contract: "Hero text in the first fold meets 4.5:1 contrast against composited pixels (3:1 at 24px+).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check-rules.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check-rules.ts",
   },
   {
     ruleId: "RENDER-FOLD-02",
-    contract: "error (default) or warning.",
+    contract: "First-fold CTA labels keep at least 4.5:1 contrast against their own button surface.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check.ts",
   },
   {
     ruleId: "RENDER-FOLD-03",
-    contract: "error (default) or warning.",
+    contract: "Header lockup line count is desktop-only: stacked layouts render 2 rows, inline renders 1.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check.ts",
   },
   {
     ruleId: "RENDER-OFFSET-01",
-    contract: "error (default) or warning.",
+    contract: "Fixed chrome never overhangs into section content.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check.ts",
   },
   {
     ruleId: "RENDER-OVERFLOW-01",
-    contract: "error (default) or warning.",
+    contract: "Chrome text stays inside its column bounds at every viewport.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check-rules.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check-rules.ts",
   },
   {
     ruleId: "RENDER-OVERLAP-01",
-    contract: "error (default) or warning.",
+    contract: "Text-bearing siblings never overlap on the rendered surface.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-render-check-rules.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-render-check-rules.ts",
   },
@@ -4623,8 +4625,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SINT-18",
-    contract: "Element with data-count-up renders \"0\" as text content — external agents that don\\.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/section-framework/integrity.ts.",
+    contract: "Element with data-count-up renders \"0\" as text content — external agents that don't execute JS see a misleading zero; the actual value must render as text content.",
+    action: "Replace the 0 text content with the actual value expression (e.g. {props.overall.score}) — the count-up animation overwrites it via JS as progressive enhancement.",
     docRef: "packages/werkstatt-site/src/checks/section-framework/integrity.ts",
   },
   {
@@ -5549,14 +5551,14 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "VALIDATOR-CONTRACT-MISSING",
-    contract: "Non-glob path \\.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/runtime/validate-declarations.ts.",
+    contract: "Every validator command declares a contract tag grouping it with validators enforcing the same surface (RFC-0963).",
+    action: "Add a contract tag to the command's KernelCommandDefinition.",
     docRef: "packages/werkstatt-engine/src/runtime/validate-declarations.ts",
   },
   {
     ruleId: "VALIDATOR-RULES-MISSING",
-    contract: "Non-glob path \\.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/runtime/validate-declarations.ts.",
+    contract: "Every validator command declares the rule IDs it can emit (RFC-0963).",
+    action: "Add the rules[] declaration to the command's KernelCommandDefinition.",
     docRef: "packages/werkstatt-engine/src/runtime/validate-declarations.ts",
   },
   {
@@ -5645,7 +5647,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "WS-WRITE-01",
     contract: "Command `…` (reachable from an APPS_* pipeline) writes `…`, which is outside apps/<app>/, but is not declared on SHARED_WRITE_ALLOWLIST.",
-    action: "Add a SharedWriteEntry for \\.",
+    action: "Add a SharedWriteEntry for the command to SHARED_WRITE_ALLOWLIST in packages/werkstatt-site/src/checks/workspace-write-boundary.ts, and migrate its write to writeFileAtomic from @warpgogol/werkstatt-engine/kernel (RFC-0258).",
     docRef: "packages/werkstatt-site/src/checks/workspace-write-boundary.ts",
   },
   {
