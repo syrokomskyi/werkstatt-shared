@@ -11,14 +11,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
   <item>RFC-1461: bind blocking diagnostics to remediation entries and print their remedy (RFC-1461)
 
 Add diagnostic.explain lookup, severity-aware strict coverage (REMEDIATION-03/04), per-error remedy/lookup nextSteps, contract-bearing catalog seeds for every error-severity ruleId, and regenerated manifests.</item>
   <item>RFC-1461: apply REVIEW-R1 findings — reseed defective contracts, include .probe validators, sync rules[] docs (RFC-1461)</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, warpgogol-m000196</history>
+  <item>RFC-1461: apply REVIEW-R2 findings — widen artifact sweep to action+all shapes, add REMEDIATION-05 ratchet, sync remaining rules[] docs (RFC-1461)</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -111,8 +111,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RAUT-01",
-    action:
-      "Fix the remediation block in system-state.yaml to match the autonomy schema (autonomy: off|bounded, signalSources: string[]).",
+    action: "Apply the remediation described for this ruleId in docs/rfcs/rfc-1210-closed-loop-runtime-remediation-channel-from-telemetry-signals-to-bounded-missions.md.",
     docRef:
       "docs/rfcs/rfc-1210-closed-loop-runtime-remediation-channel-from-telemetry-signals-to-bounded-missions.md",
   },
@@ -309,15 +308,14 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-ABBR-01",
-    action: "Add the required trailing period to the abbreviation (e.g. Nr → Nr., usw → usw.).",
+    action: "Apply the remediation described for this ruleId in docs/rfcs/rfc-1070-extend-typography-validate-with-tier-2-locale-rules-for-numbers-abbreviations-and-apostrophes.md.",
     docRef:
       "docs/rfcs/rfc-1070-extend-typography-validate-with-tier-2-locale-rules-for-numbers-abbreviations-and-apostrophes.md",
     targetFiles: ["src/content/**/*.md"],
   },
   {
     ruleId: "TYPO-ABBR-02",
-    action:
-      "Add the required internal space in German multi-part abbreviations (e.g. z.B. → z. B., u.a. → u. a.).",
+    action: "Apply the remediation described for this ruleId in docs/rfcs/rfc-1070-extend-typography-validate-with-tier-2-locale-rules-for-numbers-abbreviations-and-apostrophes.md.",
     docRef:
       "docs/rfcs/rfc-1070-extend-typography-validate-with-tier-2-locale-rules-for-numbers-abbreviations-and-apostrophes.md",
     targetFiles: ["src/content/**/*.md"],
@@ -354,8 +352,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-LINK-01",
-    action:
-      "Replace bare URL link text with descriptive link text (e.g. [Learn more](url) instead of [https://example.com](url)).",
+    action: "Apply the remediation described for this ruleId in docs/rfcs/rfc-1071-extend-typography-validate-with-tier-3-advisory-rules-for-unicode-hygiene-link-text-and-sentence-length.md.",
     docRef:
       "docs/rfcs/rfc-1071-extend-typography-validate-with-tier-3-advisory-rules-for-unicode-hygiene-link-text-and-sentence-length.md",
     targetFiles: ["src/content/**/*.md"],
@@ -412,8 +409,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "DIST-LEAK-01",
-    action:
-      "A non-serializable runtime value reached a string position in rendered output — check deep-walk helpers for plain-object guards (non-plain objects like Date must pass through).",
+    action: "Apply the remediation described for this ruleId in docs/adrs/adr-0105-deep-walks-preserve-non-plain-objects-and-dist-is-scanned-for-serialization-leaks.md.",
     docRef:
       "docs/adrs/adr-0105-deep-walks-preserve-non-plain-objects-and-dist-is-scanned-for-serialization-leaks.md",
   },
@@ -473,8 +469,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RB-05",
-    action:
-      "The resourceBudget block in src/content/system.md is malformed — fix the frontmatter to match ResourceBudgetConfig (numeric KB ceilings, enforce: advisory|blocking).",
+    action: "Malformed resourceBudget block in src/content/system.md: …",
     docRef: "docs/rfcs/rfc-1209-site-resource-budgets-and-public-energy-transparency-surface.md",
     targetFiles: ["src/content/system.md"],
   },
@@ -485,8 +480,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "AGUI-01",
-    action:
-      "A ui-capable capability has no committed valid artifact — rerun agent.ui.generate to emit the ui:// resource (artifacts are generated, never hand-edited).",
+    action: "Run agent.ui.generate to emit the ui:// resource.",
     docRef: "docs/rfcs/rfc-1211-generative-ui-surface-via-mcp-ui-resource-projection.md",
   },
   {
@@ -503,8 +497,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "AGUI-04",
-    action:
-      "interfaces.mcpUi is advertised while its precondition fails — rerun agent.manifest.generate (mcpUi requires the live MCP route and >=1 resolvable ui:// artifact).",
+    action: "interfaces.mcpUi is advertised while interfaces.mcp is absent — a partial agent surface must not claim MCP-UI.",
     docRef: "docs/rfcs/rfc-1211-generative-ui-surface-via-mcp-ui-resource-projection.md",
   },
   {
@@ -685,7 +678,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "A11Y-LIN-COMP-01",
-    contract: "RFC-0836: a11y.label-in-name.component.validate — scan .astro component source files in packages/werkstatt-site/src/domain/ui/ for interactive elements where aria-label={...} and visible text {...} are both present but t…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/a11y-label-in-name-component.ts.",
     docRef: "packages/werkstatt-site/src/checks/a11y-label-in-name-component.ts",
   },
@@ -728,7 +720,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "AGENT-PAGE-01",
     contract: "Page advertises endpoint \"…\" absent from agent-surface.generated.yaml.",
-    action: "Remove the authored endpoint or declare it in the manifest (facts render from the manifest, not prose).",
+    action: "Page advertises endpoint \"…\" absent from agent-surface.generated.yaml.",
     docRef: "packages/werkstatt-site/src/checks/agent/agent-page-validate.ts",
   },
   {
@@ -746,7 +738,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "AGENT-PAGE-04",
     contract: "Page uses agent-surface-overview but src/agent-surface.generated.yaml is missing — the component fails the build closed.",
-    action: "Run `werkstatt run agent.manifest.generate` (and agent.routes.generate for the JSON bridges).",
+    action: "Page uses agent-surface-overview but src/agent-surface.generated.yaml is missing — the component fails the build closed.",
     docRef: "packages/werkstatt-site/src/checks/agent/agent-page-validate.ts",
   },
   {
@@ -805,7 +797,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "AGK-10",
-    contract: "Schema tag \"…\" does not include a version suffix (@N).",
     action: "Rerun agent.knowledge.generate to emit a properly versioned schema tag.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts",
   },
@@ -817,7 +808,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "AGS-01",
-    contract: "Knowledge ref \"…\" violates BUSINESS_DOMAIN_VISIBILITY (visibility: …).",
     action: "Remove the domain from the knowledge projection; non-public domains never reach agent outputs.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts",
   },
@@ -866,48 +856,43 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "AGS-RECEIPT-01",
     contract: "Write capability \"…\" output schema does not declare the ActionReceipt fields: ….",
-    action: "Set output.required/properties to the ActionReceipt shape (receiptId, status, duplicate, submittedAt).",
+    action: "Write capability \"…\" output schema does not declare the ActionReceipt fields: ….",
     docRef: "packages/werkstatt-site/src/checks/agent/agent-manifest.ts",
   },
   {
     ruleId: "AI.VALIDATE",
-    contract: "Validate that public/ai.txt exists, is non-empty, and contains expected structural markers (RFC-0051).",
+    contract: "Run ai.generate and ensure the ai.txt policy contains the required directives.",
     action: "Run ai.generate and ensure the ai.txt policy contains the required directives.",
     docRef: "packages/werkstatt-site/src/checks/ai.ts",
   },
   {
     ruleId: "ANALYTICS-MATOMO-01",
-    contract: "Validate the tool-independent Warpgogol Messkanon ontology (RFC-0305).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/analytics-matomo.ts.",
     docRef: "packages/werkstatt-site/src/checks/analytics-matomo.ts",
   },
   {
     ruleId: "API-PROBE-01",
-    contract: "RFC-1340/DNA-114: live delivery-path probes against a deployment base URL — malformed→contract-4xx, honeypot→quarantine, honest legs never delivery-not-configured, and a real QStash publish→callback→Redis-marker roundtri…",
+    contract: "probe-contact: a sufficiently long probe message. contact probe@example.invalid",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/api-probe-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/api-probe-check.ts",
   },
   {
     ruleId: "API-PROBE-02",
-    contract: "RFC-1340/DNA-114: live delivery-path probes against a deployment base URL — malformed→contract-4xx, honeypot→quarantine, honest legs never delivery-not-configured, and a real QStash publish→callback→Redis-marker roundtri…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/api-probe-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/api-probe-check.ts",
   },
   {
     ruleId: "API-PROBE-03",
-    contract: "RFC-1340/DNA-114: live delivery-path probes against a deployment base URL — malformed→contract-4xx, honeypot→quarantine, honest legs never delivery-not-configured, and a real QStash publish→callback→Redis-marker roundtri…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/api-probe-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/api-probe-check.ts",
   },
   {
     ruleId: "API-PROBE-04",
-    contract: "RFC-1340/DNA-114: live delivery-path probes against a deployment base URL — malformed→contract-4xx, honeypot→quarantine, honest legs never delivery-not-configured, and a real QStash publish→callback→Redis-marker roundtri…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/api-probe-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/api-probe-check.ts",
   },
   {
     ruleId: "ARCHETYPE-PARITY-01",
-    contract: "Validate full-tree parity between werkstatt-site/src/domain/ontology/archetypes and werkstatt-shared/src/ontology/archetypes (sections/, components/, index.{yaml,json}).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/archetype/registry-build.ts.",
     docRef: "packages/werkstatt-site/src/checks/archetype/registry-build.ts",
   },
@@ -937,7 +922,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "ASSET.REFERENCE.VALIDATE",
-    contract: "Asset token \"…\" did not resolve through the fs provider (lang: …).",
     action: "Add the referenced asset to the content-local assets folder, or update the authored token to a resolvable bare filename.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -985,7 +969,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "BB-PARITY-01",
-    contract: "Direct appendBordbuchEntry call detected outside whitelist. Use appendAndCommitBordbuch or appendBatchAndCommitBordbuch from bordbuch-commit-helper.ts instead (RFC-0750).",
+    contract: "Import appendAndCommitBordbuch from bordbuch-commit-helper.ts and replace the append+commit pattern with a single helper call.",
     action: "Import appendAndCommitBordbuch from bordbuch-commit-helper.ts and replace the append+commit pattern with a single helper call.",
     docRef: "packages/werkstatt-site/src/checks/bordbuch-commit-parity-lint.ts",
   },
@@ -1051,36 +1035,31 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CACHE-WRITE-01",
     contract: "Command \"…\" declares cacheWrites entry \"…\" that does not reduce to a concrete prefix.",
-    action: "Declare a concrete directory prefix such as \".cache/\" or \"<app>/.cache/\" so the git-ignore pre-pass can verify it (RFC-1303).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-engine/src/runtime/validate-declarations.ts.",
     docRef: "packages/werkstatt-engine/src/runtime/validate-declarations.ts",
   },
   {
     ruleId: "CAM-01",
-    contract: "Validate the system.md authority: block — schema conformance, referential integrity, grant conflicts, clientEditable[] projection parity, pseo-scope coverage (RFC-1259).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/authority-model-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/authority-model-validate.ts",
   },
   {
     ruleId: "CAM-02",
-    contract: "Validate the system.md authority: block — schema conformance, referential integrity, grant conflicts, clientEditable[] projection parity, pseo-scope coverage (RFC-1259).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/authority-model-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/authority-model-validate.ts",
   },
   {
     ruleId: "CAM-03",
-    contract: "Validate the system.md authority: block — schema conformance, referential integrity, grant conflicts, clientEditable[] projection parity, pseo-scope coverage (RFC-1259).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/authority-model-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/authority-model-validate.ts",
   },
   {
     ruleId: "CAM-04",
-    contract: "Validate the system.md authority: block — schema conformance, referential integrity, grant conflicts, clientEditable[] projection parity, pseo-scope coverage (RFC-1259).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/authority-model-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/authority-model-validate.ts",
   },
   {
     ruleId: "CAM-05",
-    contract: "Validate the system.md authority: block — schema conformance, referential integrity, grant conflicts, clientEditable[] projection parity, pseo-scope coverage (RFC-1259).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/authority-model-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/authority-model-validate.ts",
   },
@@ -1109,19 +1088,17 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CAPGAP-02",
-    contract: "Path to a capability-gap record or array of records (YAML or JSON).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/capability-gap-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/capability-gap-validate.ts",
   },
   {
     ruleId: "CAPGAP-03",
-    contract: "Path to a capability-gap record or array of records (YAML or JSON).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/capability-gap-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/capability-gap-validate.ts",
   },
   {
     ruleId: "CASCADE-LAYER-01",
-    contract: "Top-level style rule is not inside a declared @layer — component CSS must declare its cascade layer (wrap the file in @layer components { … }; unlayered author styles beat every layered rule regardless of specificity).",
+    contract: "Top-level style rule is not inside a declared @layer — component CSS must declare its cascade layer (wrap the file in @layer components { … }; unlayered author styles beat every layered rule regardless of specificity)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/css-layer-lint.ts.",
     docRef: "packages/werkstatt-site/src/checks/css-layer-lint.ts",
   },
@@ -1134,7 +1111,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CASCADE-LAYER-03",
     contract: "Undeclared cascade layer \"…\" — the platform stack declares: …",
-    action: "Wrap the file's rules in @layer components { … } (allowlist global sheets via CSS_LAYER_ALLOWLIST), or re-run with --skip-layer-lint (recorded via the Layer-Lint-Skipped trailer).",
+    action: "Undeclared cascade layer \"…\" — the platform stack declares: …",
     docRef: "packages/werkstatt-site/src/checks/css-layer-lint.ts",
   },
   {
@@ -1151,13 +1128,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CHAT-META-01",
-    contract: "adapter \"…\" requiredOptions mismatch:.",
+    contract: "adapter \"…\" requiredOptions mismatch: adapter source has …, CHAT_ADAPTER_METADATA has …",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/chat-metadata-drift.ts.",
     docRef: "packages/werkstatt-site/src/checks/chat-metadata-drift.ts",
   },
   {
     ruleId: "CHAT-META-02",
-    contract: "adapter \"…\" vendorOrigins mismatch:.",
+    contract: "adapter \"…\" vendorOrigins mismatch: adapter source has …, CHAT_ADAPTER_METADATA has …",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/chat-metadata-drift.ts.",
     docRef: "packages/werkstatt-site/src/checks/chat-metadata-drift.ts",
   },
@@ -1175,7 +1152,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CHECK-FIX-03",
-    contract: "…: implementing module undecidable by heuristics (inline execute or unresolved import).",
     action: "Register the command with execute: <importedFunctionName> from a dedicated module so fixture coverage can be resolved statically.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
@@ -1367,7 +1343,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CKL-CLAIM-02",
-    contract: "Claim sidecar has no sibling record (… is missing).",
     action: "Place the sidecar next to its <record>.md, or remove the orphan sidecar.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
   },
@@ -1386,7 +1361,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CKL-DERIV-02",
     contract: "Derived claim \"…\" has no derivedFrom.",
-    action: "Set derivedFrom to the source subject (collection/[lang/]file#field).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
   },
   {
@@ -1397,20 +1372,18 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CKL-FRESH-02",
-    contract: "Claim … expires soon (validUntil …).",
     action: "Re-verify and extend validUntil with a new asOf, before it expires.",
     docRef: "packages/werkstatt-site/src/checks/content-plan.ts",
   },
   {
     ruleId: "CKL-FRESH-05",
-    contract: "Claim … is unsourced (record value is a NEED_THIS marker).",
     action: "Re-verify the value and set a new asOf + validUntil.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
   },
   {
     ruleId: "CKL-SRC-01",
     contract: "Source descriptor invalid: …",
-    action: "Make the descriptor match the source descriptor schema (RFC-0214).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
   },
   {
@@ -1421,13 +1394,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CKL-SRC-03",
-    contract: "Source … observed \"…\" but site asserts \"…\" (…).",
+    contract: "Source … observed \"…\" but site asserts \"…\" (…)",
     action: "Transient; the monitor retries next cadence. Check the endpoint if persistent.",
     docRef: "packages/werkstatt-site/src/checks/content-source-binding.ts",
   },
   {
     ruleId: "CLAIM-CONFIG-01",
-    contract: "config claim \"…\" (…) omits configured value(s).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/content-pbp.ts.",
     docRef: "packages/werkstatt-site/src/checks/content-pbp.ts",
   },
@@ -1439,19 +1411,16 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CMD-DECL-01",
-    contract: "Scope validation to the module FILE(s) containing the named command (repeatable). Refused together with --write-baseline; fails when the name matches no registered command.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
   {
     ruleId: "CMD-DECL-02",
-    contract: "Scope validation to the module FILE(s) containing the named command (repeatable). Refused together with --write-baseline; fails when the name matches no registered command.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
   {
     ruleId: "CMD-DECL-03",
-    contract: "Scope validation to the module FILE(s) containing the named command (repeatable). Refused together with --write-baseline; fails when the name matches no registered command.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
@@ -1475,8 +1444,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CMD-MAN-05",
-    contract: "Command \"…\" declares coverage \"…\" —.",
-    action: "Set coverage to one of operator | ci | delegated, or remove it and wire the command into a reachable surface (RFC-1243).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/command-manifest-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/command-manifest-validate.ts",
   },
   {
@@ -1500,30 +1468,28 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CMD-SCAN-01",
     contract: "File could not be read and was skipped: …",
-    action: "Fix the unreadable file (permissions, encoding, dangling symlink) — the scanner cannot attest coverage over inputs it cannot open (RFC-1304).",
+    action: "File could not be read and was skipped: …",
     docRef: "packages/werkstatt-engine/src/plugin/commands-validate.ts",
   },
   {
     ruleId: "CMDGEN-04",
     contract: "File appears to contain a command definition that was not extracted in …",
-    action: "Check for unmaskable constructs (nested template literals, control bytes) or add a // cmdgen-ignore pragma if the file is not a command source (RFC-1304).",
+    action: "File appears to contain a command definition that was not extracted in …",
     docRef: "packages/werkstatt-engine/src/plugin/commands-validate.ts",
   },
   {
     ruleId: "CMDGEN-05",
-    contract: "forbidden … codepoint (U+…).",
-    action: "Remove the invisible byte — it desyncs the masked command scanner (RFC-1304).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/commands-generate.ts.",
     docRef: "packages/werkstatt-site/src/checks/commands-generate.ts",
   },
   {
     ruleId: "CMDGEN-06",
-    contract: "definition \"…\" declares a non-literal name field (…) —.",
-    action: "Declare name: \"<command.name>\" literally — the generated command table keys off the declaration's source text, so a const ref lands its identifier as the key (RFC-1321).",
+    contract: "definition \"…\" declares a non-literal name field (…) — the generated table would key off the source text, not the resolved value",
+    action: "definition \"…\" declares a non-literal name field (…) — the generated table would key off the source text, not the resolved value",
     docRef: "packages/werkstatt-site/src/checks/commands-generate.ts",
   },
   {
     ruleId: "CMP-01",
-    contract: "Validate comparative commercial claims: source, Stand date, cadence, review gate (RFC-0323).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/comparative-claims.ts.",
     docRef: "packages/werkstatt-site/src/checks/comparative-claims.ts",
   },
@@ -1552,13 +1518,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-CASE-01",
-    contract: "Implements heading.case.validate — ADR-0114 COMP-CASE-01. Heading-like copy (page `title`, every `heading` string under `blocks[*]` including `header.heading`, and `header.motto` in site labels) must start every orthogra…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/heading-case.ts.",
     docRef: "packages/werkstatt-site/src/checks/heading-case.ts",
   },
   {
     ruleId: "COMP-CASE-02",
-    contract: "Implements heading.case.validate — ADR-0114 COMP-CASE-01. Heading-like copy (page `title`, every `heading` string under `blocks[*]` including `header.heading`, and `header.motto` in site labels) must start every orthogra…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/heading-case.ts.",
     docRef: "packages/werkstatt-site/src/checks/heading-case.ts",
   },
@@ -1587,7 +1551,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-FAQ-01",
-    contract: "faq topic \"…\" has … publishable entr…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
@@ -1611,13 +1574,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-I18N-01",
-    contract: "Locale \"…\" declares no lang-switcher header control, but the site serves … locales —.",
+    contract: "Locale \"…\" declares no lang-switcher header control, but the site serves … locales — visitors have no way to switch language. Add `- id: lang-switcher / type: lang-switcher` to headerControls in site/…/labels.md.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/chrome-data.ts.",
     docRef: "packages/werkstatt-site/src/checks/chrome-data.ts",
   },
   {
     ruleId: "COMP-INTAKE-01",
-    contract: "intake bundle at … carries no visual.artDirection —.",
+    contract: "intake bundle at … carries no visual.artDirection — a pre-AMD-012 system is re-registered from a re-emitted bundle, not patched in place.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
@@ -1629,7 +1592,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-LEGAL-01",
-    contract: "legalJurisdiction \"…\" requires … for supported locale \"…\" but no page exists.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
@@ -1645,7 +1607,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-SLOT-01",
-    contract: "pages/…/…: slot '…' (subjectKind '…').",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
@@ -1735,7 +1696,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMPASS-INVARIANT-04",
-    contract: "malformed invariant id \"…\" — expected INV-<scope>-<NN> (kebab scope, 2-3 digit tail).",
+    contract: "malformed invariant id \"…\" — expected INV-<scope>-<NN> (kebab scope, 2-3 digit tail)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/compass/handlers/invariant-bindings.ts.",
     docRef: "packages/forge/os/compass/handlers/invariant-bindings.ts",
   },
@@ -1752,7 +1713,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CONTENT-FORMAT-01",
-    contract: "Validate page content frontmatter for required fields; CONTENT-FORMAT-01 flags Markdown syntax in collection fields declared plain (RFC-1289).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/checks/page-content.ts.",
     docRef: "packages/werkstatt-site/src/checks/checks/page-content.ts",
   },
@@ -1764,7 +1724,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CONTENT.SURFACE.VALIDATE",
-    contract: "Validate CMS-friendly thin app content surface: single system.md, semantic folders, no legacy components/sections/features/layouts or app-local component schema/dispatcher surfaces, content-local assets, public exception…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/content-surface.ts.",
     docRef: "packages/werkstatt-site/src/checks/content-surface.ts",
   },
@@ -1776,7 +1735,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CONTRACT-01",
-    contract: "Review the site translation contract; --approve stamps lifecycle.status approved with reviewedAt/reviewedBy (site-wide, or --module <id> for an overlay).",
     action: "Run translation.contract.scaffold to draft it, then review --approve.",
     docRef: "packages/werkstatt-site/src/testing/contract/contract-validator.ts",
   },
@@ -1800,14 +1758,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CORPUS-01",
-    contract: "text-corpus.json is stale: its htmlTreeHash (……).",
     action: "run text.corpus.generate --site <id>.",
     docRef: "packages/werkstatt-site/src/checks/text-corpus/validate.ts",
   },
   {
     ruleId: "COSMIC-LIT-01",
     contract: "Cosmic-catalog name \"…\" (…) appears as a string literal — dispatch code must derive cosmic-name-keyed behavior from the archetype registry.",
-    action: "Replace the literal with a lookup against @warpgogol/werkstatt-shared/ontology/archetypes (e.g. roleByCosmicName[\"…\"]),.",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
   {
@@ -1818,19 +1775,18 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COVERAGE-02",
-    contract: "Command \"…\" declares coverage \"…\" but is mechanically reachable —.",
-    action: "Remove the coverage/coverageNote fields from the command definition (RFC-1243).",
+    contract: "Command \"…\" declares coverage \"…\" but is mechanically reachable — the declaration is stale.",
+    action: "Command \"…\" declares coverage \"…\" but is mechanically reachable — the declaration is stale.",
     docRef: "packages/werkstatt-site/src/checks/ecosystem/command-coverage-validate.ts",
   },
   {
     ruleId: "COVERAGE-03",
-    contract: "Enforce that every registered command is mechanically reachable — pipeline step, step/command const table,.",
-    action: "Set coverageNote to text that names the dispatching command (e.g. \"invoked by mission.git.commit\") (RFC-1243).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/ecosystem/command-coverage-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/ecosystem/command-coverage-validate.ts",
   },
   {
     ruleId: "CRC-01",
-    contract: "Command `…` has no `reads` declaration and `cacheable` is not false. Every command MUST declare `reads` or set `cacheable: false` (RFC-0390).",
+    contract: "Add `reads: [...]` with the file globs this command reads, or add `cacheable: false` if the command depends on external state.",
     action: "Fix the glob pattern to be valid picomatch syntax.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
@@ -1841,7 +1797,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CRC-03",
-    contract: "Command `…` is cacheable but its `modulePath` resolves outside the bounded src/os module roots (path: `…`). Its module hash falls back to a constant, so the result cache no longer invalidates on module code changes (RFC-1193).",
+    contract: "Move the module under a `src/` or `os/` directory, or fix `modulePath` to point at the real module file.",
     action: "Move the module under a \\.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
@@ -1852,13 +1808,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CRC-05",
-    contract: "Command `…` declares `modulePaths` but no `modulePath` — entries cannot be anchored (RFC-1194).",
+    contract: "Add `modulePath` pointing at this command's module file.",
     action: "Fix each path relative to the module file's directory, or remove dead entries.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
   {
     ruleId: "CRC-06",
-    contract: "Command `…` declares modulePath \"…\" which does not resolve to an existing file inside the workspace (RFC-1195).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/command-reads-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
@@ -1877,13 +1832,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CREG-07",
     contract: "RFC-0732: snapshot resolved page content (block text, prose body, FAQ Q&A) per-route and diff.",
-    action: "The system is not registered or its config is malformed. Register:.",
+    action: "The system is not registered or its config is malformed. Register: pnpm exec werkstatt run sternsystem.register --id <id> --cosmicStar <star> --mirrors \"../systems-cache/<id>:non-bare,...\"",
     docRef: "packages/werkstatt-site/src/checks/content-regression.ts",
   },
   {
     ruleId: "CSP-SINK-01",
     contract: "First-party: refactor to createElement/textContent (never allowlisted). Third-party: wrap the sink via ttSafeTransform (minted tt* arg) or record a blessed / accepted-debt / failsafe entry in src/csp-sinks.allowlist.yaml with a note.",
-    action: "First-party: refactor to createElement/textContent (never allowlisted).",
+    action: "First-party: refactor to createElement/textContent (never allowlisted). Third-party: wrap the sink via ttSafeTransform (minted tt* arg) or record a blessed / accepted-debt / failsafe entry in src/csp-sinks.allowlist.yaml with a note.",
     docRef: "packages/werkstatt-site/src/checks/csp-sinks.ts",
   },
   {
@@ -1900,7 +1855,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "DATE-FMT-01",
-    contract: "Validate that date-valued frontmatter fields in src/content/**/*.md use ISO 8601 calendar date format (YYYY-MM-DD). Emits DATE-FMT-01 for non-conforming dates (RFC-0969).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/date-format.ts.",
     docRef: "packages/werkstatt-site/src/checks/date-format.ts",
   },
@@ -1918,49 +1872,41 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "DELEG-01",
-    contract: "RFC-1336: validate the authority.delegations.yaml registry — schema,.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/authority/handlers/delegation-validate.ts.",
     docRef: "packages/forge/os/authority/handlers/delegation-validate.ts",
   },
   {
     ruleId: "DELEG-02",
-    contract: "Restrict DELEG-07 site probes to this site id.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/authority/handlers/delegation-validate.ts.",
     docRef: "packages/forge/os/authority/handlers/delegation-validate.ts",
   },
   {
     ruleId: "DELEG-03",
-    contract: "Restrict DELEG-07 site probes to this site id.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/authority/handlers/delegation-validate.ts.",
     docRef: "packages/forge/os/authority/handlers/delegation-validate.ts",
   },
   {
     ruleId: "DELEG-04",
-    contract: "Restrict DELEG-07 site probes to this site id.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/authority/handlers/delegation-validate.ts.",
     docRef: "packages/forge/os/authority/handlers/delegation-validate.ts",
   },
   {
     ruleId: "DELEG-05",
-    contract: "Restrict DELEG-07 site probes to this site id.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/authority/handlers/delegation-validate.ts.",
     docRef: "packages/forge/os/authority/handlers/delegation-validate.ts",
   },
   {
     ruleId: "DELEG-06",
-    contract: "Restrict DELEG-07 site probes to this site id.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/authority/handlers/delegation-validate.ts.",
     docRef: "packages/forge/os/authority/handlers/delegation-validate.ts",
   },
   {
     ruleId: "DELEG-07",
-    contract: "Restrict DELEG-07 site probes to this site id.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/authority/handlers/delegation-validate.ts.",
     docRef: "packages/forge/os/authority/handlers/delegation-validate.ts",
   },
   {
     ruleId: "DELEG-08",
-    contract: "Restrict DELEG-07 site probes to this site id.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/authority/handlers/delegation-validate.ts.",
     docRef: "packages/forge/os/authority/handlers/delegation-validate.ts",
   },
@@ -2008,7 +1954,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "DEPLOY-SCRIPTS-02",
-    contract: "Missing required deploy script \"…\" in …/package.json (RFC-0388 Rule 6).",
+    contract: "Add \"…\" to the scripts section. See packages/werkstatt-site/src/onboarding/templates/package.template.json for the canonical shape.",
     action: "Add \"…\" to the scripts section. See packages/werkstatt-site/src/onboarding/templates/package.template.json for the canonical shape.",
     docRef: "packages/werkstatt-site/src/checks/env/env-contract.ts",
   },
@@ -2020,7 +1966,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "DIST-ASSET-01",
-    contract: "[allowlisted] … → … (…).",
+    contract: "missing asset: \"…\" → … (referenced from …, …)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/dist-asset-integrity.ts.",
     docRef: "packages/werkstatt-site/src/checks/dist-asset-integrity.ts",
   },
@@ -2032,43 +1978,38 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "DIST-ASSET-03",
-    contract: "dist absent for … — nothing to validate (run build first).",
+    contract: "dist absent for … — nothing to validate (run build first)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/dist-asset-integrity.ts.",
     docRef: "packages/werkstatt-site/src/checks/dist-asset-integrity.ts",
   },
   {
     ruleId: "DIST-ASSET-04",
-    contract: "[allowlisted] … → … (…).",
+    contract: "[allowlisted] … → … (…)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/dist-asset-integrity.ts.",
     docRef: "packages/werkstatt-site/src/checks/dist-asset-integrity.ts",
   },
   {
     ruleId: "DIST-LEAK-06",
-    contract: "Post-build guard: scan dist text artifacts for JS serialization artifacts ([object Object], Invalid Date, bare NaN/undefined/null), authoring residue ({price:…}/{amount:…}/formula markers, Markdown syntax, doubled punctu…",
     action: "Resolve markers in the component/projection that renders this field (see RFC-1288); never ship authoring syntax.",
     docRef: "packages/werkstatt-site/src/checks/dist-serialization-leakage.ts",
   },
   {
     ruleId: "DIST-LEAK-07",
-    contract: "Post-build guard: scan dist text artifacts for JS serialization artifacts ([object Object], Invalid Date, bare NaN/undefined/null), authoring residue ({price:…}/{amount:…}/formula markers, Markdown syntax, doubled punctu…",
     action: "Resolve markers in the component/projection that renders this field (see RFC-1288); never ship authoring syntax.",
     docRef: "packages/werkstatt-site/src/checks/dist-serialization-leakage.ts",
   },
   {
     ruleId: "DIST-LEAK-08",
-    contract: "Post-build guard: scan dist text artifacts for JS serialization artifacts ([object Object], Invalid Date, bare NaN/undefined/null), authoring residue ({price:…}/{amount:…}/formula markers, Markdown syntax, doubled punctu…",
     action: "Resolve markers in the component/projection that renders this field (see RFC-1288); never ship authoring syntax.",
     docRef: "packages/werkstatt-site/src/checks/dist-serialization-leakage.ts",
   },
   {
     ruleId: "DIST-LEAK-09",
-    contract: "Post-build guard: scan dist text artifacts for JS serialization artifacts ([object Object], Invalid Date, bare NaN/undefined/null), authoring residue ({price:…}/{amount:…}/formula markers, Markdown syntax, doubled punctu…",
     action: "Resolve markers in the component/projection that renders this field (see RFC-1288); never ship authoring syntax.",
     docRef: "packages/werkstatt-site/src/checks/dist-serialization-leakage.ts",
   },
   {
     ruleId: "DIST-LEAK-10",
-    contract: "Post-build guard: scan dist text artifacts for JS serialization artifacts ([object Object], Invalid Date, bare NaN/undefined/null), authoring residue ({price:…}/{amount:…}/formula markers, Markdown syntax, doubled punctu…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/dist-serialization-leakage.ts.",
     docRef: "packages/werkstatt-site/src/checks/dist-serialization-leakage.ts",
   },
@@ -2175,26 +2116,26 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "ENV-CONTRACT-01",
-    contract: "… has no .env.example. All sites must ship a .env.example (RFC-0388 Rule 1).",
+    contract: "Run: pnpm exec werkstatt run env.example.generate --site",
     action: "Run: pnpm exec werkstatt run env.example.generate --site.",
     docRef: "packages/werkstatt-site/src/checks/env/env-contract.ts",
   },
   {
     ruleId: "ENV-CONTRACT-03",
-    contract: "README contains an env-variable table or listing. Replace with a reference to .env.example (RFC-0388 Rule 2).",
+    contract: "Replace the table with: See [.env.example](./.env.example) for all required and optional environment variables.",
     action: "Replace the table with: See [.env.example](./.env.example) for all required and optional environment variables.",
     docRef: "packages/werkstatt-site/src/checks/env/env-contract.ts",
   },
   {
     ruleId: "ENV-CONTRACT-06",
-    contract: "Variable \"…\" is commented out. All variables in .env.example must be uncommented — use a comment line above for documentation, not a # prefix on the KEY= line (RFC-0388 Rule 3).",
+    contract: "Uncomment the line: remove the \"# \" prefix from …=.",
     action: "Uncomment the line: remove the \"# \" prefix from …=.",
     docRef: "packages/werkstatt-site/src/checks/env/env-contract.ts",
   },
   {
     ruleId: "ENV-INPUT-01",
     contract: "Command \"…\" reads process.env.… (reachable from execute()) without declaring it in envInputs.",
-    action: "Add envInputs: [{ name: \"…\", required: false }] to the \"…\" command definition so its value is hashed into the result-cache key (RFC-1303).",
+    action: "Command \"…\" reads process.env.… (reachable from execute()) without declaring it in envInputs.",
     docRef: "packages/werkstatt-site/src/checks/command-manifest-validate.ts",
   },
   {
@@ -2230,18 +2171,16 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "EXEC-EXITCODE-01",
     contract: "io.exec exit code unobserved (…: …) — a failed subprocess masquerades as success.",
-    action: "Check result.exitCode, or wrap the call in execOrThrow from @warpgogol/werkstatt-shared/kernel (allowExitCodes for signal semantics).",
+    action: "io.exec exit code unobserved (…: …) — a failed subprocess masquerades as success.",
     docRef: "packages/werkstatt-site/src/checks/exec-exitcode-lint.ts",
   },
   {
     ruleId: "EXPORTS-01",
-    contract: "Implements package.exports.lint — barrel↔subpath parity for workspace packages (RFC-1311).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/package-exports.ts.",
     docRef: "packages/werkstatt-site/src/checks/package-exports.ts",
   },
   {
     ruleId: "FAB-01",
-    contract: "werkstatt.e2e.cold write outside a declared seam or to a non-seam target — … (RFC-1324 zero-fabrication rule).",
     action: "Do not hand-write files a platform command owns — fix the owning command. Writes are allowed only inside `// FAB-SEAM-BEGIN: intake-staging|compose` regions and only to that seam's declared base variable.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -2283,61 +2222,52 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "FAMILY-Q-01",
-    contract: "Validate packages/werkstatt-site/src/domain/ontology/site-families/<id>/family.yaml contracts, companion files, recipe references, and visitorQuestions (FAMILY-Q-01: unique ids, closed placement enum — RFC-1344).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/family.ts.",
     docRef: "packages/werkstatt-site/src/checks/family.ts",
   },
   {
     ruleId: "FONTS-SCRIPT-01",
-    contract: "Author-time font contract validator (RFC-0371, RFC-1298): no font binaries in public/, at least one @fontsource import, packages in package.json, approved licenses; FONTS-SCRIPT-01/02 check the biome heading/body fonts c…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/fonts.ts.",
     docRef: "packages/werkstatt-site/src/checks/fonts.ts",
   },
   {
     ruleId: "FONTS-SCRIPT-02",
-    contract: "Author-time font contract validator (RFC-0371, RFC-1298): no font binaries in public/, at least one @fontsource import, packages in package.json, approved licenses; FONTS-SCRIPT-01/02 check the biome heading/body fonts c…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/fonts.ts.",
     docRef: "packages/werkstatt-site/src/checks/fonts.ts",
   },
   {
     ruleId: "FORM-INFRA-01",
-    contract: "RFC-1339/DNA-113: rendered submit-probe assertions on built dist — transport forms discovered via data-endpoint+data-form-id, driven through invalid/non-2xx/abort/ok legs with page.route interception; validation-vs-failu…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/form-submit-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/form-submit-check.ts",
   },
   {
     ruleId: "FORM-SUBMIT-01",
-    contract: "RFC-1339/DNA-113: rendered submit-probe assertions on built dist — transport forms discovered via data-endpoint+data-form-id, driven through invalid/non-2xx/abort/ok legs with page.route interception; validation-vs-failu…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/form-submit-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/form-submit-check.ts",
   },
   {
     ruleId: "FORM-SUBMIT-02",
-    contract: "RFC-1339/DNA-113: rendered submit-probe assertions on built dist — transport forms discovered via data-endpoint+data-form-id, driven through invalid/non-2xx/abort/ok legs with page.route interception; validation-vs-failu…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/form-submit-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/form-submit-check.ts",
   },
   {
     ruleId: "FORM-SUBMIT-03",
-    contract: "RFC-1339/DNA-113: rendered submit-probe assertions on built dist — transport forms discovered via data-endpoint+data-form-id, driven through invalid/non-2xx/abort/ok legs with page.route interception; validation-vs-failu…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/form-submit-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/form-submit-check.ts",
   },
   {
     ruleId: "FORM-SUBMIT-04",
-    contract: "RFC-1339/DNA-113: rendered submit-probe assertions on built dist — transport forms discovered via data-endpoint+data-form-id, driven through invalid/non-2xx/abort/ok legs with page.route interception; validation-vs-failu…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/form-submit-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/form-submit-check.ts",
   },
   {
     ruleId: "FORM-SUBMIT-05",
-    contract: "RFC-1339/DNA-113: rendered submit-probe assertions on built dist — transport forms discovered via data-endpoint+data-form-id, driven through invalid/non-2xx/abort/ok legs with page.route interception; validation-vs-failu…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/form-submit-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/form-submit-check.ts",
   },
   {
     ruleId: "FP-FIXTURE-01",
-    contract: "Comment-only/formatting-only change altered semantic hash (before: …, after: …).",
+    contract: "The normalizer must strip comments and formatting whitespace.",
     action: "The normalizer must strip comments and formatting whitespace.",
     docRef: "packages/werkstatt-site/src/checks/fingerprint-commands.ts",
   },
@@ -2385,31 +2315,26 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "FRICTION-01",
-    contract: "Validate the append-only friction registry (docs/frictions.yaml).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/friction/types.ts.",
     docRef: "packages/forge/os/friction/types.ts",
   },
   {
     ruleId: "FRICTION-02",
-    contract: "Validate the append-only friction registry (docs/frictions.yaml).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/friction/types.ts.",
     docRef: "packages/forge/os/friction/types.ts",
   },
   {
     ruleId: "FRICTION-03",
-    contract: "Validate the append-only friction registry (docs/frictions.yaml).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/friction/types.ts.",
     docRef: "packages/forge/os/friction/types.ts",
   },
   {
     ruleId: "FRICTION-04",
-    contract: "Validate the append-only friction registry (docs/frictions.yaml).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/friction/types.ts.",
     docRef: "packages/forge/os/friction/types.ts",
   },
   {
     ruleId: "FRICTION-05",
-    contract: "Validate the append-only friction registry (docs/frictions.yaml).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/friction/types.ts.",
     docRef: "packages/forge/os/friction/types.ts",
   },
@@ -2421,7 +2346,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "GATE-CAT-01",
-    contract: "Validate docs/gate-catalog.generated.yaml for drift against live command registrations and gate metadata (RFC-0519).",
+    contract: "… is missing.",
     action: "Run gate.catalog.generate.",
     docRef: "packages/werkstatt-site/src/checks/gate-catalog.ts",
   },
@@ -2433,8 +2358,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "GATE-CAT-03",
-    contract: "Validate docs/gate-catalog.generated.yaml for drift against live command registrations and gate metadata (RFC-0519).",
-    action: "Add gate metadata to the command definition (RFC-0518).",
+    contract: "Command `…` appears in validation pipeline(s) […] but lacks gate metadata.",
+    action: "Command `…` appears in validation pipeline(s) […] but lacks gate metadata.",
     docRef: "packages/werkstatt-site/src/checks/gate-catalog.ts",
   },
   {
@@ -2445,7 +2370,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "GENERATES-MISSING",
-    contract: "Validate docs/command-manifest.generated.yaml against the live command registry (CMD-MAN-01 stale, CMD-MAN-04 dedup),.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/command-manifest-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/command-manifest-validate.ts",
   },
@@ -2475,7 +2399,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "GRAM-01",
-    contract: "… findings exceeded cap …; showing first … (capped rule …).",
     action: "Suggested: … — fix the content source of this segment.",
     docRef: "packages/werkstatt-shared/src/kernel/diagnostic-cap.ts",
   },
@@ -2529,20 +2452,17 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "HDRI-01",
-    contract: "Contains an HDRI branding/ownership pattern (\"…\").",
-    action: "HDRI must be cited as an external source, never presented as a studio-owned project (RFC-0241).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/hdri-firewall.ts.",
     docRef: "packages/werkstatt-site/src/checks/hdri-firewall.ts",
   },
   {
     ruleId: "HDRI-02",
-    contract: "Field \"…\" references \"…\" but lacks provenance: external + a validity window (asOf).",
-    action: "Add provenance: external and validity.asOf to the claim annotation (RFC-0241).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/hdri-firewall.ts.",
     docRef: "packages/werkstatt-site/src/checks/hdri-firewall.ts",
   },
   {
     ruleId: "HOST-01",
-    contract: "Local … literal for site-host classification at …:… —.",
-    action: "Import siteHostKind / isProvisionalHost / channelHost / isDevOrAltHost / workersDevHost / isBareHostname from.",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
@@ -2564,20 +2484,20 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "IDEMP-01",
-    contract: "Command `…` mutates lifecycle/provisioning state but declares no `idempotency` class (RFC-1327).",
+    contract: "Add `idempotency: \"rerun-safe\" | \"resume-only\" | \"not-idempotent\"` to the command's declaration.",
     action: "Add a run-twice test using expectRerunSafe from @warpgogol/werkstatt-engine testing/run-twice.ts, or downgrade the declaration.",
     docRef: "packages/werkstatt-site/src/checks/command/idempotency-validate.ts",
   },
   {
     ruleId: "IDEMP-02",
-    contract: "Command `…` declares `idempotency: \"rerun-safe\"` but no `*.rerun.test.ts` exists under … (RFC-1327).",
+    contract: "Add a run-twice test using expectRerunSafe from @warpgogol/werkstatt-engine testing/run-twice.ts, or downgrade the declaration.",
     action: "Add a run-twice test using expectRerunSafe from @warpgogol/werkstatt-engine testing/run-twice.ts, or downgrade the declaration.",
     docRef: "packages/werkstatt-site/src/checks/command/idempotency-validate.ts",
   },
   {
     ruleId: "IDEMP-03",
-    contract: "Command `…` declares `idempotency: \"not-idempotent\"` without an `idempotencyNote` explaining the re-run hazard (RFC-1327).",
-    action: "Compute status/exitCode from the collected effect results (any failed entry ⇒ non-pass).",
+    contract: "Add `idempotencyNote` describing what a second run repeats or breaks.",
+    action: "Add `idempotencyNote` describing what a second run repeats or breaks.",
     docRef: "packages/werkstatt-site/src/checks/command/idempotency-validate.ts",
   },
   {
@@ -2597,211 +2517,178 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "IMPORT-RESOLVE-01",
-    contract: "Validate that every @warpgogol/* import specifier in packages and services source resolves against the target package's exports map (RFC-1110), and forbid static value imports of type-shim-only specifiers derived from wo…",
+    contract: "Package '…' is not a workspace package under packages/ or services/.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/package-imports-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/package-imports-validate.ts",
   },
   {
     ruleId: "IMPORT-RESOLVE-02",
-    contract: "Validate that every @warpgogol/* import specifier in packages and services source resolves against the target package's exports map (RFC-1110), and forbid static value imports of type-shim-only specifiers derived from wo…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
     ruleId: "INTAKE-01",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-02",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-03",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-04",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-05",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-06",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-07",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-08",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-09",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-10",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
+    contract: "intake.schema.generated.yaml is absent from the installed @warpgogol/werkstatt-shared package — run `onboarding.intake.schema.export` first",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-11",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-12",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-13",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-14",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-15",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-16",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-17",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-18",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-19",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-20",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-21",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-22",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-23",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-24",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-25",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-26",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-27",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-28",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-29",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-30",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-31",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-32",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
   {
     ruleId: "INTAKE-33",
-    contract: "Onboarding id — resolves onboarding/<id>/.input/intake/ inside the workspace.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/intake/intake-validate.ts.",
     docRef: "packages/werkstatt-engine/src/intake/intake-validate.ts",
   },
@@ -2813,13 +2700,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "JRN-01",
-    contract: "operations/: cannot list journal directory — attribution check skipped (…).",
+    contract: "operations/…: op-started '…' (…) has empty missionId — cache-clone journal ops must be mission-attributed (ADR-0088)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/sternsystem/sternsystem-validate.ts.",
     docRef: "packages/werkstatt-engine/src/sternsystem/sternsystem-validate.ts",
   },
   {
     ruleId: "JSONLD-PRESENCE-01",
-    contract: "Page renders … JSON-LD @graph documents; expected exactly 1 (…).",
+    contract: "Keep a single semantic @graph doc per page — merge secondary graph docs into the main emission.",
     action: "Keep a single semantic @graph doc per page — merge secondary graph docs into the main emission.",
     docRef: "packages/werkstatt-site/src/checks/jsonld-presence.ts",
   },
@@ -2837,7 +2724,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "JSONLD-PRESENCE-04",
-    contract: "Rendered HTML at … embeds a semantic JSON-LD @graph for a route outside the expected set (build captured no @graph for it).",
+    contract: "If this page is intentionally non-indexable, ensure it emits no graph; otherwise investigate why the build capture lacks it.",
     action: "If this page is intentionally non-indexable, ensure it emits no graph; otherwise investigate why the build capture lacks it.",
     docRef: "packages/werkstatt-site/src/checks/jsonld-presence.ts",
   },
@@ -2861,7 +2748,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "KERNEL-FLAG-05",
-    contract: "… has not migrated to a typed flags schema (heuristic parse path).",
     action: "Declare a flags schema for … (RFC-0260), then regenerate the baseline with --write-baseline.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
@@ -2874,7 +2760,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "KERNEL-FLAG-07",
     contract: "… calls …(), which reads input.flags.…, but \"…\" is not declared in its flags schema.",
-    action: "Add \"…\" to the flags schema for …, or stop calling …().",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
@@ -2886,12 +2772,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "KERNEL-FLAG-09",
     contract: "… declares an \"all\" flag but acceptsAllFlag is not true — --all is consumed as the kernel site selector and rejected by the gate, so the flag is unreachable via werkstatt run.",
-    action: "Set acceptsAllFlag: true on … if --all is the intended spelling, or rename the flag to a non-colliding name (e.g. all-branches).",
+    action: "… declares an \"all\" flag but acceptsAllFlag is not true — --all is consumed as the kernel site selector and rejected by the gate, so the flag is unreachable via werkstatt run.",
     docRef: "packages/werkstatt-site/src/checks/kernel-flags-lint.ts",
   },
   {
     ruleId: "KERNEL-FLAG-10",
-    contract: "… handler … reads flags[\"dry-run\"] without a context.dryRun fallback — consumeCommonFlags strips --dry-run into context.dryRun before dispatch, so a flags-only read is always false under werkstatt run (RFC-1237).",
     action: "Resolve dry-run as \\.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -2966,7 +2851,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "LEGAL-FOOTER-03",
-    contract: "footer.legal.identityPanel is enabled for locale(s) […] but not […] —.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/legal-translation.ts.",
     docRef: "packages/werkstatt-site/src/checks/legal-translation.ts",
   },
@@ -2990,7 +2874,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "LEGAL-JUR-04",
-    contract: "legalForm \"…\" requires identity.legal.register —.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/legal-translation.ts.",
     docRef: "packages/werkstatt-site/src/checks/legal-translation.ts",
   },
@@ -3021,13 +2904,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "LIVE-01",
     contract: "…: live release … ≠ recorded … — an out-of-band deploy or rollback happened.",
-    action: "Inspect with leitstand.verify --site …; then either redeploy the recorded release via the pipeline, or record reality with leitstand.state.reconcile --site … --channel … --from-live --reason \"…\" (operator approval).",
+    action: "…: live release … ≠ recorded … — an out-of-band deploy or rollback happened",
     docRef: "packages/werkstatt-engine/src/sternsystem/live-drift.ts",
   },
   {
     ruleId: "LIVE-02",
     contract: "…: live release probe inconclusive for … — …",
-    action: "Inspect with leitstand.verify --site …; then either redeploy the recorded release via the pipeline, or record reality with leitstand.state.reconcile --site … --channel … --from-live --reason \"…\" (operator approval).",
+    action: "…: live release probe inconclusive for … — …",
     docRef: "packages/werkstatt-engine/src/sternsystem/live-drift.ts",
   },
   {
@@ -3050,7 +2933,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "LP-01",
-    contract: "List item starts with an uppercase letter or digit but does not end with sentence-ending punctuation (. ? !).",
+    contract: "Add a period, question mark, or exclamation mark at the end of the text, or start with a lowercase letter if it is not a full sentence.",
     action: "Add a period, question mark, or exclamation mark at the end of the text, or start with a lowercase letter if it is not a full sentence.",
     docRef: "packages/werkstatt-site/src/checks/list-punctuation.ts",
   },
@@ -3068,7 +2951,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "MATERIAL.CREDITS.ATTRIBUTION-POLICY-LANG-SKEW",
-    contract: "Site attribution policy differs across languages (…).",
     action: "Keep the site attribution policy block aligned across localized site labels.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -3158,7 +3040,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "MDQ-09",
-    contract: "Completed queue \"…\" still matches … current debt item(s).",
+    contract: "Reopen the queue or clear the matching current debt before marking it complete.",
     action: "Mark the queue complete, pause it with rationale, or update its selectors.",
     docRef: "packages/werkstatt-site/src/checks/maintenance/maintenance-debt-queue.ts",
   },
@@ -3205,8 +3087,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "METH-VAL-01",
-    contract: "Config file not found at …. Create it with all 8 methodologies (visual-regression active: false by default).",
-    action: "Create systems/methodologies.md with all 8 methodologies (visual-regression active: false by default).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/methodologies-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/methodologies-validate.ts",
   },
   {
@@ -3242,7 +3123,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "MIRROR-02",
     contract: "Localized block[…] (type=\"…\") is missing prop \"…\" that exists in default-language twin.",
-    action: "Add \"…\" to block[…].props in the localized page (copy from default twin and translate if needed).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/content-surface.ts",
   },
   {
@@ -3259,7 +3140,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "MIRROR-MISSING",
-    contract: "…: missing in […] (exists in: …).",
+    contract: "…: missing in […] (exists in: …)",
     action: "Create src/content/pages/…/….md (copy structure from src/content/pages/…/….md). Add …: route in system.md pages[].routes.",
     docRef: "packages/werkstatt-site/src/checks/checks/mirroring.ts",
   },
@@ -3283,13 +3164,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "MOBILE-GEO-01",
-    contract: "Route has horizontal overflow in …: scrollWidth=…px > clientWidth=…px.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/mobile-layout-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/mobile-layout-check.ts",
   },
   {
     ruleId: "MOBILE-GEO-02",
-    contract: "Key element \"…\" shifted …px after portrait→landscape rotation (threshold: …px).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/mobile-layout-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/mobile-layout-check.ts",
   },
@@ -3313,13 +3192,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "MOBILE-GEO-06",
-    contract: "Section \"…\": sibling gap …px < --ds-space-4 (…px) between \"…\" and \"…\". The trailing block needs a leading margin (e.g. margin-block-start: var(--ds-space-5)).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/mobile-layout-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/mobile-layout-check.ts",
   },
   {
     ruleId: "MOBILE-GEO-07",
-    contract: "Section \"…\": sibling gap …px exceeds the declared row-gap …px of \"…\" between \"…\" and \"…\" — a margin is stacking on the rhythm; drop the child's margin or the container gap.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/mobile-layout-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/mobile-layout-check.ts",
   },
@@ -3331,7 +3208,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "MODULE-PATH-MISSING",
-    contract: "Validate docs/command-manifest.generated.yaml against the live command registry (CMD-MAN-01 stale, CMD-MAN-04 dedup),.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/runtime/validate-declarations.ts.",
     docRef: "packages/werkstatt-engine/src/runtime/validate-declarations.ts",
   },
@@ -3349,13 +3225,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "MUTATES-STATE-DECLARED",
-    contract: "Validate docs/command-manifest.generated.yaml against the live command registry (CMD-MAN-01 stale, CMD-MAN-04 dedup),.",
+    contract: "Command `…` does not declare `mutatesState` (RFC-1173). Add `mutatesState: false` for read-only commands or `mutatesState: true` for mutating ones.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/runtime/validate-declarations.ts.",
     docRef: "packages/werkstatt-engine/src/runtime/validate-declarations.ts",
   },
   {
     ruleId: "MUTATES-STATE-WRITES-MISMATCH",
-    contract: "Validate docs/command-manifest.generated.yaml against the live command registry (CMD-MAN-01 stale, CMD-MAN-04 dedup),.",
+    contract: "Command `…` declares … but `mutatesState: false` (RFC-1173). Declared outputs imply mutation — `false` marks the step safe to run tainted under collect-errors. Either set `mutatesState: true` or remove the declared outputs if they are stale.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/runtime/validate-declarations.ts.",
     docRef: "packages/werkstatt-engine/src/runtime/validate-declarations.ts",
   },
@@ -3373,7 +3249,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "NA-FEATURES-01",
-    contract: "feature-notes.md not found — export must be re-generated (RFC-1120).",
+    contract: "feature-notes.md not found — export must be re-generated (RFC-1120)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/notausgang/notausgang-commands.ts.",
     docRef: "packages/werkstatt-engine/src/notausgang/notausgang-commands.ts",
   },
@@ -3385,7 +3261,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "NA-VERIFIER-01",
-    contract: "… not found — export must be re-generated (RFC-1120).",
+    contract: "… not found — export must be re-generated (RFC-1120)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-engine/src/notausgang/notausgang-commands.ts.",
     docRef: "packages/werkstatt-engine/src/notausgang/notausgang-commands.ts",
   },
@@ -3409,7 +3285,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "NLWEB-02",
-    contract: "In-process probe returned a non-conformant NLWeb response shape (missing _meta.response_type/query_id, results array, or answer).",
+    contract: "Inspect runNlwebAsk in packages/werkstatt-engine/src/agent-gate/nlweb-ask.ts.",
     action: "Inspect runNlwebAsk in packages/werkstatt-engine/src/agent-gate/nlweb-ask.ts.",
     docRef: "packages/werkstatt-site/src/checks/agent/nlweb.ts",
   },
@@ -3456,19 +3332,16 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "ONDEC-06",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose missions/<id>/ directory hosts the ledger.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/onboarding-decision-rules.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/onboarding-decision-rules.ts",
   },
   {
     ruleId: "ONDEC-07",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose missions/<id>/ directory hosts the ledger.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/onboarding-decision-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/onboarding-decision-validate.ts",
   },
   {
     ruleId: "ONDEC-08",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose missions/<id>/ directory hosts the ledger.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/onboarding-decision-rules.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/onboarding-decision-rules.ts",
   },
@@ -3530,7 +3403,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "OS-07",
-    contract: "SBOM component count (…) does not match registry componentsTotal (…).",
+    contract: "SBOM component count (…) does not match registry componentsTotal (…)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/open-source-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/open-source-validate.ts",
   },
@@ -3542,20 +3415,19 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "OWN-01",
-    contract: "Detect files in public/ not covered by toOwnershipEntries(context.ownershipMap ?? []) (OWN-01), entries matching no file (OWN-02), and duplicate non-conditional ownership of the same path (OWN-DUP-01) (RFC-0612).",
+    contract: "Add this path to the `generates` array of the command that produces it (e.g. in the command's KernelCommandDefinition alongside its handler), remove it (git rm …), or if it is an authored static asset, add the directory to STATIC_ASSET_EXEMPT_DIRS in generated-stale-validate.ts.",
     action: "Add this path to the \\.",
     docRef: "packages/werkstatt-site/src/checks/ownership-sync-validate.ts",
   },
   {
     ruleId: "OWN-02",
-    contract: "Detect files in public/ not covered by toOwnershipEntries(context.ownershipMap ?? []) (OWN-01), entries matching no file (OWN-02), and duplicate non-conditional ownership of the same path (OWN-DUP-01) (RFC-0612).",
+    contract: "Remove stale entry or fix generator \"…\" — no file matches \"…\".",
     action: "Remove stale entry or fix generator \"…\" — no file matches \"…\".",
     docRef: "packages/werkstatt-site/src/checks/ownership-sync-validate.ts",
   },
   {
     ruleId: "OWN-DUP-01",
-    contract: "Detect files in public/ not covered by toOwnershipEntries(context.ownershipMap ?? []) (OWN-01), entries matching no file (OWN-02), and duplicate non-conditional ownership of the same path (OWN-DUP-01) (RFC-0612).",
-    action: "Commands ${owners.map((o) =>.",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/ownership-sync-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/ownership-sync-validate.ts",
   },
   {
@@ -3598,25 +3470,24 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PARITY-LIST-COUNT",
-    contract: "…: list count mismatch in section \"…\" (…=…, …=…).",
+    contract: "…: list count mismatch in section \"…\" (…=…, …=…)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/translation-parity.ts.",
     docRef: "packages/werkstatt-site/src/checks/translation-parity.ts",
   },
   {
     ruleId: "PARITY-LIST-ITEM-COUNT",
-    contract: "…: list item count mismatch in section \"…\" list … (…=…, …=…).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
     ruleId: "PARITY-PARAGRAPH-COUNT",
-    contract: "…: paragraph count mismatch in section \"…\" (…=…, …=…).",
+    contract: "…: paragraph count mismatch in section \"…\" (…=…, …=…)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/translation-parity.ts.",
     docRef: "packages/werkstatt-site/src/checks/translation-parity.ts",
   },
   {
     ruleId: "PARITY-SENTENCE-COUNT",
-    contract: "…: sentence count mismatch in section \"…\" paragraph … (…=…, …=…).",
+    contract: "…: sentence count mismatch in section \"…\" paragraph … (…=…, …=…)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/translation-parity.ts.",
     docRef: "packages/werkstatt-site/src/checks/translation-parity.ts",
   },
@@ -3652,7 +3523,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PCD-01",
-    contract: "Per-PR CI gate: check that every platform-scope commit (packages/**, integrations/**, services/**) in the --base..HEAD range has an X-Platform-Bump trailer (RFC-0703).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/platform-commit-discipline.ts.",
     docRef: "packages/werkstatt-site/src/checks/platform-commit-discipline.ts",
   },
@@ -3665,7 +3535,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "PEER-02",
     contract: "Template file not found: …",
-    action: "Ensure packages/werkstatt-site/src/onboarding/templates/package.template.json exists.",
+    action: "Template file not found: …",
     docRef: "packages/werkstatt-site/src/checks/template-peer-deps-validate.ts",
   },
   {
@@ -3682,7 +3552,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PILLAR-HERO-CTA-NOT-ANCHOR",
-    contract: "depth-0 pillar hero primaryCta target is not an anchor (expected { kind: anchor, anchor: industry-catalog }).",
     action: "Set pillar.hero.primaryCta.target to { kind: anchor, anchor: industry-catalog } so the hub guides visitors to the catalog first.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -3700,31 +3569,27 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PILLAR-PRICEREF-UNRESOLVABLE",
-    contract: "pillar.productPrice.priceRef \"…\" is not a valid PBP reference (expected \"business-profile.…\").",
+    contract: "pillar.productPrice.priceRef \"…\" is not a valid PBP reference (expected \"business-profile.…\")",
     action: "Use a business-profile.offerings/… reference for the price.",
     docRef: "packages/werkstatt-site/src/checks/surface-hub-validate.ts",
   },
   {
     ruleId: "PIPELINE-LOG-01",
-    contract: "Validate structured pipeline log hygiene: raw console noise, fallback dedupe keys, and allowlist rationales (RFC-0254).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
   {
     ruleId: "PIPELINE-LOG-02",
-    contract: "Validate structured pipeline log hygiene: raw console noise, fallback dedupe keys, and allowlist rationales (RFC-0254).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/pipeline/pipeline-log-hygiene.ts.",
     docRef: "packages/werkstatt-site/src/checks/pipeline/pipeline-log-hygiene.ts",
   },
   {
     ruleId: "PIPELINE-LOG-03",
-    contract: "Validate structured pipeline log hygiene: raw console noise, fallback dedupe keys, and allowlist rationales (RFC-0254).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/pipeline/pipeline-log-hygiene.ts.",
     docRef: "packages/werkstatt-site/src/checks/pipeline/pipeline-log-hygiene.ts",
   },
   {
     ruleId: "PIPELINE-LOG-04",
-    contract: "Validate structured pipeline log hygiene: raw console noise, fallback dedupe keys, and allowlist rationales (RFC-0254).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/pipeline/pipeline-log-hygiene.ts.",
     docRef: "packages/werkstatt-site/src/checks/pipeline/pipeline-log-hygiene.ts",
   },
@@ -3827,36 +3692,31 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "PROPS-04",
     contract: "pageOverride property keys do not match contentSchema property keys. Missing in pageOverride: […]. Extra in pageOverride: […].",
-    action: "Ensure pageOverride in propsSchema has the same property keys as contentSchema (all optional).",
+    action: "pageOverride property keys do not match contentSchema property keys. Missing in pageOverride: […]. Extra in pageOverride: […].",
     docRef: "packages/werkstatt-site/src/checks/props-contract.ts",
   },
   {
     ruleId: "PROSE-DUP-01",
-    contract: "Validate prose content integrity: PROSE-DUP-01 (warning) inline body shadows a prose twin, PROSE-DUP-02 (error) mutually exclusive body+contentRef, PROSE-DUP-03 (error) dangling contentRef pointing to a non-existent pros…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-prose.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-prose.ts",
   },
   {
     ruleId: "PROSE-DUP-02",
-    contract: "Validate prose content integrity: PROSE-DUP-01 (warning) inline body shadows a prose twin, PROSE-DUP-02 (error) mutually exclusive body+contentRef, PROSE-DUP-03 (error) dangling contentRef pointing to a non-existent pros…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-prose.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-prose.ts",
   },
   {
     ruleId: "PROSE-DUP-03",
-    contract: "Validate prose content integrity: PROSE-DUP-01 (warning) inline body shadows a prose twin, PROSE-DUP-02 (error) mutually exclusive body+contentRef, PROSE-DUP-03 (error) dangling contentRef pointing to a non-existent pros…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-prose.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-prose.ts",
   },
   {
     ruleId: "PROSE-DUP-04",
-    contract: "Validate prose content integrity: PROSE-DUP-01 (warning) inline body shadows a prose twin, PROSE-DUP-02 (error) mutually exclusive body+contentRef, PROSE-DUP-03 (error) dangling contentRef pointing to a non-existent pros…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-prose.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-prose.ts",
   },
   {
     ruleId: "PROSE-DUP-05",
-    contract: "Validate prose content integrity: PROSE-DUP-01 (warning) inline body shadows a prose twin, PROSE-DUP-02 (error) mutually exclusive body+contentRef, PROSE-DUP-03 (error) dangling contentRef pointing to a non-existent pros…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-prose.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-prose.ts",
   },
@@ -3898,7 +3758,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PSEO-GLOSS-01",
-    contract: "Missing translation glossary terms for …/… (modules.…).",
+    contract: "Run: pnpm exec werkstatt run surface.translation.glossary.generate --module … --target … to create the glossary, then approve it.",
     action: "Run: pnpm exec werkstatt run surface.translation.glossary.generate --module … --target … to create the glossary, then approve it.",
     docRef: "packages/werkstatt-site/src/checks/surface-translation.ts",
   },
@@ -3910,7 +3770,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PSEO-NOTE-01",
-    contract: "Missing translator note overlay for …/… (modules.…).",
+    contract: "Run surface.translation.notes.generate, review it, then approve it.",
     action: "Run surface.translation.notes.generate, review it, then approve it.",
     docRef: "packages/werkstatt-site/src/checks/surface-translation.ts",
   },
@@ -4002,7 +3862,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "Q-ASPECT-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/asset-quality.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/asset-quality.ts",
   },
@@ -4028,7 +3887,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "Q-DIM-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/asset-prompt.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/asset-prompt.ts",
   },
@@ -4054,43 +3912,36 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "Q-TRANSPORT",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece pages carry the placeholder tokens.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/asset-slot-fulfill.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/asset-slot-fulfill.ts",
   },
   {
     ruleId: "QUEUE-01",
-    contract: "Path to the queue manifest YAML file.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/queue/manifest.ts.",
     docRef: "packages/forge/os/queue/manifest.ts",
   },
   {
     ruleId: "QUEUE-02",
-    contract: "Path to the queue manifest YAML file.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/queue/manifest.ts.",
     docRef: "packages/forge/os/queue/manifest.ts",
   },
   {
     ruleId: "QUEUE-03",
-    contract: "Path to the queue manifest YAML file.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/queue/manifest.ts.",
     docRef: "packages/forge/os/queue/manifest.ts",
   },
   {
     ruleId: "QUEUE-04",
-    contract: "Path to the queue manifest YAML file.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/queue/manifest.ts.",
     docRef: "packages/forge/os/queue/manifest.ts",
   },
   {
     ruleId: "QUEUE-05",
-    contract: "Path to the queue manifest YAML file.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/queue/manifest.ts.",
     docRef: "packages/forge/os/queue/manifest.ts",
   },
   {
     ruleId: "QUEUE-06",
-    contract: "Path to the queue manifest YAML file.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/queue/manifest.ts.",
     docRef: "packages/forge/os/queue/manifest.ts",
   },
@@ -4102,7 +3953,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "QUEUE-08",
-    contract: "Path to the queue manifest YAML file.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/queue/manifest.ts.",
     docRef: "packages/forge/os/queue/manifest.ts",
   },
@@ -4121,13 +3971,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "RC-01",
     contract: "RuntimeContext.segment must be null at MVP. Use EMPTY_RUNTIME_CONTEXT(locale). RFC-0027 activates segment.",
-    action: "Render the default-language home directly via resolvePageRoute() so AI crawlers receive content (RFC-0159).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts",
   },
   {
     ruleId: "RC-02",
     contract: "RuntimeContext.flags must be {} at MVP. Use EMPTY_RUNTIME_CONTEXT(locale). RFC-0027 activates flags.",
-    action: "Render the default-language home content via resolvePageRoute(), not a redirect-only component (RFC-0159).",
+    action: "RuntimeContext.flags must be {} at MVP. Use EMPTY_RUNTIME_CONTEXT(locale). RFC-0027 activates flags.",
     docRef: "packages/werkstatt-site/src/checks/runtime-context-shape.ts",
   },
   {
@@ -4180,7 +4030,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "REFERRAL-LANDING-02",
-    contract: "… lacks the disclosure block (data-referral-disclosure).",
     action: "Render the § 5a UWG disclosure as the closing footnote under the submit button.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -4193,7 +4042,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "REFERRAL-LANDING-04",
     contract: "… lacks <meta name=\"robots\" content=\"noindex\">.",
-    action: "Referral pages must stay unindexed (RFC-1198/1222).",
+    action: "… lacks <meta name=\"robots\" content=\"noindex\">",
     docRef: "packages/werkstatt-site/src/checks/referral-landing.ts",
   },
   {
@@ -4217,13 +4066,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "REFERRAL-LANDING-09",
     contract: "… renders no data-referral-landing article marker — the v7 section contract cannot be verified.",
-    action: "Emit data-referral-landing on the landing article (referral-partner-page.astro).",
+    action: "… renders no data-referral-landing article marker — the v7 section contract cannot be verified",
     docRef: "packages/werkstatt-site/src/checks/referral-landing.ts",
   },
   {
     ruleId: "REFERRAL-LANDING-10",
     contract: "… contains review/rating vocabulary — the recommender's voice must never read as a customer review.",
-    action: "Remove Bewertung/Rezension/відгук/star wording from referral copy (brief v3 §5.3).",
+    action: "… contains review/rating vocabulary — the recommender's voice must never read as a customer review",
     docRef: "packages/werkstatt-site/src/checks/referral-landing.ts",
   },
   {
@@ -4252,7 +4101,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "REFERRAL-RECEIPT-01",
-    contract: "… lacks the receipt block (data-referral-receipt).",
     action: "The receipt is part of the handoff artifact — it must render on the landing.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -4265,36 +4113,34 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "REFERRAL-RECEIPT-03",
     contract: "… referrer field missing or not prefilled with \"…\".",
-    action: "The slug rides a hidden input — prefilled, no visible rail (warpgogol-m000200).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
     ruleId: "REFERRAL-RECEIPT-04",
     contract: "send-message API no longer stamps \"…\" on partner-resolved submissions.",
-    action: "The payload must carry partnerMode/policyEffectiveFrom/capturedAt/disclosureVersion resolved server-side (RFC-1222).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
     ruleId: "REFERRAL-REWARD-PARITY",
-    contract: "… \"…\" does not carry the PBP-derived amount … — display phrases must match the offering (DNA-103).",
+    contract: "… \"…\" does not carry the PBP-derived amount … — display phrases must match the offering (DNA-103)",
     action: "Rewrite the phrase to interpolate the derived amount, or fix the offering — never hand-copy digits.",
     docRef: "packages/werkstatt-site/src/checks/referral-partners.ts",
   },
   {
     ruleId: "REGISTRY-CHANGED",
-    contract: "Registry entry drifted from the manifest (registry id=… layer=… version=…; disk id=… layer=… version=…).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/registry.ts.",
     docRef: "packages/werkstatt-site/src/checks/registry.ts",
   },
   {
     ruleId: "REGISTRY-INVALID",
-    contract: "Manifest fails to parse (YAML parse error).",
+    contract: "Fix the YAML syntax in the manifest.",
     action: "Fix the YAML syntax in the manifest.",
     docRef: "packages/werkstatt-site/src/checks/registry.ts",
   },
   {
     ruleId: "REGISTRY-MISSING",
-    contract: "… not found (DNA-18, RFC-0023).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/registry.ts.",
     docRef: "packages/werkstatt-site/src/checks/registry.ts",
   },
@@ -4312,19 +4158,18 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "REGISTRY-STALE",
-    contract: "Registry entry references a manifest that no longer exists.",
     action: "Ensure the manifest file is present and readable.",
     docRef: "packages/werkstatt-site/src/checks/registry.ts",
   },
   {
     ruleId: "REMEDIATION-01",
-    contract: "Every declared validator ruleId must resolve to a remediation-catalog entry — blocking rules self-describe (RFC-1461).",
+    contract: "Validator rule \"…\" has no entry in REMEDIATION_CATALOG — add a remediation pattern for this ruleId.",
     action: "Add a REMEDIATION_CATALOG entry for the flagged ruleId — contract, action, and docRef are required on new entries.",
     docRef: "packages/werkstatt-engine/src/remediation/remediation-hint-validate.ts",
   },
   {
     ruleId: "REMEDIATION-04",
-    contract: "Remediation action/template command tokens must resolve to registered commands — a dead token is a fixHint trap (RFC-1461).",
+    contract: "REMEDIATION_CATALOG entry \"…\" references command token \"…\" in action/template which is not a registered command — the printed remedy cannot be invoked.",
     action: "Correct the command token in the entry's action/template to a registered command, or remove the token.",
     docRef: "packages/werkstatt-engine/src/remediation/remediation-hint-validate.ts",
   },
@@ -4414,31 +4259,31 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RG-HUB-01",
-    contract: "ratgeber hub (depth-0) semanticType is \"…\" — expected \"collection\" (CollectionPage).",
+    contract: "ratgeber hub (depth-0) semanticType is \"…\" — expected \"collection\" (CollectionPage)",
     action: "Set semanticType: collection on the depth-0 level in the ratgeber blueprint.",
     docRef: "packages/werkstatt-site/src/checks/ratgeber-hub-validate.ts",
   },
   {
     ruleId: "RG-HUB-02",
-    contract: "ratgeber hub layout is missing required blocks (hero:…, cards:…, markdown:…, cta:…).",
-    action: "Ensure bakeRatgeberHub emits hero, audience-cards (Themenbereiche), markdown (Redaktion), and final-cta blocks.",
+    contract: "ratgeber hub layout is missing required blocks (hero:…, cards:…, markdown:…, cta:…)",
+    action: "ratgeber hub layout is missing required blocks (hero:…, cards:…, markdown:…, cta:…)",
     docRef: "packages/werkstatt-site/src/checks/ratgeber-hub-validate.ts",
   },
   {
     ruleId: "RG-HUB-03",
-    contract: "article \"…\" is missing required card fields (title or summary).",
+    contract: "article \"…\" is missing required card fields (title or summary)",
     action: "Ensure each article record has title and summary fields.",
     docRef: "packages/werkstatt-site/src/checks/ratgeber-hub-validate.ts",
   },
   {
     ruleId: "RG-HUB-05",
-    contract: "article slug \"…\" is reserved (reservedSlugs: …).",
+    contract: "article slug \"…\" is reserved (reservedSlugs: …)",
     action: "Rename the article slug to something other than ….",
     docRef: "packages/werkstatt-site/src/checks/ratgeber-hub-validate.ts",
   },
   {
     ruleId: "RG-HUB-06",
-    contract: "article \"…\" is in the surface artifact but is not published (noindex + not indexable).",
+    contract: "article \"…\" is in the surface artifact but is not published (noindex + not indexable)",
     action: "Ensure the statusGate in the blueprint excludes non-published articles.",
     docRef: "packages/werkstatt-site/src/checks/ratgeber-hub-validate.ts",
   },
@@ -4450,7 +4295,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RG-HUB-08",
-    contract: "article \"…\" is missing required article metadata (publishedAt, author, etc.).",
+    contract: "article \"…\" is missing required article metadata (publishedAt, author, etc.)",
     action: "Ensure each article record has publishedAt, author, and tags fields.",
     docRef: "packages/werkstatt-site/src/checks/ratgeber-hub-validate.ts",
   },
@@ -4468,19 +4313,19 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "ROBOTS.VALIDATE",
-    contract: "Validate that public/robots.txt exists, is non-empty, and contains expected directives (RFC-0052).",
+    contract: "Run robots.generate and ensure robots.txt contains User-agent, Sitemap, and crawl rules.",
     action: "Run robots.generate and ensure robots.txt contains User-agent, Sitemap, and crawl rules.",
     docRef: "packages/werkstatt-site/src/checks/robots.ts",
   },
   {
     ruleId: "ROUTE-THIN-01",
-    contract: "line …: <style> block in route file (move styles to src/styles/).",
+    contract: "line …: <style> block in route file (move styles to src/styles/)",
     action: "Move the styles into src/styles/ and import them via @styles/.",
     docRef: "packages/werkstatt-site/src/checks/semantic.ts",
   },
   {
     ruleId: "ROUTE-THIN-02",
-    contract: "line …: inline style= attribute in route file (use CSS classes instead).",
+    contract: "line …: inline style= attribute in route file (use CSS classes instead)",
     action: "Use a CSS class defined in src/styles/ instead of inline style=.",
     docRef: "packages/werkstatt-site/src/checks/semantic.ts",
   },
@@ -4498,7 +4343,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RSHAD-00",
-    contract: "redirect.shadow.validate skipped — _redirects file not found (REDIR-01 in redirect.map.validate handles this).",
+    contract: "Remove the static file from dist/client/ or remove the redirect from _redirects",
     action: "Remove the static file from dist/client/ or remove the redirect from _redirects.",
     docRef: "packages/werkstatt-site/src/checks/redirect-shadow.ts",
   },
@@ -4516,7 +4361,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RULEID-CANONICAL-01",
-    contract: "ruleId literal \"…\" violates the canonical schema (/^[A-Z0-9][A-Z0-9._-]*$/).",
+    contract: "Author the ruleId in canonical casing at the emit site; move interpolated values into `data`/`message`. Test fixtures carrying intentionally-invalid ids escape via string concatenation.",
     action: "Author the ruleId in canonical casing at the emit site; move interpolated values into `data`/`message`. Test fixtures carrying intentionally-invalid ids escape via string concatenation.",
     docRef: "packages/werkstatt-site/src/checks/diagnostic-rule-id.ts",
   },
@@ -4535,7 +4380,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "SCAN-01",
     contract: "Hardcoded file path in scan function.",
-    action: "Use discoverSourceFiles(io, srcDir, patterns) instead of join(srcDir, \"file.ts\").",
+    action: "Hardcoded file path in scan function",
     docRef: "packages/werkstatt-site/src/checks/validator-scan-coverage.ts",
   },
   {
@@ -4546,7 +4391,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SCAN-03",
-    contract: "Validator skips dist pages without reporting coverage (RFC-1285).",
     action: "Import createCoverageTracker from ./lib/dist-coverage.ts (or ../../lib/dist-coverage.ts) and record scan()/skip() for every enumerated dist page.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -4791,37 +4635,31 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SITE-SHELL-01",
-    contract: "Enforce the system.md shellContract on emitted dist/client markup — region presence, signature selectors, script policy, and per-profile skeleton consistency (RFC-1229).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/site-shell-contract.ts.",
     docRef: "packages/werkstatt-site/src/checks/site-shell-contract.ts",
   },
   {
     ruleId: "SITE-SHELL-02",
-    contract: "Enforce the system.md shellContract on emitted dist/client markup — region presence, signature selectors, script policy, and per-profile skeleton consistency (RFC-1229).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/site-shell-contract.ts.",
     docRef: "packages/werkstatt-site/src/checks/site-shell-contract.ts",
   },
   {
     ruleId: "SITE-SHELL-03",
-    contract: "Enforce the system.md shellContract on emitted dist/client markup — region presence, signature selectors, script policy, and per-profile skeleton consistency (RFC-1229).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/site-shell-contract.ts.",
     docRef: "packages/werkstatt-site/src/checks/site-shell-contract.ts",
   },
   {
     ruleId: "SITE-SHELL-04",
-    contract: "Enforce the system.md shellContract on emitted dist/client markup — region presence, signature selectors, script policy, and per-profile skeleton consistency (RFC-1229).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/site-shell-contract.ts.",
     docRef: "packages/werkstatt-site/src/checks/site-shell-contract.ts",
   },
   {
     ruleId: "SITE-SHELL-05",
-    contract: "Enforce the system.md shellContract on emitted dist/client markup — region presence, signature selectors, script policy, and per-profile skeleton consistency (RFC-1229).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/site-shell-contract.ts.",
     docRef: "packages/werkstatt-site/src/checks/site-shell-contract.ts",
   },
   {
     ruleId: "SITE-SHELL-06",
-    contract: "Enforce the system.md shellContract on emitted dist/client markup — region presence, signature selectors, script policy, and per-profile skeleton consistency (RFC-1229).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/site-shell-contract.ts.",
     docRef: "packages/werkstatt-site/src/checks/site-shell-contract.ts",
   },
@@ -4833,7 +4671,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SITE-SHELL-08",
-    contract: "Enforce the system.md shellContract on emitted dist/client markup — region presence, signature selectors, script policy, and per-profile skeleton consistency (RFC-1229).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/site-shell-contract.ts.",
     docRef: "packages/werkstatt-site/src/checks/site-shell-contract.ts",
   },
@@ -4874,7 +4711,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SLASH-01",
-    contract: "Trailing-slash policy is 'always' but no _redirects file found — no normalization redirects configured.",
+    contract: "Add trailing-slash normalization rules to public/_redirects or configure normalization in the Worker fetch handler.",
     action: "Add trailing-slash normalization rules to public/_redirects or configure normalization in the Worker fetch handler.",
     docRef: "packages/werkstatt-site/src/checks/trailing-slash.ts",
   },
@@ -4899,7 +4736,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "SMAP-01",
     contract: "Sitemap-included route … has no … mirror in the served dist.",
-    action: "Run jsonld.mirror.generate after the build (it runs in the build-post pipeline).",
+    action: "Sitemap-included route … has no … mirror in the served dist.",
     docRef: "packages/werkstatt-site/src/checks/jsonld-schemamap.ts",
   },
   {
@@ -4964,7 +4801,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SPEC-04",
-    contract: "dependsOn reference does not resolve: … (in node …).",
+    contract: "dependsOn reference does not resolve: … (in node …)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/spec/spec-validate.ts.",
     docRef: "packages/forge/os/spec/spec-validate.ts",
   },
@@ -5018,7 +4855,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SPEC-13",
-    contract: "consumer identity not configured — nodes declaring consumers cannot be owned locally: … (set project.consumer in forge.yaml or pass --consumer).",
+    contract: "consumer identity not configured — nodes declaring consumers cannot be owned locally: … (set project.consumer in forge.yaml or pass --consumer)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/spec/spec-validate.ts.",
     docRef: "packages/forge/os/spec/spec-validate.ts",
   },
@@ -5030,7 +4867,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "STALE-01",
-    contract: "Detect files in public/ not produced by any registered generator in toOwnershipEntries(context.ownershipMap ?? []) (RFC-0600).",
+    contract: "Remove this file: git rm …",
     action: "Remove this file: git rm …",
     docRef: "packages/werkstatt-site/src/checks/generated-stale-validate.ts",
   },
@@ -5048,7 +4885,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "STAMP-03",
-    contract: "Sitemap has lastmod for … but no source-backed stamp exists.",
+    contract: "Remove lastmod from pages without a source-backed update stamp.",
     action: "Regenerate sitemap with the update-stamp resolver.",
     docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
   },
@@ -5126,7 +4963,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SURFACE-01",
-    contract: "README.md is … lines (…).",
+    contract: "README.md is … lines (…)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/core/handlers/public-surface.ts.",
     docRef: "packages/forge/os/core/handlers/public-surface.ts",
   },
@@ -5258,8 +5095,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TERM-01",
-    contract: "Replace in the content source of this segment; if the text comes from PBP, change the PBP field (TERM-03 pins it).",
-    action: "Replace in the content source of this segment; if the text comes from PBP, change the PBP field (TERM-03 pins it).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/text-corpus/rules/terms.ts.",
     docRef: "packages/werkstatt-site/src/checks/text-corpus/rules/terms.ts",
   },
   {
@@ -5271,12 +5107,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "TERM-PAIR-01",
     contract: "…: mirrored section \"…\" contains source canonical.",
-    action: "Use \"…\" for \"…\" in the … mirror,.",
+    action: "Use \"…\" for \"…\" in the … mirror, or narrow the term's routes/kinds scope if the divergence is intentional.",
     docRef: "packages/werkstatt-site/src/checks/translation-parity.ts",
   },
   {
     ruleId: "TERMS-DRIFT-01",
-    contract: "…:… — hardcoded \"…\" matches canonical … (…) — replace with =(… | duration).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -5306,7 +5141,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TEST-DEPTH-03",
-    contract: "All assertions in … are trivial (toBeTruthy, toBeDefined, toBeNull, toBe(true), toBe(null), toHaveLength(0)).",
+    contract: "All assertions in … are trivial (toBeTruthy, toBeDefined, toBeNull, toBe(true), toBe(null), toHaveLength(0))",
     action: "Add assertions that verify specific behavior, not just existence.",
     docRef: "packages/werkstatt-site/src/checks/test-depth-lint.ts",
   },
@@ -5324,68 +5159,58 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TEST-WEAKEN-01",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-02",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-03",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-04",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-05",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-06",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-07",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-08",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-09",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-10",
-    contract: "RFC-1331/1392: test-weakening analysis — compares file blobs before and after a change (staged index vs HEAD, or two commits) and reports TEST-WEAKEN-01..11: deleted tests, skip/only modifiers, fewer assertions or test b…",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/test-weakening.ts.",
     docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST-WEAKEN-11",
     contract: "RFC-0533: ecosystem.commit command handler — auto-detects scope (platform, non-platform, mixed), atomic version bump, semantic hash, and commit with trailers for platform-scope changes.",
-    action: "Restore the test or strengthen the replacement assertion. Only on explicit operator direction: --allow-test-weakening \"<reason>\" (recorded in the Test-Weakening-Ack trailer).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/ecosystem-commit.ts.",
     docRef: "packages/werkstatt-site/src/checks/ecosystem-commit.ts",
   },
   {
@@ -5420,7 +5245,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TPL-DRIFT-02",
-    contract: "TPL-DRIFT-02: command \"…\" in template … is missing modulePath that exists in command-tables (\"…\").",
+    contract: "Add modulePath: \"…\" to the \"…\" registration in ….",
     action: "Add modulePath: \"…\" to the \"…\" registration in ….",
     docRef: "packages/werkstatt-site/src/checks/template-command-drift-validate.ts",
   },
@@ -5432,98 +5257,84 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TS-BARREL-01",
-    contract: "Validate barrel exports (index.ts) do not re-export Node-only modules without subpath exports (TS-006).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/barrel-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/barrel-validate.ts",
   },
   {
     ruleId: "TS-BARREL-02",
-    contract: "Validate barrel exports (index.ts) do not re-export Node-only modules without subpath exports (TS-006).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/barrel-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/barrel-validate.ts",
   },
   {
     ruleId: "TS-EXPORTS-01",
-    contract: "Validate package.json exports entries point to existing files (TS-004).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/package-exports-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/package-exports-validate.ts",
   },
   {
     ruleId: "TS-IMPORT-01",
-    contract: "Validate import boundaries: no packages-to-apps or packages-to-missions imports (TS-002).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/import-boundaries-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/import-boundaries-validate.ts",
   },
   {
     ruleId: "TS-IMPORT-02",
-    contract: "Validate import boundaries: no packages-to-apps or packages-to-missions imports (TS-002).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/import-boundaries-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/import-boundaries-validate.ts",
   },
   {
     ruleId: "TS-PHANTOM-01",
-    contract: "Detect phantom dependencies: imports not declared in package.json dependencies, devDependencies, or peerDependencies (TS-003).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/phantom-deps-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/phantom-deps-validate.ts",
   },
   {
     ruleId: "TS-STRICT-01",
-    contract: "Validate strict-mode conventions: unescaped any, missing return types on exported functions, unjustified @ts-ignore (TS-005).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/strict-mode-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/strict-mode-validate.ts",
   },
   {
     ruleId: "TS-STRICT-02",
-    contract: "Validate strict-mode conventions: unescaped any, missing return types on exported functions, unjustified @ts-ignore (TS-005).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/strict-mode-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/strict-mode-validate.ts",
   },
   {
     ruleId: "TS-STRICT-03",
-    contract: "Validate strict-mode conventions: unescaped any, missing return types on exported functions, unjustified @ts-ignore (TS-005).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/strict-mode-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/strict-mode-validate.ts",
   },
   {
     ruleId: "TS-TSCONFIG-01",
-    contract: "Validate tsconfig.base.json and per-package tsconfig.json consistency: strict mode, moduleResolution, target (TS-001).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/tsconfig-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/tsconfig-validate.ts",
   },
   {
     ruleId: "TS-TSCONFIG-02",
-    contract: "Validate tsconfig.base.json and per-package tsconfig.json consistency: strict mode, moduleResolution, target (TS-001).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/tsconfig-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/tsconfig-validate.ts",
   },
   {
     ruleId: "TS-TSCONFIG-03",
-    contract: "Validate tsconfig.base.json and per-package tsconfig.json consistency: strict mode, moduleResolution, target (TS-001).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/tsconfig-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/tsconfig-validate.ts",
   },
   {
     ruleId: "TS-TSCONFIG-04",
-    contract: "Validate tsconfig.base.json and per-package tsconfig.json consistency: strict mode, moduleResolution, target (TS-001).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/tsconfig-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/tsconfig-validate.ts",
   },
   {
     ruleId: "TS-TSCONFIG-05",
-    contract: "Validate tsconfig.base.json and per-package tsconfig.json consistency: strict mode, moduleResolution, target (TS-001).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-typescript/src/checks/tsconfig-validate.ts.",
     docRef: "packages/werkstatt-typescript/src/checks/tsconfig-validate.ts",
   },
   {
     ruleId: "TYPO-APOS-03",
     contract: "chrome copy \"…\" …: …",
-    action: "Replace the apostrophe after o/g with U+02BB (ʻ).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
   {
     ruleId: "TYPO-APOS-04",
     contract: "Uzbek glottal stop should be ʼ (U+02BC): \"…\" — tutuq belgisi is a letter, not a quote.",
-    action: "Replace the straight/curly apostrophe with U+02BC (ʼ).",
+    action: "Apply the remediation described for this ruleId in packages/werkstatt-shared/src/typography/rules-tier2-locale.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier2-locale.ts",
   },
   {
@@ -5538,13 +5349,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-HEAD-01",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/rules-tier2-structure.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier2-structure.ts",
   },
   {
     ruleId: "TYPO-HEAD-02",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/rules-tier2-structure.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier2-structure.ts",
   },
@@ -5555,25 +5364,21 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-HEAD-04",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/fix.ts.",
     docRef: "packages/werkstatt-shared/src/typography/fix.ts",
   },
   {
     ruleId: "TYPO-LOCALE-01",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/rules-tier1.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier1.ts",
   },
   {
     ruleId: "TYPO-LOCALE-02",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/rules-tier1.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier1.ts",
   },
   {
     ruleId: "TYPO-LOCALE-03",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/rules-tier1.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier1.ts",
   },
@@ -5589,13 +5394,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-MD-03",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/rules-tier2-structure.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier2-structure.ts",
   },
   {
     ruleId: "TYPO-PAIR-01",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/rules-tier2-structure.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier2-structure.ts",
   },
@@ -5616,7 +5419,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-PUNCT-02",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/rules-tier1.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier1.ts",
   },
@@ -5637,7 +5439,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-SPACE-02",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/fix.ts.",
     docRef: "packages/werkstatt-shared/src/typography/fix.ts",
   },
@@ -5648,7 +5449,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-SPACE-04",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-shared/src/typography/rules-tier1.ts.",
     docRef: "packages/werkstatt-shared/src/typography/rules-tier1.ts",
   },
@@ -5761,7 +5561,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "VIS-BG-01",
-    contract: "… [tier … · … · gates=…] … (emitted by …).",
+    contract: "Run with --site <id> or from inside an app directory.",
     action: "Run with --site <id> or from inside an app directory.",
     docRef: "packages/werkstatt-site/src/checks/visual/index.ts",
   },
@@ -5785,7 +5585,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "VIS-REG-05",
-    contract: "… passed pixel threshold (max ratio …% <= …%).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/visual-regression/types.ts.",
     docRef: "packages/werkstatt-site/src/checks/visual-regression/types.ts",
   },
@@ -5845,7 +5644,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "WS-WRITE-01",
-    contract: "Validate that every workspace-shared file write (workspace root, docs/, packages/werkstatt-site/src/domain/ontology/) is atomic (writeFileAtomic) and declared on SHARED_WRITE_ALLOWLIST (RFC-0258).",
+    contract: "Command `…` (reachable from an APPS_* pipeline) writes `…`, which is outside apps/<app>/, but is not declared on SHARED_WRITE_ALLOWLIST.",
     action: "Add a SharedWriteEntry for \\.",
     docRef: "packages/werkstatt-site/src/checks/workspace-write-boundary.ts",
   },
@@ -5900,8 +5699,16 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "YAML-CONTRACT-05",
     contract: "YAML file contains JSON content (starts with '…'). Use YAML syntax instead.",
-    action: "Rewrite … using YAML block-style syntax (key: value, lists with -).",
+    action: "YAML file contains JSON content (starts with '…'). Use YAML syntax instead.",
     docRef: "packages/werkstatt-site/src/checks/yaml-contract-lint.ts",
+  },
+  {
+    ruleId: "REMEDIATION-05",
+    contract:
+      "REMEDIATION_CATALOG contract/action text is real authored prose — no template-literal fragments, mid-word ellipsis cuts, or truncated tails print as the remedy.",
+    action:
+      "Rewrite the flagged contract/action as a complete authored sentence naming the violated contract or the fix — see the emission message at the entry's docRef for the authoritative wording.",
+    docRef: "packages/werkstatt-engine/src/remediation/remediation-hint-validate.ts",
   },
   {
     ruleId: "A11Y-AXE-01",
@@ -5922,7 +5729,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "A11Y-AXE-04",
     contract:
-      "The probe's runtime prerequisites (Chromium, @syrokomskyi/axiom-study severity mapping) resolve before scanning — infrastructure failures are not demotable by --warn-only.",
+      "Chromium resolves before scanning — a missing browser is an error never demoted by --warn-only; a missing @syrokomskyi/axiom-study severity mapping degrades to an inert warning by design.",
     action:
       "Run `werkstatt run playwright.chromium.ensure` for the pinned playwright version and install the axiom link deps so severityForAxeImpact resolves, then re-run the probe.",
     docRef: "packages/werkstatt-site/src/checks/a11y-axe-probe.ts",
