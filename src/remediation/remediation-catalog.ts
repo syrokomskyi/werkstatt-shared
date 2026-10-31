@@ -11,14 +11,18 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: repair r12 census findings — crossed contracts/actions, seed 11 warning-tier coverage entries</item>
   <item>RFC-1460: recurring frictions escalate to mechanical measures — FRICTION-06/07/08, registry flips, session-retro escalation</item>
   <item>RFC-1463: composite gates report complete violation sets and self-ensure prerequisites — ensure/compositeGate metadata, executor ensure runner, blockedBy skip tracking, ENSURE-01..04 + GATE-CMP-01, runCompositeGate</item>
   <item>RFC-1463: address review r1 findings — dependsOn graph pre-validation, ensureChain invoke-port propagation, unregistered-target ENSURE-04, thrown-step GATE-CMP-02, preflight skipped surfacing</item>
   <item>RFC-1463: address review r2 findings — ensure re-entry guard, registry-build ENSURE-04, duplicate-id check, skipped typing + assertion, ensured on error path</item>
+  <item>RFC-1466: apply r1 repairs — fragment remedies reachable via lookupRemediation, pending-marker ordering, comment-preserving catalogRefs</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
+
+import { readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { parse as yamlParse } from "yaml";
 
 export interface RemediationPattern {
   ruleId: string;
@@ -5903,6 +5907,48 @@ export const REMEDIATION_CATALOG: ReadonlyMap<string, RemediationPattern> = new 
   REMEDIATION_ENTRIES.map((entry) => [entry.ruleId, entry]),
 );
 
+// RFC-1466: authored fragment — scar.migrate lands remedies here; a
+// diagnosticCode → remedy lookup must see them at failure time (RFC-1461
+// channel). Fail-open, mtime-keyed memoization on cwd.
+const FRAGMENT_REL = join("docs", "remediation-catalog.custom.yaml");
+let fragmentCache: { mtimeMs: number; map: Map<string, RemediationPattern> } | null = null;
+
+function fragmentRemedies(): Map<string, RemediationPattern> {
+  const p = join(process.cwd(), FRAGMENT_REL);
+  let mtimeMs: number;
+  try {
+    mtimeMs = statSync(p).mtimeMs;
+  } catch {
+    fragmentCache = null;
+    return new Map();
+  }
+  if (fragmentCache?.mtimeMs === mtimeMs) return fragmentCache.map;
+  const map = new Map<string, RemediationPattern>();
+  try {
+    const parsed = yamlParse(readFileSync(p, "utf8")) as {
+      entries?: { id?: unknown; ruleText?: unknown; diagnosticCodes?: unknown; migratedFrom?: unknown }[];
+    } | null;
+    for (const e of parsed?.entries ?? []) {
+      if (typeof e?.id !== "string" || typeof e?.ruleText !== "string") continue;
+      const pattern: RemediationPattern = {
+        ruleId: e.id,
+        action: e.ruleText,
+        ...(typeof e.migratedFrom === "string" ? { docRef: e.migratedFrom } : {}),
+      };
+      map.set(e.id, pattern);
+      if (Array.isArray(e.diagnosticCodes)) {
+        for (const code of e.diagnosticCodes) {
+          if (typeof code === "string") map.set(code, { ...pattern, ruleId: code });
+        }
+      }
+    }
+  } catch {
+    /* malformed fragment — fail open */
+  }
+  fragmentCache = { mtimeMs, map };
+  return map;
+}
+
 export function lookupRemediation(ruleId: string): RemediationPattern | undefined {
-  return REMEDIATION_CATALOG.get(ruleId);
+  return REMEDIATION_CATALOG.get(ruleId) ?? fragmentRemedies().get(ruleId);
 }
