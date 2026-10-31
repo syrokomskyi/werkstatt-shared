@@ -15,6 +15,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten â
   <item>RFC-1097: sweep â€” werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
+  <item>RFC-1458: emit requirement-mapped verdict events from deploy.smoke.run</item>
 </CHANGE_SUMMARY>
 */
 
@@ -102,6 +103,10 @@ export const METRIC_REFS = {
     "site_id",
   ] as const),
   warpgogol_probe_deep_ok: defineGauge("warpgogol_probe_deep_ok", ["site_id"] as const),
+  warpgogol_probe_verdict_total: defineCounter("warpgogol_probe_verdict_total", [
+    "outcome",
+    "channel",
+  ] as const),
   warpgogol_delivery_requests_total: defineCounter("warpgogol_delivery_requests_total", [
     "site_id",
     "cache_status",

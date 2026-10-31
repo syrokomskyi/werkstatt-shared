@@ -37,6 +37,7 @@ a passing 112-route capture at 1512.5s.
 - producers whose requirements all declare reuse.allowedFrom: [] sort
   last so gate-bound evidence mints closest to the decision
 - AC-6: cache-clone editorial coverage (prepare writes, verify read-only)</item>
+  <item>RFC-1458: emit requirement-mapped verdict events from deploy.smoke.run</item>
 </CHANGE_SUMMARY>
 */
 
@@ -221,3 +222,16 @@ export type {
   DHTPlacementResult,
   DHTCacheEntry,
 } from "./dht.ts";
+
+// RFC-1458: werkstatt:verdict/v1 requirement-mapped verdict records.
+export {
+  VERDICT_SCHEMA,
+  REQUIREMENT_TAG_PATTERN,
+  VERDICT_DETAIL_MAX,
+  VERDICT_DETAIL_TRUNCATED,
+  boundedDetail,
+  verdictOutcomeSchema,
+  verdictChannelSchema,
+  verdictEventSchema,
+} from "./verdict.ts";
+export type { VerdictEvent, VerdictOutcome, VerdictChannel } from "./verdict.ts";

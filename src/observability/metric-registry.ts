@@ -8,6 +8,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-0337: initial implementation with smoke metric only. RFC-0340/0341/0343 append entries.</item>
   <item>RFC-0807: add back prefix metrics for service health monitoring.</item>
+  <item>RFC-1458: emit requirement-mapped verdict events from deploy.smoke.run</item>
 </CHANGE_SUMMARY>
 */
 
@@ -104,6 +105,13 @@ export const WARPGOGOL_METRIC_REGISTRY: readonly WarpgogolMetricSpec[] = [
     kind: "gauge",
     help: "Phase 2 deep probe result: 1 = ok, 0 = failed (RFC-0341 Phase 2).",
     labelKeys: ["site_id"],
+    unit: "1",
+  },
+  {
+    name: "warpgogol_probe_verdict_total",
+    kind: "counter",
+    help: "Total werkstatt:verdict/v1 records emitted by deploy.smoke.run, by outcome and channel (RFC-1458).",
+    labelKeys: ["outcome", "channel"],
     unit: "1",
   },
   {
