@@ -80,6 +80,11 @@ export class CompositeGateGraphError extends Error {
 function assertValidStepGraph(steps: CompositeGateStep[]): void {
   const seen = new Set<string>();
   for (const step of steps) {
+    if (seen.has(step.id)) {
+      throw new CompositeGateGraphError(
+        `composite gate declares step id "${step.id}" twice — ids must be unique`,
+      );
+    }
     for (const dep of step.dependsOn ?? []) {
       if (!seen.has(dep)) {
         throw new CompositeGateGraphError(
