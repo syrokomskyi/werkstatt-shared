@@ -11,14 +11,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1368: INTAKE-34 remediation entry (declared-vs-sniffed media type).</item>
   <item>RFC-1209: remediation entries for the RB-01..06 resource-budget rule family.</item>
   <item>RFC-1209: site resource budgets and public transparency surface (RFC-1209)</item>
   <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
   <item>RFC-1461: bind blocking diagnostics to remediation entries and print their remedy (RFC-1461)
 
 Add diagnostic.explain lookup, severity-aware strict coverage (REMEDIATION-03/04), per-error remedy/lookup nextSteps, contract-bearing catalog seeds for every error-severity ruleId, and regenerated manifests.</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1210, RFC-1365, RFC-1369, RFC-1420, warpgogol-m000196</history>
+  <item>RFC-1461: apply REVIEW-R1 findings — reseed defective contracts, include .probe validators, sync rules[] docs (RFC-1461)</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -673,7 +673,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "A11Y-CONTRAST-02",
-    contract: "Contrast pairing skipped — could not resolve ${!fg ?",
+    contract: "Darken the foreground toward the text color or lighten the background — the established convention is color-mix() toward var(--ds-text-*) tokens",
     action: "Darken the foreground toward the text color or lighten the background — the established convention is color-mix() toward var(--ds-text-*) tokens.",
     docRef: "packages/werkstatt-site/src/checks/a11y-contrast-lint.ts",
   },
@@ -997,7 +997,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "BIOME-ID-01",
-    contract: "Check only this biome id (schema, family pointer, token mapping); an id with no catalog file fails with BIOME-ID-01 (RFC-1307).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/biome.ts.",
     docRef: "packages/werkstatt-site/src/checks/biome.ts",
   },
@@ -1105,7 +1104,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CAPGAP-01",
-    contract: "Path to a capability-gap record or array of records (YAML or JSON).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
@@ -1435,7 +1433,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CLAIM-CONFIG-02",
-    contract: "configClaims declares \"…\" (…) but no.",
+    contract: "configClaims declares \"…\" (…) but no business-profile/<lang>/….md exists in any locale",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/lib/pbp-config-claims.ts.",
     docRef: "packages/werkstatt-site/src/checks/lib/pbp-config-claims.ts",
   },
@@ -1543,13 +1541,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-ARTDIR-01",
-    contract: "pages/…: supported locale '…' has no composed home page — the.",
+    contract: "pages/…: supported locale '…' has no composed home page — the approved artDirection.firstFold cannot be proven there",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
   {
     ruleId: "COMP-ASSET-01",
-    contract: "pages/…/…: extracted leaf '…' is placed in.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
@@ -1567,7 +1564,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-COVER-01",
-    contract: "pageSetIntent \"…\" is deferred by … but.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
@@ -1627,7 +1623,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-LEDGER-01",
-    contract: "onboarding decision ledger at … exists but is.",
+    contract: "onboarding decision ledger at … exists but is unparseable — …; repair missions/…/onboarding.decisions.yaml (an absent file is legal; an unreadable one skips every check whose verdict depends on ledger content — waiver lookups conservatively see an empty ledger)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
@@ -1639,13 +1635,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-QUESTIONS-01",
-    contract: "visitor question \"…\" (…: \"…\") is answered by no.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "COMP-RECIPE-01",
-    contract: "site family \"…\" recipe requires section archetypes ${missing .map((m) =>.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
@@ -1657,7 +1651,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMP-SLOT-02",
-    contract: "pages/…: supported locale '…' has no composed home page — the.",
+    contract: "pages/…: supported locale '…' has no composed home page — the first-fold slot '…' cannot be proven on the home first block",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/composition-validate.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/composition-validate.ts",
   },
@@ -1753,7 +1747,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "COMPASS-INVARIANT-06",
-    contract: "unbound invariant … and no baseline exists yet.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/compass/handlers/invariant-bindings.ts.",
     docRef: "packages/forge/os/compass/handlers/invariant-bindings.ts",
   },
@@ -1837,37 +1830,35 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CRC-01",
-    contract: "RFC-0390: enforce that every registered kernel command declares `reads` (non-empty) or.",
+    contract: "Command `…` has no `reads` declaration and `cacheable` is not false. Every command MUST declare `reads` or set `cacheable: false` (RFC-0390).",
     action: "Fix the glob pattern to be valid picomatch syntax.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
   {
     ruleId: "CRC-02",
-    contract: "RFC-0390: enforce that every registered kernel command declares `reads` (non-empty) or.",
     action: "Fix the glob pattern to be valid picomatch syntax.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
   },
   {
     ruleId: "CRC-03",
-    contract: "RFC-0390: enforce that every registered kernel command declares `reads` (non-empty) or.",
+    contract: "Command `…` is cacheable but its `modulePath` resolves outside the bounded src/os module roots (path: `…`). Its module hash falls back to a constant, so the result cache no longer invalidates on module code changes (RFC-1193).",
     action: "Move the module under a \\.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
   {
     ruleId: "CRC-04",
-    contract: "RFC-0390: enforce that every registered kernel command declares `reads` (non-empty) or.",
     action: "Move the module under a \\.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
     ruleId: "CRC-05",
-    contract: "RFC-0390: enforce that every registered kernel command declares `reads` (non-empty) or.",
+    contract: "Command `…` declares `modulePaths` but no `modulePath` — entries cannot be anchored (RFC-1194).",
     action: "Fix each path relative to the module file's directory, or remove dead entries.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
   {
     ruleId: "CRC-06",
-    contract: "RFC-0390: enforce that every registered kernel command declares `reads` (non-empty) or.",
+    contract: "Command `…` declares modulePath \"…\" which does not resolve to an existing file inside the workspace (RFC-1195).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/command-reads-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
@@ -1891,7 +1882,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CSP-SINK-01",
-    contract: "DOM-XSS sink write (…) in emitted bundle …${f.package ?",
+    contract: "First-party: refactor to createElement/textContent (never allowlisted). Third-party: wrap the sink via ttSafeTransform (minted tt* arg) or record a blessed / accepted-debt / failsafe entry in src/csp-sinks.allowlist.yaml with a note.",
     action: "First-party: refactor to createElement/textContent (never allowlisted).",
     docRef: "packages/werkstatt-site/src/checks/csp-sinks.ts",
   },
@@ -2173,7 +2164,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "EFF-PARITY-01",
-    contract: "… — block \"…\": signature differs from.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -2557,7 +2547,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "I18N-DEFAULT-01",
-    contract: "Comma-separated repo-relative file paths to validate (RFC-0139).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/content-pbp.ts.",
     docRef: "packages/werkstatt-site/src/checks/content-pbp.ts",
   },
@@ -2575,37 +2564,34 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "IDEMP-01",
-    contract: "RFC-1327: enforce the run-twice contract — required lifecycle/provisioning commands declare an.",
+    contract: "Command `…` mutates lifecycle/provisioning state but declares no `idempotency` class (RFC-1327).",
     action: "Add a run-twice test using expectRerunSafe from @warpgogol/werkstatt-engine testing/run-twice.ts, or downgrade the declaration.",
     docRef: "packages/werkstatt-site/src/checks/command/idempotency-validate.ts",
   },
   {
     ruleId: "IDEMP-02",
-    contract: "RFC-1327: enforce the run-twice contract — required lifecycle/provisioning commands declare an.",
+    contract: "Command `…` declares `idempotency: \"rerun-safe\"` but no `*.rerun.test.ts` exists under … (RFC-1327).",
     action: "Add a run-twice test using expectRerunSafe from @warpgogol/werkstatt-engine testing/run-twice.ts, or downgrade the declaration.",
     docRef: "packages/werkstatt-site/src/checks/command/idempotency-validate.ts",
   },
   {
     ruleId: "IDEMP-03",
-    contract: "RFC-1327: enforce the run-twice contract — required lifecycle/provisioning commands declare an.",
+    contract: "Command `…` declares `idempotency: \"not-idempotent\"` without an `idempotencyNote` explaining the re-run hazard (RFC-1327).",
     action: "Compute status/exitCode from the collected effect results (any failed entry ⇒ non-pass).",
     docRef: "packages/werkstatt-site/src/checks/command/idempotency-validate.ts",
   },
   {
     ruleId: "IMG-BASENAME-01",
-    contract: "Comma-separated workpiece-relative paths — run only the source-budget scan on these files (RFC-0139 pattern; invoked by mission.git.commit, RFC-1160).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/image-variants.ts.",
     docRef: "packages/werkstatt-site/src/checks/image-variants.ts",
   },
   {
     ruleId: "IMG-VARIANT-SRC-01",
-    contract: "Comma-separated workpiece-relative paths — run only the source-budget scan on these files (RFC-0139 pattern; invoked by mission.git.commit, RFC-1160).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/image-variants.ts.",
     docRef: "packages/werkstatt-site/src/checks/image-variants.ts",
   },
   {
     ruleId: "IMG-VARIANT-SRC-02",
-    contract: "Comma-separated workpiece-relative paths — run only the source-budget scan on these files (RFC-0139 pattern; invoked by mission.git.commit, RFC-1160).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/image-variants.ts.",
     docRef: "packages/werkstatt-site/src/checks/image-variants.ts",
   },
@@ -2917,7 +2903,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "LABELS-SCHEMA-01",
-    contract: "RFC-1122: blocking validation that registered strict-schema blocks in.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/labels-schema-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/labels-schema-validate.ts",
   },
@@ -2929,7 +2914,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "LABELS-SCHEMA-03",
-    contract: "footer: \"background\" and deprecated alias \"backgroundImage\" must not be.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -2941,7 +2925,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "LABELS-SCHEMA-REPAIR-01",
-    contract: "RFC-1122: blocking validation that registered strict-schema blocks in.",
+    contract: "… repaired … — …",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/labels-schema-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/labels-schema-validate.ts",
   },
@@ -2977,7 +2961,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "LEGAL-FOOTER-02",
-    contract: "footer.legal is configured but legalJurisdiction ${legalJurisdiction ?",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/legal-translation.ts.",
     docRef: "packages/werkstatt-site/src/checks/legal-translation.ts",
   },
@@ -3193,7 +3176,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "MEDIA-01",
-    contract: "Comma-separated repo-relative file paths to validate (RFC-0139).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-block.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-block.ts",
   },
@@ -3469,7 +3451,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "ONDEC-05",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose missions/<id>/ directory hosts the ledger.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
@@ -3493,25 +3474,21 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "ONDEC-09",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose missions/<id>/ directory hosts the ledger.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "ONDEC-10",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose missions/<id>/ directory hosts the ledger.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "ONDEC-11",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose missions/<id>/ directory hosts the ledger.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "ONDEC-12",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose missions/<id>/ directory hosts the ledger.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
@@ -3583,13 +3560,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PAGE-ANSWERS-01",
-    contract: "Comma-separated repo-relative file paths to validate (RFC-0139).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-block.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-block.ts",
   },
   {
     ruleId: "PAGE-BLOCK-01",
-    contract: "Comma-separated repo-relative file paths to validate (RFC-0139).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-block.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-block.ts",
   },
@@ -3601,7 +3576,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PAGE-HERO-ACCENT-01",
-    contract: "…: PAGE-HERO-ACCENT-01 headingAccent \"…\" is not a substring of.",
+    contract: "…: PAGE-HERO-ACCENT-01 headingAccent \"…\" is not a substring of the resolved H1 — the accent must match one heading text unit exactly (resolved H1 units: …)",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/hero-accent-validate.ts.",
     docRef: "packages/werkstatt-site/src/checks/hero-accent-validate.ts",
   },
@@ -3613,13 +3588,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PAGE-PROPS-FORMAT-01",
-    contract: "Comma-separated repo-relative file paths to validate (RFC-0139).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-block.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-block.ts",
   },
   {
     ruleId: "PAGE-PROPS-MARKER-01",
-    contract: "Comma-separated repo-relative file paths to validate (RFC-0139).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/page-block.ts.",
     docRef: "packages/werkstatt-site/src/checks/page-block.ts",
   },
@@ -3961,7 +3934,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PSEO-NOTE-05",
-    contract: "Translator note overlay modules.… (…) has no approved examples yet.",
+    contract: "Add reviewed examples after initial translations are approved.",
     action: "Fill note.… in the modules.… overlay.",
     docRef: "packages/werkstatt-site/src/checks/surface-translation.ts",
   },
@@ -4003,25 +3976,21 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PUBGATE-01",
-    contract: "Comma-separated repo-relative file paths to validate (RFC-0139).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/content-pbp.ts.",
     docRef: "packages/werkstatt-site/src/checks/content-pbp.ts",
   },
   {
     ruleId: "PUBGATE-02",
-    contract: "Regex pattern for allowed dist content references and PUBGATE-02 distinctive values.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/dist-content-references.ts.",
     docRef: "packages/werkstatt-site/src/checks/dist-content-references.ts",
   },
   {
     ruleId: "PUBGATE-03",
-    contract: "Regex pattern for allowed dist content references and PUBGATE-02 distinctive values.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/dist-content-references.ts.",
     docRef: "packages/werkstatt-site/src/checks/dist-content-references.ts",
   },
   {
     ruleId: "PUBTIER-02",
-    contract: "Comma-separated repo-relative file paths to validate (RFC-0139).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/content-pbp.ts.",
     docRef: "packages/werkstatt-site/src/checks/content-pbp.ts",
   },
@@ -4039,25 +4008,21 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "Q-ASSET-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "Q-AVOID-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "Q-COPY-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "Q-CRAFT-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
@@ -4069,25 +4034,21 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "Q-FRAME-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "Q-MOCK-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "Q-SUBJECT-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
   {
     ruleId: "Q-TEXT-01",
-    contract: "Active mission id (<systemId>-mNNNNNN) whose workpiece assets are checked.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/module.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/module.ts",
   },
@@ -4495,7 +4456,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "ROBOTS-AITRAIN-01",
-    contract: "robots.txt does not contain the AI-training crawler group derived from Content-Signal ai-train=no.",
+    contract: "Run robots.generate.",
     action: "Run robots.generate.",
     docRef: "packages/werkstatt-site/src/checks/robots.ts",
   },
@@ -4687,7 +4648,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SEMANTIC-COVERAGE-01",
-    contract: "Route '…' (…) produced HTML but has no JSON-LD blocks.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/audit/validators/semantic-coverage.ts.",
     docRef: "packages/werkstatt-site/src/checks/audit/validators/semantic-coverage.ts",
   },
@@ -4891,7 +4851,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SITEMAP-GATED-LEAK-01",
-    contract: "Sitemap URL has no emitted HTML page: …${pageId ?",
     action: "Remove the page from system.md routes or set deployment.production: true; gated pages must not appear in the sitemap.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
@@ -5299,7 +5258,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TERM-01",
-    contract: "Forbidden term \"…\"${term.canonical ?",
+    contract: "Replace in the content source of this segment; if the text comes from PBP, change the PBP field (TERM-03 pins it).",
     action: "Replace in the content source of this segment; if the text comes from PBP, change the PBP field (TERM-03 pins it).",
     docRef: "packages/werkstatt-site/src/checks/text-corpus/rules/terms.ts",
   },
@@ -5569,13 +5528,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-CASE-01",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
   {
     ruleId: "TYPO-CASE-02",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
@@ -5593,7 +5550,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-HEAD-03",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
@@ -5623,13 +5579,11 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-MD-01",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
   {
     ruleId: "TYPO-MD-02",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
@@ -5647,19 +5601,16 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-PAIR-02",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
   {
     ruleId: "TYPO-PAIR-03",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
   {
     ruleId: "TYPO-PUNCT-01",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
@@ -5671,19 +5622,16 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-PUNCT-03",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
   {
     ruleId: "TYPO-PUNCT-04",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
   {
     ruleId: "TYPO-SPACE-01",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
@@ -5695,7 +5643,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-SPACE-03",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
@@ -5713,7 +5660,6 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TYPO-YAML-02",
-    contract: "Write all current violations to a baseline file and return pass.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/typography.ts.",
     docRef: "packages/werkstatt-site/src/checks/typography.ts",
   },
@@ -5956,6 +5902,36 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     contract: "YAML file contains JSON content (starts with '…'). Use YAML syntax instead.",
     action: "Rewrite … using YAML block-style syntax (key: value, lists with -).",
     docRef: "packages/werkstatt-site/src/checks/yaml-contract-lint.ts",
+  },
+  {
+    ruleId: "A11Y-AXE-01",
+    contract:
+      "Every probed route is free of axe violations at or above the blockOn severity threshold — the diagnostic names route, axe rule, impact, and target selector.",
+    action:
+      "Fix the reported axe violation — route, ruleId, and target selector are in data.findings; the fixHint carries the rule's help URL — then re-run the pipeline.",
+    docRef: "packages/werkstatt-site/src/checks/a11y-axe-probe.ts",
+  },
+  {
+    ruleId: "A11Y-AXE-02",
+    contract:
+      "Every probed route completes its render/axe pass — hung pages and non-200 responses fail that route instead of stalling the gate.",
+    action:
+      "Reproduce the route render locally (the diagnostic names the route and the thrown error), fix the hang or error response, then re-run the probe.",
+    docRef: "packages/werkstatt-site/src/checks/a11y-axe-probe.ts",
+  },
+  {
+    ruleId: "A11Y-AXE-04",
+    contract:
+      "The probe's runtime prerequisites (Chromium, @syrokomskyi/axiom-study severity mapping) resolve before scanning — infrastructure failures are not demotable by --warn-only.",
+    action:
+      "Run `werkstatt run playwright.chromium.ensure` for the pinned playwright version and install the axiom link deps so severityForAxeImpact resolves, then re-run the probe.",
+    docRef: "packages/werkstatt-site/src/checks/a11y-axe-probe.ts",
+  },
+  {
+    ruleId: "DIST_MISSING",
+    contract: "no built output at dist/client for … — run build.post first",
+    action: "Run the site's build (build.post) so dist/client exists, then re-run the probe.",
+    docRef: "packages/werkstatt-site/src/checks/a11y-axe-probe.ts",
   },
 ];
 
