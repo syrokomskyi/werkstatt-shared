@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: review r3 residue — repair 24 catalog entries, honest SECTION-LANG-PROJ-01 severity, tighten REMEDIATION-05 detector</item>
   <item>RFC-1461: review r4 — paren-scoped REMEDIATION-05 shapes, honest severity for 11 warn-only rules, authored contracts for 11 catalog entries, persist r2/r3/r4 review reports</item>
   <item>RFC-1461: review r5 — honest CMD-MAN-02 severity, split 43 contract==action duplicates into authored contracts or ratchet floor, persist r5 report</item>
   <item>RFC-1461: review r6 — repair 8 near-duplicate and 9 crossed contract-action pairs, add normalized-equivalence guard to REMEDIATION-05</item>
   <item>RFC-1461: repair residual crossed contract-action pairs and info-only severity decls (r7)</item>
+  <item>RFC-1461: exhaustively repair sibling-fixHint crossings and add warning-rule coverage (r8)</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -663,6 +663,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     targetFiles: ["forge.yaml"],
   },
   {
+    ruleId: "A11Y-CONTRAST-01",
+    contract: "A resolved same-block color/background pair measures below the WCAG contrast threshold.",
+    action: "Darken the foreground toward the text color or lighten the background — the established convention is color-mix() toward var(--ds-text-*) tokens.",
+    docRef: "packages/werkstatt-site/src/checks/a11y-contrast-lint.ts",
+  },
+  {
     ruleId: "A11Y-CONTRAST-02",
     contract: "A same-block color/background pair could not be resolved into sRGB — the pairing is unmeasured.",
     action: "Resolve the var()/color-mix() chain so the pairing is measurable, or declare the pairing intentional.",
@@ -766,7 +772,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "AGK-05",
     contract: "Freshness ledger covers this domain but the file was generated before it applied.",
-    action: "Rerun agent.knowledge.generate; never hand-edit generated knowledge files.",
+    action: "Rerun agent.knowledge.generate.",
     docRef: "packages/werkstatt-site/src/checks/agent/agent-knowledge.ts",
   },
   {
@@ -1391,7 +1397,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CKL-SRC-03",
     contract: "Source … observed \"…\" but site asserts \"…\" (…)",
-    action: "Transient; the monitor retries next cadence. Check the endpoint if persistent.",
+    action: "Re-verify and update the value (RFC-0218 edit transaction), or record verify-noop.",
     docRef: "packages/werkstatt-site/src/checks/content-source-binding.ts",
   },
   {
@@ -1842,7 +1848,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "CSP-SINK-02",
     contract: "Stale allowlist entry — filePattern \"…\" (…) matches no emitted file; remove or update so allowlists decay toward empty.",
-    action: "Re-run csp.hashes.generate (it withholds/strips TT directives on a dirty corpus) or remove the hand-edited directives.",
+    action: "Remove or update the stale allowlist entry so the allowlist decays toward empty.",
     docRef: "packages/werkstatt-site/src/checks/csp-sinks.ts",
   },
   {
@@ -2272,7 +2278,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "FP-FIXTURE-02",
     contract: "Meaningful change did not alter semantic hash.",
-    action: "The normalizer must strip comments and formatting whitespace.",
+    action: "The normalizer must detect this change type.",
     docRef: "packages/werkstatt-site/src/checks/fingerprint-commands.ts",
   },
   {
@@ -2283,8 +2289,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "FP-FIXTURE-04",
-    contract: "Binary byte changes did not alter byte hash.",
-    action: "byteHash must produce different hashes for different bytes.",
+    contract: "Fixture files required by the fingerprint check failed to read.",
+    action: "Ensure fixture files exist in packages/werkstatt-engine/src/fingerprint/tests/fixtures/.",
     docRef: "packages/werkstatt-site/src/checks/fingerprint-commands.ts",
   },
   {
@@ -2976,7 +2982,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "MATERIAL.CREDITS.PAGE-HIDDEN-REFERENCED",
     contract: "Credit record \"…\" is hidden from the credits page while its asset is referenced editorially.",
-    action: "Review whether this credit is still needed or should be removed.",
+    action: "Unhide the credit on the credits page or remove the editorial reference to the asset.",
     docRef: "packages/werkstatt-site/src/checks/material-credits.ts",
   },
   {
@@ -4048,7 +4054,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "REFERRAL-LANDING-07",
     contract: "… lacks Open Graph tags — the shared link renders bare.",
-    action: "Pass referrerField.value = partner.slug on the embedded section.",
+    action: "Add Open Graph tags to the shared-link variant — optional but recommended for partner-shared links.",
     docRef: "packages/werkstatt-site/src/checks/referral-landing.ts",
   },
   {
@@ -4334,6 +4340,12 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     docRef: "packages/werkstatt-site/src/checks/semantic.ts",
   },
   {
+    ruleId: "RSHAD-03",
+    contract: "A redirect target is not in the sitemap but a static file exists at the target path.",
+    action: "Remove the stale static file from dist/client/ or point the redirect to a live canonical route.",
+    docRef: "packages/werkstatt-site/src/checks/redirect-shadow.ts",
+  },
+  {
     ruleId: "RSHAD-00",
     contract: "The redirect-shadow audit is inconclusive — `_redirects`, `dist/client/`, or the wrangler config is missing.",
     action: "Build dist/client and ensure _redirects plus the wrangler config exist so the shadow audit can run.",
@@ -4425,7 +4437,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "SECTION-DEFAULT-02",
     contract: "Shared UI source uses app-specific pageId fallback \"donateContact\".",
-    action: "Omit the optional image when no token is authored, or declare a portable fallback registry entry.",
+    action: "Omit the optional CTA when no target is authored, or provide a validated app/site-level target.",
     docRef: "packages/werkstatt-site/src/checks/section-defaults.ts",
   },
   {
@@ -4866,13 +4878,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     ruleId: "STAMP-01",
     contract: "Sitemap lastmod for … is not a valid YYYY-MM-DD date: …",
     action: "Use a source-backed update stamp resolver.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts",
+    docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
   },
   {
     ruleId: "STAMP-02",
     contract: "Sitemap lastmod for … is … but resolver expects …",
     action: "Regenerate sitemap with the update-stamp resolver.",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/section-agent.ts",
+    docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
   },
   {
     ruleId: "STAMP-03",
