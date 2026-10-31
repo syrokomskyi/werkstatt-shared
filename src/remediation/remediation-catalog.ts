@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: exhaustively repair sibling-fixHint crossings and add warning-rule coverage (r8)</item>
   <item>RFC-1461: emitter-keyed census repairs residual crossings and coverage gaps (r9)</item>
   <item>RFC-1461: repair sibling crossings incl PSEO-PROOF off-by-one and wrong-family seeds (r10)</item>
   <item>RFC-1461: drop stale action lines and repoint REV-04 docRef</item>
   <item>RFC-1461: repair r11 census residuals — crossed contract/action pairs, truncated contract, emitter docRefs</item>
+  <item>RFC-1461: repair r12 census findings — crossed contracts/actions, seed 11 warning-tier coverage entries</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -1219,8 +1219,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CJ-CAT-03",
-    contract: "identity splice: … carries a different tenantId/clientId/projectId than chain head …",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-journal/src/validators/catalog.ts.",
+    contract: "A journal catalog entry fails the CJ catalog schema — the emitted message is the zod issue text.",
+    action: "Fix the catalog entry field named in the zod issue.",
     docRef: "packages/werkstatt-journal/src/validators/catalog.ts",
   },
   {
@@ -1671,7 +1671,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "COMPASS-DOC-00",
     contract: "file is not well-formed XML: …",
-    action: "Add <schema>forge/compass-docs@1</schema> inside the <meta> block.",
+    action: "Fix the malformed XML reported by the parser.",
     docRef: "packages/forge/os/compass/handlers/compass-docs-validate.ts",
   },
   {
@@ -2052,9 +2052,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "DRIFT-02",
-    contract: "Generator \"…\" does not support dryRun mode; cannot verify determinism.",
-    action: "Re-run: pnpm exec werkstatt run … --site …",
-    docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/core-infra.ts",
+    contract: "Generator \"…\" does not support dryRun mode or did not render a declared key in dryRun output; cannot verify determinism.",
+    action: "Add dryRun support to the generator, or declare the rendered key it actually produces.",
+    docRef: "packages/werkstatt-site/src/checks/generated-drift-validate.ts",
   },
   {
     ruleId: "DRIFT-03",
@@ -2316,8 +2316,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "FRESHNESS-02",
-    contract: "Evidence source '…' technical assessment is stale: observed … days ago, max age is … days.",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/semantic-freshness.ts.",
+    contract: "Evidence source '…' item '…' is stale: retrieved … days ago, default max age is … days.",
+    action: "Refresh the stale evidence item or raise its declared maxAgeDays.",
     docRef: "packages/werkstatt-site/src/checks/semantic-freshness.ts",
   },
   {
@@ -4158,7 +4158,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "REGISTRY-NEW",
     contract: "Manifest exists on disk but is not in uni.registry.yaml.",
-    action: "Ensure the manifest file is present and readable.",
+    action: "Run `site-kernel run uni.registry.build` to regenerate uni.registry.yaml.",
     docRef: "packages/werkstatt-site/src/checks/registry.ts",
   },
   {
@@ -4169,7 +4169,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "REGISTRY-STALE",
-    action: "Ensure the manifest file is present and readable.",
+    action: "Run `site-kernel run uni.registry.build` to regenerate uni.registry.yaml.",
     docRef: "packages/werkstatt-site/src/checks/registry.ts",
   },
   {
@@ -5073,8 +5073,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "SVC-REG-01",
-    contract: "Registry file not found at services/registry.yaml.",
-    action: "Add a services: key with entries for each Cloudflare Worker service.",
+    contract: "Registry file not found at services/registry.yaml, or the registry file failed to parse.",
+    action: "Create services/registry.yaml or fix its YAML syntax.",
     docRef: "packages/werkstatt-site/src/checks/services/service-registry-validate.ts",
   },
   {
@@ -5253,9 +5253,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "TEST-WEAKEN-11",
-    contract: "RFC-0533: ecosystem.commit command handler — auto-detects scope (platform, non-platform, mixed), atomic version bump, semantic hash, and commit with trailers for platform-scope changes.",
-    action: "Apply the remediation described for this ruleId in packages/werkstatt-site/src/checks/ecosystem-commit.ts.",
-    docRef: "packages/werkstatt-site/src/checks/ecosystem-commit.ts",
+    contract: "A *.proof.yaml proof spec was weakened alongside an implementation change — statement changed, spec-set fields grown or shrunk in the weakening direction, or domain.cardinality dropped or shrunk.",
+    action: "Restore the proof spec's original statement, spec-set fields, and cardinality, or remove the accompanying implementation change.",
+    docRef: "packages/werkstatt-site/src/checks/test-weakening.ts",
   },
   {
     ruleId: "TEST.ADJACENCY-01",
@@ -5278,7 +5278,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "TEST.SIGNAL.VALIDATE",
     contract: "… test signal is …: …",
-    action: "Replace it with a real test script or remove it and add explicit gogol.testSignal skipped metadata.",
+    action: "Honor the reported requiredAction for the package's test signal, or keep it explicitly skipped.",
     docRef: "packages/werkstatt-site/src/checks/test-signal.ts",
   },
   {
@@ -5782,6 +5782,72 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     contract: "no built output at dist/client for … — run build.post first",
     action: "Run the site's build (build.post) so dist/client exists, then re-run the probe.",
     docRef: "packages/werkstatt-site/src/checks/a11y-axe-probe.ts",
+  },
+  {
+    ruleId: "CONTRACT-05",
+    contract: "The translation contract is approved but has never been reviewed, or its last review is older than reviewIntervalDays.",
+    action: "Run translation.contract.review --approve to stamp the review.",
+    docRef: "packages/werkstatt-site/src/checks/translation-contract.ts",
+  },
+  {
+    ruleId: "CONTRACT-06",
+    contract: "… rendered PBP label value(s) lack a contract term.",
+    action: "Add a contract term for each uncovered label value.",
+    docRef: "packages/werkstatt-site/src/checks/translation-contract.ts",
+  },
+  {
+    ruleId: "CONTRACT-07",
+    contract: "retired translation carriers still present: …",
+    action: "Migrate with translation.contract.scaffold, then delete the legacy files/dirs.",
+    docRef: "packages/werkstatt-site/src/checks/translation-contract.ts",
+  },
+  {
+    ruleId: "CJ-CHAIN-05",
+    contract: "payloadMac checks skipped — pass --project-key to verify payload integrity.",
+    action: "Re-run the chain validator with --project-key so payloadMac verification executes.",
+    docRef: "packages/werkstatt-journal/src/validators/chain.ts",
+  },
+  {
+    ruleId: "TRUNC-01",
+    contract: "A findings list was capped — the marker names the true total and the applied cap.",
+    action: "Resolve the listed findings to shrink the list below its cap.",
+    docRef: "packages/werkstatt-shared/src/kernel/diagnostic-cap.ts",
+  },
+  {
+    ruleId: "GRAM-02",
+    contract: "A grammar-baseline entry no longer occurs — the baseline holds a stale fixed finding.",
+    action: "Run text.corpus.validate --grammar-baseline-prune --site <id> to drop stale entries.",
+    docRef: "packages/werkstatt-site/src/checks/text-corpus/rules/grammar.ts",
+  },
+  {
+    ruleId: "GRAM-05",
+    contract: "LANGUAGETOOL_URL is not set — grammar and orthography are not checked.",
+    action: "Start a local LanguageTool (docs/runbooks/languagetool.md) and set LANGUAGETOOL_URL.",
+    docRef: "packages/werkstatt-site/src/checks/text-corpus/rules/grammar.ts",
+  },
+  {
+    ruleId: "LEAK-LANG-01",
+    contract: "Foreign-language rendered text appears in a page without a lang marker.",
+    action: "Translate the string in its source file, or wrap the element with lang when the foreign text is intentional.",
+    docRef: "packages/werkstatt-site/src/checks/text-corpus/rules/leaks.ts",
+  },
+  {
+    ruleId: "LEAK-INTERNAL-01",
+    contract: "Pipeline vocabulary is rendered in visitor-visible text.",
+    action: "Rephrase without pipeline vocabulary, or allow-list the token in system.md typography.allowedTokens.",
+    docRef: "packages/werkstatt-site/src/checks/text-corpus/rules/leaks.ts",
+  },
+  {
+    ruleId: "A11Y-AXE-03",
+    contract: "no probeable routes derived for … — the pre-deploy axe gate is inert.",
+    action: "Restore probeable routes (fix the build output or route derivation) so the axe gate exercises real pages.",
+    docRef: "packages/werkstatt-site/src/checks/a11y-axe-probe.ts",
+  },
+  {
+    ruleId: "EFF-REDUNDANT-01",
+    contract: "A full-strength lighten veil is redundant under textBackdrop: plate.",
+    action: "Drop the lighten entry from the effects block.",
+    docRef: "packages/werkstatt-site/src/checks/effects-contract.ts",
   },
 ];
 
