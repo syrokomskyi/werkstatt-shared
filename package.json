@@ -127,6 +127,10 @@
       "types": "./src/kernel/journal.ts",
       "default": "./src/kernel/journal.ts"
     },
+    "./kernel/service-health": {
+      "types": "./src/kernel/service-health.ts",
+      "default": "./src/kernel/service-health.ts"
+    },
     "./kernel/ship-inflight": {
       "types": "./src/kernel/ship-inflight.ts",
       "default": "./src/kernel/ship-inflight.ts"

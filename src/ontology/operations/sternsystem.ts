@@ -16,7 +16,6 @@ RFC-0790: add systemConfigSchema, systemStateSchema, servicesRegistrySchema for 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1284: systemStateSchema gains nullable accessPinSuspended {at,by,operationId} — durable crash-safe suspension marker; accessPin stays the desired-state authority</item>
   <item>RFC-1307: step 1 — shared PBP layout map, canonical writer, typed onboarding state</item>
   <item>RFC-1335: implement RFC-1335: fail-fast editorial gate, adaptive certify budget, gate-bound producer ordering
 
@@ -50,7 +49,8 @@ override key. RFC-0668 retry contract unchanged.
 Test-Reason: regression — fixed 15min mission.check cliff on dev-deploy
 (warpgogol-m000202 class, RFC-1335 review open question).</item>
   <item>RFC-1412: post-ship rendered visual regression gate — visual.regression.check/.baseline commands, masked pixelmatch diffing, sha256-verified release baselines, bounded LLM review, journaled ship step with waiver</item>
-  <history>ADR-0091, RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065, RFC-1097, RFC-1210, RFC-1263, RFC-1342</history>
+  <item>RFC-1456: service health probing contour</item>
+  <history>ADR-0091, RFC-0354, RFC-0479, RFC-0561, RFC-0574, RFC-0751, RFC-0752, RFC-0790, RFC-0806, RFC-0902, RFC-0964, RFC-0966, RFC-0967, RFC-1065, RFC-1097, RFC-1210, RFC-1263, RFC-1284, RFC-1342</history>
 </CHANGE_SUMMARY>
 */
 
@@ -109,10 +109,19 @@ export const serviceEntrySchema = z.object({
   id: z
     .string()
     .regex(kebabRe, "service id must be kebab-case, lowercase, latin-only, no TLD suffix"),
-  kind: z.enum(["proxy-worker", "scheduled-worker", "cloudflare-worker"]),
-  workerName: z.string().min(1, "workerName must be non-empty"),
+  // RFC-1456: kind set widened — node-runner/compose-stack admit non-CF
+  // substrate services; CF-shape fields stay required only for CF kinds.
+  kind: z.enum([
+    "proxy-worker",
+    "scheduled-worker",
+    "cloudflare-worker",
+    "integration-worker",
+    "node-runner",
+    "compose-stack",
+  ]),
+  workerName: z.string().min(1, "workerName must be non-empty").optional(),
   hostedBy: z.enum(["studio"]),
-  url: z.string().min(1, "url must be non-empty"),
+  url: z.string().min(1, "url must be non-empty").optional(),
   workersDevUrl: z.string().min(1, "workersDevUrl must be non-empty").optional(),
   publicEndpoints: z.boolean().default(false),
   routes: z.array(z.string()).optional(),
@@ -134,6 +143,20 @@ export const serviceEntrySchema = z.object({
     .default({ at: null, state: null, operationId: null })
     .describe("RFC-0806: last dev-channel deployment state"),
   healthCheckPath: z.string().optional(),
+}).superRefine((service, ctx) => {
+  const CF_KINDS = new Set([
+    "proxy-worker",
+    "scheduled-worker",
+    "cloudflare-worker",
+    "integration-worker",
+  ]);
+  if (!CF_KINDS.has(service.kind)) return;
+  if (!service.workerName) {
+    ctx.addIssue({ code: "custom", path: ["workerName"], message: "workerName is required for Cloudflare-substrate service kinds" });
+  }
+  if (!service.url) {
+    ctx.addIssue({ code: "custom", path: ["url"], message: "url is required for Cloudflare-substrate service kinds" });
+  }
 });
 
 // RFC-0790: Convention-based discovery schemas (replaces fleet registry)
