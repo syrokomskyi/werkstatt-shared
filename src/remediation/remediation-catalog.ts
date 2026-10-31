@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: apply REVIEW-R1 findings — reseed defective contracts, include .probe validators, sync rules[] docs (RFC-1461)</item>
   <item>RFC-1461: apply REVIEW-R2 findings — widen artifact sweep to action+all shapes, add REMEDIATION-05 ratchet, sync remaining rules[] docs (RFC-1461)</item>
   <item>RFC-1461: review r3 residue — repair 24 catalog entries, honest SECTION-LANG-PROJ-01 severity, tighten REMEDIATION-05 detector</item>
   <item>RFC-1461: review r4 — paren-scoped REMEDIATION-05 shapes, honest severity for 11 warn-only rules, authored contracts for 11 catalog entries, persist r2/r3/r4 review reports</item>
   <item>RFC-1461: review r5 — honest CMD-MAN-02 severity, split 43 contract==action duplicates into authored contracts or ratchet floor, persist r5 report</item>
+  <item>RFC-1461: review r6 — repair 8 near-duplicate and 9 crossed contract-action pairs, add normalized-equivalence guard to REMEDIATION-05</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -664,7 +664,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "A11Y-CONTRAST-02",
-    contract: "Darken the foreground toward the text color or lighten the background — the established convention is color-mix() toward var(--ds-text-*) tokens",
+    contract: "A flagged contrast pair must satisfy the established color-mix() convention toward var(--ds-text-*) tokens.",
     action: "Darken the foreground toward the text color or lighten the background — the established convention is color-mix() toward var(--ds-text-*) tokens.",
     docRef: "packages/werkstatt-site/src/checks/a11y-contrast-lint.ts",
   },
@@ -869,7 +869,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "API-PROBE-01",
-    contract: "probe-contact: a sufficiently long probe message. contact probe@example.invalid",
+    contract: "The contact probe message meets the minimum-length contract — `probe@example.invalid` is the probe recipient.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/api-probe-check.ts.",
     docRef: "packages/werkstatt-site/src/checks/api-probe-check.ts",
   },
@@ -1782,8 +1782,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CRC-01",
-    contract: "Add `reads: [...]` with the file globs this command reads, or add `cacheable: false` if the command depends on external state.",
-    action: "Fix the glob pattern to be valid picomatch syntax.",
+    contract: "Every registered kernel command declares `reads` (non-empty) or `cacheable: false` (RFC-0390).",
+    action: "Add `reads: [...]` with the file globs this command reads, or declare `cacheable: false` if the command depends on external state.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
   {
@@ -1805,7 +1805,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "CRC-05",
-    contract: "Add `modulePath` pointing at this command's module file.",
+    contract: "Every declared modulePaths entry resolves to an existing path under dirname(modulePath) inside workspaceRoot (RFC-1194).",
     action: "Fix each path relative to the module file's directory, or remove dead entries.",
     docRef: "packages/werkstatt-site/src/checks/command-reads-validate.ts",
   },
@@ -2108,13 +2108,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "EFF-PARITY-02",
-    contract: "Report surviving legacy effect props in packages/ui renderers and how many files reference the effects system — RFC-0156.",
+    contract: "No packages/ui renderer references legacy effect props — the effects-system migration is complete (RFC-0156).",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/effects-contract.ts.",
     docRef: "packages/werkstatt-site/src/checks/effects-contract.ts",
   },
   {
     ruleId: "ENV-CONTRACT-01",
-    contract: "Run: pnpm exec werkstatt run env.example.generate --site",
+    contract: "The site's .env.example is produced by env.example.generate — checked-in drift against the generator output is a contract violation.",
     action: "Run: pnpm exec werkstatt run env.example.generate --site.",
     docRef: "packages/werkstatt-site/src/checks/env/env-contract.ts",
   },
@@ -2482,8 +2482,8 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "IDEMP-01",
-    contract: "Add `idempotency: \"rerun-safe\" | \"resume-only\" | \"not-idempotent\"` to the command's declaration.",
-    action: "Add a run-twice test using expectRerunSafe from @warpgogol/werkstatt-engine testing/run-twice.ts, or downgrade the declaration.",
+    contract: "A mutating lifecycle/provisioning command declares `idempotency` (RFC-1327).",
+    action: "Add `idempotency: \"rerun-safe\" | \"resume-only\" | \"not-idempotent\"` to the command's declaration.",
     docRef: "packages/werkstatt-site/src/checks/command/idempotency-validate.ts",
   },
   {
@@ -2900,7 +2900,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "LIVE-01",
     contract: "…: live release … ≠ recorded … — an out-of-band deploy or rollback happened.",
-    action: "…: live release … ≠ recorded … — an out-of-band deploy or rollback happened",
+    action: "Reconcile the release record with live state — re-run the ship/deploy path or record the out-of-band change in the journal.",
     docRef: "packages/werkstatt-engine/src/sternsystem/live-drift.ts",
   },
   {
@@ -3035,7 +3035,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "MDQ-09",
-    contract: "Reopen the queue or clear the matching current debt before marking it complete.",
+    contract: "A queue marked complete carries no open items — current debt must be cleared first.",
     action: "Mark the queue complete, pause it with rationale, or update its selectors.",
     docRef: "packages/werkstatt-site/src/checks/maintenance/maintenance-debt-queue.ts",
   },
@@ -3788,7 +3788,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "PSEO-NOTE-05",
-    contract: "Add reviewed examples after initial translations are approved.",
+    contract: "Translator note overlays carry reviewed example content after initial translations are approved.",
     action: "Fill note.… in the modules.… overlay.",
     docRef: "packages/werkstatt-site/src/checks/surface-translation.ts",
   },
@@ -4013,7 +4013,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "REFERRAL-JSON-03",
     contract: "… /r/….json must contain exactly {type, slug, status: \"…\"} — found keys: …",
-    action: "A nameless document carries no identity and no economics.",
+    action: "Emit exactly {type, slug, status} keys in the referral JSON document.",
     docRef: "packages/werkstatt-site/src/checks/diagnostics/rules/migrated-checks.ts",
   },
   {
@@ -4036,7 +4036,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "REFERRAL-LANDING-04",
     contract: "… lacks <meta name=\"robots\" content=\"noindex\">.",
-    action: "… lacks <meta name=\"robots\" content=\"noindex\">",
+    action: "Add <meta name=\"robots\" content=\"noindex\"> to the landing page head.",
     docRef: "packages/werkstatt-site/src/checks/referral-landing.ts",
   },
   {
@@ -4060,13 +4060,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "REFERRAL-LANDING-09",
     contract: "… renders no data-referral-landing article marker — the v7 section contract cannot be verified.",
-    action: "… renders no data-referral-landing article marker — the v7 section contract cannot be verified",
+    action: "Render the data-referral-landing article marker in the section output.",
     docRef: "packages/werkstatt-site/src/checks/referral-landing.ts",
   },
   {
     ruleId: "REFERRAL-LANDING-10",
     contract: "… contains review/rating vocabulary — the recommender's voice must never read as a customer review.",
-    action: "… contains review/rating vocabulary — the recommender's voice must never read as a customer review",
+    action: "Remove review/rating vocabulary from the landing copy.",
     docRef: "packages/werkstatt-site/src/checks/referral-landing.ts",
   },
   {
@@ -4335,7 +4335,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "RSHAD-00",
-    contract: "Remove the static file from dist/client/ or remove the redirect from _redirects",
+    contract: "A _redirects rule must not shadow a file already present in dist/client.",
     action: "Remove the static file from dist/client/ or remove the redirect from _redirects.",
     docRef: "packages/werkstatt-site/src/checks/redirect-shadow.ts",
   },
@@ -4372,7 +4372,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "SCAN-01",
     contract: "Hardcoded file path in scan function.",
-    action: "Hardcoded file path in scan function",
+    action: "Move the path into a declared constant or derive it from the workspace root.",
     docRef: "packages/werkstatt-site/src/checks/validator-scan-coverage.ts",
   },
   {
@@ -4876,7 +4876,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "STAMP-03",
-    contract: "Remove lastmod from pages without a source-backed update stamp.",
+    contract: "Sitemap lastmod values come from a source-backed update stamp — pages without one emit no lastmod.",
     action: "Regenerate sitemap with the update-stamp resolver.",
     docRef: "packages/werkstatt-site/src/checks/canonical-url.ts",
   },
