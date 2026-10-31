@@ -13,8 +13,10 @@ round-trip on information it already possessed.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>Three-state step records — pass / fail / skipped are counted separately; a skipped step carries `blockedBy` (the dependency id that failed) so a bare skip count is never a debugging dead end.</item>
-  <item>dependsOn transitively taints — a step whose dependency chain contains a failed or skipped step is itself skipped (skipped chains report the nearest blocking ancestor).</item>
+  <item>Three-state step records — pass / fail / skipped are counted separately; a skipped step carries `blockedBy` (the root dependency id that failed) so a bare skip count is never a debugging dead end.</item>
+  <item>dependsOn transitively taints — a step whose dependency chain contains a failed or skipped step is itself skipped; skipped chains report the root failing step, not the nearest skipped ancestor.</item>
+  <item>The dependsOn graph is pre-validated before any step runs — a missing id or a reference to a later-declared step (which also catches cycles) is a declaration defect and throws rather than silently skipping every step into a false-green verdict.</item>
+  <item>A throwing step records `fail` with the exception as diagnostic — one bad step never aborts the complete-set contract for the steps that follow.</item>
   <item>failFast is the explicit escape for debugging — the default run always reaches every independent step.</item>
 </KEY_DECISIONS>
 </MODULE_CONTRACT>
@@ -62,6 +64,36 @@ export interface CompositeGateOptions {
 }
 
 /**
+ * Thrown when the declared step graph is malformed — a `dependsOn` naming a
+ * step id that does not exist or points forward in declaration order (which
+ * also covers cycles: every cycle contains at least one forward reference).
+ * This is a declaration defect, never a runtime failure — the runner refuses
+ * rather than silently skipping every dependent step into a false green.
+ */
+export class CompositeGateGraphError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CompositeGateGraphError";
+  }
+}
+
+function assertValidStepGraph(steps: CompositeGateStep[]): void {
+  const seen = new Set<string>();
+  for (const step of steps) {
+    for (const dep of step.dependsOn ?? []) {
+      if (!seen.has(dep)) {
+        throw new CompositeGateGraphError(
+          `composite gate step "${step.id}" dependsOn "${dep}" — the id is unknown ` +
+            `or declared later than this step (steps run in declaration order; ` +
+            `dependencies must point backward)`,
+        );
+      }
+    }
+    seen.add(step.id);
+  }
+}
+
+/**
  * RFC-1463: run a composite gate — every independent step executes in one
  * invocation; dependent successors skip with an explicit blockedBy marker.
  */
@@ -69,6 +101,7 @@ export async function runCompositeGate(
   steps: CompositeGateStep[],
   options: CompositeGateOptions = {},
 ): Promise<CompositeGateResult> {
+  assertValidStepGraph(steps);
   const records: CompositeStepRecord[] = [];
   const statusById = new Map<string, "pass" | "fail" | "skipped">();
   const blockedById = new Map<string, string>();
@@ -78,8 +111,8 @@ export async function runCompositeGate(
 
     const blocker = (step.dependsOn ?? []).find((dep) => statusById.get(dep) !== "pass");
     if (blocker !== undefined) {
-      // The nearest blocking ancestor — the dependency's own blocker when the
-      // dependency was itself skipped — so the marker names the real failure.
+      // The root blocker — the dependency's own blocker when the dependency
+      // was itself skipped — so the marker names the real failure.
       const rootBlocker = blockedById.get(blocker) ?? blocker;
       records.push({
         id: step.id,
@@ -94,7 +127,21 @@ export async function runCompositeGate(
     }
 
     const startedAt = performance.now();
-    const outcome = await step.run();
+    let outcome: CompositeStepOutcome;
+    try {
+      outcome = await step.run();
+    } catch (error) {
+      outcome = {
+        status: "fail",
+        diagnostics: [
+          {
+            ruleId: "GATE-CMP-02",
+            severity: "error",
+            message: `step "${step.id}" threw: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+      };
+    }
     records.push({
       id: step.id,
       status: outcome.status,

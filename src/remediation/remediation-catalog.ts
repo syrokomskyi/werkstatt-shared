@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: drop stale action lines and repoint REV-04 docRef</item>
   <item>RFC-1461: repair r11 census residuals — crossed contract/action pairs, truncated contract, emitter docRefs</item>
   <item>RFC-1461: repair r12 census findings — crossed contracts/actions, seed 11 warning-tier coverage entries</item>
   <item>RFC-1460: recurring frictions escalate to mechanical measures — FRICTION-06/07/08, registry flips, session-retro escalation</item>
   <item>RFC-1463: composite gates report complete violation sets and self-ensure prerequisites — ensure/compositeGate metadata, executor ensure runner, blockedBy skip tracking, ENSURE-01..04 + GATE-CMP-01, runCompositeGate</item>
+  <item>RFC-1463: address review r1 findings — dependsOn graph pre-validation, ensureChain invoke-port propagation, unregistered-target ENSURE-04, thrown-step GATE-CMP-02, preflight skipped surfacing</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -5887,9 +5887,15 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "ENSURE-04",
-    contract: "A declared ensure could not be resolved at runtime — unregistered target or unresolvable when condition.",
+    contract: "A declared ensure could not be resolved at runtime — unregistered target, unresolvable when condition, or an ensure cycle.",
     action: "Fix the ensure declaration so its target resolves and its when names a key in ensureConditions, then re-run.",
     docRef: "packages/werkstatt-engine/src/kernel/runtime/execute-command.ts",
+  },
+  {
+    ruleId: "GATE-CMP-02",
+    contract: "step … threw during a composite gate run.",
+    action: "Fix the throwing step or catch the error inside it — the gate records the throw as a fail and continues, so the exception text is the defect.",
+    docRef: "packages/werkstatt-shared/src/kernel/composite-gate.ts",
   },
 ];
 

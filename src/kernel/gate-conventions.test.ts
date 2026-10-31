@@ -13,7 +13,7 @@ step id.</purpose>
 
 import { describe, expect, it } from "vitest";
 
-import { runCompositeGate } from "./composite-gate.ts";
+import { CompositeGateGraphError, runCompositeGate } from "./composite-gate.ts";
 import type {
   EnsureDecl,
   KernelCommandDefinition,
@@ -73,6 +73,33 @@ describe("RFC-1463 AC-4 — runCompositeGate reaches every independent step", ()
     ]);
     expect(result.ok).toBe(true);
     expect(result.summary).toEqual({ pass: 2, fail: 0, skipped: 0 });
+  });
+
+  it("a throwing step records fail with GATE-CMP-02 — later independent steps still run", async () => {
+    const ran: string[] = [];
+    const result = await runCompositeGate([
+      { id: "a", run: async () => { throw new Error("a exploded"); } },
+      { id: "b", run: async () => (ran.push("b"), { status: "pass" }) },
+    ]);
+    expect(ran).toEqual(["b"]);
+    expect(result.ok).toBe(false);
+    expect(result.steps[0].status).toBe("fail");
+    expect(result.steps[0].diagnostics[0].ruleId).toBe("GATE-CMP-02");
+    expect(result.steps[0].diagnostics[0].message).toContain("a exploded");
+  });
+
+  it("a malformed dependsOn graph throws CompositeGateGraphError — never a false-green all-skip", async () => {
+    await expect(
+      runCompositeGate([
+        { id: "a", dependsOn: ["b"], run: async () => ({ status: "pass" }) },
+        { id: "b", dependsOn: ["a"], run: async () => ({ status: "pass" }) },
+      ]),
+    ).rejects.toThrow(CompositeGateGraphError);
+    await expect(
+      runCompositeGate([
+        { id: "a", dependsOn: ["missing"], run: async () => ({ status: "pass" }) },
+      ]),
+    ).rejects.toThrow(CompositeGateGraphError);
   });
 
   it("failFast restores first-failure abort — later steps never run and are not recorded", async () => {

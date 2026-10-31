@@ -11,12 +11,12 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1385: scoped closed-rebuild write mode for release.prepare</item>
   <item>RFC-1385: close RFC-1385 review warnings — invoke siteWorkspace forwarding, error-path closedWrites, AC-4 hook clause</item>
   <item>RFC-1385: stamp RFC-1385 implemented</item>
   <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
   <item>RFC-1463: composite gates report complete violation sets and self-ensure prerequisites — ensure/compositeGate metadata, executor ensure runner, blockedBy skip tracking, ENSURE-01..04 + GATE-CMP-01, runCompositeGate</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1354, RFC-1366, RFC-1369</history>
+  <item>RFC-1463: address review r1 findings — dependsOn graph pre-validation, ensureChain invoke-port propagation, unregistered-target ENSURE-04, thrown-step GATE-CMP-02, preflight skipped surfacing</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1354, RFC-1366, RFC-1369, RFC-1385</history>
 </CHANGE_SUMMARY>
 */
 
@@ -797,6 +797,13 @@ export interface ExecuteKernelCommandOptions {
    * missions (currentMission is null).
    */
   siteWorkspace?: DiscoveredSiteWorkspace;
+  /**
+   * RFC-1463: the active self-ensure chain inherited by delegated invocations
+   * (`context.invoke`) — an ensure target that loops back onto the chain
+   * resolves as a declaration error instead of unbounded recursion. Internal
+   * executor plumbing, never a CLI option.
+   */
+  ensureChain?: string[];
 }
 
 export interface ExecuteKernelPipelineOptions {
