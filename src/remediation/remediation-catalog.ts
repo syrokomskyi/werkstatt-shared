@@ -11,17 +11,17 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1460: recurring frictions escalate to mechanical measures — FRICTION-06/07/08, registry flips, session-retro escalation</item>
   <item>RFC-1463: composite gates report complete violation sets and self-ensure prerequisites — ensure/compositeGate metadata, executor ensure runner, blockedBy skip tracking, ENSURE-01..04 + GATE-CMP-01, runCompositeGate</item>
   <item>RFC-1463: address review r1 findings — dependsOn graph pre-validation, ensureChain invoke-port propagation, unregistered-target ENSURE-04, thrown-step GATE-CMP-02, preflight skipped surfacing</item>
   <item>RFC-1463: address review r2 findings — ensure re-entry guard, registry-build ENSURE-04, duplicate-id check, skipped typing + assertion, ensured on error path</item>
   <item>RFC-1466: apply r1 repairs — fragment remedies reachable via lookupRemediation, pending-marker ordering, comment-preserving catalogRefs</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1461, warpgogol-m000196</history>
+  <item>RFC-1466: apply r2 repairs — extend-path diagnosticCodes merge, publishConfig exports, marker idempotency, walk-up fragment resolution</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
-import { readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { parse as yamlParse } from "yaml";
 
 export interface RemediationPattern {
@@ -5911,10 +5911,31 @@ export const REMEDIATION_CATALOG: ReadonlyMap<string, RemediationPattern> = new 
 // diagnosticCode → remedy lookup must see them at failure time (RFC-1461
 // channel). Fail-open, mtime-keyed memoization on cwd.
 const FRAGMENT_REL = join("docs", "remediation-catalog.custom.yaml");
-let fragmentCache: { mtimeMs: number; map: Map<string, RemediationPattern> } | null = null;
+// The kernel may be invoked from any subdirectory — resolve the workspace
+// root by walking up to the nearest ancestor carrying forge.yaml (ADR-0089:
+// never trust bare process.cwd()).
+function resolveFragmentPath(): string | null {
+  let dir = resolve(process.cwd());
+  for (let i = 0; i < 16; i++) {
+    if (existsSync(join(dir, "forge.yaml"))) {
+      const candidate = join(dir, FRAGMENT_REL);
+      return existsSync(candidate) ? candidate : null;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+  return null;
+}
+
+let fragmentCache: { path: string; mtimeMs: number; map: Map<string, RemediationPattern> } | null = null;
 
 function fragmentRemedies(): Map<string, RemediationPattern> {
-  const p = join(process.cwd(), FRAGMENT_REL);
+  const p = resolveFragmentPath();
+  if (p === null) {
+    fragmentCache = null;
+    return new Map();
+  }
   let mtimeMs: number;
   try {
     mtimeMs = statSync(p).mtimeMs;
@@ -5922,7 +5943,7 @@ function fragmentRemedies(): Map<string, RemediationPattern> {
     fragmentCache = null;
     return new Map();
   }
-  if (fragmentCache?.mtimeMs === mtimeMs) return fragmentCache.map;
+  if (fragmentCache?.path === p && fragmentCache.mtimeMs === mtimeMs) return fragmentCache.map;
   const map = new Map<string, RemediationPattern>();
   try {
     const parsed = yamlParse(readFileSync(p, "utf8")) as {
@@ -5945,7 +5966,7 @@ function fragmentRemedies(): Map<string, RemediationPattern> {
   } catch {
     /* malformed fragment — fail open */
   }
-  fragmentCache = { mtimeMs, map };
+  fragmentCache = { path: p, mtimeMs, map };
   return map;
 }
 
