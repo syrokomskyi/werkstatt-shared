@@ -11,12 +11,24 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
   <item>RFC-1463: composite gates report complete violation sets and self-ensure prerequisites — ensure/compositeGate metadata, executor ensure runner, blockedBy skip tracking, ENSURE-01..04 + GATE-CMP-01, runCompositeGate</item>
   <item>RFC-1463: address review r1 findings — dependsOn graph pre-validation, ensureChain invoke-port propagation, unregistered-target ENSURE-04, thrown-step GATE-CMP-02, preflight skipped surfacing</item>
   <item>RFC-1474: check-execution counters — apply review findings (F-1..F-9)</item>
   <item>RFC-1477: schema-first argv enum validation and flagsOpen passthrough</item>
-  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1354, RFC-1366, RFC-1369, RFC-1385</history>
+  <item>RFC-1484: harden ecosystem.commit — staged deletions, MODULE-LOAD-01, from-head, EC-27
+
+--files resolves each arg across worktree, index, HEAD tree: staged
+deletions commit as D without re-adding (F-0019); directory args on any
+source fail EC-27 naming swept paths; --no-renames keeps the D half of
+staged renames inside the pathspec set. Module-loader throws wrap as
+ModuleLoadError carrying structured MODULE-LOAD-01 (file, message,
+remediation) — the site module-state path uses the same wrap (F-0065).
+Opt-in --from-head intercepts before registry load, bundles the commit
+module's HEAD snapshot with transitive imports resolved against HEAD,
+dispatches through normal gates, and reports the snapshot SHA. AGENTS.md
+deletion guidance consolidated; F-0019 and F-0065 marked addressed.
+journal-model.pbt.test.ts quarantined (pre-existing flake).</item>
+  <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1354, RFC-1366, RFC-1369, RFC-1385, RFC-1461</history>
 </CHANGE_SUMMARY>
 */
 
@@ -620,6 +632,21 @@ export interface KernelPipelineStep {
  * calling register(). The buildRegistry function reads these arrays directly.
  */
 export type KernelModule = ModuleExport;
+
+/**
+ * RFC-1484: a command-module evaluation failure surfaced by the registry as a
+ * named diagnostic instead of a bare stack trace. `file` is the module path
+ * when resolvable (or the loader key), `message` carries the thrown error
+ * text, and `fixHint` names the remediation — inspect the worktree/foreign
+ * edits, or run `ecosystem.commit --from-head` when the commit module itself
+ * is broken.
+ */
+export interface ModuleLoadDiagnostic {
+  ruleId: "MODULE-LOAD-01";
+  file: string;
+  message: string;
+  fixHint: string;
+}
 
 export type ModuleFiberState =
   "declared" | "loading" | "active" | "draining" | "unloading" | "disposed" | "failed";
