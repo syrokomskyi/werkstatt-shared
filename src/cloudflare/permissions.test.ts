@@ -6,11 +6,15 @@ RFC-1326 acceptance tests: CLOUDFLARE_PERMISSIONS registry contents
 probe coverage invariants, WORKSHOP_ENV_ALLOWLIST matching, and the
 registry-rendered doc/hint strings the three permission surfaces consume.
 </purpose>
+<non-goals>
+  <item>TODO(compass): record the boundary this file must not take on.</item>
+</non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1326: initial — AC-1 registry assertions, probe/unknown invariants, allow-list match, render helpers.</item>
   <item>RFC-1326: single Cloudflare permission registry, token preflight, birth provisioning</item>
   <item>RFC-1326: review-fix pass — siteName targeting for app-scoped provisioning, allow-list completion</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

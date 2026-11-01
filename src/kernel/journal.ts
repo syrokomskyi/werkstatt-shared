@@ -9,6 +9,7 @@
 <CHANGE_SUMMARY>
   <item>RFC-1397: sunk from engine src/journal/{types,jsonl}.ts unchanged — single source for the ship-in-flight guard shared by engine and forge (FORGE-AUTONOMY-01 exemption).</item>
   <item>RFC-1397: guard mission lifecycle moves during in-flight ship operations (RFC-1397)</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 
@@ -145,7 +146,7 @@ export async function readJournal(
       }
       records.push(parsed);
     } catch {
-      // @ai-invariant[INV-journal-05]: a journal cut inside its final non-empty line raises TornLineError naming that line number — torn writes are never silently parsed (checked-by: test:packages/werkstatt-engine/src/journal/__tests__/journal-model.pbt.test.ts)
+      // INV-journal-05 (declared in werkstatt-engine src/journal/jsonl.ts): a journal cut inside its final non-empty line raises TornLineError naming that line number — torn writes are never silently parsed.
       const isLastNonEmpty =
         i === lines.length - 1 || (i === lines.length - 2 && lines[lines.length - 1].length === 0);
       if (isLastNonEmpty) {
@@ -187,7 +188,7 @@ export interface IncompleteOperation {
  * op-started was inspected — a completed later op masked an earlier
  * incomplete one (warpgogol-m000192 class of failure).
  */
-// @ai-invariant[INV-journal-03]: returns an incomplete op whenever one exists — the newest op-started without a terminal record, so a completed later op never masks an earlier incomplete one (checked-by: test:packages/werkstatt-engine/src/journal/__tests__/journal-model.pbt.test.ts)
+// INV-journal-03 (declared in werkstatt-engine src/journal/jsonl.ts): returns an incomplete op whenever one exists — the newest op-started without a terminal record, so a completed later op never masks an earlier incomplete one.
 export function findIncompleteOperation(records: JournalRecord[]): IncompleteOperation | null {
   const terminalOpIds = new Set(
     records.filter((r) => r.kind === "op-done" || r.kind === "op-abandoned").map((r) => r.opId),

@@ -13,12 +13,15 @@ round-trip on information it already possessed.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>Three-state step records — pass / fail / skipped are counted separately; a skipped step carries `blockedBy` (the root dependency id that failed) so a bare skip count is never a debugging dead end.</item>
-  <item>dependsOn transitively taints — a step whose dependency chain contains a failed or skipped step is itself skipped; skipped chains report the root failing step, not the nearest skipped ancestor.</item>
-  <item>The dependsOn graph is pre-validated before any step runs — a missing id or a reference to a later-declared step (which also catches cycles) is a declaration defect and throws rather than silently skipping every step into a false-green verdict.</item>
-  <item>A throwing step records `fail` with the exception as diagnostic — one bad step never aborts the complete-set contract for the steps that follow.</item>
+  <item>Three-state step records — a skipped step carries `blockedBy` (the root failed dependency id).</item>
+  <item>dependsOn transitively taints — skipped chains report the root failing step, not the nearest ancestor.</item>
+  <item>The dependsOn graph is pre-validated — a missing or later-declared reference throws rather than false-greening.</item>
+  <item>A throwing step records `fail` with the exception — one bad step never aborts the complete-set contract.</item>
   <item>failFast is the explicit escape for debugging — the default run always reaches every independent step.</item>
 </KEY_DECISIONS>
+<CHANGE_SUMMARY>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+</CHANGE_SUMMARY>
 </MODULE_CONTRACT>
 */
 

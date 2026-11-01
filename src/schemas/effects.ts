@@ -11,12 +11,6 @@ schema validation for the RFC-0134 glass-first effects model.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>dp7-m000006: platform default surface casts — header shell, hero shell,
-  and footer shell render a cast shadow when the site authors no `kind: shadow`
-  on `target: section`; `withDefaultEffects` /
-  `resolveEffectsForTargetWithDefaults` implement the authored-wins-per-kind
-  fill rule (`enabled: false` is the opt-out).</item>
-  <item>RFC-1420: one-line contract notes — lighten is the uniform tint (fade is the directional edge gradient); groundwork for the COMP-HYG-05 scrim/surfaceTone gate.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -25,6 +19,8 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>warpgogol-m000200: slot:* effect targets admit the generic surface pair (glass, shadow) — component-defined slots such as the footer's slot:footer-below pass strict effectAssignmentSchema validation.</item>
   <item>warpgogol-m000200: shadow effect gains `inset` — an inward cast for bottom-edge surfaces (e.g. slot:footer-below) that must not reserve document space below the element; box-shadow ink overflow never extends the scroll area, so outward bottom casts are unrenderable there.</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <history>dp7-m000006, RFC-1420</history>
 </CHANGE_SUMMARY>
 */
 

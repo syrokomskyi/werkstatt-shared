@@ -5,13 +5,19 @@
   <item>PIN/protection behavior — access-protection.test.ts owns that.</item>
 </non-goals>
 </MODULE_CONTRACT>
+<KEY_DECISIONS>
+  <item>All classification expectations route through the exported predicates — no local workers.dev/dev-alt literals re-derived in tests.</item>
+</KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1325: initial — predicate/classifier/builder coverage.</item>
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
+
+// @ai-invariant[INV-sitehost-02]: fixtures pin classification through the exported site-host predicates only — no re-derived workers.dev or dev/alt-prefix literals inside tests (checked-by: test:packages/werkstatt-shared/src/middleware/tests/site-host.test.ts)
 
 import { describe, expect, test } from "vitest";
 import {

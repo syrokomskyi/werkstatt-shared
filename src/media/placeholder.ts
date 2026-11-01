@@ -13,14 +13,15 @@ register `origin: "placeholder"` entries.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>The emitted token `slot-&lt;id&gt;` is the placeholder's identity end-to-end: basename of the seeded file, the frontmatter image value the composer writes, and the exact string `asset.slot.fulfill` replaces.</item>
-  <item>SVG output is byte-deterministic (no timestamps, no randomness); the injected rasterizer decides final bytes — same SVG + same encoder ⇒ same WebP.</item>
+  <item>The `slot-<id>` token is the placeholder's identity end-to-end — basename, frontmatter value, replacement key.</item>
+  <item>SVG output is byte-deterministic; same SVG + same encoder ⇒ same WebP.</item>
   <item>Placeholder ceiling is unconditional `preview` — a stand-in is never publishable; `awaitingGap` governs the real media, not the stand-in.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1346/AMD-010: created — renderSlotPlaceholderSvg + credit/register record builders.</item>
   <item>RFC-1346: defer final image generation to a post-approval asset.slot.fulfill command</item>
   <item>RFC-1346: implement: defer final image generation to post-approval asset.slot.fulfill — intake slotBriefs (INTAKE-24/25), material-credit placeholder sourceType + derivedFrom union, register origin/emitted, deterministic biome placeholder renderer + register seeding, publication-tier preview on placeholder-origin rows, imageSlots aspect, asset.slot.fulfill command (visual-review gate, source-first, provider seam, evidence), AMD-010 + fixtures regenerated</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

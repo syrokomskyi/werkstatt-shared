@@ -1,6 +1,6 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-1345: extraction-core tests — poppler-backed embedded-image and
+<purpose>extract-document.test coverage — RFC-1345: poppler-backed embedded-image and
 page-render extraction over a synthetic booklet fixture (no client material),
 deterministic naming/dedup/skip behavior, the 400px floor, plus the pure
 credit/register record builders.</purpose>
@@ -11,6 +11,7 @@ credit/register record builders.</purpose>
 <CHANGE_SUMMARY>
   <item>RFC-1345/AMD-009: created — real-poppler extraction over synthetic booklet fixture + record-builder tests.</item>
   <item>RFC-1345: carry source-derived media from client documents through the intake as extracted assets</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

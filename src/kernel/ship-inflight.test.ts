@@ -1,6 +1,6 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-1397 AC-3/AC-5 probes for isShipInFlight — journal-derived in-flight detection, stale degradation, ignoreOpId exemption, torn-line fail-closed.</purpose>
+<purpose>ship-inflight.test coverage — RFC-1397 AC-3/AC-5: journal-derived in-flight detection, stale degradation, ignoreOpId exemption, torn-line fail-closed.</purpose>
 <non-goals>
   <item>No command-level guard tests — refusal/skip behavior lives in the engine and forge suites.</item>
 </non-goals>
@@ -9,6 +9,7 @@
   <item>RFC-1397: initial tests.</item>
   <item>RFC-1397: guard mission lifecycle moves during in-flight ship operations (RFC-1397)</item>
   <item>RFC-1399: bound post-deploy dev mission.check to a 20-URL fidelity sample on matching same-artifact certify evidence</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

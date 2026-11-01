@@ -14,12 +14,13 @@
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>The kind set is a closed const tuple — the registry validator's unknown-kind diagnostic and the executor dispatch derive from the same array.</item>
-  <item>Defaults discriminate by deployment substrate (wrangler.jsonc present =&gt; CF), not by the registry kind label alone — scheduled-worker spans both substrates.</item>
+  <item>The kind set is a closed const tuple — validator and executor dispatch derive from one array.</item>
+  <item>Defaults discriminate by deployment substrate, not the kind label — scheduled-worker spans both.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1456: initial implementation — closed probe vocabulary + per-substrate defaults.</item>
   <item>RFC-1456: service health probing contour</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

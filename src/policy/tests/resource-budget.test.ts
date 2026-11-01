@@ -1,7 +1,7 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-  RFC-1418 AC-3 + AC-7 (shared side): the resourceBudget policy schema accepts
+  resource-budget.test coverage — RFC-1418 AC-3 + AC-7 (shared side): the resourceBudget policy schema accepts
   `inlineCssBytes {limit, mode}`, rejects malformed shapes, and resolve()
   applies the shared 24 KB blocking default when a site omits the key.
 </purpose>
@@ -9,6 +9,9 @@
   <item>dist measurement lives in werkstatt-site checks — this file pins the policy contract only.</item>
 </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+</CHANGE_SUMMARY>
 */
 
 import { describe, expect, it } from "vitest";

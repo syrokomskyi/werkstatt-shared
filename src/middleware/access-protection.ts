@@ -13,7 +13,6 @@
   <item>PIN check runs in the Workers runtime — Web Crypto only, no Node APIs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>warpgogol-m000193: prerendered-context guard — skip Host/Authorization reads when context.isPrerendered (static render carries a stub request whose headers getter logs a per-route Astro warning; real static-asset protection lives in worker.ts).</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
@@ -22,9 +21,12 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1340</item>
-  <history>RFC-0899, RFC-1097</history>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <history>RFC-0899, RFC-1097, warpgogol-m000193</history>
 </CHANGE_SUMMARY>
 */
+
+// @ai-invariant[INV-access-01]: a dev or alt host carrying a configured PIN secret never reaches the site without valid Basic-Auth credentials — protection fails closed on missing or wrong PIN (checked-by: test:packages/werkstatt-shared/src/middleware/tests/access-protection.test.ts)
 
 import { defineMiddleware } from "astro:middleware";
 import { isDevOrAltHost, isProvisionalHost } from "./site-host.ts";

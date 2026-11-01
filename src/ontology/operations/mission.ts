@@ -7,15 +7,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
-  <item>RFC-1210: closed-loop signal ingest to bounded missions (RFC-1210)</item>
   <item>RFC-1263</item>
   <item>RFC-1295</item>
   <item>RFC-1297: bordbuchEntryKindSchema gains deployment-rolled-back + live-state-reconciled.</item>
   <item>RFC-1336: bordbuchEntryKindSchema gains authority-delegation + authority-delegation-revoked.</item>
-  <history>RFC-0355, RFC-0473, RFC-0479, RFC-0480, RFC-0517, RFC-0706, RFC-0715, RFC-1097</history>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <history>RFC-0355, RFC-0473, RFC-0479, RFC-0480, RFC-0517, RFC-0706, RFC-0715, RFC-1097, RFC-1210</history>
 </CHANGE_SUMMARY>
 */
 

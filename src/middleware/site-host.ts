@@ -12,7 +12,7 @@ or `^(dev|alt)[.-]` literal is a HOST-01 defect.
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>Lives under middleware/ because the deployed Worker bundle reaches shared only via ./middleware/* subpaths; werkstatt-shared has no sternsystem/ export (plan escalation resolution).</item>
+  <item>Lives under middleware/ — the deployed Worker bundle reaches shared only via ./middleware/* subpaths.</item>
   <item>channelHost takes the channel workerName so provisional hosts map to &lt;workerName&gt;.&lt;account-subdomain&gt; — the caller owns worker-name derivation (dev-&lt;id&gt; etc.).</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
@@ -21,8 +21,11 @@ or `^(dev|alt)[.-]` literal is a HOST-01 defect.
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1325: review r1 — pin-carrying probes, AC-3 write ordering, dns-aid validate parity, hardened host lint</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
+
+// @ai-invariant[INV-sitehost-01]: every host-dependent branch imports classification from this module — a local workers.dev or dev/alt-prefix literal elsewhere is a HOST-01 defect (checked-by: test:packages/werkstatt-site/src/checks/site-host-lint.test.ts)
 
 /** RFC-1325 host classification: a real registered domain vs the provisional account workers.dev host. */
 export type SiteHostKind = "custom-domain" | "provisional-workers-dev";

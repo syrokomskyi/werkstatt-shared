@@ -7,12 +7,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0357: initial release and behavior snapshot schemas.</item>
-  <item>RFC-0608: extend releaseStateSchema with alt-deployed and promoted; add buildIdentitySchema.</item>
   <item>RFC-0627: add dev-deployed state (precedes alt-deployed in the three-channel deployment chain).</item>
   <item>RFC-0628: remove dev-deployed state (workpiece-based dev deploy does not enter the release state machine).</item>
   <item>RFC-0851: replace legacy state enum with artifact-only prepared|ready; make manifest strict; replace publishedAt with readyAt; add legacyReleaseStateSchema and legacyReleaseDiagnosticSchema.</item>
   <item>RFC-1341: releaseManifestSchema gains publicationTier (default "public") + belowPublic — the build's derived publication tier the release truthfully reports.</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <history>RFC-0357, RFC-0608</history>
 </CHANGE_SUMMARY>
 */
 

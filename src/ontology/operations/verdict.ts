@@ -15,11 +15,12 @@
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
   <item>channel is the closed dev/alt/main union — the same vocabulary deploy-execution uses.</item>
-  <item>detail is bounded at the schema boundary (300 chars, truncated marker) — the emitter calls boundedDetail, consumers can rely on the bound.</item>
+  <item>detail is bounded at the schema boundary (300 chars) — consumers can rely on the bound.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1458: initial — VerdictEvent schema, requirement tag pattern, boundedDetail.</item>
   <item>RFC-1458: emit requirement-mapped verdict events from deploy.smoke.run</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

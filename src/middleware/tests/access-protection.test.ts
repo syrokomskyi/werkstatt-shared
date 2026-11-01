@@ -10,14 +10,14 @@
 </KEY_DECISIONS>
 
 <CHANGE_SUMMARY>
-  <item>RFC-1249: wire werkstatt.commands.validate into packages.check + retire CMD-OUTPUT debt</item>
   <item>RFC-0899: protect workers.dev dev and alt channels with the PIN and noindex</item>
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1340</item>
   <item>RFC-1390: close review findings on invariant binding machinery</item>
-  <history>RFC-0899</history>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <history>RFC-0899, RFC-1249</history>
 </CHANGE_SUMMARY>
 */
 // @ai-invariant: fixtures must not couple to internals beyond the public surface under test
@@ -32,6 +32,7 @@ vi.mock("astro:middleware", () => ({
   defineMiddleware: (handler: unknown) => handler,
 }));
 
+// INV-access-01: the 401 expectations below pin the fail-closed guarantee bound in access-protection.ts.
 describe("RFC-0899: access protection middleware", () => {
   async function loadMiddleware() {
     return (await import("../access-protection.ts")).accessProtectionMiddleware as (

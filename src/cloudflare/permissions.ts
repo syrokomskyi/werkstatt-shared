@@ -14,14 +14,16 @@ workshop-root .env keys the kernel copies into process.env.
   <item>Do not model R2 S3 credentials — those are separate keys.</item>
   <item>Do not prove Edit-vs-Read granularity — probes are read-only; a token holding only Read on an Edit entry still reports ok (documented approximation).</item>
 </non-goals>
+</MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>probe: null marks write-only permissions (Cache Purge) — reported as `unknown`, never `missing`, so a healthy token never fails on an unprobeable entry.</item>
-  <item>WORKSHOP_ENV_ALLOWLIST entries carry `prefix` — `CLOUDFLARE_` and `R2_` match whole families; every entry names its consumer so growing the list is a deliberate registry edit.</item>
+  <item>probe: null marks write-only permissions — reported `unknown`, never `missing`, so healthy tokens never fail.</item>
+  <item>WORKSHOP_ENV_ALLOWLIST entries carry `prefix` for family matching; each entry names its consumer.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1326: initial — CloudflarePermission, CLOUDFLARE_PERMISSIONS (8 entries), WORKSHOP_ENV_ALLOWLIST, registry-rendered hint/table/env-block helpers.</item>
   <item>RFC-1326: single Cloudflare permission registry, token preflight, birth provisioning</item>
   <item>RFC-1326: review-fix pass — siteName targeting for app-scoped provisioning, allow-list completion</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

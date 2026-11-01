@@ -14,13 +14,14 @@ inherit the source's blockers verbatim (extraction never upgrades rights).</purp
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
   <item>pdfimages -list provides num→{page,width,height} without extracting — the 400px short-side floor filters candidates before any file is produced.</item>
-  <item>Exact-duplicate detection hashes the extracted PNG bytes; the emitted name is content-addressed on the WebP bytes (ext-&lt;sha12&gt;.webp) — deterministic across re-runs.</item>
+  <item>Emitted names are content-addressed on the WebP bytes (`ext-<sha12>.webp`) — deterministic across re-runs.</item>
   <item>Region is a normalized [x, y, width, height] page-space crop applied by page-render only; embedded-image extracts whole rasters.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1345/AMD-009: created — extractDocumentMedia + credit/register record builders.</item>
   <item>RFC-1368 review r1: pngDimensions' local PNG_SIG guard replaced by sniffMediaType — the signature table stays single-sourced.</item>
   <item>RFC-1345: carry source-derived media from client documents through the intake as extracted assets</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

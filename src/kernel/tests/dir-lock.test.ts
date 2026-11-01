@@ -1,7 +1,7 @@
 /*
 <MODULE_CONTRACT>
   <purpose>
-Unit tests for acquireDirLock covering the RFC-1376 contract: exclusive claim,
+dir-lock.test unit coverage for acquireDirLock — the RFC-1376 contract: exclusive claim,
 ordered waiter wake-up, dead-holder reclaim via pid liveness, stale-marker
 reclaim via mtime, and DirLockTimeoutError carrying holder context.
 </purpose>
@@ -12,6 +12,7 @@ reclaim via mtime, and DirLockTimeoutError carrying holder context.
 <CHANGE_SUMMARY>
   <item>RFC-1376: initial coverage — claim/exclusion/reclaim/timeout contract.</item>
   <item>RFC-1376: serialize playwright browser installs via dir-lock</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

@@ -1,7 +1,7 @@
 /*
 <MODULE_CONTRACT>
 <purpose>
-Unit tests for the RFC-1447 configClaims manifest key — strict entry shape,
+config-claims.test unit coverage for the RFC-1447 configClaims manifest key — strict entry shape,
 closed fact enum, and claim-path regex (AC-4).
 </purpose>
 <non-goals>
@@ -11,6 +11,7 @@ closed fact enum, and claim-path regex (AC-4).
 <CHANGE_SUMMARY>
   <item>RFC-1447: initial — configClaims schema coverage (AC-4)</item>
   <item>RFC-1447: add config-claims binding validation to pbp.content.validate</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

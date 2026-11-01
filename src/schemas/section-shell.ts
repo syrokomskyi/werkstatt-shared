@@ -13,8 +13,8 @@ module owns visual + structural wrapper props only.
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-0133: backfilled MODULE_MAP and CHANGE_SUMMARY markers for compass.validate compliance.</item>
-  <item>Added "flush" density for sections that need zero padding (e.g. fullscreen video flush to header).</item>
   <item>RFC-1323: write-time comment-terminator safety — shared comment-safety seam, authored CS-08 reject, injected neutralization, header-region scan</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

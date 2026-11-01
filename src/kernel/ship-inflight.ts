@@ -7,13 +7,14 @@
   </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>Journal-derived, not a lock file — an op already in flight when this lands is covered automatically, and a crashed ship stays visible through the stale window.</item>
-  <item>TornLineError propagates — a torn journal may be a mid-write by the in-flight op, so callers fail closed instead of guessing.</item>
-  <item>ignoreOpId exempts exactly one op — leitstand.ship's terminal mission-archive step passes its own opId so the sweep does not block on the operation executing it.</item>
+  <item>Journal-derived, not a lock file — a crashed ship stays visible through the stale window.</item>
+  <item>TornLineError propagates — a mid-write journal means callers fail closed instead of guessing.</item>
+  <item>ignoreOpId exempts exactly one op — the terminal archive step must not block on itself.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
   <item>RFC-1397: initial implementation — journal-derived in-flight predicate with stale degradation and self-op exemption.</item>
   <item>RFC-1397: guard mission lifecycle moves during in-flight ship operations (RFC-1397)</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

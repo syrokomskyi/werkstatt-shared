@@ -19,11 +19,6 @@ export that producers vendor byte-exact
   <item>Zod is the source of truth (spec D2)</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1410: intentLatinAlias + canonicalIntentPageId — single contract home for the localized-intent alias convention ('главная (home)' → page id 'home'), consumed by compose scaffold + both validator callsites.</item>
-  <item>RFC-1408/AMD-015: voice.contractSeed — optional producer-projected translation seed (terms/doNotTranslate/forbiddenPhrases/notesByLocale).</item>
-  <item>RFC-1368 review r2: non-goal rule range updated to INTAKE-01…34.</item>
-  <item>RFC-1357/AMD-012: first-fold art direction — required visual.artDirection (firstFold composition/surface/textSide/imageSubject/slotRef, imagery style/avoid, mockAssetRef); slotBriefs gain required placement + subjectKind and optional framing; subjectKind ⇔ role schema binding (represented-product only on depicts-represented-product); LAYOUT_VOCABULARY export for INTAKE-30.</item>
-  <item>RFC-1353/AMD-011: faq block — intakeFaqTopicSchema/intakeFaqEntrySchema (status conditionals), faqEntryTier(), envelope faq:, provenance.familyQuestionsSnapshot.</item>
   <item>RFC-1345/AMD-009: v2 asset cut — origin gains `extracted` (+derivedFrom provenance, schema-required iff extracted); `mediaHints` on kind:document; `depicts` required on image-bearing kinds (photo/product-photo/illustration); rights.gapRef replaced by rights.blockers[]; export title corrected to "Werkstatt Intake v2 envelope" in the pbpEntitySchemas branch.</item>
   <item>RFC-1342/AMD-007: werkstatt:intake/v2 cut — gap.kind typed (proof/rights/approval/scope-extension/operational); annotation gapRef replaced by blockers[] (≥1 on every non-published non-internal entity, schema-level) + ceiling draft|preview; operatorDecisions gain required effect plus appliesTo and grantsTier (conditional superRefine); pageSetIntent gains optional entityRefs; voice profile toneOfVoice/culturalRules non-null again; INTAKE-13 coverage widened to ceiling:preview entities.</item>
   <item>RFC-1346/AMD-010: slotBriefs[] on the envelope — deferred image-fulfilment briefs (role atmosphere|illustration|depicts-represented-product, aspectHint, preferredSources/awaitingGap); superRefine forbids prompt on depicts-represented-product and requires sources-or-gap there.</item>
@@ -52,7 +47,8 @@ on pre-existing queue.validate io-mutation debt (reproduced on clean HEAD
 (composition-validate + family-questions-export), engine 129/129
 (contract-ripple + intake-validate + register-intake); ripple dry-run all
 synced; rfc.acceptance.run 16 probes 0 failed.</item>
-  <history>ADR-0114, RFC-1281, RFC-1298, RFC-1301, RFC-1328</history>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <history>ADR-0114, RFC-1281, RFC-1298, RFC-1301, RFC-1328, RFC-1353, RFC-1357, RFC-1368, RFC-1408, RFC-1410</history>
 </CHANGE_SUMMARY>
 */
 

@@ -17,7 +17,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>Ownership rides a directory entry (`owner-<pid>`), not a file — writeFile is closed under the read-only adapter, while mkdir-via-exec stays open; readdir is a read op on every adapter.</item>
+  <item>Ownership rides an `owner-<pid>` directory entry — writeFile is closed read-only, mkdir-via-exec stays open.</item>
   <item>Liveness (kill(pid,0)) is primary dead-holder detection; mtime staleness covers only the unprobeable cases (missing marker, EPERM-class probe failures).</item>
   <item>A live holder is never reclaimed regardless of lock age — a multi-minute browser download is legitimate work.</item>
 </KEY_DECISIONS>
@@ -26,6 +26,7 @@
   <item>RFC-1377: review follow-up — removeLockDir gates the io.rm attempt behind !io.readonly (the ratchet-recognized guard); read-only adapters skip the doomed KERNEL-META-01 throw and go straight to exec rm -rf. Clears the latent guarded-mutation hit the registry-integrity scan attributes to all ensureChromium consumers.</item>
   <item>RFC-1376: initial implementation — mkdir-claim lock with owner-pid marker, liveness-driven dead-holder reclaim, bounded wait, DirLockTimeoutError carrying holder context.</item>
   <item>RFC-1376: serialize playwright browser installs via dir-lock</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

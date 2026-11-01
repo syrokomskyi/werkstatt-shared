@@ -1,6 +1,6 @@
 /*
 <MODULE_CONTRACT>
-<purpose>RFC-1334: computeCommandReachability tests — structural edges only, deterministic order.</purpose>
+<purpose>command-reachability.test coverage — computeCommandReachability produces structural edges only, in deterministic order.</purpose>
 <non-goals>
   <item>Not a coverage-validator suite — COVERAGE-01..03 semantics are covered by command.coverage.validate tests.</item>
 </non-goals>
@@ -9,6 +9,7 @@
   <item>RFC-1334: tests for AC-11 and edge ordering.</item>
   <item>RFC-1334: steps 1-3 — shared structural reachability, reachableVia in the command manifest, coverage validator on the shared scan</item>
   <item>RFC-1334: steps 1-3 — shared structural reachability, manifest reachableVia, shared coverage scan</item>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
 </CHANGE_SUMMARY>
 */
 

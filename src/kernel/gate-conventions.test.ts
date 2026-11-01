@@ -9,6 +9,9 @@ step id.</purpose>
   <item>Declaration-lint enforcement against the live registry is covered by the engine-side ensure tests — this suite pins contract shape and runner semantics on fixtures.</item>
 </non-goals>
 </MODULE_CONTRACT>
+<CHANGE_SUMMARY>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+</CHANGE_SUMMARY>
 */
 
 import { describe, expect, it } from "vitest";

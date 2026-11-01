@@ -11,20 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0231: optional per-asset `display` visibility override.</item>
-  <item>RFC-0488: status, usageBasis, aiUsage fields; new sourceType/role values; label mapping helpers.</item>
-  <item>RFC-1189: step 1 — partyKindLabels schema contract
-
-Add required partyKindLabels record (all seven creditPartyKindSchema
-members) to materialCreditLabelsSchema plus labelForMaterialCreditKind
-helper, so the public credits page renders localized kind labels instead
-of raw enum tokens. Seed the e2e cold-test labels fixture and cover the
-completeness gate with schema tests.</item>
   <item>RFC-1345: materialCreditSchema gains optional derivedFrom ({asset, sourceSha256, page?, region?, method}) for document-extracted assets.</item>
   <item>RFC-1346: sourceType gains "placeholder" (register-emitted slot stand-ins); derivedFrom becomes a union — document-extraction form or {slotBrief: SLOT-NN} for placeholder/fulfilled assets.</item>
   <item>REVIEW-CODE-2026-10-16-08 N5: target.domain gains "business-profile" — the canonical tree RFC-1307 seeded assets live in.</item>
   <item>RFC-1307: review-08 N1-N7 — ref-scoped rollback, pre-existing content preservation, svg resolution, explicit io</item>
-  <history>RFC-0220, RFC-0223, RFC-0228</history>
+  <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <history>RFC-0220, RFC-0223, RFC-0228, RFC-0231, RFC-0488, RFC-1189</history>
 </CHANGE_SUMMARY>
 */
 
