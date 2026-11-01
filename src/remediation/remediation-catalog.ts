@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1463: composite gates report complete violation sets and self-ensure prerequisites — ensure/compositeGate metadata, executor ensure runner, blockedBy skip tracking, ENSURE-01..04 + GATE-CMP-01, runCompositeGate</item>
   <item>RFC-1463: address review r1 findings — dependsOn graph pre-validation, ensureChain invoke-port propagation, unregistered-target ENSURE-04, thrown-step GATE-CMP-02, preflight skipped surfacing</item>
   <item>RFC-1463: address review r2 findings — ensure re-entry guard, registry-build ENSURE-04, duplicate-id check, skipped typing + assertion, ensured on error path</item>
   <item>RFC-1466: apply r1 repairs — fragment remedies reachable via lookupRemediation, pending-marker ordering, comment-preserving catalogRefs</item>
   <item>RFC-1466: apply r2 repairs — extend-path diagnosticCodes merge, publishConfig exports, marker idempotency, walk-up fragment resolution</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, warpgogol-m000196</history>
+  <item>RFC-1486: steps 5-6 — flow.install generates declaration, FLOW remediation catalog, regenerated artifacts</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -665,6 +665,140 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     docRef:
       "docs/rfcs/rfc-1365-require-golden-conformance-runs-against-authoritative-consumers-for-declared-contract-producers.md",
     targetFiles: ["forge.yaml"],
+  },
+  // --- Fixed branch model (RFC-1486) — flow.check rules -------------------
+  {
+    ruleId: "FLOW-01",
+    contract: "A local branch name matches neither the protected set nor the auto/<kind>-<YYMMDD>-<NN>-<slug> grammar.",
+    action:
+      "Integrate the branch's work through a conforming auto branch, then delete the stray name — git branch -d <name> when fully merged, git branch -D <name> to drop it.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-02",
+    contract: "The repository has no develop branch — the fixed model requires it as the integration target.",
+    action:
+      "Create develop by adopting the model — run flow.install, which creates develop at the tip of main (or fast-forwards it) as part of adoption.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-03",
+    contract: "The guard is not installed: core.hooksPath differs from hooks, the managed block is missing from hooks/pre-commit, or hooks/flow-guard.sh differs from the shipped asset.",
+    action:
+      "Re-run flow.install — it restores core.hooksPath, the managed pre-commit block, and the byte-exact guard in one idempotent pass.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+    targetFiles: ["hooks/pre-commit", "hooks/flow-guard.sh"],
+  },
+  {
+    ruleId: "FLOW-04",
+    contract: "main has commits that are not in develop — a back-merge is owed (warning).",
+    action:
+      "Back-merge main into develop through the release flow — the owed commits reach develop as a merge, never a direct commit.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-05",
+    contract: "forge.generated.yaml exists but fails the forge/generated@1 schema — an invalid marker is an error, never an exemption.",
+    action:
+      "Fix the marker to carry schema: forge/generated@1 plus non-empty generator and source strings — or delete it if the repository is governed, not generated.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+    targetFiles: ["forge.generated.yaml"],
+  },
+  // --- Guard refusals (hooks/flow-guard.sh, RFC-1486) ----------------------
+  {
+    ruleId: "FLOW-GUARD-01",
+    contract: "A commit was attempted directly on a protected integration branch (develop or main).",
+    action:
+      "Move the work onto a conforming auto branch — create auto/<kind>-<YYMMDD>-<NN>-<slug>, restage the change there and commit again.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-GUARD-02",
+    contract: "A commit was attempted on a branch name outside the auto/<kind>-<YYMMDD>-<NN>-<slug> grammar.",
+    action:
+      "Rename the branch to a conforming auto name — git branch -m <old> auto/<kind>-<YYMMDD>-<NN>-<slug> — then commit again.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-GUARD-03",
+    contract: "A commit was attempted on a detached HEAD outside a rebase or cherry-pick.",
+    action:
+      "Attach HEAD to a conforming auto branch — git switch -c auto/<kind>-<YYMMDD>-<NN>-<slug> — then commit again.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-GUARD-04",
+    contract: "FORGE_FLOW_OP carried a value outside the closed vocabulary (backmerge, install).",
+    action:
+      "Unset FORGE_FLOW_OP and commit again — only Forge flow commands set it; a hand-set value is treated as a bypass attempt.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  // --- Adoption refusals (flow.install, RFC-1486) --------------------------
+  {
+    ruleId: "FLOW-ADOPT-01",
+    contract: "develop carries commits that are not in main — adoption cannot level a diverged develop.",
+    action:
+      "Move develop's extra commits through a conforming auto branch first (rebase them onto main), then re-run flow.install.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-ADOPT-02",
+    contract: "core.hooksPath is already set to a value other than hooks — adoption never hijacks a foreign hooks directory.",
+    action:
+      "Repoint core.hooksPath to hooks and move the existing hooks under hooks/ — or unset it — then re-run flow.install.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-ADOPT-03",
+    contract: "The primary worktree has tracked modifications — adoption requires a clean primary checkout.",
+    action:
+      "Commit or stash the named tracked changes in the primary worktree, then re-run flow.install.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-ADOPT-04",
+    contract: "develop is checked out in a linked worktree that has tracked modifications — it cannot be fast-forwarded safely.",
+    action:
+      "Commit or stash the tracked changes in the worktree carrying develop, then re-run flow.install.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-ADOPT-05",
+    contract: "The repository is exempt (generated marker) or ungoverned (no forge.yaml) — only governed repositories are adopted.",
+    action:
+      "Run flow.install inside a governed repository — one with forge.yaml and no forge.generated.yaml marker.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+    targetFiles: ["forge.generated.yaml"],
+  },
+  {
+    ruleId: "FLOW-ADOPT-06",
+    contract: "The repository has commits but no main branch — the fixed model's release line is named main.",
+    action:
+      "Rename the default branch to main first — git branch -m <old> main — then re-run flow.install.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-ADOPT-08",
+    contract: "The primary worktree is on a branch other than main or develop — adoption starts from the release line.",
+    action:
+      "Switch the primary worktree to main — git switch main — then re-run flow.install.",
+    docRef:
+      "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
   },
   {
     ruleId: "A11Y-CONTRAST-01",
