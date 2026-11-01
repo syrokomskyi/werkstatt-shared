@@ -11,11 +11,11 @@
   <item>Kernel command contracts must stay explicit so agents cannot pass untyped command inputs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1385: stamp RFC-1385 implemented</item>
   <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
   <item>RFC-1463: composite gates report complete violation sets and self-ensure prerequisites — ensure/compositeGate metadata, executor ensure runner, blockedBy skip tracking, ENSURE-01..04 + GATE-CMP-01, runCompositeGate</item>
   <item>RFC-1463: address review r1 findings — dependsOn graph pre-validation, ensureChain invoke-port propagation, unregistered-target ENSURE-04, thrown-step GATE-CMP-02, preflight skipped surfacing</item>
   <item>RFC-1474: check-execution counters — apply review findings (F-1..F-9)</item>
+  <item>RFC-1477: schema-first argv enum validation and flagsOpen passthrough</item>
   <history>ADR-0089, RFC-0260, RFC-0267, RFC-0326, RFC-0390, RFC-0518, RFC-0579, RFC-0686, RFC-0960, RFC-1026, RFC-1027, RFC-1028, RFC-1038, RFC-1097, RFC-1126, RFC-1130, RFC-1133, RFC-1144, RFC-1147, RFC-1193, RFC-1231, RFC-1260, RFC-1303, RFC-1306, RFC-1327, RFC-1354, RFC-1366, RFC-1369, RFC-1385</history>
 </CHANGE_SUMMARY>
 */
@@ -326,6 +326,12 @@ export interface KernelFlagSpec {
   kind: "boolean" | "string" | "string[]";
   required?: boolean;
   default?: KernelFlagValue;
+  /**
+   * RFC-1477: closed value set for `string`/`string[]` flags — dispatch
+   * rejects any member outside it with KERNEL-FLAG-11 before the handler
+   * runs. Ignored for `boolean` flags.
+   */
+  enum?: string[];
   /** One-line description; consumed by --help and future generators (rfc-0266). */
   description: string;
 }
@@ -341,6 +347,12 @@ export interface KernelRegisteredCommandInfo extends KernelCommandMetadata {
   module?: string;
   /** RFC-0260: declared flag schema, when the command opts in. */
   flags?: Record<string, KernelFlagSpec>;
+  /**
+   * RFC-1477: when true the declared schema documents the surface but argv
+   * resolution stays on the legacy heuristic path — the passthrough family
+   * that legitimately forwards arbitrary flags downstream.
+   */
+  flagsOpen?: boolean;
   /** RFC-0266: declared IO globs, when the command opts in. */
   reads?: string[];
   writes?: string[];

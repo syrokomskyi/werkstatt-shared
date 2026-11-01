@@ -18,6 +18,7 @@ replaces KernelModule.register().
 
 Scheduler: collectErrors option on executeScheduledSteps — read-only steps (ScheduledStep.readOnly, executor-resolved from mutatesState === false) run after dependency failures with ranAfterFailedDependency annotation; ranTainted set propagates taint transitively so mutating dependents still skip. Executor: mergeCollectErrorsOption OR-merges PipelineDeclaration.collectErrors with the CLI flag at registry resolution; readOnly annotated post-buildSchedule; taint flag copied to step reports; tainted failures marked in pretty output. Contracts: PipelineDeclaration.collectErrors, KernelExecutionReport.ranAfterFailedDependency, pipelines maps store full declarations. Declarations: collectErrors on validation-gate registrations (build.post, check, build.check, compass, integrity.release in the workpiece template; packages.check in checks module). Tests: 10 new cases covering AC-1..AC-6 plus transitive taint.</item>
   <item>RFC-1461: declare rules[] severity via CommandRuleDecl workspace-wide (RFC-1461)</item>
+  <item>RFC-1477: schema-first argv enum validation and flagsOpen passthrough</item>
 </CHANGE_SUMMARY>
 */
 
@@ -90,6 +91,12 @@ export interface CommandDeclaration extends KernelCommandMetadata {
   name: string;
   /** RFC-0260: declared flag schema. */
   flags?: Record<string, KernelFlagSpec>;
+  /**
+   * RFC-1477: when true the schema documents the surface only — argv
+   * resolution keeps the heuristic path so arbitrary flags pass through to
+   * delegated commands/tools.
+   */
+  flagsOpen?: boolean;
   /** RFC-0266: workspace-root-relative path globs this command reads. */
   reads?: string[];
   /** RFC-0266: workspace-root-relative path globs this command writes. */
