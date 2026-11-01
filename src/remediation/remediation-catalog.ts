@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1463: address review r1 findings — dependsOn graph pre-validation, ensureChain invoke-port propagation, unregistered-target ENSURE-04, thrown-step GATE-CMP-02, preflight skipped surfacing</item>
   <item>RFC-1463: address review r2 findings — ensure re-entry guard, registry-build ENSURE-04, duplicate-id check, skipped typing + assertion, ensured on error path</item>
   <item>RFC-1466: apply r1 repairs — fragment remedies reachable via lookupRemediation, pending-marker ordering, comment-preserving catalogRefs</item>
   <item>RFC-1466: apply r2 repairs — extend-path diagnosticCodes merge, publishConfig exports, marker idempotency, walk-up fragment resolution</item>
   <item>RFC-1486: steps 5-6 — flow.install generates declaration, FLOW remediation catalog, regenerated artifacts</item>
+  <item>RFC-1486: review r1 — committed-state adoption gate, uncommitted-hook committedness, step-failure trail, idempotency declaration, lazy asset resolution</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -794,9 +794,9 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   },
   {
     ruleId: "FLOW-ADOPT-08",
-    contract: "The primary worktree is on a branch other than main or develop — adoption starts from the release line.",
+    contract: "The primary worktree is not in an adoptable position — either it sits on a branch other than main or develop, or it is on main while develop is already checked out in a linked worktree.",
     action:
-      "Switch the primary worktree to main — git switch main — then re-run flow.install.",
+      "On a foreign branch: switch the primary to main first (git switch main) and re-run flow.install. With develop checked out elsewhere: run flow.install from that worktree, or detach it first.",
     docRef:
       "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
   },
