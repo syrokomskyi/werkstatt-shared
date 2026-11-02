@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1466: apply r2 repairs — extend-path diagnosticCodes merge, publishConfig exports, marker idempotency, walk-up fragment resolution</item>
   <item>RFC-1486: steps 5-6 — flow.install generates declaration, FLOW remediation catalog, regenerated artifacts</item>
   <item>RFC-1486: review r1 — committed-state adoption gate, uncommitted-hook committedness, step-failure trail, idempotency declaration, lazy asset resolution</item>
   <item>RFC-1488: step 7 — release-lines AGENTS docs, FLOW remediation entries, regenerated artifacts</item>
   <item>RFC-1487: step 7 — remove RFC-1462 session-worktree paths, COMMIT-FGN-01 guard, and .sessions model; document flow lifecycle</item>
+  <item>RFC-1490: step 7 — release rules in forge AGENTS, FLOW-CUT/FIX/BM/INT-09/10 remediation entries, regenerated artifacts</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -982,6 +982,140 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     action: "Wait for the running integration to finish — locks older than two hours are broken automatically with a warning.",
     docRef:
       "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-09",
+    contract: "A port entry's tip is not the fixed-message back-merge commit — expected 'release <tags> → develop' with second parent port.mainSha.",
+    action:
+      "Commit the resolved merge inside the port worktree with git commit --no-edit (the subject stays fixed), or reopen the port with flow.backmerge --redo.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-INT-10",
+    contract: "develop moved since a back-merge port branch opened — the port would merge a stale main context.",
+    action: "Run flow.backmerge --redo to discard the stale port and reopen it on the new develop tip.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-01",
+    contract: "flow.cut ran in a repository that is not adopted into the fixed branch model (governed + guard installed + develop), or a release-internal git step failed.",
+    action: "Adopt the model with flow.install; if the diagnostic names a failed git step, inspect that step's stderr.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-02",
+    contract: "main carries a release not yet back-merged into develop — a cut must not reorder the owed port.",
+    action: "Run flow.backmerge first, then re-run flow.cut.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-03",
+    contract: "--lines named a release line the repository does not declare.",
+    action: "Pass only ids from flow.version --json (package dirs carrying extract.config.yaml).",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-04",
+    contract: "Nothing to release — the line has no pending commits or no baseline tag.",
+    action: "Drop the line from --lines, land work touching its paths first, or create the baseline tag with flow.install.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-05",
+    contract: "The computed level is major — major cuts are operator-only.",
+    action: "Re-run with ALLOW_MAJOR_BUMP=1 in the environment.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-06",
+    contract: "The release's target tag already exists.",
+    action: "Pick a different version, or delete the stray tag if it was never published.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-07",
+    contract: "The primary worktree is dirty or not on develop, the fix worktree is dirty, or another worktree holds main.",
+    action: "Switch the primary to develop, commit or revert its changes, and ensure no worktree checks out main.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-08",
+    contract: "hooks/release-fingerprints.sh failed or its stdout was not a flat YAML mapping of string keys to string values.",
+    action: "Fix the fingerprint hook to emit only 'key: value' string pairs, then re-run — main has not moved.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-09",
+    contract: "--lines was passed to a fix release — a fix derives its lines from the commits it carries.",
+    action: "Drop --lines; the fix's touched package lines are computed from git diff baseSha..fixTip.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-10",
+    contract: "A fix commit's X-RFC trailer demands minor or major — a fix releases a patch only.",
+    action: "Integrate the change on develop and run an ordinary flow.cut instead.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-11",
+    contract: "A version-file write failed verification — the top-level version field could not be replaced exactly once.",
+    action: "Fix the version file so the top-level \"version\" field is the release version; the release branch was removed.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-FIX-01",
+    contract: "flow.fix ran in a repository that is not adopted into the fixed branch model.",
+    action: "Run flow.install first.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-FIX-02",
+    contract: "main moved past the repository line's last-tag commit — the fix must start at the release baseline.",
+    action: "Cut a release first (flow.cut), then open the fix.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-FIX-03",
+    contract: "flow.fix was called with a --slug that fails the auto-branch grammar.",
+    action: "Pass a lowercase-hyphenated slug of 3–48 characters: ^[a-z0-9]+(-[a-z0-9]+)*$.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-FIX-04",
+    contract: "main is not an ancestor of develop — a back-merge port is owed, and two fixes must never stack two port branches.",
+    action: "Finish the pending back-merge first with flow.backmerge.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-BM-01",
+    contract: "flow.backmerge found the primary worktree dirty or not on develop, or main ahead without release tags to port.",
+    action: "Switch the primary to develop and commit or revert its changes; for a tagless main inspect refs/heads/main — only releases should advance it.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-BM-02",
+    contract: "A port entry for the same mainSha already exists — a second port must never race the first.",
+    action: "Finish the existing port with flow.integrate, or re-run with --redo to reopen it.",
+    docRef:
+      "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
   },
   {
     ruleId: "FLOW-DIS-01",
