@@ -18,6 +18,7 @@
   <item>RFC-1304: initial implementation — maskSource lifted from checks/commands-generate.ts and extended with template-depth tracking; new findDefinitionAnchors (satisfies form), fileHasCommandSignal, scanForbiddenCodepoints; NON_COMMAND_ALLOWLIST moved here for consumer parity.</item>
   <item>RFC-1304 review r1: positional signal pairing (unpairedCommandSignals) — an anchor consumes the annotation/shaped signal at its index and the satisfies tail after its literal end, so hybrid `: T = {…} satisfies KCD` counts once while literal-less `factory() satisfies KCD` stays suspect; CMDGEN_IGNORE_RE is line-anchored and tested against the keepComments mask so pragma text inside string literals cannot suppress; definition-field probe requires field position (prev char `{`/`,`) so ternary branches do not shape a literal.</item>
   <item>RFC-1321: review-r2: stringLiteralValue — comment-aware literal extractor keys COMMAND_PROVENANCE cleanly (adjacent comments no longer corrupt the key or evade CMDGEN-03); (?!\d) boundary in commitCarriesGovernanceProvenance; non-string --id guard</item>
+  <item>RFC-1495: steps 4-8 - worktree gate, hooks, marker, docs</item>
 </CHANGE_SUMMARY>
 */
 
@@ -668,4 +669,5 @@ export const NON_COMMAND_ALLOWLIST: ReadonlySet<string> = new Set([
   "checks/mirroring.ts",
   "check-warpgogol/commands/flag-schema-helpers.ts",
   "check-warpgogol/commands/evidence-readers.ts",
+  "scoped-gates.ts",
 ]);
