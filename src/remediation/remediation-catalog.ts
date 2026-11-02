@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1466: apply r1 repairs — fragment remedies reachable via lookupRemediation, pending-marker ordering, comment-preserving catalogRefs</item>
   <item>RFC-1466: apply r2 repairs — extend-path diagnosticCodes merge, publishConfig exports, marker idempotency, walk-up fragment resolution</item>
   <item>RFC-1486: steps 5-6 — flow.install generates declaration, FLOW remediation catalog, regenerated artifacts</item>
   <item>RFC-1486: review r1 — committed-state adoption gate, uncommitted-hook committedness, step-failure trail, idempotency declaration, lazy asset resolution</item>
   <item>RFC-1488: step 7 — release-lines AGENTS docs, FLOW remediation entries, regenerated artifacts</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, warpgogol-m000196</history>
+  <item>RFC-1487: step 7 — remove RFC-1462 session-worktree paths, COMMIT-FGN-01 guard, and .sessions model; document flow lifecycle</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -859,6 +859,157 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "Pick one of the listed line ids — repo or an extract.config.yaml package basename.",
     docRef:
       "docs/rfcs/rfc-1488-forge-flow-release-lines-and-versions-derived-from-release-tags.md",
+  },
+  {
+    ruleId: "FLOW-06",
+    contract: "An unregistered auto/* branch's last commit is older than the 72-hour staleness threshold.",
+    action:
+      "Decide the branch's fate: register its session with flow.open, integrate it with flow.integrate, or delete it — stale auto branches are never left to rot.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-07",
+    contract: "The shared flow registry disagrees with git state — a schema-invalid registry file, a registered branch or worktree missing, or an auto/* worktree without a registry entry.",
+    action:
+      "Inspect with flow.status; repair or remove .git/forge/registry.yaml when the schema is invalid, or reconcile stale entries with flow.discard.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-OPEN-01",
+    contract: "flow.open was called with an invalid --kind/--slug, or git worktree add failed.",
+    action:
+      "Pass --kind session (or --kind task) and a lowercase-hyphenated slug of 3–48 characters; on a git failure inspect the stderr — a stale ref or lock may need cleanup.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-OPEN-02",
+    contract: "flow.open found no local develop branch to branch from.",
+    action: "Adopt the fixed branch model with flow.install first.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-OPEN-03",
+    contract: "The sibling worktree path flow.open computed already exists on disk.",
+    action: "Remove the stale directory or pick a different --slug.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-OPEN-04",
+    contract: "No free daily sequence NN remains, or a raced branch-name collision outlasted the retry budget.",
+    action:
+      "Discard stale auto branches with flow.discard; on a racing collision simply re-run — the allocator picks the next free NN.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-OPEN-05",
+    contract: "flow.open --kind task was called without --owner <task-id>.",
+    action: "Pass the queue task id via --owner, or open a session branch instead.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-OPEN-06",
+    contract: "flow.open ran in a repository that is not governed by the fixed branch model.",
+    action: "Adopt the fixed branch model with flow.install; a malformed forge.generated.yaml marker must be fixed or removed first.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-OPEN-07",
+    contract: "The primary checkout's hooks/worktree-setup.sh failed inside the new worktree — the branch, worktree, and registry entry are kept.",
+    action: "Fix hooks/worktree-setup.sh in the primary checkout, then work in the opened worktree or discard it with flow.discard.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-01",
+    contract: "flow.integrate found tracked modifications inside the branch worktree.",
+    action: "Commit or revert the tracked changes inside the session worktree, then re-run.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-02",
+    contract: "Rebasing the registered branch onto develop produced conflicts — the rebase was aborted and the branch is left intact.",
+    action: "Resolve the rebase inside the session worktree (git rebase develop), commit, and re-run flow.integrate.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-03",
+    contract: "flow.integrate found the primary worktree dirty or not on develop before the fast-forward.",
+    action: "Switch the primary checkout to develop and commit or revert its tracked changes, then re-run — the branch stays rebased.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-04",
+    contract: "Post-integration cleanup failed — the teardown hook refused, or git worktree remove / branch -d failed after develop already moved.",
+    action: "Resolve what the diagnostic names (teardown demand, dirty files, locks) and re-run flow.integrate — the rerun resumes cleanup without moving develop again.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-05",
+    contract: "The primary checkout's hooks/integration-gate.sh refused the integration — develop is unchanged.",
+    action: "Fix what the gate demands inside the session worktree, then re-run flow.integrate.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-06",
+    contract: "flow.integrate could not resolve a registered session/task branch — no --branch on a detached HEAD, or the branch is not in the registry.",
+    action: "Pass --branch auto/<kind>-<YYMMDD>-<NN>-<slug> explicitly; check flow.status for live registered entries.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-07",
+    contract: "develop moved between the rebase and the fast-forward despite the integration lock, or git merge --ff-only failed.",
+    action: "Re-run flow.integrate — it rebases onto the new develop tip and retries the fast-forward.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-08",
+    contract: "The integration lock is held by another running integration.",
+    action: "Wait for the running integration to finish — locks older than two hours are broken automatically with a warning.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-DIS-01",
+    contract: "flow.discard was asked to remove a held branch — held entries are never discarded.",
+    action: "Release the hold first; the wave-2 outbound RFC defines flow.hold/flow.unhold.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-DIS-02",
+    contract: "flow.discard removal failed — the teardown hook refused, or git worktree remove / branch -D errored.",
+    action: "Resolve what the diagnostic names and re-run — the branch and registry entry are kept until every removal step succeeds.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-DIS-03",
+    contract: "flow.discard found tracked modifications inside the worktree and --dirty was not passed.",
+    action: "Commit or integrate the changes first, or re-run with --dirty to acknowledge discarding them.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-DIS-04",
+    contract: "flow.discard lacks a target — missing --reason, no resolvable branch, or the branch is not registered.",
+    action: "Re-run with --reason \"<operator's words>\" and --branch naming a registered auto/* entry — check flow.status for live entries.",
+    docRef:
+      "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
   },
   {
     ruleId: "A11Y-CONTRAST-01",
