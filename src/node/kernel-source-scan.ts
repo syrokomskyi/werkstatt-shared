@@ -19,6 +19,9 @@
   <item>RFC-1303: extracted from registry-integrity.test.ts — parsedFile/bindingsFor/topLevelDefs/resolveIdentSlice/executeSlice/handlerSlices verbatim, plus collectEnvReads for ENV-INPUT-01.</item>
   <item>RFC-1303 review: moved to werkstatt-shared/src/node/ (IO-01 — a sync AST scanner cannot take async io; this dir is the designated Node-only helper home). collectEnvReads now returns EnvReadResult with unresolved/truncated coverage stats so consumers can fail loud instead of silently under-scanning.</item>
   <item>RFC-1303: review REVIEW-CODE-2026-10-16-02 — scanner moves to werkstatt-shared/node (IO-01), workpieceEnv hashes into envDigest, saveCache tolerates KERNEL-META-01, ENV-INPUT-02 coverage notice, ratchet path-arg tightening</item>
+  <item>RFC-1497: step 2 — deterministic slicing and truncation reporting
+
+visited is keyed by identifier AND remaining depth: an ident first reached at low remaining depth re-resolves when a later path reaches it with more budget, so the slice set no longer depends on which path the DFS took first. ScanStats gains limit (slices|depth|slice-text|dynamic-child) recording the first limit hit; stats.limit is reset per call. Root cause of the observed order flip confirmed and recorded for the review: sequential expects (unresolved -> unguarded -> guarded) masked the already-computed guarded hit set — adding cacheWrites to the gate exempted its own unguarded hit, let the unguarded assert pass, and the guarded assert then surfaced 108 pre-existing hits at git.ts:51. Fixture tests cover AC-4 (identical hit sets forward/reverse/single, deep coverage survives shallow-first reach) and AC-5 (deep re-export chain reports truncated+depth).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -90,6 +93,8 @@ const MAX_SLICE_TEXT = 400_000;
 export interface ScanStats {
   unresolved: boolean;
   truncated: boolean;
+  /** Which walk limit cut the scan short — the first limit hit wins. */
+  limit?: "slices" | "depth" | "slice-text" | "dynamic-child";
 }
 
 export interface EnvReadResult {
@@ -106,7 +111,7 @@ export interface SourceScanner {
     ident: string,
     inFile: string,
     depth: number,
-    visited: Set<string>,
+    visited: Map<string, number>,
   ) => ResolvedNode | undefined;
   unwrapExpr: (node: ts.Expression) => ts.Expression;
   propNameText: (prop: ts.ObjectLiteralElementLike | ts.ClassElement) => string | undefined;
@@ -119,13 +124,13 @@ export interface SourceScanner {
   objectCandidatesFor: (
     expr: ts.Expression,
     file: string,
-    visited: Set<string>,
+    visited: Map<string, number>,
     depth: number,
   ) => ResolvedNode[];
   memberBodyNode: (
     candidate: ResolvedNode,
     name: string,
-    visited: Set<string>,
+    visited: Map<string, number>,
     depth: number,
   ) => ResolvedNode | undefined;
   deferredMemberNodes: (file: string, node: ts.Node) => Set<ts.Node>;
@@ -352,15 +357,21 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
     ident: string,
     inFile: string,
     depth: number,
-    visited: Set<string>,
+    visited: Map<string, number>,
   ): ResolvedNode | undefined => {
     if (depth <= 0) {
       depthCapHit = true;
+      if (firstLimit === undefined) firstLimit = "depth";
       return undefined;
     }
     const vkey = `${inFile}${ident}`;
-    if (visited.has(vkey)) return undefined;
-    visited.add(vkey);
+    // RFC-1497: visited remembers the REMAINING depth budget a key was
+    // resolved with, not just the key — an ident first reached at depth 1
+    // must re-resolve when a later path reaches it at depth 4, or the deeper
+    // coverage is lost to whichever path the walk happened to take first.
+    const seenDepth = visited.get(vkey);
+    if (seenDepth !== undefined && seenDepth >= depth) return undefined;
+    visited.set(vkey, depth);
     if (!parsedFile(inFile)) return undefined;
 
     const local = topLevelDefs(inFile).get(ident);
@@ -451,7 +462,7 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
   const executeExprSlice = (
     expr: ts.Expression,
     file: string,
-    visited: Set<string>,
+    visited: Map<string, number>,
   ): ResolvedNode | undefined => {
     const e = unwrapExpr(expr);
     // execute: runFoo
@@ -489,7 +500,7 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
     if (!pf) return undefined;
     const obj = findCommandObject(file, cmdName);
     if (!obj) return undefined;
-    const visited = new Set<string>();
+    const visited = new Map<string, number>();
     for (const prop of obj.properties) {
       if (propNameText(prop) !== "execute") continue;
       if (ts.isMethodDeclaration(prop) && prop.body) return { file, node: prop.body };
@@ -552,7 +563,7 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
   const objectCandidatesFor = (
     expr: ts.Expression,
     file: string,
-    visited: Set<string>,
+    visited: Map<string, number>,
     depth: number,
   ): ResolvedNode[] => {
     if (depth <= 0) return [];
@@ -609,7 +620,7 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
   const memberBodyNode = (
     candidate: ResolvedNode,
     name: string,
-    visited: Set<string>,
+    visited: Map<string, number>,
     depth: number,
   ): ResolvedNode | undefined => {
     const { file, node } = candidate;
@@ -674,7 +685,7 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
       }
     };
     const seenExprs = new Set<ts.Node>();
-    const visited = new Set<string>();
+    const visited = new Map<string, number>();
     const addValue = (expr: ts.Expression | undefined, depth: number) => {
       const e = expr && unwrapExpr(expr);
       if (!e || depth <= 0 || seenExprs.has(e)) return;
@@ -709,13 +720,21 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
   // walk then under-covers the real closure. Reset per handlerSlices call;
   // the scanner is synchronous so a factory-scoped flag is safe.
   let depthCapHit = false;
+  // RFC-1497: which limit cut the walk first — reported on ScanStats.limit so
+  // a truncated scan names its cause instead of passing as a lower bound.
+  let firstLimit: ScanStats["limit"];
 
   const handlerSlices = (file: string, cmdName: string, stats?: ScanStats): HandlerSlice[] => {
     if (stats) {
       stats.unresolved = false;
       stats.truncated = false;
+      stats.limit = undefined;
     }
     depthCapHit = false;
+    firstLimit = undefined;
+    const noteLimit = (limit: NonNullable<ScanStats["limit"]>): void => {
+      if (firstLimit === undefined) firstLimit = limit;
+    };
     const root = executeSlice(file, cmdName);
     if (!root) {
       if (stats) stats.unresolved = true;
@@ -725,7 +744,7 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
     const slices: HandlerSlice[] = [rootSlice];
     // key → still reachable only via guarded callsites
     const seen = new Map<string, boolean>([[`${root.file}:${root.node.getStart()}`, false]]);
-    const visited = new Set<string>();
+    const visited = new Map<string, number>();
     const queue: HandlerSlice[] = [rootSlice];
     let oversizeSkip = false;
     while (queue.length > 0 && slices.length < MAX_SLICES * 2) {
@@ -734,6 +753,7 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
       if (!pf) continue;
       if (cur.node.getEnd() - cur.node.getStart() > MAX_SLICE_TEXT) {
         oversizeSkip = true;
+        noteLimit("slice-text");
         continue;
       }
       // Returned-object methods are closures handed to the caller — the call
@@ -793,7 +813,7 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
               // object the binding may denote (`const adapter = resolveAdapter()`
               // → `adapter.health()` reaches each returned adapter's `health`).
               const localInit = topLevelDefs(cur.file).get(obj.text);
-              const valueVisited = new Set<string>();
+              const valueVisited = new Map<string, number>();
               const seedExprs: { file: string; expr: ts.Expression }[] = [];
               if (localInit && isExpressionNode(localInit))
                 seedExprs.push({ file: cur.file, expr: localInit });
@@ -824,7 +844,11 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
       };
       visit(cur.node);
     }
-    if (stats && (depthCapHit || oversizeSkip || queue.length > 0)) stats.truncated = true;
+    if (queue.length > 0 || slices.length >= MAX_SLICES * 2) noteLimit("slices");
+    if (stats && (depthCapHit || oversizeSkip || queue.length > 0)) {
+      stats.truncated = true;
+      stats.limit = firstLimit;
+    }
     return slices;
   };
 
