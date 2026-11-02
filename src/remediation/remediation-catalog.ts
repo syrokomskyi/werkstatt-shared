@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1486: steps 5-6 — flow.install generates declaration, FLOW remediation catalog, regenerated artifacts</item>
   <item>RFC-1486: review r1 — committed-state adoption gate, uncommitted-hook committedness, step-failure trail, idempotency declaration, lazy asset resolution</item>
   <item>RFC-1488: step 7 — release-lines AGENTS docs, FLOW remediation entries, regenerated artifacts</item>
   <item>RFC-1487: step 7 — remove RFC-1462 session-worktree paths, COMMIT-FGN-01 guard, and .sessions model; document flow lifecycle</item>
   <item>RFC-1490: step 7 — release rules in forge AGENTS, FLOW-CUT/FIX/BM/INT-09/10 remediation entries, regenerated artifacts</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, warpgogol-m000196</history>
+  <item>RFC-1491: step 6 — outbound AGENTS paragraphs, retro step 3f, FLOW-PUSH/HOLD/GUARD-05/10/INT-11 catalog</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -1144,6 +1144,132 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     action: "Re-run with --reason \"<operator's words>\" and --branch naming a registered auto/* entry — check flow.status for live entries.",
     docRef:
       "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
+  },
+  {
+    ruleId: "FLOW-INT-11",
+    contract: "flow.integrate was pointed at a held branch — held entries have no worktree and replay back via flow.unhold only.",
+    action: "Run flow.unhold --branch <held branch> to return it to the normal integrate path.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-10",
+    contract: "A package release line has no valid forge.generated.yaml (forge/generated@1, generator repo-extract) in its directory.",
+    action: "Re-run flow.install to restore the marker — a line without one must not be published.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-GUARD-05",
+    contract: "A plain git push ran in an adopted repository — pushes go through flow.push only (outbound by operator command).",
+    action: "Run pnpm exec forge flow.digest, review the risk digest, then let the operator run flow.push --digest <id>.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-HOLD-01",
+    contract: "flow.hold lacks a live target — --item names nothing in a freshly computed digest (or the arguments are missing).",
+    action: "Run flow.digest and quote a current item id; both --item and --reason are required.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-HOLD-02",
+    contract: "An unpushed release tag points at or above the item's base — the work is already released locally.",
+    action: "Push first (flow.push), or delete the tag if it was created in error.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-HOLD-03",
+    contract: "A registered open entry has its baseSha on the tail above the held item — a later integrate would bring the held commits back.",
+    action: "Integrate or discard that branch first, then re-run flow.hold.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-HOLD-04",
+    contract: "The primary worktree is dirty or not on develop — hold replay resets the primary checkout.",
+    action: "Commit or stash the primary checkout and switch it to develop, then re-run flow.hold.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-HOLD-05",
+    contract: "The item is a release, back-merge or unattributed run — only integration items can be held.",
+    action: "Discard or discard-resolve non-integration work instead of holding it.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-HOLD-06",
+    contract: "A merge commit lies above the item on the unpushed tail — cherry-pick replay cannot reorder merges.",
+    action: "Resolve the merge so the tail above the item is linear, then re-run flow.hold.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-HOLD-07",
+    contract: "A hold replay step failed — worktree creation, cherry-pick conflict, branch write or the primary reset; nothing changed.",
+    action: "Inspect the named git step; on a cherry-pick conflict reorder the work first, then re-run flow.hold.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-HOLD-08",
+    contract: "flow.unhold targets a branch that is not a registered held entry.",
+    action: "Check flow.status for held entries and pass --branch naming one.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-PUSH-01",
+    contract: "The repository has no 'origin' remote — the outbound flow reads and writes origin only.",
+    action: "Add an 'origin' remote first.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-PUSH-02",
+    contract: "The quoted digest id is stale — the recomputed digestId differs, or --digest is missing.",
+    action: "Run flow.digest, review the new state, and re-run flow.push --digest <new id>.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-PUSH-03",
+    contract: "An origin branch is not an ancestor of the local develop/main — someone pushed elsewhere.",
+    action: "Fetch, inspect the divergence and reconcile before pushing.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-PUSH-04",
+    contract: "git push --atomic failed — no ref was updated.",
+    action: "Inspect the push stderr in the diagnostic, fix the transport or ref problem, and re-run flow.push.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-PUSH-05",
+    contract: "A package-tag publication failed — extract, verify hook, or the destination push; other tags still publish.",
+    action: "Fix the named cause and re-run flow.push — journal-scoped retries publish exactly the pushed-but-unpublished remainder.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-PUSH-06",
+    contract: "A package line about to publish has no valid forge.generated.yaml in its directory.",
+    action: "Re-run flow.install to restore the marker, or remove the line's tags.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-PUSH-07",
+    contract: "node_modules/.bin/repo-extract is missing while package tags wait to publish.",
+    action: "Install the workspace dependencies so repo-extract is linked.",
+    docRef:
+      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
   },
   {
     ruleId: "A11Y-CONTRAST-01",
