@@ -11,12 +11,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1491: step 6 — outbound AGENTS paragraphs, retro step 3f, FLOW-PUSH/HOLD/GUARD-05/10/INT-11 catalog</item>
   <item>RFC-1492: add sternsystem.channels.migrate command with CHANNEL-MIGRATE guards and channel prose updates</item>
   <item>RFC-1493: step 2 — platform identity command, migrator-cursor pin comparison</item>
   <item>RFC-1493: step 4 — remove per-commit version bump, PC-01..04, version log; one commit path with universal X-RFC/X-ADR trailers</item>
   <item>RFC-1494: step 4 — prod gate call sites emit platformPrecondition; certify fails before capture, promote before authorization; PROD-PLATFORM-01..04 catalog entries</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, warpgogol-m000196</history>
+  <item>RFC-1496: step 3 — fingerprint refusals and --at
+
+platform.identity --fingerprints now refuses a dirty platform tree (git status --porcelain over packages/integrations/services non-empty → PLATFORM-ID-02, summary lists up to 10 paths) and a checkout that is not at --at <sha> (git rev-parse HEAD mismatch → PLATFORM-ID-03); both leave stdout empty so flow.cut fails FLOW-CUT-08. --at without --fingerprints warns and is ignored. The hash resolves through the context io and the module declares the flag plus both rules; remediation catalog carries PLATFORM-ID-02/03 (AC-5, AC-6).</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -6560,6 +6562,22 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "Inspect the reported read failure and re-run werkstatt run platform.identity --json to confirm the identity resolves, then re-run the fingerprints emit.",
     docRef:
       "docs/rfcs/rfc-1493-werkstatt-platform-identity-from-release-tags-and-commits-site-pins-compared-by-migrator-cursor.md",
+  },
+  {
+    ruleId: "PLATFORM-ID-02",
+    contract: "A release fingerprint is a property of the committed platform tree only — a modified or untracked-not-ignored file under packages/, integrations/ or services/ must never enter the tag annotation.",
+    action:
+      "Commit or remove the listed files, then re-run flow.cut — the hook re-runs platform.identity --fingerprints on the cleaned tree.",
+    docRef:
+      "docs/rfcs/rfc-1496-werkstatt-release-fingerprints-from-the-committed-platform-tree.md",
+  },
+  {
+    ruleId: "PLATFORM-ID-03",
+    contract: "A release fingerprint belongs to the release commit — the checkout must sit at the --at sha flow.cut passes so the tag annotates the tree it names.",
+    action:
+      "Check out the release commit and re-run flow.cut — it runs the hook in the primary on develop's tip, so integrate first when the session is not merged yet.",
+    docRef:
+      "docs/rfcs/rfc-1496-werkstatt-release-fingerprints-from-the-committed-platform-tree.md",
   },
   {
     ruleId: "PROD-PLATFORM-01",
