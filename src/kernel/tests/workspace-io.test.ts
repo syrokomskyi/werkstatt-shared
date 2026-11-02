@@ -32,6 +32,9 @@ werkstatt.worktree.gate, which would refuse every flow.integrate. The adapter
 now passes exactly git -C <dir> rev-parse and git -C <dir> worktree list (no
 caller env); the gate declares execOnReadOnly and its env inputs. The
 visual-regression gate test awaits the now-async baselineManifestPath.</item>
+  <item>RFC-1496: step 1 — read-only git allowlist gains ls-files
+
+Rename isWorktreeTopologyQuery to isReadOnlyGitQuery and admit git -C <dir> ls-files alongside rev-parse and worktree list; a caller-supplied env stays refused. The platform file set (step 2) resolves through ls-files, so read-only commands computing the platform hash would otherwise crash KERNEL-META-01 (AC-8).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -195,16 +198,22 @@ test("createReadOnlyIO: allowExec binds subprocess calls through to the base ada
   ).rejects.toThrow(KernelMetaError);
 });
 
-// RFC-1495: workshop paths resolve through git topology queries, so the
-// read-only adapter passes exactly `git -C <dir> rev-parse` and
-// `git -C <dir> worktree list` through; every other git call still throws.
-test("createReadOnlyIO: git rev-parse and worktree list pass through, other git calls throw", async () => {
+// RFC-1495/RFC-1496: workshop paths resolve through git topology queries and
+// the platform file set through ls-files, so the read-only adapter passes
+// `git -C <dir> rev-parse`, `git -C <dir> worktree list` and
+// `git -C <dir> ls-files` through; every other git call still throws.
+test("createReadOnlyIO: git rev-parse, worktree list and ls-files pass through, other git calls throw", async () => {
   const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command");
   const top = await io.exec("git", ["-C", process.cwd(), "rev-parse", "--show-toplevel"]);
   expect(top.exitCode).toBe(0);
   const list = await io.exec("git", ["-C", process.cwd(), "worktree", "list", "--porcelain"]);
   expect(list.exitCode).toBe(0);
   expect(list.stdout).toContain("worktree ");
+  const ls = await io.exec("git", ["-C", process.cwd(), "ls-files", "--", "packages"]);
+  expect(ls.exitCode).toBe(0);
+  await expect(() =>
+    io.exec("git", ["-C", process.cwd(), "add", "packages/x.ts"]),
+  ).rejects.toThrow(KernelMetaError);
   await expect(() =>
     io.exec("git", ["-C", process.cwd(), "worktree", "add", join(tmpdir(), "nope")]),
   ).rejects.toThrow(KernelMetaError);

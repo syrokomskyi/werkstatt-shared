@@ -22,12 +22,9 @@ capture intents, just from different adapters.
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
   <item>WorkspaceIO is the single filesystem seam — kernel commands never touch fs directly.</item>
-  <item>The read-only adapter passes exactly two git reads — `git -C dir rev-parse` and `git -C dir worktree list` — because every workshop path resolves through them; all other exec throws KERNEL-META-01.</item>
+  <item>The read-only adapter passes exactly the read-only git queries — `git -C dir rev-parse`, `git -C dir worktree list`, `git -C dir ls-files` — because workshop paths and the platform file set resolve through them; all other exec throws KERNEL-META-01.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
@@ -43,7 +40,10 @@ werkstatt.worktree.gate, which would refuse every flow.integrate. The adapter
 now passes exactly git -C <dir> rev-parse and git -C <dir> worktree list (no
 caller env); the gate declares execOnReadOnly and its env inputs. The
 visual-regression gate test awaits the now-async baselineManifestPath.</item>
-  <history>RFC-0267, RFC-0326</history>
+  <item>RFC-1496: step 1 — read-only git allowlist gains ls-files
+
+Rename isWorktreeTopologyQuery to isReadOnlyGitQuery and admit git -C <dir> ls-files alongside rev-parse and worktree list; a caller-supplied env stays refused. The platform file set (step 2) resolves through ls-files, so read-only commands computing the platform hash would otherwise crash KERNEL-META-01 (AC-8).</item>
+  <history>RFC-0267, RFC-0326, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -522,21 +522,22 @@ export function createReadOnlyIO(
     exec: opts?.allowExec
       ? base.exec.bind(base)
       : async (command, args, execOpts) =>
-          isWorktreeTopologyQuery(command, args, execOpts)
+          isReadOnlyGitQuery(command, args, execOpts)
             ? base.exec(command, args, execOpts)
             : refuseExec(command, args, execOpts),
   };
 }
 
 /**
- * RFC-1495: `git -C <dir> rev-parse …` and `git -C <dir> worktree list …`
- * only read repository metadata. Every workshop path resolves through them
- * (resolveWorkshopPaths → forge resolveStateRoots), so the read-only adapter
- * lets exactly these two through; any other exec still throws KERNEL-META-01.
- * A caller-supplied env could point git at another repository or config, so
- * calls carrying one are refused.
+ * RFC-1495/RFC-1496: `git -C <dir> rev-parse …`, `git -C <dir> worktree list …`
+ * and `git -C <dir> ls-files …` only read repository metadata. Every workshop
+ * path resolves through the first two (resolveWorkshopPaths → forge
+ * resolveStateRoots) and the platform file set resolves through ls-files, so
+ * the read-only adapter lets exactly these through; any other exec still
+ * throws KERNEL-META-01. A caller-supplied env could point git at another
+ * repository or config, so calls carrying one are refused.
  */
-function isWorktreeTopologyQuery(
+function isReadOnlyGitQuery(
   command: string,
   args: string[],
   execOpts: ExecOptions | undefined,
@@ -544,6 +545,6 @@ function isWorktreeTopologyQuery(
   if (command !== "git" || execOpts?.env !== undefined) return false;
   if (args[0] !== "-C" || args.length < 3) return false;
   const sub = args.slice(2);
-  if (sub[0] === "rev-parse") return true;
+  if (sub[0] === "rev-parse" || sub[0] === "ls-files") return true;
   return sub[0] === "worktree" && sub[1] === "list";
 }
