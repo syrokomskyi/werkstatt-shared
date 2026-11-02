@@ -22,6 +22,16 @@ Unit tests for workspace io covering its documented public contract and regressi
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
   <item>RFC-1311: Compass header sweep — declares the workspace suite's contract for test-file scaffold coverage.</item>
+  <item>RFC-1495: read-only commands resolve workshop paths; worktree gate declares its subprocesses
+
+Every workshop path now resolves through git rev-parse and git worktree list
+(RFC-1495), but the read-only adapter that mutatesState:false commands get
+refuses every exec. About a hundred read-only commands (workpiece.read,
+workpiece.config.presence.check, ...) crashed with KERNEL-META-01, and so did
+werkstatt.worktree.gate, which would refuse every flow.integrate. The adapter
+now passes exactly git -C <dir> rev-parse and git -C <dir> worktree list (no
+caller env); the gate declares execOnReadOnly and its env inputs. The
+visual-regression gate test awaits the now-async baselineManifestPath.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -182,6 +192,30 @@ test("createReadOnlyIO: allowExec binds subprocess calls through to the base ada
   // Filesystem mutations still throw even with allowExec.
   await expect(() =>
     io.writeFile(join(process.cwd(), "readonly-guard-no.txt"), "x"),
+  ).rejects.toThrow(KernelMetaError);
+});
+
+// RFC-1495: workshop paths resolve through git topology queries, so the
+// read-only adapter passes exactly `git -C <dir> rev-parse` and
+// `git -C <dir> worktree list` through; every other git call still throws.
+test("createReadOnlyIO: git rev-parse and worktree list pass through, other git calls throw", async () => {
+  const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command");
+  const top = await io.exec("git", ["-C", process.cwd(), "rev-parse", "--show-toplevel"]);
+  expect(top.exitCode).toBe(0);
+  const list = await io.exec("git", ["-C", process.cwd(), "worktree", "list", "--porcelain"]);
+  expect(list.exitCode).toBe(0);
+  expect(list.stdout).toContain("worktree ");
+  await expect(() =>
+    io.exec("git", ["-C", process.cwd(), "worktree", "add", join(tmpdir(), "nope")]),
+  ).rejects.toThrow(KernelMetaError);
+  await expect(() => io.exec("git", ["-C", process.cwd(), "branch", "-D", "nope"])).rejects.toThrow(
+    KernelMetaError,
+  );
+  await expect(() => io.exec("git", ["rev-parse", "HEAD"])).rejects.toThrow(KernelMetaError);
+  await expect(() =>
+    io.exec("git", ["-C", process.cwd(), "rev-parse", "HEAD"], {
+      env: { GIT_DIR: "/nonexistent" },
+    }),
   ).rejects.toThrow(KernelMetaError);
 });
 

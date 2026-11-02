@@ -22,9 +22,9 @@ capture intents, just from different adapters.
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
   <item>WorkspaceIO is the single filesystem seam — kernel commands never touch fs directly.</item>
+  <item>The read-only adapter passes exactly two git reads — `git -C dir rev-parse` and `git -C dir worktree list` — because every workshop path resolves through them; all other exec throws KERNEL-META-01.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-0326: createDefaultIO returns { io, intents } — writes touch real disk AND record WriteIntent[] for filesModified reporting.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -33,7 +33,17 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1159: step 1 — execOrThrow helper in workspace-io</item>
   <item>RFC-1306 review-r1: writeFileIfChanged — io-port idempotent write (read-compare-skip); filesModified reports only real byte changes.</item>
-  <history>RFC-0267</history>
+  <item>RFC-1495: read-only commands resolve workshop paths; worktree gate declares its subprocesses
+
+Every workshop path now resolves through git rev-parse and git worktree list
+(RFC-1495), but the read-only adapter that mutatesState:false commands get
+refuses every exec. About a hundred read-only commands (workpiece.read,
+workpiece.config.presence.check, ...) crashed with KERNEL-META-01, and so did
+werkstatt.worktree.gate, which would refuse every flow.integrate. The adapter
+now passes exactly git -C <dir> rev-parse and git -C <dir> worktree list (no
+caller env); the gate declares execOnReadOnly and its env inputs. The
+visual-regression gate test awaits the now-async baselineManifestPath.</item>
+  <history>RFC-0267, RFC-0326</history>
 </CHANGE_SUMMARY>
 */
 
@@ -469,6 +479,9 @@ export function createReadOnlyIO(
       return abs === root.slice(0, -sep.length) || abs.startsWith(root);
     });
   const mayWrite = (p: string) => isTmpPath(p) || isCacheWritePath(p);
+  const refuseExec: WorkspaceIO["exec"] = async (command, args) => {
+    throw new KernelMetaError(commandName, `${command} ${args.join(" ")}`);
+  };
   return {
     readFile: base.readFile.bind(base),
     readFileBytes: base.readFileBytes.bind(base),
@@ -508,8 +521,29 @@ export function createReadOnlyIO(
     },
     exec: opts?.allowExec
       ? base.exec.bind(base)
-      : async (command, args) => {
-          throw new KernelMetaError(commandName, `${command} ${args.join(" ")}`);
-        },
+      : async (command, args, execOpts) =>
+          isWorktreeTopologyQuery(command, args, execOpts)
+            ? base.exec(command, args, execOpts)
+            : refuseExec(command, args, execOpts),
   };
+}
+
+/**
+ * RFC-1495: `git -C <dir> rev-parse …` and `git -C <dir> worktree list …`
+ * only read repository metadata. Every workshop path resolves through them
+ * (resolveWorkshopPaths → forge resolveStateRoots), so the read-only adapter
+ * lets exactly these two through; any other exec still throws KERNEL-META-01.
+ * A caller-supplied env could point git at another repository or config, so
+ * calls carrying one are refused.
+ */
+function isWorktreeTopologyQuery(
+  command: string,
+  args: string[],
+  execOpts: ExecOptions | undefined,
+): boolean {
+  if (command !== "git" || execOpts?.env !== undefined) return false;
+  if (args[0] !== "-C" || args.length < 3) return false;
+  const sub = args.slice(2);
+  if (sub[0] === "rev-parse") return true;
+  return sub[0] === "worktree" && sub[1] === "list";
 }
