@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1490: step 7 — release rules in forge AGENTS, FLOW-CUT/FIX/BM/INT-09/10 remediation entries, regenerated artifacts</item>
   <item>RFC-1491: step 6 — outbound AGENTS paragraphs, retro step 3f, FLOW-PUSH/HOLD/GUARD-05/10/INT-11 catalog</item>
   <item>RFC-1492: add sternsystem.channels.migrate command with CHANNEL-MIGRATE guards and channel prose updates</item>
   <item>RFC-1493: step 2 — platform identity command, migrator-cursor pin comparison</item>
   <item>RFC-1493: step 4 — remove per-commit version bump, PC-01..04, version log; one commit path with universal X-RFC/X-ADR trailers</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, warpgogol-m000196</history>
+  <item>RFC-1494: step 4 — prod gate call sites emit platformPrecondition; certify fails before capture, promote before authorization; PROD-PLATFORM-01..04 catalog entries</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -6560,6 +6560,38 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "Inspect the reported read failure and re-run werkstatt run platform.identity --json to confirm the identity resolves, then re-run the fingerprints emit.",
     docRef:
       "docs/rfcs/rfc-1493-werkstatt-platform-identity-from-release-tags-and-commits-site-pins-compared-by-migrator-cursor.md",
+  },
+  {
+    ruleId: "PROD-PLATFORM-01",
+    contract: "A production deployment must only run on platform commits already integrated into develop — patch-identity (git cherry) semantics, never ancestry.",
+    action:
+      "Integrate the session so its platform patches land on develop (werkstatt run flow.integrate), then re-run werkstatt run release.prepare to record the integrated HEAD as platformCommit before shipping.",
+    docRef:
+      "docs/rfcs/rfc-1494-werkstatt-production-deploys-only-from-integrated-platform-commits.md",
+  },
+  {
+    ruleId: "PROD-PLATFORM-02",
+    contract: "Production deployments stay permitted while platform patches are integrated into local develop but not yet pushed — the warning prevents silent provenance loss, never blocks.",
+    action:
+      "Push develop so origin/develop carries the platform commits and the warning clears on the next preflight.",
+    docRef:
+      "docs/rfcs/rfc-1494-werkstatt-production-deploys-only-from-integrated-platform-commits.md",
+  },
+  {
+    ruleId: "PROD-PLATFORM-03",
+    contract: "A production deployment must never run on a dirty platform tree — uncommitted changes under the platform source paths falsify the recorded platformCommit.",
+    action:
+      "Commit or revert the dirty platform paths, then re-run werkstatt run release.prepare to re-record platformCommit and platformDirty before shipping.",
+    docRef:
+      "docs/rfcs/rfc-1494-werkstatt-production-deploys-only-from-integrated-platform-commits.md",
+  },
+  {
+    ruleId: "PROD-PLATFORM-04",
+    contract: "Every release manifest must record platformCommit so production deploys can prove platform patches are integrated — a missing pin fails closed.",
+    action:
+      "Re-run werkstatt run release.prepare to write platformCommit into release.yaml, then re-run the production gate.",
+    docRef:
+      "docs/rfcs/rfc-1494-werkstatt-production-deploys-only-from-integrated-platform-commits.md",
   },
 ];
 
