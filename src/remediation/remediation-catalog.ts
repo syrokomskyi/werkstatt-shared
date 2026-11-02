@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1486: review r1 — committed-state adoption gate, uncommitted-hook committedness, step-failure trail, idempotency declaration, lazy asset resolution</item>
   <item>RFC-1488: step 7 — release-lines AGENTS docs, FLOW remediation entries, regenerated artifacts</item>
   <item>RFC-1487: step 7 — remove RFC-1462 session-worktree paths, COMMIT-FGN-01 guard, and .sessions model; document flow lifecycle</item>
   <item>RFC-1490: step 7 — release rules in forge AGENTS, FLOW-CUT/FIX/BM/INT-09/10 remediation entries, regenerated artifacts</item>
   <item>RFC-1491: step 6 — outbound AGENTS paragraphs, retro step 3f, FLOW-PUSH/HOLD/GUARD-05/10/INT-11 catalog</item>
+  <item>RFC-1492: add sternsystem.channels.migrate command with CHANNEL-MIGRATE guards and channel prose updates</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -6505,6 +6505,58 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     contract: "step … threw during a composite gate run.",
     action: "Fix the throwing step or catch the error inside it — the gate records the throw as a fail and continues, so the exception text is the defect.",
     docRef: "packages/werkstatt-shared/src/kernel/composite-gate.ts",
+  },
+  // --- Deploy channel migration (RFC-1492) ---------------------------------
+  {
+    ruleId: "CHANNEL-01",
+    contract: "A site's system-config.yaml or system-state.yaml still names the legacy deploy channel main at the flagged key path.",
+    action:
+      "Run werkstatt run sternsystem.channels.migrate --id <site> — it renames the key to prod in the cache clone and commits; until then every registry reader refuses the site (never patch the file by hand).",
+    docRef:
+      "docs/rfcs/rfc-1492-werkstatt-rename-the-production-deploy-channel-main-to-prod.md",
+    targetFiles: [
+      "../systems-cache/<id>/system-config.yaml",
+      "../systems-cache/<id>/system-state.yaml",
+    ],
+  },
+  {
+    ruleId: "CHANNEL-MIGRATE-01",
+    contract: "sternsystem.channels.migrate received both --id and --all, or neither.",
+    action: "Re-run with exactly one selector — werkstatt run sternsystem.channels.migrate --id <site> or --all.",
+    docRef:
+      "docs/rfcs/rfc-1492-werkstatt-rename-the-production-deploy-channel-main-to-prod.md",
+  },
+  {
+    ruleId: "CHANNEL-MIGRATE-02",
+    contract: "A channel file carries both main and prod at the same key path — the migrate refuses to merge.",
+    action:
+      "Resolve the conflict manually in the flagged file (keep the prod value, delete the main key), then re-run werkstatt run sternsystem.channels.migrate --id <site>.",
+    docRef:
+      "docs/rfcs/rfc-1492-werkstatt-rename-the-production-deploy-channel-main-to-prod.md",
+  },
+  {
+    ruleId: "CHANNEL-MIGRATE-03",
+    contract: "The site is not migratable right now — an open mission, an in-flight ship op, or a dirty cache clone.",
+    action:
+      "Close the mission (werkstatt run mission.close), wait for the ship op to finish, or sweep the cache clone (werkstatt run sternsystem.sync --id <site>), then re-run the migrate.",
+    docRef:
+      "docs/rfcs/rfc-1492-werkstatt-rename-the-production-deploy-channel-main-to-prod.md",
+  },
+  {
+    ruleId: "CHANNEL-MIGRATE-04",
+    contract: "A write, git, or passport step of the migrate exited non-zero.",
+    action:
+      "Read the failed step in the diagnostic, fix it (permissions, git identity, signing key), and re-run — the rename is idempotent and resumes from whatever already committed.",
+    docRef:
+      "docs/rfcs/rfc-1492-werkstatt-rename-the-production-deploy-channel-main-to-prod.md",
+  },
+  {
+    ruleId: "CHANNEL-MIGRATE-05",
+    contract: "The site has passport.json but neither SIGNING_PRIVATE_KEY nor SIGNING_PRIVATE_KEY_PATH resolves — an unsigned passport would fail PASSPORT-02 after the rename.",
+    action:
+      "Provide the signing key (workshop .env or exported SIGNING_PRIVATE_KEY) and re-run werkstatt run sternsystem.channels.migrate --id <site>.",
+    docRef:
+      "docs/rfcs/rfc-1492-werkstatt-rename-the-production-deploy-channel-main-to-prod.md",
   },
 ];
 
