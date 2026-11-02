@@ -7,12 +7,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0627: add dev-deployed state (precedes alt-deployed in the three-channel deployment chain).</item>
   <item>RFC-0628: remove dev-deployed state (workpiece-based dev deploy does not enter the release state machine).</item>
   <item>RFC-0851: replace legacy state enum with artifact-only prepared|ready; make manifest strict; replace publishedAt with readyAt; add legacyReleaseStateSchema and legacyReleaseDiagnosticSchema.</item>
   <item>RFC-1341: releaseManifestSchema gains publicationTier (default "public") + belowPublic — the build's derived publication tier the release truthfully reports.</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
-  <history>RFC-0357, RFC-0608</history>
+  <item>RFC-1494: step 2 — release platform provenance (platformCommit + platformDirty)</item>
+  <history>RFC-0357, RFC-0608, RFC-0627</history>
 </CHANGE_SUMMARY>
 */
 
@@ -56,6 +56,17 @@ export const releaseManifestSchema = z
     readyAt: z.string().datetime().nullable(),
     state: releaseArtifactStateSchema,
     commitSha: z.string(),
+    /**
+     * RFC-1494: 40-hex platform HEAD at release.prepare — the private
+     * provenance the prod gate checks against develop. Optional: releases
+     * prepared before this RFC carry no provenance (PROD-PLATFORM-04).
+     */
+    platformCommit: z
+      .string()
+      .regex(/^[0-9a-f]{40}$/)
+      .optional(),
+    /** RFC-1494: true when the platform tree was dirty at release.prepare. */
+    platformDirty: z.boolean().optional(),
     platformSemanticHash: z.string(),
     siteContentHash: z.string(),
     distTreeHash: z.string(),
