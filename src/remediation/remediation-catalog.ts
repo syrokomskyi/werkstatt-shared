@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1487: step 7 — remove RFC-1462 session-worktree paths, COMMIT-FGN-01 guard, and .sessions model; document flow lifecycle</item>
   <item>RFC-1490: step 7 — release rules in forge AGENTS, FLOW-CUT/FIX/BM/INT-09/10 remediation entries, regenerated artifacts</item>
   <item>RFC-1491: step 6 — outbound AGENTS paragraphs, retro step 3f, FLOW-PUSH/HOLD/GUARD-05/10/INT-11 catalog</item>
   <item>RFC-1492: add sternsystem.channels.migrate command with CHANNEL-MIGRATE guards and channel prose updates</item>
   <item>RFC-1493: step 2 — platform identity command, migrator-cursor pin comparison</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1488, warpgogol-m000196</history>
+  <item>RFC-1493: step 4 — remove per-commit version bump, PC-01..04, version log; one commit path with universal X-RFC/X-ADR trailers</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -4157,12 +4157,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     action: "Use letterString() or composeWord() from @warpgogol/werkstatt-shared/pbt instead.",
     docRef: "packages/werkstatt-site/src/checks/validator-pbt-safety.ts",
   },
-  {
-    ruleId: "PCD-01",
-    action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/checks/platform-commit-discipline.ts.",
-    docRef: "packages/werkstatt-site/src/checks/platform-commit-discipline.ts",
-  },
-  {
+    {
     ruleId: "PEER-01",
     contract: "pnpm install --dry-run failed with peer dependency issues but no specific conflicts could be parsed. Raw output: …",
     action: "Check the pnpm output manually for peer dependency conflicts.",
