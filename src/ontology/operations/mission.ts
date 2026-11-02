@@ -7,6 +7,7 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1493: step 3 — optional pinCommitAtOpen (40-hex) on the mission manifest.</item>
   <item>RFC-1295</item>
   <item>RFC-1297: bordbuchEntryKindSchema gains deployment-rolled-back + live-state-reconciled.</item>
   <item>RFC-1336: bordbuchEntryKindSchema gains authority-delegation + authority-delegation-revoked.</item>
@@ -35,6 +36,9 @@ export const missionManifestSchema = z.object({
   closedAt: z.string().datetime().nullable(),
   closedBy: z.string().nullable(),
   pinAtOpen: z.string().min(1),
+  // RFC-1493: pin.platform.commit recorded at open — the zero-commit guard
+  // compares it against the current checkout SHA, not the version string.
+  pinCommitAtOpen: z.string().regex(/^[0-9a-f]{40}$/).optional(),
   materializedAt: z.string().datetime().nullable(),
   reconciledAt: z.string().datetime().nullable(),
   migratedAt: z.string().datetime().nullable(),
