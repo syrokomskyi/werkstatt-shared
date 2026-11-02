@@ -12,6 +12,7 @@
   <item>RFC-0688: add titlePattern field to match against finding.title (always populated). messagePattern/descriptionPattern kept for forward compatibility but match against non-existent Finding fields.</item>
   <item>RFC-1149: migrate ambient filesystem and process IO to the WorkspaceIO port across engine and shared</item>
   <item>RFC-1208: add expiresOn/reviewAfter lifecycle fields; expired rules inactive in applySuppressions via asOf-aware UTC calendar-date comparison</item>
+  <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
 </CHANGE_SUMMARY>
 */
 
@@ -19,6 +20,7 @@ import { join } from "node:path";
 import { createDefaultIO, type WorkspaceIO } from "../kernel/workspace-io.ts";
 import { z } from "zod";
 import { parse as parseYaml } from "yaml";
+import { deployChannelSchema } from "../ontology/operations/leitstand.ts";
 
 /**
  * Minimal Finding shape matching @syrokomskyi/axiom-study's Finding interface.
@@ -51,8 +53,8 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 export const suppressionRuleSchema = z.object({
   ruleId: z.string().min(1),
   category: z.string().min(1),
-  channel: z.enum(["dev", "alt", "main"]).optional(),
-  channelNot: z.enum(["dev", "alt", "main"]).optional(),
+  channel: deployChannelSchema.optional(),
+  channelNot: deployChannelSchema.optional(),
   contentType: z.array(z.string()).optional(),
   urlPattern: z.string().optional(),
   titlePattern: z.string().optional(),

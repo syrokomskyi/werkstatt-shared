@@ -14,10 +14,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
-  <item>channel is the closed dev/alt/main union — the same vocabulary deploy-execution uses.</item>
+  <item>channel is the closed dev/alt/prod union — the same DEPLOY_CHANNELS vocabulary deploy-execution uses (RFC-1492).</item>
   <item>detail is bounded at the schema boundary (300 chars) — consumers can rely on the bound.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
+  <item>RFC-1492: verdictChannelSchema delegates to the single deployChannelSchema (dev/alt/prod).</item>
   <item>RFC-1458: initial — VerdictEvent schema, requirement tag pattern, boundedDetail.</item>
   <item>RFC-1458: emit requirement-mapped verdict events from deploy.smoke.run</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
@@ -25,6 +26,7 @@
 */
 
 import { z } from "zod";
+import { deployChannelSchema } from "./leitstand.ts";
 
 export const VERDICT_SCHEMA = "werkstatt:verdict/v1";
 
@@ -47,7 +49,8 @@ export function boundedDetail(value: string, max = VERDICT_DETAIL_MAX): string {
 export const verdictOutcomeSchema = z.enum(["pass", "fail", "inconclusive"]);
 export type VerdictOutcome = z.infer<typeof verdictOutcomeSchema>;
 
-export const verdictChannelSchema = z.enum(["dev", "alt", "main"]);
+// RFC-1492: the channel union is the single DEPLOY_CHANNELS definition.
+export const verdictChannelSchema = deployChannelSchema;
 export type VerdictChannel = z.infer<typeof verdictChannelSchema>;
 
 export const verdictEventSchema = z.object({

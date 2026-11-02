@@ -15,6 +15,7 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1297: lastPropagatedChannelSchema gains states rolled-back + reconciled; healthy becomes nullable (unknown until re-verified).</item>
+  <item>RFC-1492: DEPLOY_CHANNELS/DeployChannel/deployChannelSchema — the single channel definition (dev, alt, prod); deploymentStaticConfigSchema.channels built from it.</item>
   <history>RFC-0358, RFC-0379, RFC-0595, RFC-0624, RFC-0627, RFC-0666, RFC-0790</history>
 </CHANGE_SUMMARY>
 */
@@ -35,6 +36,12 @@ export const deploymentChannelSchema = z.object({
   // secretRefSchema removed (dead code — env vars were never set).
   secretsFile: z.string().optional(),
 });
+
+// RFC-1492: the deploy channels, defined exactly once for the whole platform.
+// The production channel is "prod" — "main" names only the git branch.
+export const DEPLOY_CHANNELS = ["dev", "alt", "prod"] as const;
+export type DeployChannel = (typeof DEPLOY_CHANNELS)[number];
+export const deployChannelSchema = z.enum(DEPLOY_CHANNELS);
 
 export const purgeResultSchema = z.object({
   success: z.boolean(),
@@ -95,11 +102,13 @@ export type LastPropagatedChannel = z.infer<typeof lastPropagatedChannelSchema>;
 export type PurgeResult = z.infer<typeof purgeResultSchema>;
 export const deploymentStaticConfigSchema = z.object({
   adapter: deploymentAdapterNameSchema,
-  channels: z.object({
-    dev: deploymentChannelSchema,
-    alt: deploymentChannelSchema,
-    main: deploymentChannelSchema,
-  }),
+  // RFC-1492: the channel set is built from DEPLOY_CHANNELS — adding or
+  // renaming a channel happens in the tuple above, never in this object.
+  channels: z.object(
+    Object.fromEntries(
+      DEPLOY_CHANNELS.map((channel) => [channel, deploymentChannelSchema]),
+    ) as Record<DeployChannel, typeof deploymentChannelSchema>,
+  ),
 });
 
 export type DeploymentStaticConfig = z.infer<typeof deploymentStaticConfigSchema>;

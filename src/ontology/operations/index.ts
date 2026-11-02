@@ -25,11 +25,11 @@ a passing 112-route capture at 1512.5s.
 - shared editorial precondition helper (checkEditorialPrecondition) reads
   packet.json + <release>-editorial.json via schemas sunk to
   werkstatt-shared/ontology/operations (engine cannot import werkstatt-site)
-- leitstand.certify --gate main reduces the producer plan to
+- leitstand.certify --gate prod reduces the producer plan to
   editorial-signoff when the precondition is unmet; fail decision names
   editorial.review.prepare/signoff in reasons + nextSteps
 - leitstand.promote checks the precondition before loading the
-  main-verification decision (ordered authorization)
+  prod-verification decision (ordered authorization)
 - adaptive budget clamp(10min + 15s x emittedHtmlCount, 20min, 90min)
   over dist/client/**.html; leitstand.certify.producerBudgetMs override
   (z.unknown so malformed values warn, never fail the config parse);
@@ -38,6 +38,7 @@ a passing 112-route capture at 1512.5s.
   last so gate-bound evidence mints closest to the decision
 - AC-6: cache-clone editorial coverage (prepare writes, verify read-only)</item>
   <item>RFC-1458: emit requirement-mapped verdict events from deploy.smoke.run</item>
+  <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
 </CHANGE_SUMMARY>
 */
 
@@ -154,6 +155,8 @@ export type {
 
 // RFC-0358/RFC-0379: Leitstand fleet propagation schemas.
 export {
+  DEPLOY_CHANNELS,
+  deployChannelSchema,
   deploymentAdapterNameSchema,
   deploymentChannelSchema,
   lastPropagatedChannelSchema,
@@ -164,6 +167,7 @@ export {
   routeFactSchema,
 } from "./leitstand.ts";
 export type {
+  DeployChannel,
   DeploymentAdapterName,
   DeploymentChannel,
   LastPropagatedChannel,

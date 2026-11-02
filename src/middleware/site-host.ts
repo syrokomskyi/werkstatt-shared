@@ -22,10 +22,13 @@ or `^(dev|alt)[.-]` literal is a HOST-01 defect.
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1325: review r1 — pin-carrying probes, AC-3 write ordering, dns-aid validate parity, hardened host lint</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
 </CHANGE_SUMMARY>
 */
 
 // @ai-invariant[INV-sitehost-01]: every host-dependent branch imports classification from this module — a local workers.dev or dev/alt-prefix literal elsewhere is a HOST-01 defect (checked-by: test:packages/werkstatt-site/src/checks/site-host-lint.test.ts)
+
+import type { DeployChannel } from "../ontology/operations/leitstand.ts";
 
 /** RFC-1325 host classification: a real registered domain vs the provisional account workers.dev host. */
 export type SiteHostKind = "custom-domain" | "provisional-workers-dev";
@@ -61,14 +64,14 @@ export function isProvisionalHost(domain: string | undefined): boolean {
  * Derive the serving host for a channel.
  * - custom-domain: `dev.<domain>` / `alt.<domain>` / `<domain>` (RFC-0899 convention).
  * - provisional-workers-dev: `<workerName>.<account-subdomain>` — the worker
- *   name IS the host label (`dev-<id>`, `alt-<id>`, `<id>`), so main and dev/alt
+ *   name IS the host label (`dev-<id>`, `alt-<id>`, `<id>`), so prod and dev/alt
  *   share the same derivation. `workerName` is the caller-derived channel worker
  *   name (RFC-0902 rule: adoption renames hosts, never worker names).
  */
 export function channelHost(
   kind: SiteHostKind,
   domain: string,
-  channel: "dev" | "alt" | "main",
+  channel: DeployChannel,
   workerName: string,
 ): string {
   if (kind === "custom-domain") {

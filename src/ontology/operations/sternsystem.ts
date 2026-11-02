@@ -16,6 +16,7 @@ RFC-0790: add systemConfigSchema, systemStateSchema, servicesRegistrySchema for 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1492: systemStateSchema.lastPropagated keyed by DEPLOY_CHANNELS (prod replaces main).</item>
   <item>RFC-1307: step 1 — shared PBP layout map, canonical writer, typed onboarding state</item>
   <item>RFC-1335: implement RFC-1335: fail-fast editorial gate, adaptive certify budget, gate-bound producer ordering
 
@@ -26,11 +27,11 @@ a passing 112-route capture at 1512.5s.
 - shared editorial precondition helper (checkEditorialPrecondition) reads
   packet.json + <release>-editorial.json via schemas sunk to
   werkstatt-shared/ontology/operations (engine cannot import werkstatt-site)
-- leitstand.certify --gate main reduces the producer plan to
+- leitstand.certify --gate prod reduces the producer plan to
   editorial-signoff when the precondition is unmet; fail decision names
   editorial.review.prepare/signoff in reasons + nextSteps
 - leitstand.promote checks the precondition before loading the
-  main-verification decision (ordered authorization)
+  prod-verification decision (ordered authorization)
 - adaptive budget clamp(10min + 15s x emittedHtmlCount, 20min, 90min)
   over dist/client/**.html; leitstand.certify.producerBudgetMs override
   (z.unknown so malformed values warn, never fail the config parse);
@@ -56,7 +57,12 @@ Test-Reason: regression — fixed 15min mission.check cliff on dev-deploy
 
 import { z } from "zod";
 import { starNameSchema } from "@warpgogol/werkstatt-shared/ontology/cosmic";
-import { deploymentStaticConfigSchema, lastPropagatedChannelSchema } from "./leitstand.ts";
+import {
+  DEPLOY_CHANNELS,
+  deploymentStaticConfigSchema,
+  lastPropagatedChannelSchema,
+  type DeployChannel,
+} from "./leitstand.ts";
 import { remediationAutonomyConfigSchema } from "../../remediation/remediation-classes.ts";
 
 const semverRe = /^\d+\.\d+\.\d+$/;
@@ -287,11 +293,11 @@ export const systemStateSchema = z.looseObject({
   currentMission: z.string().nullable().default(null),
   lastRelease: z.string().nullable().default(null),
   lastPropagated: z
-    .object({
-      dev: lastPropagatedChannelSchema.optional(),
-      alt: lastPropagatedChannelSchema.optional(),
-      main: lastPropagatedChannelSchema.optional(),
-    })
+    .object(
+      Object.fromEntries(
+        DEPLOY_CHANNELS.map((channel) => [channel, lastPropagatedChannelSchema.optional()]),
+      ) as Record<DeployChannel, z.ZodOptional<typeof lastPropagatedChannelSchema>>,
+    )
     .default({}),
   // RFC-0899: 4-digit PIN for dev/alt subdomain access protection. Null when not set.
   accessPin: z

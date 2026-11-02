@@ -7,12 +7,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1263</item>
   <item>RFC-1295</item>
   <item>RFC-1297: bordbuchEntryKindSchema gains deployment-rolled-back + live-state-reconciled.</item>
   <item>RFC-1336: bordbuchEntryKindSchema gains authority-delegation + authority-delegation-revoked.</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
-  <history>RFC-0355, RFC-0473, RFC-0479, RFC-0480, RFC-0517, RFC-0706, RFC-0715, RFC-1097, RFC-1210</history>
+  <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
+  <history>RFC-0355, RFC-0473, RFC-0479, RFC-0480, RFC-0517, RFC-0706, RFC-0715, RFC-1097, RFC-1210, RFC-1263</history>
 </CHANGE_SUMMARY>
 */
 
@@ -105,7 +105,7 @@ export const bordbuchEntryKindSchema = z.enum([
   "isolation",
   // RFC-1210: closed-loop remediation — a bounded mission opened by a signal
   "remediation-mission",
-  // RFC-1295: human editorial sign-off recorded at promote-main
+  // RFC-1295: human editorial sign-off recorded at promote-prod
   "editorial-signoff",
   // RFC-1336: operator-authority delegation lifecycle (grant / revoke)
   "authority-delegation",

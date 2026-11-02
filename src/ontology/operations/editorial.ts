@@ -12,8 +12,7 @@ consume these schemas. Types derive from schemas.</purpose>
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1336: sign-off reviewer accepts agent:<id>; delegatedBy + delegationId carry delegation provenance.</item>
-  <item>RFC-1335: sunk from @warpgogol/werkstatt-site/checks/editorial/schema.ts — the promote-main precondition helper in werkstatt-engine needs the same canonical shapes.</item>
+  <item>RFC-1335: sunk from @warpgogol/werkstatt-site/checks/editorial/schema.ts — the promote-prod precondition helper in werkstatt-engine needs the same canonical shapes.</item>
   <item>RFC-1296: warningsAck on the sign-off; warningsIncreased + contentWarningsHash on the packet (defaults keep RFC-1295 records valid).</item>
   <item>RFC-1295: initial schemas — werkstatt/editorial-packet@1 and werkstatt/editorial-signoff@1.</item>
   <item>RFC-1335: implement RFC-1335: fail-fast editorial gate, adaptive certify budget, gate-bound producer ordering
@@ -25,11 +24,11 @@ a passing 112-route capture at 1512.5s.
 - shared editorial precondition helper (checkEditorialPrecondition) reads
   packet.json + <release>-editorial.json via schemas sunk to
   werkstatt-shared/ontology/operations (engine cannot import werkstatt-site)
-- leitstand.certify --gate main reduces the producer plan to
+- leitstand.certify --gate prod reduces the producer plan to
   editorial-signoff when the precondition is unmet; fail decision names
   editorial.review.prepare/signoff in reasons + nextSteps
 - leitstand.promote checks the precondition before loading the
-  main-verification decision (ordered authorization)
+  prod-verification decision (ordered authorization)
 - adaptive budget clamp(10min + 15s x emittedHtmlCount, 20min, 90min)
   over dist/client/**.html; leitstand.certify.producerBudgetMs override
   (z.unknown so malformed values warn, never fail the config parse);
@@ -37,7 +36,8 @@ a passing 112-route capture at 1512.5s.
 - producers whose requirements all declare reuse.allowedFrom: [] sort
   last so gate-bound evidence mints closest to the decision
 - AC-6: cache-clone editorial coverage (prepare writes, verify read-only)</item>
-  <history>RFC-1295</history>
+  <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
+  <history>RFC-1295, RFC-1336</history>
 </CHANGE_SUMMARY>
 */
 
