@@ -11,11 +11,11 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1463: address review r2 findings — ensure re-entry guard, registry-build ENSURE-04, duplicate-id check, skipped typing + assertion, ensured on error path</item>
   <item>RFC-1466: apply r1 repairs — fragment remedies reachable via lookupRemediation, pending-marker ordering, comment-preserving catalogRefs</item>
   <item>RFC-1466: apply r2 repairs — extend-path diagnosticCodes merge, publishConfig exports, marker idempotency, walk-up fragment resolution</item>
   <item>RFC-1486: steps 5-6 — flow.install generates declaration, FLOW remediation catalog, regenerated artifacts</item>
   <item>RFC-1486: review r1 — committed-state adoption gate, uncommitted-hook committedness, step-failure trail, idempotency declaration, lazy asset resolution</item>
+  <item>RFC-1488: step 7 — release-lines AGENTS docs, FLOW remediation entries, regenerated artifacts</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -799,6 +799,66 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "On a foreign branch: switch the primary to main first (git switch main) and re-run flow.install. With develop checked out elsewhere: run flow.install from that worktree, or detach it first.",
     docRef:
       "docs/rfcs/rfc-1486-forge-flow-fixed-branch-model-with-guard-hooks-and-repository-adoption.md",
+  },
+  {
+    ruleId: "FLOW-ADOPT-07",
+    contract: "A release line cannot be baselined — the version file is lower than the last tag (never tag backwards), is unparsable, or the commit introducing it is not an ancestor of main.",
+    action:
+      "Raise the version file above the last tag or fix the wrong tag manually; land the version-introduction commit on main first; then re-run flow.install.",
+    docRef:
+      "docs/rfcs/rfc-1488-forge-flow-release-lines-and-versions-derived-from-release-tags.md",
+  },
+  {
+    ruleId: "FLOW-08",
+    contract: "A release line's version file differs from its last tag — a version file is only written at a release cut, so a divergence is an unbaselined line or a between-releases edit.",
+    action:
+      "When the file is higher, run flow.install to create the baseline tag; when lower or the tag is right, restore the version file to the tag's value.",
+    docRef:
+      "docs/rfcs/rfc-1488-forge-flow-release-lines-and-versions-derived-from-release-tags.md",
+    targetFiles: ["package.json"],
+  },
+  {
+    ruleId: "FLOW-09",
+    contract: "An extract.config.yaml declares versionBump — repo-extract would rewrite the version during export, outside the release flow.",
+    action:
+      "Remove versionBump from the extract.config.yaml — versions are cut by the release flow only.",
+    docRef:
+      "docs/rfcs/rfc-1488-forge-flow-release-lines-and-versions-derived-from-release-tags.md",
+    targetFiles: ["extract.config.yaml"],
+  },
+  {
+    ruleId: "FLOW-VER-01",
+    contract: "A release line has no reachable annotated baseline tag — without it no derived version exists.",
+    action:
+      "Run flow.install to create the baseline tag at the commit that introduced the current version.",
+    docRef:
+      "docs/rfcs/rfc-1488-forge-flow-release-lines-and-versions-derived-from-release-tags.md",
+  },
+  {
+    ruleId: "FLOW-VER-02",
+    contract: "Two package directories share one basename — their tag prefixes would collide.",
+    action:
+      "Rename one of the directories, or exclude it from the workspace globs in pnpm-workspace.yaml.",
+    docRef:
+      "docs/rfcs/rfc-1488-forge-flow-release-lines-and-versions-derived-from-release-tags.md",
+    targetFiles: ["pnpm-workspace.yaml"],
+  },
+  {
+    ruleId: "FLOW-VER-03",
+    contract: "An X-RFC commit trailer names an RFC that cannot be read under docs/rfcs — its versionBump cannot level the line, so it counts as patch.",
+    action:
+      "Fix the trailer to name a real RFC id, or restore the missing RFC file under docs/rfcs.",
+    docRef:
+      "docs/rfcs/rfc-1488-forge-flow-release-lines-and-versions-derived-from-release-tags.md",
+    targetFiles: ["docs/rfcs"],
+  },
+  {
+    ruleId: "FLOW-VER-04",
+    contract: "flow.version --line names a release line that does not exist.",
+    action:
+      "Pick one of the listed line ids — repo or an extract.config.yaml package basename.",
+    docRef:
+      "docs/rfcs/rfc-1488-forge-flow-release-lines-and-versions-derived-from-release-tags.md",
   },
   {
     ruleId: "A11Y-CONTRAST-01",
