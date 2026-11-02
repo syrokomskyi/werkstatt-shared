@@ -11,14 +11,16 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1492: add sternsystem.channels.migrate command with CHANNEL-MIGRATE guards and channel prose updates</item>
   <item>RFC-1493: step 2 — platform identity command, migrator-cursor pin comparison</item>
   <item>RFC-1493: step 4 — remove per-commit version bump, PC-01..04, version log; one commit path with universal X-RFC/X-ADR trailers</item>
   <item>RFC-1494: step 4 — prod gate call sites emit platformPrecondition; certify fails before capture, promote before authorization; PROD-PLATFORM-01..04 catalog entries</item>
   <item>RFC-1496: step 3 — fingerprint refusals and --at
 
 platform.identity --fingerprints now refuses a dirty platform tree (git status --porcelain over packages/integrations/services non-empty → PLATFORM-ID-02, summary lists up to 10 paths) and a checkout that is not at --at <sha> (git rev-parse HEAD mismatch → PLATFORM-ID-03); both leave stdout empty so flow.cut fails FLOW-CUT-08. --at without --fingerprints warns and is ignored. The hash resolves through the context io and the module declares the flag plus both rules; remediation catalog carries PLATFORM-ID-02/03 (AC-5, AC-6).</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, warpgogol-m000196</history>
+  <item>RFC-1498: step 5 — docs, remediation catalog, generated manifest
+
+forge AGENTS gains the adoption-hardening section: FLOW-07 stray branches have no 72 h grace, the legacy-tags step is informational, tagTriggers feeds digestId, and the marker source accepts network origins only. The remediation catalog gains FLOW-11 (unparseable workflow or unevaluated glob — fix YAML, keep patterns to the evaluated subset). Command manifest and COMMANDS.md regenerated for the FLOW-11 rule declaration and the .github/workflows read glob on flow.digest.</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -1223,6 +1225,13 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     action: "Check flow.status for held entries and pass --branch naming one.",
     docRef:
       "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+  },
+  {
+    ruleId: "FLOW-11",
+    contract: "A .github/workflows file cannot be parsed, or its on.push.tags pattern uses a glob Forge does not evaluate — tag triggers are skipped, never guessed.",
+    action: "Fix the workflow YAML; keep tag patterns to the evaluated subset (* within a segment, ** across segments, ? one char) — character classes and negations match nothing.",
+    docRef:
+      "docs/rfcs/rfc-1498-forge-flow-adoption-hardening-for-stray-auto-branches-marker-sources-and-pre-program-tags.md",
   },
   {
     ruleId: "FLOW-PUSH-01",
