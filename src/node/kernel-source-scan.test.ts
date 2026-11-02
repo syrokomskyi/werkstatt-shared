@@ -17,6 +17,9 @@
   <item>RFC-1497: step 2 — deterministic slicing and truncation reporting
 
 visited is keyed by identifier AND remaining depth: an ident first reached at low remaining depth re-resolves when a later path reaches it with more budget, so the slice set no longer depends on which path the DFS took first. ScanStats gains limit (slices|depth|slice-text|dynamic-child) recording the first limit hit; stats.limit is reset per call. Root cause of the observed order flip confirmed and recorded for the review: sequential expects (unresolved -> unguarded -> guarded) masked the already-computed guarded hit set — adding cacheWrites to the gate exempted its own unguarded hit, let the unguarded assert pass, and the guarded assert then surfaced 108 pre-existing hits at git.ts:51. Fixture tests cover AC-4 (identical hit sets forward/reverse/single, deep coverage survives shallow-first reach) and AC-5 (deep re-export chain reports truncated+depth).</item>
+  <item>RFC-1497: steps 3-4 — git allowlist model and child-command resolution
+
+READ_ONLY_GIT_QUERIES in workspace-io.ts is the single allowlist both the runtime adapter and the static scan share (DNA-91). In the scan, a call that resolves to forge git() body is exempt only when its argv array literal's leading strings cover an allowlist entry; a scratch re-resolve per callsite keeps already-visited callees independently classified, and one non-allowlisted route flips the git() body slice back to a hit (allowlistedGitEntry on the slice). Child commands are judged by declaration, never by descent: executeKernelCommand/executeRegisteredCommand sit in CALLEE_SKIP, and when the caller passes a childCalls out-param the scanner resolves the name (literal, const string, or for-of over a const string array) through an injected resolveCommandDeclaration; an unresolvable name truncates the scan with limit dynamic-child. The child model is opt-in so env scans stay unmarked. Fixtures cover AC-1 (rev-parse no hit), AC-2 (branch -D hit), AC-3 (no executor descent), AC-8 (mutating child recorded), plus mixed-route and dynamic-name cases.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -205,5 +208,224 @@ export const cmdE = {
     scanner.handlerSlices(file, "e.read", stats);
     expect(stats.truncated).toBe(true);
     expect(stats.limit).toBe("depth");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AC-1/AC-2 — read-only git allowlist modelled on a fixture forge git.ts
+// ---------------------------------------------------------------------------
+
+/**
+ * Fixture forge git() helper mirroring packages/forge/os/flow/git.ts shape —
+ * the scanner recognises the body by its path suffix and enclosing name, so
+ * the fixture keeps the same layout under its own root.
+ */
+const FIXTURE_GIT_TS = `export async function git(root: string, io: any, args: string[]): Promise<string> {
+  const res = await io.exec("git", ["-C", root, ...args]);
+  return res.stdout;
+}
+`;
+
+/** io.exec hit locations — a slice flagged allowlistedGitEntry contributes none. */
+function ratchetExecHits(root: string, slices: HandlerSlice[]): string[] {
+  const locs: string[] = [];
+  for (const s of slices) {
+    if (s.allowlistedGitEntry) continue;
+    const visit = (n: ts.Node) => {
+      if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
+        const recv = n.expression.expression;
+        if (ts.isIdentifier(recv) && recv.text === "io" && n.expression.name.text === "exec") {
+          locs.push(`${s.file.replace(`${root}/`, "")}:${n.getStart()}`);
+        }
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(s.node);
+  }
+  return [...new Set(locs)].sort();
+}
+
+describe("AC-1/AC-2: the scan models the read-only git allowlist", () => {
+  it("AC-1: git(root, io, ['rev-parse', '--show-toplevel']) reports no exec hit", () => {
+    const root = makeRoot();
+    put(root, "forge/os/flow/git.ts", FIXTURE_GIT_TS);
+    const file = put(
+      root,
+      "src/commands/g1.ts",
+      `import { git } from "../../forge/os/flow/git.ts";
+export const cmdG = {
+  name: "g.read",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    await git(ctx.workspaceRoot, ctx.io, ["rev-parse", "--show-toplevel"]);
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root);
+    const slices = scanner.handlerSlices(file, "g.read");
+    expect(ratchetExecHits(root, slices)).toEqual([]);
+    // The git() body slice IS present — exempted callsite-by-callsite.
+    expect(slices.some((s) => s.file.endsWith("git.ts") && s.allowlistedGitEntry === true)).toBe(
+      true,
+    );
+  });
+
+  it("AC-2: git(root, io, ['branch', '-D', name]) still reports an exec hit", () => {
+    const root = makeRoot();
+    put(root, "forge/os/flow/git.ts", FIXTURE_GIT_TS);
+    const file = put(
+      root,
+      "src/commands/g2.ts",
+      `import { git } from "../../forge/os/flow/git.ts";
+export const cmdG = {
+  name: "g.write",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    const name = "auto/x";
+    await git(ctx.workspaceRoot, ctx.io, ["branch", "-D", name]);
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root);
+    const slices = scanner.handlerSlices(file, "g.write");
+    expect(ratchetExecHits(root, slices)).toEqual([expect.stringContaining("git.ts")]);
+    expect(slices.some((s) => s.file.endsWith("git.ts") && s.allowlistedGitEntry === false)).toBe(
+      true,
+    );
+  });
+
+  it("a mixed handler: one allowlisted route and one mutating route flags", () => {
+    const root = makeRoot();
+    put(root, "forge/os/flow/git.ts", FIXTURE_GIT_TS);
+    const file = put(
+      root,
+      "src/commands/g3.ts",
+      `import { git } from "../../forge/os/flow/git.ts";
+export const cmdG = {
+  name: "g.mixed",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    await git(ctx.workspaceRoot, ctx.io, ["rev-parse", "HEAD"]);
+    await git(ctx.workspaceRoot, ctx.io, ["push", "origin", "main"]);
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root);
+    const slices = scanner.handlerSlices(file, "g.mixed");
+    // One non-allowlisted route into git() flips the whole body back to a hit.
+    expect(ratchetExecHits(root, slices)).toEqual([expect.stringContaining("git.ts")]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AC-3/AC-8 — child commands judged by their declaration
+// ---------------------------------------------------------------------------
+
+describe("AC-3/AC-8: child commands resolve by name, never by descent", () => {
+  const CHILD_GIT = `import { executeKernelCommand } from "../exec-stub.ts";
+export const cmdK = {
+  name: "k.parent",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    await executeKernelCommand({ workspaceRoot: ctx.workspaceRoot, commandName: "k.child" });
+  },
+};\n`;
+
+  it("AC-3: executeKernelCommand never descends into the executor source", () => {
+    const root = makeRoot();
+    // A fixture executor that, if descended into, would flag io.exec.
+    put(
+      root,
+      "src/exec-stub.ts",
+      `export async function executeKernelCommand(options: any): Promise<any> {
+  return options.io.exec("kernel", ["run"]);
+}\n`,
+    );
+    const file = put(root, "src/commands/k.ts", CHILD_GIT);
+    const scanner = createSourceScanner(root);
+    const childCalls: import("./kernel-source-scan.ts").ChildCommandCall[] = [];
+    const slices = scanner.handlerSlices(file, "k.parent", undefined, childCalls);
+    // The executor's own io.exec is never reached — no slice from exec-stub.
+    expect(slices.every((s) => !s.file.endsWith("exec-stub.ts"))).toBe(true);
+    expect(execHitLocs(root, slices)).toEqual([]);
+  });
+
+  it("AC-8: a literal mutating child produces a child call record", () => {
+    const root = makeRoot();
+    put(
+      root,
+      "src/exec-stub.ts",
+      `export async function executeKernelCommand(options: any): Promise<any> { return {}; }\n`,
+    );
+    const file = put(root, "src/commands/k.ts", CHILD_GIT);
+    const scanner = createSourceScanner(root, {
+      resolveCommandDeclaration: (name) =>
+        name === "k.child" ? { mutatesState: true } : undefined,
+    });
+    const childCalls: import("./kernel-source-scan.ts").ChildCommandCall[] = [];
+    scanner.handlerSlices(file, "k.parent", undefined, childCalls);
+    expect(childCalls).toHaveLength(1);
+    expect(childCalls[0].command).toBe("k.child");
+  });
+
+  it("an unresolvable child name truncates the scan (dynamic-child)", () => {
+    const root = makeRoot();
+    put(
+      root,
+      "src/exec-stub.ts",
+      `export async function executeKernelCommand(options: any): Promise<any> { return {}; }\n`,
+    );
+    const file = put(
+      root,
+      "src/commands/k2.ts",
+      `import { executeKernelCommand } from "../exec-stub.ts";
+export const cmdK = {
+  name: "k.dynamic",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    const name = Math.random() > 0 ? "a" : "b";
+    await executeKernelCommand({ workspaceRoot: ctx.workspaceRoot, commandName: name });
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root, {
+      resolveCommandDeclaration: () => ({ mutatesState: false }),
+    });
+    const stats = { unresolved: false, truncated: false };
+    const childCalls: import("./kernel-source-scan.ts").ChildCommandCall[] = [];
+    scanner.handlerSlices(file, "k.dynamic", stats, childCalls);
+    expect(stats.truncated).toBe(true);
+    expect(stats.limit).toBe("dynamic-child");
+    expect(childCalls).toEqual([]);
+  });
+
+  it("for-of over a const string array resolves every element", () => {
+    const root = makeRoot();
+    put(
+      root,
+      "src/exec-stub.ts",
+      `export async function executeKernelCommand(options: any): Promise<any> { return {}; }\n`,
+    );
+    const file = put(
+      root,
+      "src/commands/k3.ts",
+      `import { executeKernelCommand } from "../exec-stub.ts";
+const CHILDREN = ["k.a", "k.b"];
+export const cmdK = {
+  name: "k.batch",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    for (const child of CHILDREN) {
+      await executeKernelCommand({ workspaceRoot: ctx.workspaceRoot, commandName: child });
+    }
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root, {
+      resolveCommandDeclaration: (name) => ({ mutatesState: name === "k.b" }),
+    });
+    const childCalls: import("./kernel-source-scan.ts").ChildCommandCall[] = [];
+    scanner.handlerSlices(file, "k.batch", undefined, childCalls);
+    expect(childCalls.map((c) => c.command).sort()).toEqual(["k.a", "k.b"]);
   });
 });

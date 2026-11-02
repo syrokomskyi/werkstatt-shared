@@ -22,6 +22,9 @@
   <item>RFC-1497: step 2 — deterministic slicing and truncation reporting
 
 visited is keyed by identifier AND remaining depth: an ident first reached at low remaining depth re-resolves when a later path reaches it with more budget, so the slice set no longer depends on which path the DFS took first. ScanStats gains limit (slices|depth|slice-text|dynamic-child) recording the first limit hit; stats.limit is reset per call. Root cause of the observed order flip confirmed and recorded for the review: sequential expects (unresolved -> unguarded -> guarded) masked the already-computed guarded hit set — adding cacheWrites to the gate exempted its own unguarded hit, let the unguarded assert pass, and the guarded assert then surfaced 108 pre-existing hits at git.ts:51. Fixture tests cover AC-4 (identical hit sets forward/reverse/single, deep coverage survives shallow-first reach) and AC-5 (deep re-export chain reports truncated+depth).</item>
+  <item>RFC-1497: steps 3-4 — git allowlist model and child-command resolution
+
+READ_ONLY_GIT_QUERIES in workspace-io.ts is the single allowlist both the runtime adapter and the static scan share (DNA-91). In the scan, a call that resolves to forge git() body is exempt only when its argv array literal's leading strings cover an allowlist entry; a scratch re-resolve per callsite keeps already-visited callees independently classified, and one non-allowlisted route flips the git() body slice back to a hit (allowlistedGitEntry on the slice). Child commands are judged by declaration, never by descent: executeKernelCommand/executeRegisteredCommand sit in CALLEE_SKIP, and when the caller passes a childCalls out-param the scanner resolves the name (literal, const string, or for-of over a const string array) through an injected resolveCommandDeclaration; an unresolvable name truncates the scan with limit dynamic-child. The child model is opt-in so env scans stay unmarked. Fixtures cover AC-1 (rev-parse no hit), AC-2 (branch -D hit), AC-3 (no executor descent), AC-8 (mutating child recorded), plus mixed-route and dynamic-name cases.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -29,6 +32,8 @@ import { createRequire } from "node:module";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import ts from "typescript";
+
+import { READ_ONLY_GIT_QUERIES } from "../kernel/workspace-io.ts";
 
 export interface ParsedFile {
   sf: ts.SourceFile;
@@ -59,6 +64,14 @@ export interface HandlerSlice {
    * instead of crashing the command.
    */
   guardedEntry: boolean;
+  /**
+   * RFC-1497: set only on the slice that IS forge's `git()` body — true while
+   * every callsite that reached it passed an argv array whose leading string
+   * literals cover a READ_ONLY_GIT_QUERIES entry (the read-only adapter's
+   * allowlist). A single non-allowlisted `git(...)` route flips it to false
+   * permanently — the io.exec inside flags again.
+   */
+  allowlistedGitEntry?: boolean;
 }
 
 const MAX_RESOLVE_DEPTH = 5;
@@ -79,6 +92,11 @@ const CALLEE_SKIP = new Set([
   "super",
   "constructor",
   "require",
+  // RFC-1497: kernel executor entry points are judged by the child's own
+  // declaration, never by descending into the executor source — a child's
+  // writes are the child's to declare (the ratchet scans it directly).
+  "executeKernelCommand",
+  "executeRegisteredCommand",
 ]);
 
 const MAX_SLICES = 64;
@@ -100,6 +118,29 @@ export interface ScanStats {
 export interface EnvReadResult {
   reads: Map<string, { file: string; line: number }>;
   stats: ScanStats;
+}
+
+/**
+ * RFC-1497: an executeKernelCommand/executeRegisteredCommand call site found
+ * in the scanned slices. `command` is the statically resolved child name —
+ * present only when the name is a literal/const resolvable AND the injected
+ * declaration lookup knows it; a name the scan cannot resolve marks the scan
+ * truncated (limit "dynamic-child") instead of passing silently.
+ */
+export interface ChildCommandCall {
+  file: string;
+  node: ts.CallExpression;
+  command?: string;
+  /** Every path into this callsite passed through a try block. */
+  guarded: boolean;
+}
+
+export interface SourceScannerOptions {
+  /**
+   * Registry-backed declaration lookup for child-command resolution — the
+   * scanner never loads the registry itself (RFC-1497).
+   */
+  resolveCommandDeclaration?: (name: string) => { mutatesState?: boolean } | undefined;
 }
 
 export interface SourceScanner {
@@ -134,7 +175,12 @@ export interface SourceScanner {
     depth: number,
   ) => ResolvedNode | undefined;
   deferredMemberNodes: (file: string, node: ts.Node) => Set<ts.Node>;
-  handlerSlices: (file: string, cmdName: string, stats?: ScanStats) => HandlerSlice[];
+  handlerSlices: (
+    file: string,
+    cmdName: string,
+    stats?: ScanStats,
+    childCalls?: ChildCommandCall[],
+  ) => HandlerSlice[];
   isIoReceiver: (expr: ts.Expression) => boolean;
   isGuarded: (node: ts.Node, root: ts.Node) => boolean;
   collectEnvReads: (file: string, cmdName: string) => EnvReadResult;
@@ -145,8 +191,12 @@ export interface SourceScanner {
  * live inside the factory so two scanners over different roots never share
  * stale entries.
  */
-export function createSourceScanner(workspaceRoot: string): SourceScanner {
+export function createSourceScanner(
+  workspaceRoot: string,
+  options: SourceScannerOptions = {},
+): SourceScanner {
   const requireResolve = createRequire(import.meta.url);
+  const resolveCommandDeclaration = options.resolveCommandDeclaration;
 
   const parseCache = new Map<string, ParsedFile | undefined>();
   const parsedFile = (file: string): ParsedFile | undefined => {
@@ -724,7 +774,12 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
   // a truncated scan names its cause instead of passing as a lower bound.
   let firstLimit: ScanStats["limit"];
 
-  const handlerSlices = (file: string, cmdName: string, stats?: ScanStats): HandlerSlice[] => {
+  const handlerSlices = (
+    file: string,
+    cmdName: string,
+    stats?: ScanStats,
+    childCalls?: ChildCommandCall[],
+  ): HandlerSlice[] => {
     if (stats) {
       stats.unresolved = false;
       stats.truncated = false;
@@ -744,9 +799,122 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
     const slices: HandlerSlice[] = [rootSlice];
     // key → still reachable only via guarded callsites
     const seen = new Map<string, boolean>([[`${root.file}:${root.node.getStart()}`, false]]);
+    // key → forge git() body still reached only via allowlisted callsites
+    const gitAllowed = new Map<string, boolean>();
     const visited = new Map<string, number>();
     const queue: HandlerSlice[] = [rootSlice];
     let oversizeSkip = false;
+    let dynamicChildHit = false;
+
+    /**
+     * RFC-1497: an executeKernelCommand/executeRegisteredCommand call inside a
+     * scanned slice. The executor is never descended into — the child is
+     * judged by ITS declaration via the injected resolveCommandDeclaration.
+     * Name resolution handles a string literal, a `const` string, and a
+     * for-of variable bound to a `const` string array in the same slice;
+     * anything else truncates the scan with limit "dynamic-child" rather than
+     * passing silently. The whole child model is opt-in: without the
+     * childCalls out-param (env scans, fixture probes) executor calls are
+     * skipped by CALLEE_SKIP with no truncation marking.
+     */
+    const recordChildCall = (
+      call: ts.CallExpression,
+      calleeName: string,
+      cur: HandlerSlice,
+      guarded: boolean,
+    ): void => {
+      if (!childCalls) return;
+      const fail = () => {
+        dynamicChildHit = true;
+        noteLimit("dynamic-child");
+      };
+      const arg0 = call.arguments?.[0];
+      let nameExpr: ts.Expression | undefined;
+      if (calleeName === "executeKernelCommand") {
+        // executeKernelCommand({ commandName: <expr>, … })
+        if (!arg0 || !ts.isObjectLiteralExpression(unwrapExpr(arg0) ?? arg0)) return fail();
+        const obj = unwrapExpr(arg0) as ts.ObjectLiteralExpression;
+        for (const p of obj.properties) {
+          if (ts.isPropertyAssignment(p) && propNameText(p) === "commandName")
+            nameExpr = p.initializer;
+        }
+      } else {
+        // executeRegisteredCommand(<decl>, …) — decl.name carries the child.
+        const declArg = arg0 && unwrapExpr(arg0);
+        if (!declArg) return fail();
+        let declObj: ts.ObjectLiteralExpression | undefined;
+        if (ts.isObjectLiteralExpression(declArg)) declObj = declArg;
+        else if (ts.isIdentifier(declArg)) {
+          const def = topLevelDefs(cur.file).get(declArg.text);
+          if (def && ts.isObjectLiteralExpression(def)) declObj = def;
+        }
+        if (!declObj) return fail();
+        for (const p of declObj.properties) {
+          if (ts.isPropertyAssignment(p) && propNameText(p) === "name")
+            nameExpr = p.initializer;
+        }
+      }
+      if (!nameExpr) return fail();
+      const names = childNameValues(nameExpr, cur);
+      if (!names || names.length === 0) return fail();
+      for (const name of names) {
+        const decl = resolveCommandDeclaration?.(name);
+        if (!decl) return fail();
+        childCalls?.push({ file: cur.file, node: call, command: name, guarded });
+      }
+    };
+
+    /** Literal/const/for-of-array resolution of a child command name expression. */
+    const childNameValues = (expr: ts.Expression, cur: HandlerSlice): string[] | undefined => {
+      const e = unwrapExpr(expr);
+      if (ts.isStringLiteral(e)) return [e.text];
+      if (ts.isIdentifier(e)) {
+        const v = constStringValue(cur.file, e.text);
+        if (v !== undefined) return [v];
+        // for (const x of CONST_ARR) { … x … } — iterate the array's literals.
+        const forOf = enclosingForOf(e, cur.node);
+        if (forOf) {
+          const arrExpr = unwrapExpr(forOf.expression);
+          const arrNode = ts.isIdentifier(arrExpr)
+            ? topLevelDefs(cur.file).get(arrExpr.text)
+            : arrExpr;
+          if (arrNode && ts.isArrayLiteralExpression(arrNode)) {
+            const out: string[] = [];
+            for (const el of arrNode.elements) {
+              const elE = unwrapExpr(el);
+              if (!ts.isStringLiteral(elE)) return undefined;
+              out.push(elE.text);
+            }
+            return out;
+          }
+        }
+      }
+      return undefined;
+    };
+
+    /**
+     * The ForOfStatement inside `scope` whose loop variable is `ident` and
+     * which contains the reference — null when the ident is not a for-of
+     * variable inside this slice.
+     */
+    const enclosingForOf = (ident: ts.Identifier, scope: ts.Node): ts.ForOfStatement | null => {
+      let n: ts.Node | undefined = ident.parent;
+      while (n && n !== scope) {
+        if (ts.isForOfStatement(n)) {
+          const decl = n.initializer;
+          if (
+            ts.isVariableDeclarationList(decl) &&
+            decl.declarations.length === 1 &&
+            ts.isIdentifier(decl.declarations[0].name) &&
+            decl.declarations[0].name.text === ident.text
+          )
+            return n;
+        }
+        n = n.parent;
+      }
+      return null;
+    };
+
     while (queue.length > 0 && slices.length < MAX_SLICES * 2) {
       const cur = queue.pop()!;
       const pf = parsedFile(cur.file);
@@ -779,11 +947,45 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
           const callsiteGuarded = cur.guardedEntry || isGuarded(node, cur.node);
           const callee = node.expression;
           if (ts.isIdentifier(callee)) {
-            if (!CALLEE_SKIP.has(callee.text))
-              push(
-                resolveIdentSlice(callee.text, cur.file, MAX_RESOLVE_DEPTH, visited),
-                callsiteGuarded,
+            if (
+              (callee.text === "executeKernelCommand" ||
+                callee.text === "executeRegisteredCommand") &&
+              ts.isCallExpression(node)
+            ) {
+              recordChildCall(node, callee.text, cur, callsiteGuarded);
+            } else if (!CALLEE_SKIP.has(callee.text)) {
+              const resolved = resolveIdentSlice(
+                callee.text,
+                cur.file,
+                MAX_RESOLVE_DEPTH,
+                visited,
               );
+              push(resolved, callsiteGuarded);
+              // RFC-1497: a call that resolves to forge's git() helper is
+              // exempt only when its argv literals model the read-only
+              // adapter's allowlist — every other route into git() still
+              // flags (git commit/push/branch -D are what the rule is for).
+              // A callsite whose callee was already resolved (visited map)
+              // must still be judged — re-resolve with a scratch map so every
+              // git(...) argv is independently classified.
+              const gitRes =
+                resolved ??
+                resolveIdentSlice(
+                  callee.text,
+                  cur.file,
+                  MAX_RESOLVE_DEPTH,
+                  new Map<string, number>(),
+                );
+              if (gitRes && isFlowGitBody(gitRes)) {
+                const key = `${gitRes.file}:${gitRes.node.getStart()}`;
+                gitAllowed.set(
+                  key,
+                  (gitAllowed.get(key) ?? true) &&
+                    ts.isCallExpression(node) &&
+                    isAllowlistedGitCall(node),
+                );
+              }
+            }
           } else if (ts.isPropertyAccessExpression(callee)) {
             const obj = unwrapExpr(callee.expression);
             if (
@@ -845,11 +1047,54 @@ export function createSourceScanner(workspaceRoot: string): SourceScanner {
       visit(cur.node);
     }
     if (queue.length > 0 || slices.length >= MAX_SLICES * 2) noteLimit("slices");
-    if (stats && (depthCapHit || oversizeSkip || queue.length > 0)) {
+    if (stats && (depthCapHit || oversizeSkip || dynamicChildHit || queue.length > 0)) {
       stats.truncated = true;
       stats.limit = firstLimit;
     }
+    for (const s of slices) {
+      const allowed = gitAllowed.get(`${s.file}:${s.node.getStart()}`);
+      if (allowed !== undefined) s.allowlistedGitEntry = allowed;
+    }
     return slices;
+  };
+
+  /**
+   * True when `res` is the body of forge's `git()` helper — the slice the
+   * RFC-1497 allowlist rule exempts callsite-by-callsite. Matched on the
+   * resolved file path plus the enclosing function's name so aliases and
+   * re-exported bindings still land (fixture trees mirror the same
+   * `forge/os/flow/git.ts` path under their own root).
+   */
+  const isFlowGitBody = (res: ResolvedNode): boolean => {
+    if (!res.file.replace(/\\/g, "/").endsWith("/forge/os/flow/git.ts")) return false;
+    const parent = res.node.parent;
+    if (ts.isFunctionDeclaration(parent)) return parent.name?.text === "git";
+    if (ts.isArrowFunction(parent) || ts.isFunctionExpression(parent)) {
+      const decl = parent.parent;
+      return (
+        ts.isVariableDeclaration(decl) && ts.isIdentifier(decl.name) && decl.name.text === "git"
+      );
+    }
+    return false;
+  };
+
+  /**
+   * True when `call` is `git(<a>, <b>, <array literal>)` whose array's
+   * leading string literals cover a READ_ONLY_GIT_QUERIES entry — the static
+   * model of the read-only adapter's exec allowlist. A non-literal or a
+   * non-allowlisted subcommand never exempts (safe failure direction).
+   */
+  const isAllowlistedGitCall = (call: ts.CallExpression): boolean => {
+    const argv = call.arguments[2];
+    if (!argv || !ts.isArrayLiteralExpression(argv)) return false;
+    const literals: string[] = [];
+    for (const el of argv.elements) {
+      if (ts.isStringLiteral(el)) literals.push(el.text);
+      else break;
+    }
+    return READ_ONLY_GIT_QUERIES.some((query) =>
+      query.every((part, i) => literals[i] === part),
+    );
   };
 
   /** True when the call's receiver expression refers to the injected io port. */

@@ -25,9 +25,6 @@ capture intents, just from different adapters.
   <item>The read-only adapter passes exactly the read-only git queries — `git -C dir rev-parse`, `git -C dir worktree list`, `git -C dir ls-files` — because workshop paths and the platform file set resolve through them; all other exec throws KERNEL-META-01.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1159: step 1 — execOrThrow helper in workspace-io</item>
   <item>RFC-1306 review-r1: writeFileIfChanged — io-port idempotent write (read-compare-skip); filesModified reports only real byte changes.</item>
   <item>RFC-1495: read-only commands resolve workshop paths; worktree gate declares its subprocesses
@@ -43,6 +40,9 @@ visual-regression gate test awaits the now-async baselineManifestPath.</item>
   <item>RFC-1496: step 1 — read-only git allowlist gains ls-files
 
 Rename isWorktreeTopologyQuery to isReadOnlyGitQuery and admit git -C <dir> ls-files alongside rev-parse and worktree list; a caller-supplied env stays refused. The platform file set (step 2) resolves through ls-files, so read-only commands computing the platform hash would otherwise crash KERNEL-META-01 (AC-8).</item>
+  <item>RFC-1497: steps 3-4 — git allowlist model and child-command resolution
+
+READ_ONLY_GIT_QUERIES in workspace-io.ts is the single allowlist both the runtime adapter and the static scan share (DNA-91). In the scan, a call that resolves to forge git() body is exempt only when its argv array literal's leading strings cover an allowlist entry; a scratch re-resolve per callsite keeps already-visited callees independently classified, and one non-allowlisted route flips the git() body slice back to a hit (allowlistedGitEntry on the slice). Child commands are judged by declaration, never by descent: executeKernelCommand/executeRegisteredCommand sit in CALLEE_SKIP, and when the caller passes a childCalls out-param the scanner resolves the name (literal, const string, or for-of over a const string array) through an injected resolveCommandDeclaration; an unresolvable name truncates the scan with limit dynamic-child. The child model is opt-in so env scans stay unmarked. Fixtures cover AC-1 (rev-parse no hit), AC-2 (branch -D hit), AC-3 (no executor descent), AC-8 (mutating child recorded), plus mixed-route and dynamic-name cases.</item>
   <history>RFC-0267, RFC-0326, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
@@ -529,6 +529,18 @@ export function createReadOnlyIO(
 }
 
 /**
+ * RFC-1497: the leading argv (after `-C <dir>`) of the git calls the
+ * read-only adapter passes through. Shared with the static source scan
+ * (kernel-source-scan.ts) so the ratchet models exactly the same allowlist —
+ * one constant, two consumers (DNA-91).
+ */
+export const READ_ONLY_GIT_QUERIES: readonly (readonly string[])[] = [
+  ["rev-parse"],
+  ["worktree", "list"],
+  ["ls-files"],
+];
+
+/**
  * RFC-1495/RFC-1496: `git -C <dir> rev-parse …`, `git -C <dir> worktree list …`
  * and `git -C <dir> ls-files …` only read repository metadata. Every workshop
  * path resolves through the first two (resolveWorkshopPaths → forge
@@ -545,6 +557,7 @@ function isReadOnlyGitQuery(
   if (command !== "git" || execOpts?.env !== undefined) return false;
   if (args[0] !== "-C" || args.length < 3) return false;
   const sub = args.slice(2);
-  if (sub[0] === "rev-parse" || sub[0] === "ls-files") return true;
-  return sub[0] === "worktree" && sub[1] === "list";
+  return READ_ONLY_GIT_QUERIES.some((query) =>
+    query.every((part, i) => sub[i] === part),
+  );
 }
