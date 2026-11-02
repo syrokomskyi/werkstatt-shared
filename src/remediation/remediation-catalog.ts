@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1488: step 7 — release-lines AGENTS docs, FLOW remediation entries, regenerated artifacts</item>
   <item>RFC-1487: step 7 — remove RFC-1462 session-worktree paths, COMMIT-FGN-01 guard, and .sessions model; document flow lifecycle</item>
   <item>RFC-1490: step 7 — release rules in forge AGENTS, FLOW-CUT/FIX/BM/INT-09/10 remediation entries, regenerated artifacts</item>
   <item>RFC-1491: step 6 — outbound AGENTS paragraphs, retro step 3f, FLOW-PUSH/HOLD/GUARD-05/10/INT-11 catalog</item>
   <item>RFC-1492: add sternsystem.channels.migrate command with CHANNEL-MIGRATE guards and channel prose updates</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, warpgogol-m000196</history>
+  <item>RFC-1493: step 2 — platform identity command, migrator-cursor pin comparison</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1488, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -6557,6 +6557,14 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "Provide the signing key (workshop .env or exported SIGNING_PRIVATE_KEY) and re-run werkstatt run sternsystem.channels.migrate --id <site>.",
     docRef:
       "docs/rfcs/rfc-1492-werkstatt-rename-the-production-deploy-channel-main-to-prod.md",
+  },
+  {
+    ruleId: "PLATFORM-ID-01",
+    contract: "The platform identity (release-line version + checkout SHA) must be readable before the fingerprints contract may emit — a partial fingerprint must never reach flow.cut.",
+    action:
+      "Inspect the reported read failure and re-run werkstatt run platform.identity --json to confirm the identity resolves, then re-run the fingerprints emit.",
+    docRef:
+      "docs/rfcs/rfc-1493-werkstatt-platform-identity-from-release-tags-and-commits-site-pins-compared-by-migrator-cursor.md",
   },
 ];
 

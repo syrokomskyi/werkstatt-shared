@@ -16,6 +16,7 @@ RFC-0790: add systemConfigSchema, systemStateSchema, servicesRegistrySchema for 
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
+  <item>RFC-1493: step 2 — semverRe accepts +build metadata for derived release-line pins.</item>
   <item>RFC-1492: systemStateSchema.lastPropagated keyed by DEPLOY_CHANNELS (prod replaces main).</item>
   <item>RFC-1307: step 1 — shared PBP layout map, canonical writer, typed onboarding state</item>
   <item>RFC-1335: implement RFC-1335: fail-fast editorial gate, adaptive certify budget, gate-bound producer ordering
@@ -65,7 +66,9 @@ import {
 } from "./leitstand.ts";
 import { remediationAutonomyConfigSchema } from "../../remediation/remediation-classes.ts";
 
-const semverRe = /^\d+\.\d+\.\d+$/;
+// RFC-1493: derived release-line versions carry semver build metadata
+// (X.Y.Z+N.<head9>); the semver build-identifier set is [0-9A-Za-z-]+(.+)*.
+const semverRe = /^\d+\.\d+\.\d+(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/;
 const sha256Re = /^sha256:[0-9a-f]{64}$/;
 const kebabRe = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const didWebRe = /^did:web:[a-z0-9.-]+#.+$/;
@@ -78,7 +81,7 @@ export const systemPinSchema = z.object({
   cosmicStar: starNameSchema,
   pinnedAt: z.string().datetime(),
   platform: z.object({
-    version: z.string().regex(semverRe, "platform.version must be x.y.z"),
+    version: z.string().regex(semverRe, "platform.version must be x.y.z(+build)"),
     commit: z.string().min(7),
     rfcHead: z.string().regex(/^RFC-\d{4}$/, "rfcHead must be RFC-NNNN"),
     platformSemanticHash: z
@@ -188,7 +191,7 @@ export const systemConfigSchema = z.looseObject({
   id: z.string().regex(kebabRe, "id must be kebab-case, lowercase, latin-only, no TLD suffix"),
   cosmicStar: starNameSchema,
   mirrors: z.array(mirrorEntrySchema).min(1, "mirrors must contain at least 1 entry"),
-  pinnedPlatform: z.string().regex(semverRe, "pinnedPlatform must be x.y.z"),
+  pinnedPlatform: z.string().regex(semverRe, "pinnedPlatform must be x.y.z(+build)"),
   status: z.enum(["registered", "active", "paused", "archived"]),
   registeredAt: z.string().datetime(),
   integrations: systemConfigIntegrationsSchema
