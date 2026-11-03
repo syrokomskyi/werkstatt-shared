@@ -22,7 +22,6 @@ Unit tests for workspace io covering its documented public contract and regressi
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1311: Compass header sweep — declares the workspace suite's contract for test-file scaffold coverage.</item>
   <item>RFC-1495: read-only commands resolve workshop paths; worktree gate declares its subprocesses
 
 Every workshop path now resolves through git rev-parse and git worktree list
@@ -52,6 +51,11 @@ cluster; ls-remote, rev-list and log gained forbid lists; show-ref lost its
 wrong one. The static scan checks every literal against the forbid list and
 leaves dynamic elements to the runtime predicate. RFC text amended to match
 (flow.hold no-fetch, trust boundary, table).</item>
+  <item>RFC-1501: refuse ls-remote --exec, the hidden alias of --upload-pack (RFC-1501)
+
+Re-review: git ls-remote accepts --exec (and its abbreviation --exe) as an alias
+of --upload-pack, so the predicate still admitted a program from the argv.</item>
+  <history>RFC-1311</history>
 </CHANGE_SUMMARY>
 */
 
@@ -347,6 +351,9 @@ test("isReadOnlyGitQuery: forbid, maxPositionals and global-option rules", () =>
   );
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "--upload=touch x", "."])).toBe(false);
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "-u", "touch x", "."])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "--exec=touch x", "."])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "--exec", "touch x", "."])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "--exe=touch x", "."])).toBe(false);
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "-qu", "touch x", "."])).toBe(false);
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "--tags", "origin"])).toBe(true);
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "rev-list", "--output=/tmp/x", "HEAD"])).toBe(false);

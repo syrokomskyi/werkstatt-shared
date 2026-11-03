@@ -25,16 +25,6 @@ capture intents, just from different adapters.
   <item>One argv-shaped allowlist, READ_ONLY_GIT_QUERIES with isReadOnlyGitQuery, judges git calls for the read-only adapter, the recording adapter and the static scan alike; all other exec throws (KERNEL-META-01 / recording refusal).</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1495: read-only commands resolve workshop paths; worktree gate declares its subprocesses
-
-Every workshop path now resolves through git rev-parse and git worktree list
-(RFC-1495), but the read-only adapter that mutatesState:false commands get
-refuses every exec. About a hundred read-only commands (workpiece.read,
-workpiece.config.presence.check, ...) crashed with KERNEL-META-01, and so did
-werkstatt.worktree.gate, which would refuse every flow.integrate. The adapter
-now passes exactly git -C <dir> rev-parse and git -C <dir> worktree list (no
-caller env); the gate declares execOnReadOnly and its env inputs. The
-visual-regression gate test awaits the now-async baselineManifestPath.</item>
   <item>RFC-1496: step 1 — read-only git allowlist gains ls-files
 
 Rename isWorktreeTopologyQuery to isReadOnlyGitQuery and admit git -C <dir> ls-files alongside rev-parse and worktree list; a caller-supplied env stays refused. The platform file set (step 2) resolves through ls-files, so read-only commands computing the platform hash would otherwise crash KERNEL-META-01 (AC-8).</item>
@@ -57,7 +47,11 @@ cluster; ls-remote, rev-list and log gained forbid lists; show-ref lost its
 wrong one. The static scan checks every literal against the forbid list and
 leaves dynamic elements to the runtime predicate. RFC text amended to match
 (flow.hold no-fetch, trust boundary, table).</item>
-  <history>RFC-0267, RFC-0326, RFC-1097, RFC-1159, RFC-1306</history>
+  <item>RFC-1501: refuse ls-remote --exec, the hidden alias of --upload-pack (RFC-1501)
+
+Re-review: git ls-remote accepts --exec (and its abbreviation --exe) as an alias
+of --upload-pack, so the predicate still admitted a program from the argv.</item>
+  <history>RFC-0267, RFC-0326, RFC-1097, RFC-1159, RFC-1306, RFC-1495</history>
 </CHANGE_SUMMARY>
 */
 // @ai-invariant[INV-wsio-01]: under --dry-run and in read-only commands a git call runs only when isReadOnlyGitQuery admits its argv — forbidden flags match exactly, with =value, abbreviated or inside a short cluster, and no table entry admits a write or an argv-introduced program (checked-by: test:packages/werkstatt-shared/src/kernel/tests/workspace-io.test.ts)
@@ -587,7 +581,8 @@ export const READ_ONLY_GIT_QUERIES: readonly ReadOnlyGitQuery[] = [
   { prefix: ["config", "--get-all"] },
   { prefix: ["config", "--get-regexp"] },
   { prefix: ["remote", "get-url"] },
-  { prefix: ["ls-remote"], forbid: ["--upload-pack", "-u"] },
+  // --exec is git's hidden alias of --upload-pack (ls-remote --help-all).
+  { prefix: ["ls-remote"], forbid: ["--upload-pack", "--exec", "-u"] },
   { prefix: ["branch", "--show-current"], maxPositionals: 0 },
   { prefix: ["branch", "--list"], forbid: BRANCH_WRITE_FLAGS },
 ];
