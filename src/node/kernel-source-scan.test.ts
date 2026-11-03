@@ -20,6 +20,13 @@ visited is keyed by identifier AND remaining depth: an ident first reached at lo
   <item>RFC-1497: steps 3-4 — git allowlist model and child-command resolution
 
 READ_ONLY_GIT_QUERIES in workspace-io.ts is the single allowlist both the runtime adapter and the static scan share (DNA-91). In the scan, a call that resolves to forge git() body is exempt only when its argv array literal's leading strings cover an allowlist entry; a scratch re-resolve per callsite keeps already-visited callees independently classified, and one non-allowlisted route flips the git() body slice back to a hit (allowlistedGitEntry on the slice). Child commands are judged by declaration, never by descent: executeKernelCommand/executeRegisteredCommand sit in CALLEE_SKIP, and when the caller passes a childCalls out-param the scanner resolves the name (literal, const string, or for-of over a const string array) through an injected resolveCommandDeclaration; an unresolvable name truncates the scan with limit dynamic-child. The child model is opt-in so env scans stay unmarked. Fixtures cover AC-1 (rev-parse no hit), AC-2 (branch -D hit), AC-3 (no executor descent), AC-8 (mutating child recorded), plus mixed-route and dynamic-name cases.</item>
+  <item>RFC-1501: one argv-shaped read-only git allowlist for the recording and read-only adapters (RFC-1501)
+
+READ_ONLY_GIT_QUERIES / isReadOnlyGitQuery replace the recording adapter's
+first-argument allowlist; the read-only adapter and the static scan use the same
+table. The kernel forwards --dry-run into commands that declare a dry-run flag,
+and flow.push / flow.hold dry-runs no longer fetch. The switch-over runbook goes
+back to werkstatt run flow.install --dry-run.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -313,6 +320,73 @@ export const cmdG = {
     const scanner = createSourceScanner(root);
     const slices = scanner.handlerSlices(file, "g.mixed");
     // One non-allowlisted route into git() flips the whole body back to a hit.
+    expect(ratchetExecHits(root, slices)).toEqual([expect.stringContaining("git.ts")]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// RFC-1501 AC-9/AC-10 — argv-shaped entries (forbid / maxPositionals)
+// ---------------------------------------------------------------------------
+
+describe("RFC-1501: the scan reads the argv-shaped allowlist entries", () => {
+  it("AC-9: git(root, io, ['for-each-ref', 'refs/tags']) reports no exec hit", () => {
+    const root = makeRoot();
+    put(root, "forge/os/flow/git.ts", FIXTURE_GIT_TS);
+    const file = put(
+      root,
+      "src/commands/g9.ts",
+      `import { git } from "../../forge/os/flow/git.ts";
+export const cmdG = {
+  name: "g.tags",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    await git(ctx.workspaceRoot, ctx.io, ["for-each-ref", "refs/tags"]);
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root);
+    const slices = scanner.handlerSlices(file, "g.tags");
+    expect(ratchetExecHits(root, slices)).toEqual([]);
+  });
+
+  it("AC-10: git(root, io, ['log', '--output', file]) reports an exec hit", () => {
+    const root = makeRoot();
+    put(root, "forge/os/flow/git.ts", FIXTURE_GIT_TS);
+    const file = put(
+      root,
+      "src/commands/g10.ts",
+      `import { git } from "../../forge/os/flow/git.ts";
+export const cmdG = {
+  name: "g.logout",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    const file = "/tmp/out.txt";
+    await git(ctx.workspaceRoot, ctx.io, ["log", "--output", file]);
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root);
+    const slices = scanner.handlerSlices(file, "g.logout");
+    expect(ratchetExecHits(root, slices)).toEqual([expect.stringContaining("git.ts")]);
+  });
+
+  it("a constrained entry with an all-literal argv carrying a forbidden flag still hits", () => {
+    const root = makeRoot();
+    put(root, "forge/os/flow/git.ts", FIXTURE_GIT_TS);
+    const file = put(
+      root,
+      "src/commands/g11.ts",
+      `import { git } from "../../forge/os/flow/git.ts";
+export const cmdG = {
+  name: "g.symref",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    await git(ctx.workspaceRoot, ctx.io, ["symbolic-ref", "HEAD", "refs/heads/x"]);
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root);
+    const slices = scanner.handlerSlices(file, "g.symref");
     expect(ratchetExecHits(root, slices)).toEqual([expect.stringContaining("git.ts")]);
   });
 });

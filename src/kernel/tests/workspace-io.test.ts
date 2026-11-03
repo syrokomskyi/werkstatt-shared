@@ -7,6 +7,7 @@ import {
   createRecordingIO,
   createReadOnlyIO,
   execOrThrow,
+  isReadOnlyGitQuery,
   KernelMetaError,
 } from "../workspace-io.ts";
 import type { ExecResult, WorkspaceIO } from "../workspace-io.ts";
@@ -35,6 +36,13 @@ visual-regression gate test awaits the now-async baselineManifestPath.</item>
   <item>RFC-1496: step 1 — read-only git allowlist gains ls-files
 
 Rename isWorktreeTopologyQuery to isReadOnlyGitQuery and admit git -C <dir> ls-files alongside rev-parse and worktree list; a caller-supplied env stays refused. The platform file set (step 2) resolves through ls-files, so read-only commands computing the platform hash would otherwise crash KERNEL-META-01 (AC-8).</item>
+  <item>RFC-1501: one argv-shaped read-only git allowlist for the recording and read-only adapters (RFC-1501)
+
+READ_ONLY_GIT_QUERIES / isReadOnlyGitQuery replace the recording adapter's
+first-argument allowlist; the read-only adapter and the static scan use the same
+table. The kernel forwards --dry-run into commands that declare a dry-run flag,
+and flow.push / flow.hold dry-runs no longer fetch. The switch-over runbook goes
+back to werkstatt run flow.install --dry-run.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -220,12 +228,118 @@ test("createReadOnlyIO: git rev-parse, worktree list and ls-files pass through, 
   await expect(() => io.exec("git", ["-C", process.cwd(), "branch", "-D", "nope"])).rejects.toThrow(
     KernelMetaError,
   );
-  await expect(() => io.exec("git", ["rev-parse", "HEAD"])).rejects.toThrow(KernelMetaError);
+  // RFC-1501: the cwd form is admitted; any other global option still refuses.
+  await expect(() =>
+    io.exec("git", ["--git-dir=/nonexistent", "rev-parse", "HEAD"]),
+  ).rejects.toThrow(KernelMetaError);
   await expect(() =>
     io.exec("git", ["-C", process.cwd(), "rev-parse", "HEAD"], {
       env: { GIT_DIR: "/nonexistent" },
     }),
   ).rejects.toThrow(KernelMetaError);
+});
+
+// RFC-1501: one argv-shaped allowlist judges both adapters.
+async function tmpRepo(prefix: string): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), prefix));
+  const { io } = createDefaultIO();
+  for (const args of [
+    ["init", "-q", "-b", "develop"],
+    ["config", "user.email", "test@example.com"],
+    ["config", "user.name", "Test"],
+    ["commit", "-q", "--allow-empty", "-m", "init"],
+    ["tag", "v1.0.0"],
+    ["branch", "keep-me"],
+  ]) {
+    const res = await io.exec("git", ["-C", root, ...args]);
+    if (res.exitCode !== 0) throw new Error(`git ${args.join(" ")} failed: ${res.stderr}`);
+  }
+  return root;
+}
+
+test("AC-1: createRecordingIO runs git -C <dir> for-each-ref refs/tags and returns its real output", async () => {
+  const root = await tmpRepo("workspace-io-rfc1501-ac1-");
+  try {
+    const { io } = createRecordingIO(createDefaultIO().io);
+    const res = await io.exec("git", ["-C", root, "for-each-ref", "refs/tags"]);
+    expect(res.exitCode).toBe(0);
+    expect(res.stdout).toContain("refs/tags/v1.0.0");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("AC-2: createRecordingIO refuses git branch -D and the branch still exists", async () => {
+  const root = await tmpRepo("workspace-io-rfc1501-ac2-");
+  try {
+    const { io } = createRecordingIO(createDefaultIO().io);
+    await expect(() =>
+      io.exec("git", ["branch", "-D", "keep-me"], { cwd: root }),
+    ).rejects.toThrow(/not on the read-only allowlist/);
+    await expect(() =>
+      io.exec("git", ["-C", root, "branch", "-D", "keep-me"]),
+    ).rejects.toThrow(/not on the read-only allowlist/);
+    const { io: real } = createDefaultIO();
+    const check = await real.exec("git", ["-C", root, "rev-parse", "--verify", "refs/heads/keep-me"]);
+    expect(check.exitCode).toBe(0);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("AC-3: createReadOnlyIO refuses git -C <dir> log --output=<file> and the file is never written", async () => {
+  const root = await tmpRepo("workspace-io-rfc1501-ac3-");
+  const out = join(root, "log-output.txt");
+  try {
+    const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command");
+    await expect(() =>
+      io.exec("git", ["-C", root, "log", `--output=${out}`]),
+    ).rejects.toThrow(KernelMetaError);
+    await expect(() => io.exec("git", ["-C", root, "log", "--output", out])).rejects.toThrow(
+      KernelMetaError,
+    );
+    await expect(stat(out)).rejects.toThrow();
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("AC-4: createReadOnlyIO refuses a -c global option before -C with KERNEL-META-01", async () => {
+  const root = await tmpRepo("workspace-io-rfc1501-ac4-");
+  try {
+    const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command");
+    await expect(() =>
+      io.exec("git", ["-c", "core.pager=cat", "-C", root, "rev-parse", "HEAD"]),
+    ).rejects.toThrow(/KERNEL-META-01/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("isReadOnlyGitQuery: forbid, maxPositionals and global-option rules", () => {
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "symbolic-ref", "--short", "HEAD"])).toBe(true);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "symbolic-ref", "HEAD", "refs/heads/x"])).toBe(
+    false,
+  );
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "symbolic-ref", "-d", "HEAD"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["--version"])).toBe(true);
+  expect(isReadOnlyGitQuery("git", ["--version", "x"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "branch", "--show-current"])).toBe(true);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "branch", "--list", "auto/*"])).toBe(true);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "branch", "--list", "-D", "x"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "branch", "x"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "diff", "--ext-diff"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "show", "--output=/tmp/x", "HEAD"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "show-ref", "--delete", "refs/x"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "config", "--get", "user.name"])).toBe(true);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "config", "user.name", "x"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "fetch", "origin", "--prune"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "-C", "/s", "status"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["--work-tree=/s", "status"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", [])).toBe(false);
+  expect(isReadOnlyGitQuery("sh", ["-c", "git status"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["status"], { env: {} })).toBe(false);
 });
 
 // RFC-1303: cacheWrites carve-out — declared prefixes delegate to the base

@@ -22,10 +22,9 @@ capture intents, just from different adapters.
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
   <item>WorkspaceIO is the single filesystem seam — kernel commands never touch fs directly.</item>
-  <item>The read-only adapter passes exactly the read-only git queries — `git -C dir rev-parse`, `git -C dir worktree list`, `git -C dir ls-files` — because workshop paths and the platform file set resolve through them; all other exec throws KERNEL-META-01.</item>
+  <item>One argv-shaped allowlist, READ_ONLY_GIT_QUERIES with isReadOnlyGitQuery, judges git calls for the read-only adapter, the recording adapter and the static scan alike; all other exec throws (KERNEL-META-01 / recording refusal).</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1159: step 1 — execOrThrow helper in workspace-io</item>
   <item>RFC-1306 review-r1: writeFileIfChanged — io-port idempotent write (read-compare-skip); filesModified reports only real byte changes.</item>
   <item>RFC-1495: read-only commands resolve workshop paths; worktree gate declares its subprocesses
 
@@ -43,7 +42,14 @@ Rename isWorktreeTopologyQuery to isReadOnlyGitQuery and admit git -C <dir> ls-f
   <item>RFC-1497: steps 3-4 — git allowlist model and child-command resolution
 
 READ_ONLY_GIT_QUERIES in workspace-io.ts is the single allowlist both the runtime adapter and the static scan share (DNA-91). In the scan, a call that resolves to forge git() body is exempt only when its argv array literal's leading strings cover an allowlist entry; a scratch re-resolve per callsite keeps already-visited callees independently classified, and one non-allowlisted route flips the git() body slice back to a hit (allowlistedGitEntry on the slice). Child commands are judged by declaration, never by descent: executeKernelCommand/executeRegisteredCommand sit in CALLEE_SKIP, and when the caller passes a childCalls out-param the scanner resolves the name (literal, const string, or for-of over a const string array) through an injected resolveCommandDeclaration; an unresolvable name truncates the scan with limit dynamic-child. The child model is opt-in so env scans stay unmarked. Fixtures cover AC-1 (rev-parse no hit), AC-2 (branch -D hit), AC-3 (no executor descent), AC-8 (mutating child recorded), plus mixed-route and dynamic-name cases.</item>
-  <history>RFC-0267, RFC-0326, RFC-1097</history>
+  <item>RFC-1501: one argv-shaped read-only git allowlist for the recording and read-only adapters (RFC-1501)
+
+READ_ONLY_GIT_QUERIES / isReadOnlyGitQuery replace the recording adapter's
+first-argument allowlist; the read-only adapter and the static scan use the same
+table. The kernel forwards --dry-run into commands that declare a dry-run flag,
+and flow.push / flow.hold dry-runs no longer fetch. The switch-over runbook goes
+back to werkstatt run flow.install --dry-run.</item>
+  <history>RFC-0267, RFC-0326, RFC-1097, RFC-1159</history>
 </CHANGE_SUMMARY>
 */
 
@@ -314,12 +320,13 @@ export function createRecordingIO(base: WorkspaceIO): { io: WorkspaceIO; intents
       return dir;
     },
     async exec(command, args, opts) {
-      // Read-only git subcommands pass through to the base adapter — they
-      // cannot mutate repository state, so a dry-run command may resolve real
-      // state through them (staged-set reads, ancestry checks). Anything else
-      // fails closed: a mutating exec must never run under --dry-run just
-      // because it looks harmless.
-      if (command === "git" && args.length > 0 && RECORDING_IO_READONLY_GIT.has(args[0]!)) {
+      // RFC-1501: read-only git queries pass through to the base adapter —
+      // they cannot mutate repository state, so a dry-run command may resolve
+      // real state through them (staged-set reads, ancestry checks). The
+      // judgement is the same argv-shaped predicate the read-only adapter and
+      // the static scan use. Anything else fails closed: a mutating exec must
+      // never run under --dry-run just because it looks harmless.
+      if (isReadOnlyGitQuery(command, args, opts)) {
         return base.exec(command, args, opts);
       }
       const sub = args[0] ? ` ${args[0]}` : "";
@@ -330,25 +337,6 @@ export function createRecordingIO(base: WorkspaceIO): { io: WorkspaceIO; intents
   };
   return { io, intents };
 }
-
-/**
- * Git subcommands the recording IO executes for real under --dry-run —
- * strictly read-only state resolution (index/worktree reads, ancestry
- * checks). `status` may refresh the index mtime — benign, no content change.
- * Mutating subcommands (add/commit/reset/checkout/…) stay refused.
- */
-const RECORDING_IO_READONLY_GIT = new Set([
-  "ls-files",
-  "diff",
-  "status",
-  "log",
-  "rev-parse",
-  "show",
-  "merge-base",
-  "branch",
-  "cat-file",
-  "describe",
-]);
 
 /**
  * RFC-1159: canonical exit-code check on `io.exec`. `execImpl` resolves
@@ -529,35 +517,112 @@ export function createReadOnlyIO(
 }
 
 /**
- * RFC-1497: the leading argv (after `-C <dir>`) of the git calls the
- * read-only adapter passes through. Shared with the static source scan
- * (kernel-source-scan.ts) so the ratchet models exactly the same allowlist —
- * one constant, two consumers (DNA-91).
+ * RFC-1501: one entry of the read-only git allowlist. `prefix` is the leading
+ * argv after the optional `-C <dir>`; `forbid` names the arguments that make
+ * the subcommand write (matched exactly or as `<flag>=…`); `maxPositionals`
+ * caps the non-dash arguments after the prefix (omitted = unlimited).
  */
-export const READ_ONLY_GIT_QUERIES: readonly (readonly string[])[] = [
-  ["rev-parse"],
-  ["worktree", "list"],
-  ["ls-files"],
+export interface ReadOnlyGitQuery {
+  prefix: readonly string[];
+  forbid?: readonly string[];
+  maxPositionals?: number;
+}
+
+const BRANCH_WRITE_FLAGS = [
+  "-d",
+  "-D",
+  "--delete",
+  "-m",
+  "-M",
+  "--move",
+  "-c",
+  "-C",
+  "--copy",
+  "-f",
+  "--force",
+  "-u",
+  "--set-upstream-to",
+  "--unset-upstream",
+  "--edit-description",
+] as const;
+
+/**
+ * RFC-1501: the only list of git calls that may run without mutating. The
+ * read-only adapter, the recording adapter (universal --dry-run) and the
+ * static source scan (kernel-source-scan.ts) all judge through
+ * isReadOnlyGitQuery over this list — one rule book (DNA-91). `status` may
+ * refresh the index stat cache; that is no content change.
+ */
+export const READ_ONLY_GIT_QUERIES: readonly ReadOnlyGitQuery[] = [
+  { prefix: ["--version"], maxPositionals: 0 },
+  { prefix: ["rev-parse"] },
+  { prefix: ["worktree", "list"] },
+  { prefix: ["ls-files"] },
+  { prefix: ["cat-file"] },
+  { prefix: ["rev-list"] },
+  { prefix: ["merge-base"] },
+  { prefix: ["for-each-ref"] },
+  { prefix: ["show-ref"], forbid: ["--delete", "-d"] },
+  { prefix: ["describe"] },
+  { prefix: ["status"] },
+  { prefix: ["log"], forbid: ["--output"] },
+  { prefix: ["diff"], forbid: ["--output", "--ext-diff"] },
+  { prefix: ["show"], forbid: ["--output", "--ext-diff"] },
+  { prefix: ["symbolic-ref"], forbid: ["-d", "--delete", "-m"], maxPositionals: 1 },
+  { prefix: ["config", "--get"] },
+  { prefix: ["config", "--get-all"] },
+  { prefix: ["config", "--get-regexp"] },
+  { prefix: ["remote", "get-url"] },
+  { prefix: ["ls-remote"] },
+  { prefix: ["branch", "--show-current"], maxPositionals: 0 },
+  { prefix: ["branch", "--list"], forbid: BRANCH_WRITE_FLAGS },
 ];
 
 /**
- * RFC-1495/RFC-1496: `git -C <dir> rev-parse …`, `git -C <dir> worktree list …`
- * and `git -C <dir> ls-files …` only read repository metadata. Every workshop
- * path resolves through the first two (resolveWorkshopPaths → forge
- * resolveStateRoots) and the platform file set resolves through ls-files, so
- * the read-only adapter lets exactly these through; any other exec still
- * throws KERNEL-META-01. A caller-supplied env could point git at another
- * repository or config, so calls carrying one are refused.
+ * RFC-1501: true when `rest` (the argv after the optional `-C <dir>`)
+ * satisfies `query` — prefix match, no forbidden argument (exact or
+ * `<flag>=…`), and at most `maxPositionals` non-dash arguments after the
+ * prefix. Exported for the static scan.
  */
-function isReadOnlyGitQuery(
-  command: string,
-  args: string[],
-  execOpts: ExecOptions | undefined,
+export function matchesReadOnlyGitQuery(
+  query: ReadOnlyGitQuery,
+  rest: readonly string[],
 ): boolean {
-  if (command !== "git" || execOpts?.env !== undefined) return false;
-  if (args[0] !== "-C" || args.length < 3) return false;
-  const sub = args.slice(2);
-  return READ_ONLY_GIT_QUERIES.some((query) =>
-    query.every((part, i) => sub[i] === part),
-  );
+  if (!query.prefix.every((part, i) => rest[i] === part)) return false;
+  const tail = rest.slice(query.prefix.length);
+  if (query.forbid !== undefined) {
+    const forbid = query.forbid;
+    if (tail.some((arg) => forbid.some((f) => arg === f || arg.startsWith(`${f}=`)))) {
+      return false;
+    }
+  }
+  if (query.maxPositionals !== undefined) {
+    const positionals = tail.filter((arg) => !arg.startsWith("-")).length;
+    if (positionals > query.maxPositionals) return false;
+  }
+  return true;
+}
+
+/**
+ * RFC-1501 (supersedes the RFC-1495/RFC-1496 `-C`-only form): judges whether a
+ * git call may run without mutating. The only global option allowed before
+ * the subcommand is one `-C <dir>`; the call may also carry none (cwd form).
+ * `-c`, `--git-dir`, `--work-tree`, `--exec-path` and a caller-supplied env
+ * could point git at another repository, config or program, so they refuse.
+ */
+export function isReadOnlyGitQuery(
+  command: string,
+  args: readonly string[],
+  opts?: ExecOptions,
+): boolean {
+  if (command !== "git" || opts?.env !== undefined) return false;
+  let rest = args;
+  if (rest[0] === "-C") {
+    if (rest.length < 3) return false;
+    rest = rest.slice(2);
+  }
+  if (rest.length === 0) return false;
+  // A second global option (another -C, -c, --git-dir, …) never matches a
+  // prefix: no entry starts with "-C" or "-c", and "--version" is exact.
+  return READ_ONLY_GIT_QUERIES.some((query) => matchesReadOnlyGitQuery(query, rest));
 }

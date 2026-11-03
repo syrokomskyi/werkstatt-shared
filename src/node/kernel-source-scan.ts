@@ -16,7 +16,6 @@
   <item>createSourceScanner(workspaceRoot) returns a per-root scanner — parse/binding/defs caches are scoped to the factory so concurrent fixtures never cross-pollinate.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1303: extracted from registry-integrity.test.ts — parsedFile/bindingsFor/topLevelDefs/resolveIdentSlice/executeSlice/handlerSlices verbatim, plus collectEnvReads for ENV-INPUT-01.</item>
   <item>RFC-1303 review: moved to werkstatt-shared/src/node/ (IO-01 — a sync AST scanner cannot take async io; this dir is the designated Node-only helper home). collectEnvReads now returns EnvReadResult with unresolved/truncated coverage stats so consumers can fail loud instead of silently under-scanning.</item>
   <item>RFC-1303: review REVIEW-CODE-2026-10-16-02 — scanner moves to werkstatt-shared/node (IO-01), workpieceEnv hashes into envDigest, saveCache tolerates KERNEL-META-01, ENV-INPUT-02 coverage notice, ratchet path-arg tightening</item>
   <item>RFC-1497: step 2 — deterministic slicing and truncation reporting
@@ -25,6 +24,14 @@ visited is keyed by identifier AND remaining depth: an ident first reached at lo
   <item>RFC-1497: steps 3-4 — git allowlist model and child-command resolution
 
 READ_ONLY_GIT_QUERIES in workspace-io.ts is the single allowlist both the runtime adapter and the static scan share (DNA-91). In the scan, a call that resolves to forge git() body is exempt only when its argv array literal's leading strings cover an allowlist entry; a scratch re-resolve per callsite keeps already-visited callees independently classified, and one non-allowlisted route flips the git() body slice back to a hit (allowlistedGitEntry on the slice). Child commands are judged by declaration, never by descent: executeKernelCommand/executeRegisteredCommand sit in CALLEE_SKIP, and when the caller passes a childCalls out-param the scanner resolves the name (literal, const string, or for-of over a const string array) through an injected resolveCommandDeclaration; an unresolvable name truncates the scan with limit dynamic-child. The child model is opt-in so env scans stay unmarked. Fixtures cover AC-1 (rev-parse no hit), AC-2 (branch -D hit), AC-3 (no executor descent), AC-8 (mutating child recorded), plus mixed-route and dynamic-name cases.</item>
+  <item>RFC-1501: one argv-shaped read-only git allowlist for the recording and read-only adapters (RFC-1501)
+
+READ_ONLY_GIT_QUERIES / isReadOnlyGitQuery replace the recording adapter's
+first-argument allowlist; the read-only adapter and the static scan use the same
+table. The kernel forwards --dry-run into commands that declare a dry-run flag,
+and flow.push / flow.hold dry-runs no longer fetch. The switch-over runbook goes
+back to werkstatt run flow.install --dry-run.</item>
+  <history>RFC-1303</history>
 </CHANGE_SUMMARY>
 */
 
@@ -33,7 +40,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import ts from "typescript";
 
-import { READ_ONLY_GIT_QUERIES } from "../kernel/workspace-io.ts";
+import { matchesReadOnlyGitQuery, READ_ONLY_GIT_QUERIES } from "../kernel/workspace-io.ts";
 
 export interface ParsedFile {
   sf: ts.SourceFile;
@@ -1079,9 +1086,12 @@ export function createSourceScanner(
   };
 
   /**
-   * True when `call` is `git(<a>, <b>, <array literal>)` whose array's
-   * leading string literals cover a READ_ONLY_GIT_QUERIES entry — the static
-   * model of the read-only adapter's exec allowlist. A non-literal or a
+   * True when `call` is `git(<a>, <b>, <array literal>)` that satisfies a
+   * READ_ONLY_GIT_QUERIES entry — the static model of the adapters' exec
+   * allowlist (RFC-1501). An entry without `forbid`/`maxPositionals` is
+   * covered by the array's leading string literals; an entry with either
+   * needs every element to be a string literal so the forbidden arguments
+   * and the positional count can be checked. A non-literal or a
    * non-allowlisted subcommand never exempts (safe failure direction).
    */
   const isAllowlistedGitCall = (call: ts.CallExpression): boolean => {
@@ -1092,9 +1102,12 @@ export function createSourceScanner(
       if (ts.isStringLiteral(el)) literals.push(el.text);
       else break;
     }
-    return READ_ONLY_GIT_QUERIES.some((query) =>
-      query.every((part, i) => literals[i] === part),
-    );
+    const allLiteral = literals.length === argv.elements.length;
+    return READ_ONLY_GIT_QUERIES.some((query) => {
+      const constrained = query.forbid !== undefined || query.maxPositionals !== undefined;
+      if (!constrained) return query.prefix.every((part, i) => literals[i] === part);
+      return allLiteral && matchesReadOnlyGitQuery(query, literals);
+    });
   };
 
   /** True when the call's receiver expression refers to the injected io port. */
