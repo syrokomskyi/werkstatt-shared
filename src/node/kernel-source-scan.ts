@@ -16,7 +16,6 @@
   <item>createSourceScanner(workspaceRoot) returns a per-root scanner — parse/binding/defs caches are scoped to the factory so concurrent fixtures never cross-pollinate.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1303 review: moved to werkstatt-shared/src/node/ (IO-01 — a sync AST scanner cannot take async io; this dir is the designated Node-only helper home). collectEnvReads now returns EnvReadResult with unresolved/truncated coverage stats so consumers can fail loud instead of silently under-scanning.</item>
   <item>RFC-1303: review REVIEW-CODE-2026-10-16-02 — scanner moves to werkstatt-shared/node (IO-01), workpieceEnv hashes into envDigest, saveCache tolerates KERNEL-META-01, ENV-INPUT-02 coverage notice, ratchet path-arg tightening</item>
   <item>RFC-1497: step 2 — deterministic slicing and truncation reporting
 
@@ -31,6 +30,15 @@ first-argument allowlist; the read-only adapter and the static scan use the same
 table. The kernel forwards --dry-run into commands that declare a dry-run flag,
 and flow.push / flow.hold dry-runs no longer fetch. The switch-over runbook goes
 back to werkstatt run flow.install --dry-run.</item>
+  <item>RFC-1501: close the read-only git allowlist against argv-introduced programs and abbreviated flags (RFC-1501)
+
+Independent review: ls-remote --upload-pack ran a program, rev-list --output
+truncated files, and symbolic-ref -qd / --dele slipped past exact-match forbids.
+Forbidden flags now match exactly, with =value, abbreviated or inside a short
+cluster; ls-remote, rev-list and log gained forbid lists; show-ref lost its
+wrong one. The static scan checks every literal against the forbid list and
+leaves dynamic elements to the runtime predicate. RFC text amended to match
+(flow.hold no-fetch, trust boundary, table).</item>
   <history>RFC-1303</history>
 </CHANGE_SUMMARY>
 */
@@ -40,7 +48,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import ts from "typescript";
 
-import { matchesReadOnlyGitQuery, READ_ONLY_GIT_QUERIES } from "../kernel/workspace-io.ts";
+import {
+  isForbiddenGitArg,
+  matchesReadOnlyGitQuery,
+  READ_ONLY_GIT_QUERIES,
+} from "../kernel/workspace-io.ts";
 
 export interface ParsedFile {
   sf: ts.SourceFile;
@@ -1088,11 +1100,12 @@ export function createSourceScanner(
   /**
    * True when `call` is `git(<a>, <b>, <array literal>)` that satisfies a
    * READ_ONLY_GIT_QUERIES entry — the static model of the adapters' exec
-   * allowlist (RFC-1501). An entry without `forbid`/`maxPositionals` is
-   * covered by the array's leading string literals; an entry with either
-   * needs every element to be a string literal so the forbidden arguments
-   * and the positional count can be checked. A non-literal or a
-   * non-allowlisted subcommand never exempts (safe failure direction).
+   * allowlist (RFC-1501). The array's leading string literals must cover the
+   * entry's prefix, and no string literal may be a forbidden argument.
+   * Dynamic elements (ranges, refs) cannot be judged statically; the runtime
+   * predicate judges them on every call. An entry with `maxPositionals`
+   * needs every element to be a string literal so the count can be checked.
+   * A non-allowlisted subcommand never exempts (safe failure direction).
    */
   const isAllowlistedGitCall = (call: ts.CallExpression): boolean => {
     const argv = call.arguments[2];
@@ -1103,10 +1116,18 @@ export function createSourceScanner(
       else break;
     }
     const allLiteral = literals.length === argv.elements.length;
+    const everyLiteral = argv.elements.filter(ts.isStringLiteral).map((el) => el.text);
     return READ_ONLY_GIT_QUERIES.some((query) => {
-      const constrained = query.forbid !== undefined || query.maxPositionals !== undefined;
-      if (!constrained) return query.prefix.every((part, i) => literals[i] === part);
-      return allLiteral && matchesReadOnlyGitQuery(query, literals);
+      if (!query.prefix.every((part, i) => literals[i] === part)) return false;
+      const forbid = query.forbid;
+      if (forbid !== undefined) {
+        const tail = everyLiteral.slice(query.prefix.length);
+        if (tail.some((arg) => isForbiddenGitArg(arg, forbid))) return false;
+      }
+      if (query.maxPositionals !== undefined) {
+        return allLiteral && matchesReadOnlyGitQuery(query, literals);
+      }
+      return true;
     });
   };
 

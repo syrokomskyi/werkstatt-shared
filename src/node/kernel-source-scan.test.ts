@@ -27,6 +27,15 @@ first-argument allowlist; the read-only adapter and the static scan use the same
 table. The kernel forwards --dry-run into commands that declare a dry-run flag,
 and flow.push / flow.hold dry-runs no longer fetch. The switch-over runbook goes
 back to werkstatt run flow.install --dry-run.</item>
+  <item>RFC-1501: close the read-only git allowlist against argv-introduced programs and abbreviated flags (RFC-1501)
+
+Independent review: ls-remote --upload-pack ran a program, rev-list --output
+truncated files, and symbolic-ref -qd / --dele slipped past exact-match forbids.
+Forbidden flags now match exactly, with =value, abbreviated or inside a short
+cluster; ls-remote, rev-list and log gained forbid lists; show-ref lost its
+wrong one. The static scan checks every literal against the forbid list and
+leaves dynamic elements to the runtime predicate. RFC text amended to match
+(flow.hold no-fetch, trust boundary, table).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -367,6 +376,48 @@ export const cmdG = {
     );
     const scanner = createSourceScanner(root);
     const slices = scanner.handlerSlices(file, "g.logout");
+    expect(ratchetExecHits(root, slices)).toEqual([expect.stringContaining("git.ts")]);
+  });
+
+  it("a forbid-only entry with a dynamic range reports no exec hit (runtime judges the range)", () => {
+    const root = makeRoot();
+    put(root, "forge/os/flow/git.ts", FIXTURE_GIT_TS);
+    const file = put(
+      root,
+      "src/commands/g11.ts",
+      `import { git } from "../../forge/os/flow/git.ts";
+export const cmdG = {
+  name: "g.count",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    const range = String(input.flags.range);
+    await git(ctx.workspaceRoot, ctx.io, ["rev-list", "--count", range]);
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root);
+    const slices = scanner.handlerSlices(file, "g.count");
+    expect(ratchetExecHits(root, slices)).toEqual([]);
+  });
+
+  it("an abbreviated forbidden literal (ls-remote --upload=…) reports an exec hit", () => {
+    const root = makeRoot();
+    put(root, "forge/os/flow/git.ts", FIXTURE_GIT_TS);
+    const file = put(
+      root,
+      "src/commands/g12.ts",
+      `import { git } from "../../forge/os/flow/git.ts";
+export const cmdG = {
+  name: "g.remote",
+  mutatesState: false,
+  execute: async (input: any, ctx: any) => {
+    const url = String(input.flags.url);
+    await git(ctx.workspaceRoot, ctx.io, ["ls-remote", "--upload=touch x", url]);
+  },
+};\n`,
+    );
+    const scanner = createSourceScanner(root);
+    const slices = scanner.handlerSlices(file, "g.remote");
     expect(ratchetExecHits(root, slices)).toEqual([expect.stringContaining("git.ts")]);
   });
 

@@ -43,6 +43,15 @@ first-argument allowlist; the read-only adapter and the static scan use the same
 table. The kernel forwards --dry-run into commands that declare a dry-run flag,
 and flow.push / flow.hold dry-runs no longer fetch. The switch-over runbook goes
 back to werkstatt run flow.install --dry-run.</item>
+  <item>RFC-1501: close the read-only git allowlist against argv-introduced programs and abbreviated flags (RFC-1501)
+
+Independent review: ls-remote --upload-pack ran a program, rev-list --output
+truncated files, and symbolic-ref -qd / --dele slipped past exact-match forbids.
+Forbidden flags now match exactly, with =value, abbreviated or inside a short
+cluster; ls-remote, rev-list and log gained forbid lists; show-ref lost its
+wrong one. The static scan checks every literal against the forbid list and
+leaves dynamic elements to the runtime predicate. RFC text amended to match
+(flow.hold no-fetch, trust boundary, table).</item>
 </CHANGE_SUMMARY>
 */
 
@@ -330,7 +339,26 @@ test("isReadOnlyGitQuery: forbid, maxPositionals and global-option rules", () =>
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "branch", "x"])).toBe(false);
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "diff", "--ext-diff"])).toBe(false);
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "show", "--output=/tmp/x", "HEAD"])).toBe(false);
-  expect(isReadOnlyGitQuery("git", ["-C", "/r", "show-ref", "--delete", "refs/x"])).toBe(false);
+  // show-ref has no delete form; -d is --dereference, a read.
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "show-ref", "-d", "refs/x"])).toBe(true);
+  // Review RFC-1501: argv-introduced programs and writes, in every spelling git parses.
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "--upload-pack=touch x", "."])).toBe(
+    false,
+  );
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "--upload=touch x", "."])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "-u", "touch x", "."])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "-qu", "touch x", "."])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "ls-remote", "--tags", "origin"])).toBe(true);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "rev-list", "--output=/tmp/x", "HEAD"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "rev-list", "--outp=/tmp/x", "HEAD"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "rev-list", "--count", "a..b"])).toBe(true);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "log", "-p", "--ext-diff"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "log", "--no-ext-diff", "-1"])).toBe(true);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "symbolic-ref", "-qd", "HEAD"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "symbolic-ref", "--dele", "HEAD"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "symbolic-ref", "--short", "-q", "HEAD"])).toBe(true);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "branch", "--list", "--del", "x"])).toBe(false);
+  expect(isReadOnlyGitQuery("git", ["-C", "/r", "branch", "--list", "-vD", "x"])).toBe(false);
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "config", "--get", "user.name"])).toBe(true);
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "config", "user.name", "x"])).toBe(false);
   expect(isReadOnlyGitQuery("git", ["-C", "/r", "fetch", "origin", "--prune"])).toBe(false);

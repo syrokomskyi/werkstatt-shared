@@ -25,7 +25,6 @@ capture intents, just from different adapters.
   <item>One argv-shaped allowlist, READ_ONLY_GIT_QUERIES with isReadOnlyGitQuery, judges git calls for the read-only adapter, the recording adapter and the static scan alike; all other exec throws (KERNEL-META-01 / recording refusal).</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1306 review-r1: writeFileIfChanged — io-port idempotent write (read-compare-skip); filesModified reports only real byte changes.</item>
   <item>RFC-1495: read-only commands resolve workshop paths; worktree gate declares its subprocesses
 
 Every workshop path now resolves through git rev-parse and git worktree list
@@ -49,9 +48,19 @@ first-argument allowlist; the read-only adapter and the static scan use the same
 table. The kernel forwards --dry-run into commands that declare a dry-run flag,
 and flow.push / flow.hold dry-runs no longer fetch. The switch-over runbook goes
 back to werkstatt run flow.install --dry-run.</item>
-  <history>RFC-0267, RFC-0326, RFC-1097, RFC-1159</history>
+  <item>RFC-1501: close the read-only git allowlist against argv-introduced programs and abbreviated flags (RFC-1501)
+
+Independent review: ls-remote --upload-pack ran a program, rev-list --output
+truncated files, and symbolic-ref -qd / --dele slipped past exact-match forbids.
+Forbidden flags now match exactly, with =value, abbreviated or inside a short
+cluster; ls-remote, rev-list and log gained forbid lists; show-ref lost its
+wrong one. The static scan checks every literal against the forbid list and
+leaves dynamic elements to the runtime predicate. RFC text amended to match
+(flow.hold no-fetch, trust boundary, table).</item>
+  <history>RFC-0267, RFC-0326, RFC-1097, RFC-1159, RFC-1306</history>
 </CHANGE_SUMMARY>
 */
+// @ai-invariant[INV-wsio-01]: under --dry-run and in read-only commands a git call runs only when isReadOnlyGitQuery admits its argv — forbidden flags match exactly, with =value, abbreviated or inside a short cluster, and no table entry admits a write or an argv-introduced program (checked-by: test:packages/werkstatt-shared/src/kernel/tests/workspace-io.test.ts)
 
 import {
   readFile as fsReadFile,
@@ -552,6 +561,11 @@ const BRANCH_WRITE_FLAGS = [
  * static source scan (kernel-source-scan.ts) all judge through
  * isReadOnlyGitQuery over this list — one rule book (DNA-91). `status` may
  * refresh the index stat cache; that is no content change.
+ *
+ * Trust boundary: the argv is untrusted, the repository's own config is not.
+ * Config-driven programs (diff.external, textconv drivers, core.fsmonitor)
+ * run on plain reads too, so the table guards argv-introduced writes and
+ * programs only — `--output`, `--ext-diff`, `--upload-pack`, write flags.
  */
 export const READ_ONLY_GIT_QUERIES: readonly ReadOnlyGitQuery[] = [
   { prefix: ["--version"], maxPositionals: 0 },
@@ -559,13 +573,13 @@ export const READ_ONLY_GIT_QUERIES: readonly ReadOnlyGitQuery[] = [
   { prefix: ["worktree", "list"] },
   { prefix: ["ls-files"] },
   { prefix: ["cat-file"] },
-  { prefix: ["rev-list"] },
+  { prefix: ["rev-list"], forbid: ["--output"] },
   { prefix: ["merge-base"] },
   { prefix: ["for-each-ref"] },
-  { prefix: ["show-ref"], forbid: ["--delete", "-d"] },
+  { prefix: ["show-ref"] },
   { prefix: ["describe"] },
   { prefix: ["status"] },
-  { prefix: ["log"], forbid: ["--output"] },
+  { prefix: ["log"], forbid: ["--output", "--ext-diff"] },
   { prefix: ["diff"], forbid: ["--output", "--ext-diff"] },
   { prefix: ["show"], forbid: ["--output", "--ext-diff"] },
   { prefix: ["symbolic-ref"], forbid: ["-d", "--delete", "-m"], maxPositionals: 1 },
@@ -573,16 +587,36 @@ export const READ_ONLY_GIT_QUERIES: readonly ReadOnlyGitQuery[] = [
   { prefix: ["config", "--get-all"] },
   { prefix: ["config", "--get-regexp"] },
   { prefix: ["remote", "get-url"] },
-  { prefix: ["ls-remote"] },
+  { prefix: ["ls-remote"], forbid: ["--upload-pack", "-u"] },
   { prefix: ["branch", "--show-current"], maxPositionals: 0 },
   { prefix: ["branch", "--list"], forbid: BRANCH_WRITE_FLAGS },
 ];
 
 /**
+ * True when one argv element spells a forbidden flag the way git would parse
+ * it: a long flag exactly, with `=value`, or abbreviated (git accepts any
+ * unambiguous prefix, so `--outp` is `--output`); a short flag alone or
+ * inside a cluster (`-qd` carries `-d`). Over-matching a harmless cluster or
+ * prefix only refuses a read — the safe direction.
+ */
+export function isForbiddenGitArg(arg: string, forbid: readonly string[]): boolean {
+  if (arg.startsWith("--")) {
+    const name = arg.slice(2).split("=")[0];
+    if (name.length === 0) return false;
+    return forbid.some((f) => f.startsWith("--") && f.slice(2).startsWith(name));
+  }
+  if (arg.startsWith("-") && arg.length > 1) {
+    const cluster = arg.slice(1);
+    return forbid.some((f) => /^-[^-]$/.test(f) && cluster.includes(f[1]));
+  }
+  return false;
+}
+
+/**
  * RFC-1501: true when `rest` (the argv after the optional `-C <dir>`)
- * satisfies `query` — prefix match, no forbidden argument (exact or
- * `<flag>=…`), and at most `maxPositionals` non-dash arguments after the
- * prefix. Exported for the static scan.
+ * satisfies `query` — prefix match, no forbidden argument
+ * (isForbiddenGitArg), and at most `maxPositionals` non-dash arguments after
+ * the prefix. Exported for the static scan.
  */
 export function matchesReadOnlyGitQuery(
   query: ReadOnlyGitQuery,
@@ -592,9 +626,7 @@ export function matchesReadOnlyGitQuery(
   const tail = rest.slice(query.prefix.length);
   if (query.forbid !== undefined) {
     const forbid = query.forbid;
-    if (tail.some((arg) => forbid.some((f) => arg === f || arg.startsWith(`${f}=`)))) {
-      return false;
-    }
+    if (tail.some((arg) => isForbiddenGitArg(arg, forbid))) return false;
   }
   if (query.maxPositionals !== undefined) {
     const positionals = tail.filter((arg) => !arg.startsWith("-")).length;
