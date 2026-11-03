@@ -316,6 +316,19 @@ export function labelForMaterialCreditKind(
 }
 
 /** RFC-0488: map a sourceType enum value to a localized human-readable label. */
+/**
+ * Visitor-facing title of a credit: its authored `title`, else the localized
+ * source-type label. Never the target id — register-seeded sidecars carry no
+ * title, and an asset id such as `ext-8d40fc97cc26` is an internal identifier
+ * (RFC-1450 LEAK-ID-01).
+ */
+export function materialCreditDisplayTitle(
+  credit: Pick<MaterialCredit, "title" | "sourceType">,
+  labels: MaterialCreditLabels,
+): string {
+  return credit.title ?? labelForSourceType(credit.sourceType, labels);
+}
+
 export function labelForSourceType(
   sourceType: MaterialSourceType,
   labels: MaterialCreditLabels,
