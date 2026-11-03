@@ -11,7 +11,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1493: step 2 — platform identity command, migrator-cursor pin comparison</item>
   <item>RFC-1493: step 4 — remove per-commit version bump, PC-01..04, version log; one commit path with universal X-RFC/X-ADR trailers</item>
   <item>RFC-1494: step 4 — prod gate call sites emit platformPrecondition; certify fails before capture, promote before authorization; PROD-PLATFORM-01..04 catalog entries</item>
   <item>RFC-1496: step 3 — fingerprint refusals and --at
@@ -20,7 +19,8 @@ platform.identity --fingerprints now refuses a dirty platform tree (git status -
   <item>RFC-1498: step 5 — docs, remediation catalog, generated manifest
 
 forge AGENTS gains the adoption-hardening section: FLOW-07 stray branches have no 72 h grace, the legacy-tags step is informational, tagTriggers feeds digestId, and the marker source accepts network origins only. The remediation catalog gains FLOW-11 (unparseable workflow or unevaluated glob — fix YAML, keep patterns to the evaluated subset). Command manifest and COMMANDS.md regenerated for the FLOW-11 rule declaration and the .github/workflows read glob on flow.digest.</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, warpgogol-m000196</history>
+  <item>RFC-1503: steps 1-5 — highest-per-line pending selection, publish-superseded/publish-retired journal events, flow.publication.retire</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -1264,9 +1264,23 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
   {
     ruleId: "FLOW-PUSH-05",
     contract: "A package-tag publication failed — extract, verify hook, or the destination push; other tags still publish.",
-    action: "Fix the named cause and re-run flow.push — journal-scoped retries publish exactly the pushed-but-unpublished remainder.",
+    action: "Fix the named cause and re-run flow.push — journal-scoped retries publish exactly the pushed-but-unpublished remainder. A pending tag that can never publish is dropped by flow.publication.retire --tag <tag> --reason <why> (RFC-1503).",
     docRef:
-      "docs/rfcs/rfc-1491-forge-flow-outbound-only-by-operator-command-with-risk-digest-hold-and-push.md",
+      "docs/rfcs/rfc-1503-forge-flow-pending-publications-are-superseded-retired-and-never-published-out-of-order.md",
+  },
+  {
+    ruleId: "FLOW-RETIRE-01",
+    contract: "flow.publication.retire targets a tag that is not pending — only pushed-but-unpublished tags can be retired.",
+    action: "Check flow.digest pendingPublications (and supersededPublications) for the tag to retire.",
+    docRef:
+      "docs/rfcs/rfc-1503-forge-flow-pending-publications-are-superseded-retired-and-never-published-out-of-order.md",
+  },
+  {
+    ruleId: "FLOW-RETIRE-02",
+    contract: "flow.publication.retire requires a non-empty --reason — the journal records it verbatim.",
+    action: "Pass a short reason naming why the tag can never publish.",
+    docRef:
+      "docs/rfcs/rfc-1503-forge-flow-pending-publications-are-superseded-retired-and-never-published-out-of-order.md",
   },
   {
     ruleId: "FLOW-PUSH-06",
