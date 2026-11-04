@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1506: patch-based commit-gate isolation replaces git stash</item>
   <item>RFC-1507: scoped gates always run ratchet scans; cold e2e as own gate</item>
   <item>RFC-1508: implement RFC-1508 — system profile, system map schemas and system.map.validate</item>
   <item>RFC-1509: implement RFC-1509 — system task queue, dispatch briefs and task reports</item>
   <item>RFC-1510: implement RFC-1510 — product outbox for dependency-contract requests</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1502, RFC-1503, warpgogol-m000196</history>
+  <item>RFC-1511: scenarios, version sets and system.versionset.record</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1502, RFC-1503, RFC-1506, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -4689,6 +4689,36 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     contract: "No task is created when the edge from the asking product to the contract is forbidden.",
     action: "Resolve the forbidden edge in system/edges.yaml, or have the product withdraw the entry.",
     docRef: "packages/forge/os/system/handlers/system-outbox-scan.ts",
+  },
+  {
+    ruleId: "SYSTEM-MAP-06",
+    contract: "Every system/scenarios/<id>.yaml names only products declared in system/products.yaml and contracts some product offers.",
+    action: "Declare the product in system/products.yaml, add the contract to a product's offers[], or fix the scenario.",
+    docRef: "packages/forge/os/system/repo.ts",
+  },
+  {
+    ruleId: "SYSTEM-VS-01",
+    contract: "system.versionset.record takes --products <product=tag,…> and --scenarios <id,…>, each scenario declared under system/scenarios/.",
+    action: "Fix the flag values or declare the missing scenario under system/scenarios/.",
+    docRef: "packages/forge/os/system/handlers/system-versionset-record.ts",
+  },
+  {
+    ruleId: "SYSTEM-VS-02",
+    contract: "Every product a named scenario exercises must appear in --products and resolve to a local checkout.",
+    action: "Add the product=tag pair to --products or map the product folder in system/products.local.yaml.",
+    docRef: "packages/forge/os/system/handlers/system-versionset-record.ts",
+  },
+  {
+    ruleId: "SYSTEM-VS-03",
+    contract: "A version-set tag exists locally and is an annotated forge/release-tag@1 tag cut by flow.cut.",
+    action: "Fetch or cut the release tag in the product checkout — lightweight and foreign tags are refused.",
+    docRef: "packages/forge/os/system/handlers/system-versionset-record.ts",
+  },
+  {
+    ruleId: "SYSTEM-VS-04",
+    contract: "A version set exists only when every check of every named scenario exits 0 — no partial sets.",
+    action: "Read the scenario log under system/version-sets/evidence/<id>/ — fix the check or the product release and re-run.",
+    docRef: "packages/forge/os/system/handlers/system-versionset-record.ts",
   },
   {
     ruleId: "QUEUE-01",
