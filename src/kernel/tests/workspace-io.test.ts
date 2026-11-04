@@ -22,16 +22,6 @@ Unit tests for workspace io covering its documented public contract and regressi
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1495: read-only commands resolve workshop paths; worktree gate declares its subprocesses
-
-Every workshop path now resolves through git rev-parse and git worktree list
-(RFC-1495), but the read-only adapter that mutatesState:false commands get
-refuses every exec. About a hundred read-only commands (workpiece.read,
-workpiece.config.presence.check, ...) crashed with KERNEL-META-01, and so did
-werkstatt.worktree.gate, which would refuse every flow.integrate. The adapter
-now passes exactly git -C <dir> rev-parse and git -C <dir> worktree list (no
-caller env); the gate declares execOnReadOnly and its env inputs. The
-visual-regression gate test awaits the now-async baselineManifestPath.</item>
   <item>RFC-1496: step 1 — read-only git allowlist gains ls-files
 
 Rename isWorktreeTopologyQuery to isReadOnlyGitQuery and admit git -C <dir> ls-files alongside rev-parse and worktree list; a caller-supplied env stays refused. The platform file set (step 2) resolves through ls-files, so read-only commands computing the platform hash would otherwise crash KERNEL-META-01 (AC-8).</item>
@@ -55,7 +45,8 @@ leaves dynamic elements to the runtime predicate. RFC text amended to match
 
 Re-review: git ls-remote accepts --exec (and its abbreviation --exe) as an alias
 of --upload-pack, so the predicate still admitted a program from the argv.</item>
-  <history>RFC-1311</history>
+  <item>RFC-1510: pin ls-tree in the read-only git allowlist for RFC-1510</item>
+  <history>RFC-1311, RFC-1495</history>
 </CHANGE_SUMMARY>
 */
 
@@ -232,6 +223,9 @@ test("createReadOnlyIO: git rev-parse, worktree list and ls-files pass through, 
   expect(list.stdout).toContain("worktree ");
   const ls = await io.exec("git", ["-C", process.cwd(), "ls-files", "--", "packages"]);
   expect(ls.exitCode).toBe(0);
+  // RFC-1510: committed-only tree reads (system.outbox.scan) run under dry-run too.
+  const tree = await io.exec("git", ["-C", process.cwd(), "ls-tree", "--name-only", "HEAD"]);
+  expect(tree.exitCode).toBe(0);
   await expect(() =>
     io.exec("git", ["-C", process.cwd(), "add", "packages/x.ts"]),
   ).rejects.toThrow(KernelMetaError);
