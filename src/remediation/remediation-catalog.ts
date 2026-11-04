@@ -11,7 +11,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1494: step 4 — prod gate call sites emit platformPrecondition; certify fails before capture, promote before authorization; PROD-PLATFORM-01..04 catalog entries</item>
   <item>RFC-1496: step 3 — fingerprint refusals and --at
 
 platform.identity --fingerprints now refuses a dirty platform tree (git status --porcelain over packages/integrations/services non-empty → PLATFORM-ID-02, summary lists up to 10 paths) and a checkout that is not at --at <sha> (git rev-parse HEAD mismatch → PLATFORM-ID-03); both leave stdout empty so flow.cut fails FLOW-CUT-08. --at without --fingerprints warns and is ignored. The hash resolves through the context io and the module declares the flag plus both rules; remediation catalog carries PLATFORM-ID-02/03 (AC-5, AC-6).</item>
@@ -20,7 +19,8 @@ platform.identity --fingerprints now refuses a dirty platform tree (git status -
 forge AGENTS gains the adoption-hardening section: FLOW-07 stray branches have no 72 h grace, the legacy-tags step is informational, tagTriggers feeds digestId, and the marker source accepts network origins only. The remediation catalog gains FLOW-11 (unparseable workflow or unevaluated glob — fix YAML, keep patterns to the evaluated subset). Command manifest and COMMANDS.md regenerated for the FLOW-11 rule declaration and the .github/workflows read glob on flow.digest.</item>
   <item>RFC-1503: steps 1-5 — highest-per-line pending selection, publish-superseded/publish-retired journal events, flow.publication.retire</item>
   <item>RFC-1502: step 7 — remediation entries, docs, deviations, generated indexes</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, warpgogol-m000196</history>
+  <item>RFC-1506: patch-based commit-gate isolation replaces git stash</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -6654,6 +6654,14 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "Re-run werkstatt run release.prepare to write platformCommit into release.yaml, then re-run the production gate.",
     docRef:
       "docs/rfcs/rfc-1494-werkstatt-production-deploys-only-from-integrated-platform-commits.md",
+  },
+  {
+    ruleId: "EC-28",
+    contract: "A gate-isolation snapshot directory from a dead process blocks the next commit until the swept worktree state is restored and the snapshot removed.",
+    action:
+      "Recover the snapshot with werkstatt run ecosystem.commit --restore-isolation <nonce> — it re-applies the captured patch, moves the swept untracked files back, verifies and removes the snapshot directory. A live-holder snapshot must be left alone (its commit is still inside the gate window).",
+    docRef:
+      "docs/rfcs/rfc-1506-werkstatt-commit-gate-isolation-without-git-stash.md",
   },
 ];
 
