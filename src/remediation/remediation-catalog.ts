@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1503: steps 1-5 — highest-per-line pending selection, publish-superseded/publish-retired journal events, flow.publication.retire</item>
   <item>RFC-1502: step 7 — remediation entries, docs, deviations, generated indexes</item>
   <item>RFC-1506: patch-based commit-gate isolation replaces git stash</item>
   <item>RFC-1507: scoped gates always run ratchet scans; cold e2e as own gate</item>
   <item>RFC-1508: implement RFC-1508 — system profile, system map schemas and system.map.validate</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, warpgogol-m000196</history>
+  <item>RFC-1509: implement RFC-1509 — system task queue, dispatch briefs and task reports</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1503, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -4623,6 +4623,54 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     contract: "system/products.local.yaml covers declared products and names only existing folders.",
     action: "Update system/products.local.yaml (gitignored) to list checked-out product folders.",
     docRef: "packages/forge/os/system/repo.ts",
+  },
+  {
+    ruleId: "SYSTEM-TASK-01",
+    contract: "Every task command argument names an existing task file that satisfies forge/system-task@1.",
+    action: "Check the T-NNNN id against queue/tasks/ — unknown or schema-invalid task files must be repaired or recreated via `werkstatt run system.task.create`.",
+    docRef: "packages/forge/os/system/task-store.ts",
+  },
+  {
+    ruleId: "SYSTEM-TASK-02",
+    contract: "Only the RFC-1509 transition table's edges are legal, each owned by the command the table names.",
+    action: "Check the task's state and the owning command — dispatch owns ready→dispatched, collect owns dispatched→reported/failed and reported→integrated; satisfy the row's check (reason, brief, dependency, version-set) before retrying `werkstatt run system.task.move`.",
+    docRef: "docs/rfcs/rfc-1509-forge-system-task-queue-dispatch-briefs-and-task-reports.md",
+  },
+  {
+    ruleId: "SYSTEM-TASK-03",
+    contract: "A task may not move to ready or dispatch when any of its contracts is a forbidden edge for its product.",
+    action: "Renegotiate the consumer/contract pair in system/edges.yaml, or drop the contract from the task.",
+    docRef: "packages/forge/os/system/repo.ts",
+  },
+  {
+    ruleId: "SYSTEM-TASK-05",
+    contract: "The task's product is declared in system/products.yaml and resolves to an existing local checkout via products.local.yaml.",
+    action: "Declare the product in system/products.yaml or add its folder to system/products.local.yaml.",
+    docRef: "packages/forge/os/system/handlers/system-task-dispatch.ts",
+  },
+  {
+    ruleId: "SYSTEM-TASK-06",
+    contract: "A dispatch brief must not contain the system identity or another product's local folder.",
+    action: "Scrub queue/briefs/<id>.md — product sessions must not learn the system repository's identity or sibling checkouts.",
+    docRef: "packages/forge/os/system/handlers/system-task-dispatch.ts",
+  },
+  {
+    ruleId: "SYSTEM-TASK-07",
+    contract: "Collect requires a task report at the dispatch worktree's .forge/task/report.yaml or its preserved copy under the product's common git dir.",
+    action: "Write the report in the product session, or fail the task deliberately with --mark-failed --reason <why>.",
+    docRef: "packages/forge/os/system/handlers/system-task-collect.ts",
+  },
+  {
+    ruleId: "SYSTEM-TASK-08",
+    contract: "A collected report must satisfy forge/task-report@1 and name the task being collected.",
+    action: "Fix the report's schema or task field in the product session, or --mark-failed the task.",
+    docRef: "packages/forge/os/system/task-schemas.ts",
+  },
+  {
+    ruleId: "SYSTEM-TASK-09",
+    contract: "The products.local.yaml launcher argv runs after a successful dispatch.",
+    action: "Inspect the launcher command's stderr — the task stays dispatched; fix the launcher argv or invoke it by hand.",
+    docRef: "packages/forge/os/system/handlers/system-task-dispatch.ts",
   },
   {
     ruleId: "QUEUE-01",
