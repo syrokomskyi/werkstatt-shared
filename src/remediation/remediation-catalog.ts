@@ -11,14 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1498: step 5 — docs, remediation catalog, generated manifest
-
-forge AGENTS gains the adoption-hardening section: FLOW-07 stray branches have no 72 h grace, the legacy-tags step is informational, tagTriggers feeds digestId, and the marker source accepts network origins only. The remediation catalog gains FLOW-11 (unparseable workflow or unevaluated glob — fix YAML, keep patterns to the evaluated subset). Command manifest and COMMANDS.md regenerated for the FLOW-11 rule declaration and the .github/workflows read glob on flow.digest.</item>
   <item>RFC-1503: steps 1-5 — highest-per-line pending selection, publish-superseded/publish-retired journal events, flow.publication.retire</item>
   <item>RFC-1502: step 7 — remediation entries, docs, deviations, generated indexes</item>
   <item>RFC-1506: patch-based commit-gate isolation replaces git stash</item>
   <item>RFC-1507: scoped gates always run ratchet scans; cold e2e as own gate</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, warpgogol-m000196</history>
+  <item>RFC-1508: implement RFC-1508 — system profile, system map schemas and system.map.validate</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -4589,6 +4587,42 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     ruleId: "Q-TRANSPORT",
     action: "Resolve the reported violation — the enforced contract is declared in packages/werkstatt-site/src/onboarding/asset-slot-fulfill.ts.",
     docRef: "packages/werkstatt-site/src/onboarding/asset-slot-fulfill.ts",
+  },
+  {
+    ruleId: "SYSTEM-01",
+    contract: "System commands require a forge repository on the system profile (profile: system in forge.yaml).",
+    action: "Run the command inside a repository created with `forge create --in-place --profile system`, or correct the forge.yaml profile field.",
+    docRef: "docs/rfcs/rfc-1508-forge-system-system-profile-system-map-schemas-and-system-map-validate.md",
+  },
+  {
+    ruleId: "SYSTEM-MAP-01",
+    contract: "Every required system-map file (system/system.yaml, system/products.yaml, system/edges.yaml) exists and satisfies its forge/…@1 schema.",
+    action: "Repair the reported file against its forge/…@1 schema — see packages/forge/os/system/schemas.ts.",
+    docRef: "packages/forge/os/system/schemas.ts",
+  },
+  {
+    ruleId: "SYSTEM-MAP-02",
+    contract: "Product ids are unique and every edge consumer is a declared product.",
+    action: "Remove the duplicate product id or declare the edge consumer in system/products.yaml.",
+    docRef: "packages/forge/os/system/repo.ts",
+  },
+  {
+    ruleId: "SYSTEM-MAP-03",
+    contract: "Every edge contract is offered by at least one product in system/products.yaml.",
+    action: "Declare the contract in a product's offers[] or remove the edge from system/edges.yaml.",
+    docRef: "packages/forge/os/system/repo.ts",
+  },
+  {
+    ruleId: "SYSTEM-MAP-04",
+    contract: "A consumer/contract pair may not appear in both allowed and forbidden edge lists.",
+    action: "Keep the pair in exactly one list in system/edges.yaml — forbidden wins at lookup time.",
+    docRef: "packages/forge/os/system/repo.ts",
+  },
+  {
+    ruleId: "SYSTEM-MAP-05",
+    contract: "system/products.local.yaml covers declared products and names only existing folders.",
+    action: "Update system/products.local.yaml (gitignored) to list checked-out product folders.",
+    docRef: "packages/forge/os/system/repo.ts",
   },
   {
     ruleId: "QUEUE-01",
