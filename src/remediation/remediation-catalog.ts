@@ -11,7 +11,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1493: step 4 — remove per-commit version bump, PC-01..04, version log; one commit path with universal X-RFC/X-ADR trailers</item>
   <item>RFC-1494: step 4 — prod gate call sites emit platformPrecondition; certify fails before capture, promote before authorization; PROD-PLATFORM-01..04 catalog entries</item>
   <item>RFC-1496: step 3 — fingerprint refusals and --at
 
@@ -20,6 +19,7 @@ platform.identity --fingerprints now refuses a dirty platform tree (git status -
 
 forge AGENTS gains the adoption-hardening section: FLOW-07 stray branches have no 72 h grace, the legacy-tags step is informational, tagTriggers feeds digestId, and the marker source accepts network origins only. The remediation catalog gains FLOW-11 (unparseable workflow or unevaluated glob — fix YAML, keep patterns to the evaluated subset). Command manifest and COMMANDS.md regenerated for the FLOW-11 rule declaration and the .github/workflows read glob on flow.digest.</item>
   <item>RFC-1503: steps 1-5 — highest-per-line pending selection, publish-superseded/publish-retired journal events, flow.publication.retire</item>
+  <item>RFC-1502: step 7 — remediation entries, docs, deviations, generated indexes</item>
   <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
@@ -1078,6 +1078,27 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     action: "Fix the version file so the top-level \"version\" field is the release version; the release branch was removed.",
     docRef:
       "docs/rfcs/rfc-1490-forge-flow-release-cut-release-fix-and-back-merge-on-the-fixed-branch-model.md",
+  },
+  {
+    ruleId: "FLOW-CUT-12",
+    contract: "hooks/release-prepare.sh exited non-zero — version-hashed derived artifacts could not be regenerated into the release commit.",
+    action: "Fix the release-prepare hook (run it by hand in a worktree to reproduce) and re-run flow.cut; the release branch was removed.",
+    docRef:
+      "docs/rfcs/rfc-1502-forge-flow-release-preparation-hook-and-extract-verification-before-tagging.md",
+  },
+  {
+    ruleId: "FLOW-CUT-13",
+    contract: "Pre-tag extract verification failed for a named package line — repo-extract at the release commit or extract-verify on the scratch did not pass.",
+    action: "Reproduce with repo-extract --config <dir>/extract.config.yaml --ref <sha> --dest <scratch> --no-push plus hooks/extract-verify.sh, fix the failure, and re-run flow.cut; develop, main and the tags are untouched.",
+    docRef:
+      "docs/rfcs/rfc-1502-forge-flow-release-preparation-hook-and-extract-verification-before-tagging.md",
+  },
+  {
+    ruleId: "FLOW-CUT-14",
+    contract: "release-prepare left untracked files — only tracked modifications join the release commit.",
+    action: "Have the hook write its artifacts to tracked paths, or gitignore the leftovers; the listed files were excluded from the release commit.",
+    docRef:
+      "docs/rfcs/rfc-1502-forge-flow-release-preparation-hook-and-extract-verification-before-tagging.md",
   },
   {
     ruleId: "FLOW-FIX-01",
