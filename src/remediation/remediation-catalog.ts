@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1502: step 7 — remediation entries, docs, deviations, generated indexes</item>
   <item>RFC-1506: patch-based commit-gate isolation replaces git stash</item>
   <item>RFC-1507: scoped gates always run ratchet scans; cold e2e as own gate</item>
   <item>RFC-1508: implement RFC-1508 — system profile, system map schemas and system.map.validate</item>
   <item>RFC-1509: implement RFC-1509 — system task queue, dispatch briefs and task reports</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1503, warpgogol-m000196</history>
+  <item>RFC-1510: implement RFC-1510 — product outbox for dependency-contract requests</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1502, RFC-1503, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -4671,6 +4671,24 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     contract: "The products.local.yaml launcher argv runs after a successful dispatch.",
     action: "Inspect the launcher command's stderr — the task stays dispatched; fix the launcher argv or invoke it by hand.",
     docRef: "packages/forge/os/system/handlers/system-task-dispatch.ts",
+  },
+  {
+    ruleId: "OUTBOX-01",
+    contract: "Every docs/outbox/<id>.yaml entry satisfies forge/outbox@1 — schema, id, contract, need, why, state.",
+    action: "Fix the entry against forge/outbox@1 — an entry names a contract, need, why and state; see the fo-outbox skill.",
+    docRef: "packages/forge/os/system/outbox-schema.ts",
+  },
+  {
+    ruleId: "OUTBOX-02",
+    contract: "An outbox entry's id field equals its filename stem — docs/outbox/OB-0003.yaml declares id OB-0003.",
+    action: "Rename the file or fix the id — the filename stem is the canonical id.",
+    docRef: "packages/forge/os/system/handlers/outbox-validate.ts",
+  },
+  {
+    ruleId: "SYSTEM-OUTBOX-02",
+    contract: "No task is created when the edge from the asking product to the contract is forbidden.",
+    action: "Resolve the forbidden edge in system/edges.yaml, or have the product withdraw the entry.",
+    docRef: "packages/forge/os/system/handlers/system-outbox-scan.ts",
   },
   {
     ruleId: "QUEUE-01",
