@@ -23,11 +23,9 @@ capture intents, just from different adapters.
 <KEY_DECISIONS>
   <item>WorkspaceIO is the single filesystem seam — kernel commands never touch fs directly.</item>
   <item>One argv-shaped allowlist, READ_ONLY_GIT_QUERIES with isReadOnlyGitQuery, judges git calls for the read-only adapter, the recording adapter and the static scan alike; all other exec throws (KERNEL-META-01 / recording refusal).</item>
+  <item>`ls-tree` joined the allowlist (RFC-1510) so committed-only tree reads — e.g. a system scan listing product outbox files on develop — also work under dry-run and recording adapters, not only on the real adapter.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1497: steps 3-4 — git allowlist model and child-command resolution
-
-READ_ONLY_GIT_QUERIES in workspace-io.ts is the single allowlist both the runtime adapter and the static scan share (DNA-91). In the scan, a call that resolves to forge git() body is exempt only when its argv array literal's leading strings cover an allowlist entry; a scratch re-resolve per callsite keeps already-visited callees independently classified, and one non-allowlisted route flips the git() body slice back to a hit (allowlistedGitEntry on the slice). Child commands are judged by declaration, never by descent: executeKernelCommand/executeRegisteredCommand sit in CALLEE_SKIP, and when the caller passes a childCalls out-param the scanner resolves the name (literal, const string, or for-of over a const string array) through an injected resolveCommandDeclaration; an unresolvable name truncates the scan with limit dynamic-child. The child model is opt-in so env scans stay unmarked. Fixtures cover AC-1 (rev-parse no hit), AC-2 (branch -D hit), AC-3 (no executor descent), AC-8 (mutating child recorded), plus mixed-route and dynamic-name cases.</item>
   <item>RFC-1501: one argv-shaped read-only git allowlist for the recording and read-only adapters (RFC-1501)
 
 READ_ONLY_GIT_QUERIES / isReadOnlyGitQuery replace the recording adapter's
@@ -49,7 +47,8 @@ leaves dynamic elements to the runtime predicate. RFC text amended to match
 Re-review: git ls-remote accepts --exec (and its abbreviation --exe) as an alias
 of --upload-pack, so the predicate still admitted a program from the argv.</item>
   <item>RFC-1510: close RFC-1510 review r1 findings — folder crash guard, ls-tree allowlist, OUTBOX-02 on develop</item>
-  <history>RFC-0267, RFC-0326, RFC-1097, RFC-1159, RFC-1306, RFC-1495, RFC-1496</history>
+  <item>RFC-1510: record ls-tree allowlist decision for RFC-1510</item>
+  <history>RFC-0267, RFC-0326, RFC-1097, RFC-1159, RFC-1306, RFC-1495, RFC-1496, RFC-1497</history>
 </CHANGE_SUMMARY>
 */
 // @ai-invariant[INV-wsio-01]: under --dry-run and in read-only commands a git call runs only when isReadOnlyGitQuery admits its argv — forbidden flags match exactly, with =value, abbreviated or inside a short cluster, and no table entry admits a write or an argv-introduced program (checked-by: test:packages/werkstatt-shared/src/kernel/tests/workspace-io.test.ts)
