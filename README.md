@@ -4,7 +4,7 @@
 
 Stack-agnostic shared infrastructure extracted from `werkstatt-site` (RFC-0868). Owns checks, integration, ontology, passport, slug, semantic, typography, middleware, and surface domains consumed by both the Werkstatt engine and the site plugin.
 
-> Engineered at [Warpgogol](https://warpgogol.com) · Released as open source.
+> Engineered at [Warpgogol](https://warpgogol.com) · Released as open source. <!-- pkg-health-12: domain name, not a command -->
 
 ---
 
@@ -120,7 +120,7 @@ This package is published to the npm registry as `@warpgogol/werkstatt-shared`. 
 
 ### How it works
 
-1. The source lives in the [warpgogol/werkstatt](https://github.com/syrokomskyi/werkstatt) monorepo under `packages/werkstatt-shared/`.
+1. The source lives in the [warpgogol/werkstatt](https://github.com/syrokomskyi/werkstatt) monorepo under `packages/werkstatt-shared/`. <!-- pkg-health-12: domain name, not a command -->
 2. [`@warpgogol/repo-extract`](https://github.com/syrokomskyi/repo-extract) extracts the package into the standalone [syrokomskyi/werkstatt-shared](https://github.com/syrokomskyi/werkstatt-shared) repository, flattening it to repo root and stripping workspace dependencies.
 3. The generated GitHub Actions CI workflow runs on every push to `main`: lint → typecheck → build → test → `npm publish --provenance --access public`.
 4. The `NPM_TOKEN` secret must be set in the [repository settings](https://github.com/syrokomskyi/werkstatt-shared/settings/secrets/actions).
