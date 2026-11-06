@@ -16,6 +16,7 @@
   <item>RFC-1027: Add structured remediation hints — remediationRefSchema and remediation field on Diagnostic.</item>
   <item>RFC-1445: Machine-applicable edit descriptors — diagnosticEditSchema (replace|choose, optional target), generatedOwnerSchema, diagnosticCommandSchema; remediationRefSchema gains edit/autofixCommand/verifyCommand/generatedOwner; diagnosticSchema superRefine enforces the edit-requires-file, generatedOwner-target, and multiline-find invariants.</item>
   <item>RFC-1514: attach corrected invocations to blocking diagnostics so retry is one-shot</item>
+  <item>RFC-1514: address review r1 — lint-clean suggestions, widest command candidates, positional coverage</item>
 </CHANGE_SUMMARY>
 */
 
@@ -372,6 +373,9 @@ export const diagnosticSchema = z
     /** RFC-1514: registered command suggested for a `.`-shaped unknown token
      *  (e.g. --acceptance.run → rfc.acceptance.run). */
     didYouMeanCommand: z.string().max(256).optional(),
+    /** RFC-1514: a corrected input that satisfies the violated rule —
+     *  e.g. the rewritten commit subject on a COMMIT-02 finding. */
+    suggestion: z.string().max(1024).optional(),
     remediation: remediationRefSchema.optional(),
     evidence: z.array(diagnosticEvidenceSchema).max(DIAGNOSTIC_LIMITS.evidenceItems).optional(),
     data: canonicalJsonObjectV1Schema.optional(),
