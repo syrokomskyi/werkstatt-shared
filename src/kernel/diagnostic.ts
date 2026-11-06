@@ -15,6 +15,7 @@
   <item>RFC-0852: Move canonical Diagnostic ownership from site plugin into the engine.</item>
   <item>RFC-1027: Add structured remediation hints — remediationRefSchema and remediation field on Diagnostic.</item>
   <item>RFC-1445: Machine-applicable edit descriptors — diagnosticEditSchema (replace|choose, optional target), generatedOwnerSchema, diagnosticCommandSchema; remediationRefSchema gains edit/autofixCommand/verifyCommand/generatedOwner; diagnosticSchema superRefine enforces the edit-requires-file, generatedOwner-target, and multiline-find invariants.</item>
+  <item>RFC-1514: attach corrected invocations to blocking diagnostics so retry is one-shot</item>
 </CHANGE_SUMMARY>
 */
 
@@ -364,6 +365,13 @@ export const diagnosticSchema = z
     line: z.number().int().positive().optional(),
     column: z.number().int().positive().optional(),
     fixHint: redactedDiagnosticTextSchema(DIAGNOSTIC_LIMITS.fixHintBytes).optional(),
+    /** RFC-1514: nearest declared flag name for an unknown-flag diagnostic —
+     *  the corrected invocation, not a rule pointer. Absent below the
+     *  distance threshold; never a wrong guess. */
+    didYouMean: z.string().max(256).optional(),
+    /** RFC-1514: registered command suggested for a `.`-shaped unknown token
+     *  (e.g. --acceptance.run → rfc.acceptance.run). */
+    didYouMeanCommand: z.string().max(256).optional(),
     remediation: remediationRefSchema.optional(),
     evidence: z.array(diagnosticEvidenceSchema).max(DIAGNOSTIC_LIMITS.evidenceItems).optional(),
     data: canonicalJsonObjectV1Schema.optional(),
