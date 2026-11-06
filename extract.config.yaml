@@ -60,3 +60,8 @@ git:
   # RFC-1252/repo-extract >=1.4.0: non-fast-forward push after history
   # transfer reconciles via fetch + merge -s ours + retry. Never force-push.
   autoReconcile: true
+
+# package.json carries optional `link:` dep to an external pipeline path that the extract tolerates —
+# JSON cannot carry an in-source pkg-health-10 comment.
+pkgHealth10Suppressions:
+  - package.json
