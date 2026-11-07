@@ -14,13 +14,11 @@ Applied via html[data-biome="<id>"] in the cascade layer stack.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1298: REVIEW-CODE-2026-10-16-01 findings — kebab flag guards, safeParse, reads declaration, family-append ordering, FONTS-SCRIPT-02 unverifiable-stack warning</item>
   <item>RFC-1356: editorial hero variants and header lockup styling (RFC-1356)</item>
   <item>RFC-1379: optional components.heroEyebrow cssValue — eyebrow/tagline colour slot on hero surfaces.</item>
   <item>RFC-1439: contrast-guaranteed textBackdrop variant for the cover hero</item>
+  <item>RFC-1527: biome.import — external design-system package to candidate biome</item>
   <history>RFC-0071, RFC-0371, RFC-1097, RFC-1298, RFC-1356</history>
 </CHANGE_SUMMARY>
 */
@@ -63,9 +61,26 @@ const intakeBiomeProvenanceSchema = z
   })
   .strict();
 
+// RFC-1527: the import shape produced by biome.import — honest upstream
+// provenance instead of fabricated concept/direction fields. sourceFiles are
+// the real curated filenames (tokens.css, DESIGN.md, …), not curated-doc
+// artifact ids, so they use plain non-empty strings.
+const importedBiomeProvenanceSchema = z
+  .object({
+    importSource: z.string().regex(/^biome-sources\/[a-z][a-z0-9-]*$/),
+    sourceFiles: z.array(z.string().min(1)).min(1),
+    upstreamId: kebabId,
+    upstreamUrl: z.string().url(),
+    upstreamRef: z.string().min(1).optional(),
+    license: z.string().min(1),
+    copyright: z.string().min(1).optional(),
+  })
+  .strict();
+
 export const biomeProvenanceSchema = z.union([
   legacyBiomeProvenanceSchema,
   intakeBiomeProvenanceSchema,
+  importedBiomeProvenanceSchema,
 ]);
 
 export const biomeAxesSchema = z
