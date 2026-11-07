@@ -6,9 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
@@ -17,7 +14,8 @@ Sweep batch 4: 73 Compass headers on headerless engine files (certification, com
   <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
 
 Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
-  <history>RFC-0358, RFC-0379, RFC-0595, RFC-0624, RFC-0627, RFC-0666, RFC-0790, RFC-0926, RFC-1091</history>
+  <item>RFC-1529: declared staging-zone hosting end-to-end</item>
+  <history>RFC-0358, RFC-0379, RFC-0595, RFC-0624, RFC-0627, RFC-0666, RFC-0790, RFC-0926, RFC-1091, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
 
@@ -112,8 +110,10 @@ export const siteHostingKindSchema = z.enum([
 export const deploymentHostingSchema = z.object({
   kind: siteHostingKindSchema,
   // e.g. "warpgogol.com" — config-resolved, never a packages literal (HOST-01).
-  baseDomain: z.string(),
-  zoneId: z.string().min(1),
+  // Optional: a provisional-studio-domain declaration carries both; a
+  // declared provisional-workers-dev has no studio zone to point at.
+  baseDomain: z.string().optional(),
+  zoneId: z.string().min(1).optional(),
 });
 
 export type SiteHostingKind = z.infer<typeof siteHostingKindSchema>;

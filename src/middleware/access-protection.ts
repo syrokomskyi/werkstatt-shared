@@ -11,9 +11,9 @@
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
   <item>PIN check runs in the Workers runtime — Web Crypto only, no Node APIs.</item>
+  <item>env.SITE_HOST_KIND is the declared host-kind channel into the Worker — the runtime has no fs to read deployment.hosting, so config-regenerate stamps the value into wrangler.jsonc vars.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-0899: protect workers.dev dev and alt channels with the PIN and noindex</item>
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
@@ -22,6 +22,7 @@ Single host predicate module in werkstatt-shared; provisional registration deriv
   <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
 
 Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
+  <item>RFC-1529: declared staging-zone hosting end-to-end</item>
   <history>RFC-0899, RFC-1097, warpgogol-m000193</history>
 </CHANGE_SUMMARY>
 */

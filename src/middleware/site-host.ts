@@ -14,17 +14,16 @@ or `^(dev|alt)[.-]` literal is a HOST-01 defect.
 <KEY_DECISIONS>
   <item>Lives under middleware/ — the deployed Worker bundle reaches shared only via ./middleware/* subpaths.</item>
   <item>channelHost takes the channel workerName so provisional hosts map to &lt;workerName&gt;.&lt;account-subdomain&gt; — the caller owns worker-name derivation (dev-&lt;id&gt; etc.).</item>
+  <item>provisional-studio-domain reuses the custom-domain dotted channel form (dev.&lt;id&gt;.&lt;base&gt;) so pre- and post-adoption host shapes are identical — classification comes from deployment.hosting, never from host suffixes.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1325: provisional workers.dev as first-class site host
-
-Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1325: review r1 — pin-carrying probes, AC-3 write ordering, dns-aid validate parity, hardened host lint</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
   <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
   <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
 
 Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
+  <item>RFC-1529: declared staging-zone hosting end-to-end</item>
   <history>RFC-1325</history>
 </CHANGE_SUMMARY>
 */
@@ -39,9 +38,7 @@ import type { DeployChannel } from "../ontology/operations/leitstand.ts";
  * staging zone (declared via `deployment.hosting`, never host-suffix inferred).
  */
 export type SiteHostKind =
-  | "custom-domain"
-  | "provisional-workers-dev"
-  | "provisional-studio-domain";
+  "custom-domain" | "provisional-workers-dev" | "provisional-studio-domain";
 
 const WORKERS_DEV_SUFFIX = ".workers.dev";
 
