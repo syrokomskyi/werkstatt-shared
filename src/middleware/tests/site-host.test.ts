@@ -14,6 +14,9 @@
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
+
+Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -24,6 +27,7 @@ import {
   channelHost,
   isDevOrAltHost,
   isProvisionalHost,
+  isProvisionalKind,
   siteHostKind,
   workersDevHost,
 } from "../site-host.ts";
@@ -62,6 +66,30 @@ describe("site-host (RFC-1325)", () => {
       expect(siteHostKind("a.b.workers.dev")).toBe("provisional-workers-dev");
       expect(siteHostKind("example.com")).toBe("custom-domain");
     });
+
+    test("RFC-1529: staging-zone hosts classify custom-domain — kind is declared, never suffix-derived", () => {
+      // The staging zone carries real hosts too; the string classifier stays
+      // binary and `deployment.hosting.kind` is the only provisional signal.
+      expect(siteHostKind("dp7.warpgogol.com")).toBe("custom-domain");
+      expect(siteHostKind("dev.dp7.warpgogol.com")).toBe("custom-domain");
+      expect(isProvisionalHost("dp7.warpgogol.com")).toBe(false);
+    });
+  });
+
+  describe("isProvisionalKind (RFC-1529)", () => {
+    test.each([
+      "provisional-workers-dev",
+      "provisional-studio-domain",
+    ])("provisional kind: %s", (kind) => {
+      expect(isProvisionalKind(kind)).toBe(true);
+    });
+
+    test.each(["custom-domain", "staging", "", undefined])(
+      "not provisional: %s",
+      (kind) => {
+        expect(isProvisionalKind(kind)).toBe(false);
+      },
+    );
   });
 
   describe("channelHost", () => {
@@ -78,6 +106,18 @@ describe("site-host (RFC-1325)", () => {
       expect(
         channelHost("provisional-workers-dev", "dp7.syrokomskyi.workers.dev", "main", "dp7"),
       ).toBe("dp7.syrokomskyi.workers.dev");
+    });
+
+    test("RFC-1529: provisional-studio-domain reuses the dotted custom-domain shape", () => {
+      expect(
+        channelHost("provisional-studio-domain", "dp7.warpgogol.com", "dev", "dev-dp7"),
+      ).toBe("dev.dp7.warpgogol.com");
+      expect(
+        channelHost("provisional-studio-domain", "dp7.warpgogol.com", "alt", "alt-dp7"),
+      ).toBe("alt.dp7.warpgogol.com");
+      expect(
+        channelHost("provisional-studio-domain", "dp7.warpgogol.com", "prod", "dp7"),
+      ).toBe("dp7.warpgogol.com");
     });
   });
 

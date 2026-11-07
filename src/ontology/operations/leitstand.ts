@@ -6,8 +6,6 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-0926: add optional workerVersionId to propagationResultSchema and lastPropagatedChannelSchema for release-aware rollback.</item>
-  <item>RFC-1091: add github-pages to deploymentAdapterNameSchema enum.</item>
   <item>RFC-1097: step 6 — compass.migrate codemod run
 
 Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
@@ -16,7 +14,10 @@ Mechanical v1 to v2 header migration across the workspace: 942 files rewritten �
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1297: lastPropagatedChannelSchema gains states rolled-back + reconciled; healthy becomes nullable (unknown until re-verified).</item>
   <item>RFC-1492: DEPLOY_CHANNELS/DeployChannel/deployChannelSchema — the single channel definition (dev, alt, prod); deploymentStaticConfigSchema.channels built from it.</item>
-  <history>RFC-0358, RFC-0379, RFC-0595, RFC-0624, RFC-0627, RFC-0666, RFC-0790</history>
+  <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
+
+Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
+  <history>RFC-0358, RFC-0379, RFC-0595, RFC-0624, RFC-0627, RFC-0666, RFC-0790, RFC-0926, RFC-1091</history>
 </CHANGE_SUMMARY>
 */
 
@@ -100,6 +101,24 @@ export type DeploymentAdapterName = z.infer<typeof deploymentAdapterNameSchema>;
 export type DeploymentChannel = z.infer<typeof deploymentChannelSchema>;
 export type LastPropagatedChannel = z.infer<typeof lastPropagatedChannelSchema>;
 export type PurgeResult = z.infer<typeof purgeResultSchema>;
+
+// RFC-1529: provisional host kinds a system may DECLARE on its artifact —
+// `custom-domain` is never declared here; it is the absence of this block.
+export const siteHostingKindSchema = z.enum([
+  "provisional-workers-dev",
+  "provisional-studio-domain",
+]);
+
+export const deploymentHostingSchema = z.object({
+  kind: siteHostingKindSchema,
+  // e.g. "warpgogol.com" — config-resolved, never a packages literal (HOST-01).
+  baseDomain: z.string(),
+  zoneId: z.string().min(1),
+});
+
+export type SiteHostingKind = z.infer<typeof siteHostingKindSchema>;
+export type DeploymentHosting = z.infer<typeof deploymentHostingSchema>;
+
 export const deploymentStaticConfigSchema = z.object({
   adapter: deploymentAdapterNameSchema,
   // RFC-1492: the channel set is built from DEPLOY_CHANNELS — adding or
@@ -109,6 +128,9 @@ export const deploymentStaticConfigSchema = z.object({
       DEPLOY_CHANNELS.map((channel) => [channel, deploymentChannelSchema]),
     ) as Record<DeployChannel, typeof deploymentChannelSchema>,
   ),
+  // RFC-1529: declared host mode — absent ⇔ legacy config (kind derived from
+  // identity.domain as before); new provisional births always write the block.
+  hosting: deploymentHostingSchema.optional(),
 });
 
 export type DeploymentStaticConfig = z.infer<typeof deploymentStaticConfigSchema>;

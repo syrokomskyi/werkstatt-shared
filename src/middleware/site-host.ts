@@ -16,13 +16,16 @@ or `^(dev|alt)[.-]` literal is a HOST-01 defect.
   <item>channelHost takes the channel workerName so provisional hosts map to &lt;workerName&gt;.&lt;account-subdomain&gt; — the caller owns worker-name derivation (dev-&lt;id&gt; etc.).</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1325: initial — SiteHostKind, siteHostKind, isProvisionalHost, channelHost; isDevOrAltHost rehomed from access-protection.ts.</item>
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1325: review r1 — pin-carrying probes, AC-3 write ordering, dns-aid validate parity, hardened host lint</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
   <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
+  <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
+
+Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
+  <history>RFC-1325</history>
 </CHANGE_SUMMARY>
 */
 
@@ -30,8 +33,15 @@ Single host predicate module in werkstatt-shared; provisional registration deriv
 
 import type { DeployChannel } from "../ontology/operations/leitstand.ts";
 
-/** RFC-1325 host classification: a real registered domain vs the provisional account workers.dev host. */
-export type SiteHostKind = "custom-domain" | "provisional-workers-dev";
+/**
+ * RFC-1325 host classification: a real registered domain vs a provisional host.
+ * RFC-1529: `provisional-studio-domain` — provisional semantics on a declared
+ * staging zone (declared via `deployment.hosting`, never host-suffix inferred).
+ */
+export type SiteHostKind =
+  | "custom-domain"
+  | "provisional-workers-dev"
+  | "provisional-studio-domain";
 
 const WORKERS_DEV_SUFFIX = ".workers.dev";
 
@@ -61,8 +71,20 @@ export function isProvisionalHost(domain: string | undefined): boolean {
 }
 
 /**
+ * RFC-1529: true when a declared host kind carries provisional semantics
+ * (PIN on dev/alt, noindex, dns-aid/verification skips). Operates on the kind
+ * VALUE — the caller resolves it from `deployment.hosting.kind` or the
+ * `SITE_HOST_KIND` runtime var; host-string inference stays forbidden.
+ */
+export function isProvisionalKind(kind: SiteHostKind | string | undefined): boolean {
+  return kind === "provisional-workers-dev" || kind === "provisional-studio-domain";
+}
+
+/**
  * Derive the serving host for a channel.
  * - custom-domain: `dev.<domain>` / `alt.<domain>` / `<domain>` (RFC-0899 convention).
+ * - provisional-studio-domain: identical to custom-domain — the dotted channel
+ *   shape `dev.<id>.<staging>` unifies pre- and post-adoption host forms (RFC-1529).
  * - provisional-workers-dev: `<workerName>.<account-subdomain>` — the worker
  *   name IS the host label (`dev-<id>`, `alt-<id>`, `<id>`), so prod and dev/alt
  *   share the same derivation. `workerName` is the caller-derived channel worker
@@ -74,7 +96,7 @@ export function channelHost(
   channel: DeployChannel,
   workerName: string,
 ): string {
-  if (kind === "custom-domain") {
+  if (kind === "custom-domain" || kind === "provisional-studio-domain") {
     if (channel === "dev") return `dev.${domain}`;
     if (channel === "alt") return `alt.${domain}`;
     return domain;

@@ -10,13 +10,15 @@
 </KEY_DECISIONS>
 
 <CHANGE_SUMMARY>
-  <item>RFC-0899: protect workers.dev dev and alt channels with the PIN and noindex</item>
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1340</item>
   <item>RFC-1390: close review findings on invariant binding machinery</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
+
+Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
   <history>RFC-0899, RFC-1249</history>
 </CHANGE_SUMMARY>
 */
@@ -127,6 +129,38 @@ describe("RFC-0899: access protection middleware", () => {
     // A real custom domain still carries no noindex.
     const prod = await runMiddleware(handler, "dp7.example.com");
     expect(prod.headers.get("X-Robots-Tag")).toBe(null);
+  });
+
+  it("RFC-1529: declared provisional-studio-domain noindexes a staging-zone prod host the suffix test cannot see", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    mockEnv.SITE_HOST_KIND = "provisional-studio-domain";
+    const handler = await loadMiddleware();
+    // dp7.warpgogol.com shape — a real-zone host classified custom-domain by
+    // string; the declared kind restores noindex.
+    const res = await runMiddleware(handler, "dp7.staging-zone.example");
+    expect(res._nextCalled).toBe(true);
+    expect(res.headers.get("X-Robots-Tag")).toBe("noindex, nofollow, noai, noimageai");
+    delete mockEnv.SITE_HOST_KIND;
+  });
+
+  it("RFC-1529: declared custom-domain kind does not noindex a real domain", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    mockEnv.SITE_HOST_KIND = "custom-domain";
+    const handler = await loadMiddleware();
+    const res = await runMiddleware(handler, "dp7.example.com");
+    expect(res._nextCalled).toBe(true);
+    expect(res.headers.get("X-Robots-Tag")).toBe(null);
+    delete mockEnv.SITE_HOST_KIND;
+  });
+
+  it("RFC-1529: dotted staging dev/alt hosts still hit the PIN gate via the dev/alt predicate", async () => {
+    mockEnv.ACCESS_PIN = "1234";
+    mockEnv.SITE_HOST_KIND = "provisional-studio-domain";
+    const handler = await loadMiddleware();
+    const res = await runMiddleware(handler, "dev.dp7.staging-zone.example");
+    expect(res._nextCalled).toBe(false);
+    expect(res.status).toBe(401);
+    delete mockEnv.SITE_HOST_KIND;
   });
 
   it("passes through dev.* with correct Basic Auth", async () => {

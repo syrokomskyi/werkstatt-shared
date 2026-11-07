@@ -13,15 +13,15 @@
   <item>PIN check runs in the Workers runtime — Web Crypto only, no Node APIs.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-0899: protect workers.dev dev and alt channels with the PIN and noindex</item>
   <item>RFC-1325: provisional workers.dev as first-class site host
 
 Single host predicate module in werkstatt-shared; provisional registration derives dev/alt/main workers.dev channels from the account subdomain; first dev deploy auto-protects provisional hosts; provisional main responses carry noindex; dns-aid skips provisional sites; site.domain.adopt cuts over to a custom domain.</item>
   <item>RFC-1340</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
+  <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
+
+Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
   <history>RFC-0899, RFC-1097, warpgogol-m000193</history>
 </CHANGE_SUMMARY>
 */
@@ -29,7 +29,7 @@ Single host predicate module in werkstatt-shared; provisional registration deriv
 // @ai-invariant[INV-access-01]: a dev or alt host carrying a configured PIN secret never reaches the site without valid Basic-Auth credentials — protection fails closed on missing or wrong PIN (checked-by: test:packages/werkstatt-shared/src/middleware/tests/access-protection.test.ts)
 
 import { defineMiddleware } from "astro:middleware";
-import { isDevOrAltHost, isProvisionalHost } from "./site-host.ts";
+import { isDevOrAltHost, isProvisionalHost, isProvisionalKind } from "./site-host.ts";
 
 // RFC-1325: compat re-export — consumers keep importing isDevOrAltHost from
 // this module while the predicate's canonical home is site-host.ts.
@@ -132,14 +132,30 @@ export function checkAccessProtection(
  * RFC-0899: Add X-Robots-Tag header to a response for dev/alt subdomains.
  * Called after the Astro handler returns a response, if the host is dev/alt.
  *
+ * RFC-1529: `env.SITE_HOST_KIND` declares the site's host kind at build time —
+ * a `provisional-studio-domain` site serves its prod preview on a real-zone
+ * host where the request-host suffix test sees `custom-domain`; the declared
+ * kind is what restores noindex there. Host strings never classify it.
+ *
  * @param response - The response to modify
- * @returns A new response with X-Robots-Tag added (if dev/alt host)
+ * @param env - Worker env (optional); `SITE_HOST_KIND` var carries the declared kind
+ * @returns A new response with X-Robots-Tag added (if dev/alt host or declared provisional)
  */
-export function addNoIndexHeaderIfNeeded(request: Request, response: Response): Response {
+export function addNoIndexHeaderIfNeeded(
+  request: Request,
+  response: Response,
+  env?: Record<string, unknown>,
+): Response {
   const host = request.headers.get("host") ?? "";
   // RFC-1325: noindex on every provisional-host response — the unprotected
   // provisional main channel is the public preview but must not index.
-  if (!isDevOrAltHost(host) && !isProvisionalHost(host)) return response;
+  // RFC-1529: the declared kind carries the same verdict for staging-zone hosts.
+  if (
+    !isDevOrAltHost(host) &&
+    !isProvisionalHost(host) &&
+    !isProvisionalKind(env?.SITE_HOST_KIND as string | undefined)
+  )
+    return response;
 
   const headers = new Headers(response.headers);
   headers.set("X-Robots-Tag", NOINDEX_HEADER);
@@ -157,6 +173,20 @@ async function resolveAccessPin(): Promise<string | undefined> {
   try {
     const { env } = await import("cloudflare:workers");
     return (env.ACCESS_PIN as string | undefined) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * RFC-1529: declared host kind from the `SITE_HOST_KIND` vars binding — the
+ * Worker's build-time fact replacing filesystem config access. Undefined in
+ * build (no runtime binding) and on legacy deployments without the var.
+ */
+async function resolveSiteHostKind(): Promise<string | undefined> {
+  try {
+    const { env } = await import("cloudflare:workers");
+    return (env.SITE_HOST_KIND as string | undefined) ?? undefined;
   } catch {
     return undefined;
   }
@@ -188,8 +218,11 @@ export const accessProtectionMiddleware = defineMiddleware(async (context: any, 
 
   const host = context.request.headers.get("host") ?? "";
   const isDevOrAlt = isDevOrAltHost(host);
+  // RFC-1529: declared kind carries provisional semantics for staging-zone
+  // hosts the request-host suffix test cannot see.
+  const declaredProvisional = isProvisionalKind(await resolveSiteHostKind());
 
-  if (!isDevOrAlt && !isProvisionalHost(host)) {
+  if (!isDevOrAlt && !isProvisionalHost(host) && !declaredProvisional) {
     return next();
   }
 
