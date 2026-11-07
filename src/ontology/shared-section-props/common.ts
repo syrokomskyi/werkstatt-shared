@@ -8,6 +8,13 @@
 <CHANGE_SUMMARY>
   <item>RFC-0303 Phase 3: extracted from shared-section-props/index.ts as part of the domain split.</item>
   <item>RFC-1289</item>
+  <item>RFC-1528: admit feather in composed props schemas (RFC-1528)
+
+Extend the hand-mirrored EFFECT_STACK_ITEM_SCHEMA JSON shape with the
+feather variant (edges, extent) so pinned propsSchema validation admits
+kind: feather assignments, and regenerate every section's composed prop
+types via props.types.generate. Document the media target + feather kind
+in site-composition.md.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -194,6 +201,21 @@ export const EFFECT_STACK_ITEM_SCHEMA = {
         edge: { enum: ["top", "bottom", "left", "right"] },
         color: EFFECT_COLOR_SCHEMA,
         opacity: { type: "number", minimum: 0, maximum: 1 },
+        extent: { type: "number", minimum: 0, maximum: 0.5 },
+      },
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["kind", "enabled"],
+      properties: {
+        kind: { const: "feather" },
+        enabled: { type: "boolean" },
+        edges: {
+          type: "array",
+          minItems: 1,
+          items: { enum: ["top", "bottom", "left", "right"] },
+        },
         extent: { type: "number", minimum: 0, maximum: 0.5 },
       },
     },
