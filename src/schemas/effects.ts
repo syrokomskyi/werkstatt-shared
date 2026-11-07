@@ -11,16 +11,29 @@ schema validation for the RFC-0134 glass-first effects model.
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: step 6 — compass.migrate codemod run
-
-Mechanical v1 to v2 header migration across the workspace: 942 files rewritten — CHANGE_SUMMARY windows collapsed into history, forbidden v1 blocks stripped, KEY_DECISIONS seeded from @ai-invariant comments (5 files) or TODO placeholders (103 files), blocks reordered to canonical order.</item>
   <item>RFC-1097: sweep — werkstatt-engine clean
 
 Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>warpgogol-m000200: slot:* effect targets admit the generic surface pair (glass, shadow) — component-defined slots such as the footer's slot:footer-below pass strict effectAssignmentSchema validation.</item>
   <item>warpgogol-m000200: shadow effect gains `inset` — an inward cast for bottom-edge surfaces (e.g. slot:footer-below) that must not reserve document space below the element; box-shadow ink overflow never extends the scroll area, so outward bottom casts are unrenderable there.</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
-  <history>dp7-m000006, RFC-1420</history>
+  <item>RFC-1528: feather effect kind on the media target (RFC-1528)
+
+Add a contract-level feather kind — an alpha-transparency mask that fades
+media edges to 0 — to the closed effects vocabulary, and wire catalog-grid
+to resolve the media target onto each card's image frame.
+
+- werkstatt-shared: featherEffectSchema (edges, extent), EFFECT_KIND_META
+  surface/maxPerStack 1, TARGET_ALLOWED_KINDS.media = [glass, feather]
+- registry: buildFeatherMask composes per-axis gradients; RENDERERS.feather
+  emits effect-host--feather + --ds-effect-feather-mask
+- effect-host.css: mask-image + -webkit- pair, mask-composite intersect,
+  print suppression
+- catalog-grid-section.astro: resolveEffectsForTarget(media) once per
+  block, presentation on catalog-grid-section__image-wrap
+- tests: schema accept/reject, duplicate stack, media x fade rejection,
+  renderer defaults/subset/disabled/text-strategy</item>
+  <history>dp7-m000006, RFC-1097, RFC-1420</history>
 </CHANGE_SUMMARY>
 */
 
@@ -152,6 +165,26 @@ export const fadeEffectSchema = z
   .strict();
 export type FadeEffect = z.infer<typeof fadeEffectSchema>;
 
+/**
+ * RFC-1528: feather is a transparency mask on the media's own edges — alpha
+ * fades to 0 across `extent` at each enabled edge. Unlike `fade` it never
+ * paints a color; unlike glass it modifies the media itself.
+ */
+export const featherEffectSchema = z
+  .object({
+    kind: z.literal("feather"),
+    enabled: z.boolean(),
+    /** Edge subset to feather. Default: all four edges. */
+    edges: z
+      .array(z.enum(["top", "bottom", "left", "right"]))
+      .min(1)
+      .optional(),
+    /** 0..0.5; fade band width per edge as a fraction of the element. Default 0.15. */
+    extent: z.number().min(0).max(0.5).optional(),
+  })
+  .strict();
+export type FeatherEffect = z.infer<typeof featherEffectSchema>;
+
 export const effectSchema = z.discriminatedUnion("kind", [
   glassEffectSchema,
   shadowEffectSchema,
@@ -160,6 +193,7 @@ export const effectSchema = z.discriminatedUnion("kind", [
   tiltEffectSchema,
   lightenEffectSchema,
   fadeEffectSchema,
+  featherEffectSchema,
 ]);
 export type Effect = z.infer<typeof effectSchema>;
 
@@ -180,6 +214,7 @@ export const EFFECT_KIND_META = {
   tilt: { strategy: "text", maxPerStack: 1 },
   lighten: { strategy: "surface", maxPerStack: 1 },
   fade: { strategy: "surface", maxPerStack: 1 },
+  feather: { strategy: "surface", maxPerStack: 1 },
 } as const satisfies Record<EffectKind, { strategy: EffectKindStrategy; maxPerStack: number }>;
 
 /**
@@ -193,6 +228,10 @@ export const TARGET_ALLOWED_KINDS: Record<string, readonly EffectKind[]> = {
   background: ["lighten", "fade"],
   /** Cast shadow below the section boundary (box-shadow), plus surface glass. */
   section: ["glass", "shadow"],
+  /** RFC-1528: a media frame is a surface — the generic surface pair holds
+      here too (glass stays admitted like on `section`/`slot:*`, feather is
+      the edge-alpha mask this target exists for). */
+  media: ["glass", "feather"],
 };
 
 const DEFAULT_ALLOWED_KINDS: readonly EffectKind[] = ["glass"];
