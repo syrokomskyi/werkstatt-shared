@@ -12,6 +12,14 @@ Unit tests for effects covering namedEffectTargetSchema; effectTargetSchema; gla
   fill-when-absent, authored-wins (incl. enabled:false opt-out), non-shadow
   kinds preserved, defaults constants pinned to the canonical cast values.</item>
   <item>RFC-1311: Compass header sweep — declares the effects suite's contract for test-file scaffold coverage.</item>
+  <item>RFC-1528: review findings for RFC-1528 feather effect
+
+- catalog-grid image-wrap gains position:relative so effect layers
+  (glass::before on target: media) anchor to the frame, not the shell
+- shared schema tests pin feather bounds (edges subset/empty/non-enum,
+  extent cap, strict variant) and allowedKindsForTarget(media)
+- registry test pins the asymmetric two-axis edge subset
+- site-composition.md notes the mask covers the whole frame element</item>
 </CHANGE_SUMMARY>
 */
 
@@ -127,6 +135,42 @@ describe("fadeEffectSchema", () => {
   });
 });
 
+describe("featherEffectSchema (RFC-1528)", () => {
+  it("accepts an authored edge subset and extent", () => {
+    const result = effectSchema.safeParse({
+      kind: "feather",
+      enabled: true,
+      edges: ["top", "left"],
+      extent: 0.2,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an empty edges array", () => {
+    const result = effectSchema.safeParse({ kind: "feather", enabled: true, edges: [] });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a non-enum edge", () => {
+    const result = effectSchema.safeParse({
+      kind: "feather",
+      enabled: true,
+      edges: ["diagonal"],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects extent above 0.5", () => {
+    const result = effectSchema.safeParse({ kind: "feather", enabled: true, extent: 0.6 });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an unknown key (strict variant)", () => {
+    const result = effectSchema.safeParse({ kind: "feather", enabled: true, color: "bg" });
+    expect(result.success).toBe(false);
+  });
+});
+
 describe("EFFECT_KIND_META", () => {
   it("has metadata for all effect kinds", () => {
     expect(EFFECT_KIND_META.glass.strategy).toBe("surface");
@@ -158,6 +202,11 @@ describe("allowedKindsForTarget", () => {
     const kinds = allowedKindsForTarget("section");
     expect(kinds).toContain("glass");
     expect(kinds).toContain("shadow");
+  });
+
+  it("accepts glass and feather on media (RFC-1528)", () => {
+    const kinds = allowedKindsForTarget("media");
+    expect(kinds).toEqual(["glass", "feather"]);
   });
 
   it("accepts a shadow assignment on section via effectAssignmentSchema", () => {
