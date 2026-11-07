@@ -13,18 +13,18 @@ or `^(dev|alt)[.-]` literal is a HOST-01 defect.
 </MODULE_CONTRACT>
 <KEY_DECISIONS>
   <item>Lives under middleware/ — the deployed Worker bundle reaches shared only via ./middleware/* subpaths.</item>
-  <item>channelHost takes the channel workerName so provisional hosts map to &lt;workerName&gt;.&lt;account-subdomain&gt; — the caller owns worker-name derivation (dev-&lt;id&gt; etc.).</item>
+  <item>channelHost's workerName is required only for provisional-workers-dev hosts (maps to &lt;workerName&gt;.&lt;account-subdomain&gt;); the dotted custom/studio kinds ignore it — the caller owns worker-name derivation (dev-&lt;id&gt; etc.).</item>
   <item>provisional-studio-domain reuses the custom-domain dotted channel form (dev.&lt;id&gt;.&lt;base&gt;) so pre- and post-adoption host shapes are identical — classification comes from deployment.hosting, never from host suffixes.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1485: sweep compass headers — shared-tail</item>
   <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
   <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
 
 Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
   <item>RFC-1529: declared staging-zone hosting end-to-end</item>
   <item>RFC-1529: close RFC-1529 review r1 findings — declared hosting on all provisional births, zone-required studio schema, wildcard-route warn, strict staging relabel</item>
-  <history>RFC-1325</history>
+  <item>RFC-1529: record key decisions for declared-on-all-births hosting and optional channelHost workerName</item>
+  <history>RFC-1325, RFC-1485</history>
 </CHANGE_SUMMARY>
 */
 
