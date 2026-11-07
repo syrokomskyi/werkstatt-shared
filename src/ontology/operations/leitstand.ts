@@ -6,15 +6,13 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1097: sweep — werkstatt-engine clean
-
-Sweep batch 4: 73 Compass headers on headerless engine files (certification, component-runtime, isolation, evolution, testing), real KEY_DECISIONS on 75 files (kernel, cache, dht, swim, gitmesh, runtime), ~80 purpose expansions (CONTRACT-02/PURPOSE-02), non-goals on 13 CONTRACT-03 files, CS-07 history literal fix repo-wide (253 files). Policy: .template.ts/.template.astro excludedPaths. werkstatt-engine now 0 diagnostics.</item>
   <item>RFC-1297: lastPropagatedChannelSchema gains states rolled-back + reconciled; healthy becomes nullable (unknown until re-verified).</item>
   <item>RFC-1492: DEPLOY_CHANNELS/DeployChannel/deployChannelSchema — the single channel definition (dev, alt, prod); deploymentStaticConfigSchema.channels built from it.</item>
   <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
 
 Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
   <item>RFC-1529: declared staging-zone hosting end-to-end</item>
+  <item>RFC-1529: close RFC-1529 review r1 findings — declared hosting on all provisional births, zone-required studio schema, wildcard-route warn, strict staging relabel</item>
   <history>RFC-0358, RFC-0379, RFC-0595, RFC-0624, RFC-0627, RFC-0666, RFC-0790, RFC-0926, RFC-1091, RFC-1097</history>
 </CHANGE_SUMMARY>
 */
@@ -107,14 +105,23 @@ export const siteHostingKindSchema = z.enum([
   "provisional-studio-domain",
 ]);
 
-export const deploymentHostingSchema = z.object({
-  kind: siteHostingKindSchema,
-  // e.g. "warpgogol.com" — config-resolved, never a packages literal (HOST-01).
-  // Optional: a provisional-studio-domain declaration carries both; a
-  // declared provisional-workers-dev has no studio zone to point at.
-  baseDomain: z.string().optional(),
-  zoneId: z.string().min(1).optional(),
-});
+export const deploymentHostingSchema = z
+  .object({
+    kind: siteHostingKindSchema,
+    // e.g. "warpgogol.com" — config-resolved, never a packages literal (HOST-01).
+    // Optional at field level: a declared provisional-workers-dev has no
+    // studio zone to point at — the superRefine below closes the escape.
+    baseDomain: z.string().optional(),
+    zoneId: z.string().min(1).optional(),
+  })
+  .superRefine((hosting, ctx) => {
+    if (hosting.kind === "provisional-studio-domain" && (!hosting.baseDomain || !hosting.zoneId)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "provisional-studio-domain hosting requires both baseDomain and zoneId",
+      });
+    }
+  });
 
 export type SiteHostingKind = z.infer<typeof siteHostingKindSchema>;
 export type DeploymentHosting = z.infer<typeof deploymentHostingSchema>;
@@ -129,7 +136,7 @@ export const deploymentStaticConfigSchema = z.object({
     ) as Record<DeployChannel, typeof deploymentChannelSchema>,
   ),
   // RFC-1529: declared host mode — absent ⇔ legacy config (kind derived from
-  // identity.domain as before); new provisional births always write the block.
+  // the prod channel URL as before); new provisional births always write the block.
   hosting: deploymentHostingSchema.optional(),
 });
 

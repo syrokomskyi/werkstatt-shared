@@ -17,13 +17,13 @@ or `^(dev|alt)[.-]` literal is a HOST-01 defect.
   <item>provisional-studio-domain reuses the custom-domain dotted channel form (dev.&lt;id&gt;.&lt;base&gt;) so pre- and post-adoption host shapes are identical — classification comes from deployment.hosting, never from host suffixes.</item>
 </KEY_DECISIONS>
 <CHANGE_SUMMARY>
-  <item>RFC-1325: review r1 — pin-carrying probes, AC-3 write ordering, dns-aid validate parity, hardened host lint</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
   <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
   <item>RFC-1529: declared host kind contracts + SITE_HOST_KIND propagation
 
 Third SiteHostKind provisional-studio-domain, deployment.hosting schema, isProvisionalKind predicate, declared-kind noindex in access-protection, SITE_HOST_KIND vars token in wrangler template + config-regenerate.</item>
   <item>RFC-1529: declared staging-zone hosting end-to-end</item>
+  <item>RFC-1529: close RFC-1529 review r1 findings — declared hosting on all provisional births, zone-required studio schema, wildcard-route warn, strict staging relabel</item>
   <history>RFC-1325</history>
 </CHANGE_SUMMARY>
 */
@@ -91,7 +91,7 @@ export function channelHost(
   kind: SiteHostKind,
   domain: string,
   channel: DeployChannel,
-  workerName: string,
+  workerName?: string,
 ): string {
   if (kind === "custom-domain" || kind === "provisional-studio-domain") {
     if (channel === "dev") return `dev.${domain}`;
@@ -103,6 +103,9 @@ export function channelHost(
     throw new Error(
       `[site-host] provisional channel host needs a <worker>.<account>.workers.dev domain, got '${domain}'`,
     );
+  }
+  if (!workerName) {
+    throw new Error("[site-host] provisional-workers-dev channel host requires workerName");
   }
   const suffix = parts.slice(1).join(".");
   return `${workerName}.${suffix}`;

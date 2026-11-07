@@ -39,6 +39,7 @@ a passing 112-route capture at 1512.5s.
 - AC-6: cache-clone editorial coverage (prepare writes, verify read-only)</item>
   <item>RFC-1458: emit requirement-mapped verdict events from deploy.smoke.run</item>
   <item>RFC-1492: rename production deploy channel main to prod with single DEPLOY_CHANNELS definition and CHANNEL-01 guard</item>
+  <item>RFC-1529: close RFC-1529 review r1 findings — declared hosting on all provisional births, zone-required studio schema, wildcard-route warn, strict staging relabel</item>
 </CHANGE_SUMMARY>
 */
 
@@ -170,12 +171,14 @@ export type {
   DeployChannel,
   DeploymentAdapterName,
   DeploymentChannel,
+  DeploymentHosting,
   LastPropagatedChannel,
   PurgeResult,
   DeploymentStaticConfig,
   HealthCheck,
   PropagationResult,
   RouteFact,
+  SiteHostingKind,
 } from "./leitstand.ts";
 
 // RFC-0359: Notausgang export schemas.
