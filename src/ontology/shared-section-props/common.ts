@@ -8,14 +8,14 @@
 <CHANGE_SUMMARY>
   <item>RFC-0303 Phase 3: extracted from shared-section-props/index.ts as part of the domain split.</item>
   <item>RFC-1289</item>
-  <item>RFC-1529: admit feather in composed props schemas (RFC-1529)
+  <item>RFC-1530: admit feather in composed props schemas (RFC-1530)
 
 Extend the hand-mirrored EFFECT_STACK_ITEM_SCHEMA JSON shape with the
 feather variant (edges, extent) so pinned propsSchema validation admits
 kind: feather assignments, and regenerate every section's composed prop
 types via props.types.generate. Document the media target + feather kind
 in site-composition.md.</item>
-  <item>RFC-1529: renumber feather RFC to RFC-1529 — parallel session took the earlier id</item>
+  <item>RFC-1530: renumber feather RFC to RFC-1530 — parallel session took the earlier id</item>
 </CHANGE_SUMMARY>
 */
 

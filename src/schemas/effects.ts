@@ -14,7 +14,7 @@ schema validation for the RFC-0134 glass-first effects model.
   <item>warpgogol-m000200: slot:* effect targets admit the generic surface pair (glass, shadow) — component-defined slots such as the footer's slot:footer-below pass strict effectAssignmentSchema validation.</item>
   <item>warpgogol-m000200: shadow effect gains `inset` — an inward cast for bottom-edge surfaces (e.g. slot:footer-below) that must not reserve document space below the element; box-shadow ink overflow never extends the scroll area, so outward bottom casts are unrenderable there.</item>
   <item>RFC-1485: sweep compass headers — shared-tail</item>
-  <item>RFC-1529: feather effect kind on the media target (RFC-1529)
+  <item>RFC-1530: feather effect kind on the media target (RFC-1530)
 
 Add a contract-level feather kind — an alpha-transparency mask that fades
 media edges to 0 — to the closed effects vocabulary, and wire catalog-grid
@@ -30,7 +30,7 @@ to resolve the media target onto each card's image frame.
   block, presentation on catalog-grid-section__image-wrap
 - tests: schema accept/reject, duplicate stack, media x fade rejection,
   renderer defaults/subset/disabled/text-strategy</item>
-  <item>RFC-1529: renumber feather RFC to RFC-1529 — parallel session took the earlier id</item>
+  <item>RFC-1530: renumber feather RFC to RFC-1530 — parallel session took the earlier id</item>
   <history>dp7-m000006, RFC-1097, RFC-1420</history>
 </CHANGE_SUMMARY>
 */
@@ -164,7 +164,7 @@ export const fadeEffectSchema = z
 export type FadeEffect = z.infer<typeof fadeEffectSchema>;
 
 /**
- * RFC-1529: feather is a transparency mask on the media's own edges — alpha
+ * RFC-1530: feather is a transparency mask on the media's own edges — alpha
  * fades to 0 across `extent` at each enabled edge. Unlike `fade` it never
  * paints a color; unlike glass it modifies the media itself.
  */
@@ -226,7 +226,7 @@ export const TARGET_ALLOWED_KINDS: Record<string, readonly EffectKind[]> = {
   background: ["lighten", "fade"],
   /** Cast shadow below the section boundary (box-shadow), plus surface glass. */
   section: ["glass", "shadow"],
-  /** RFC-1529: a media frame is a surface — the generic surface pair holds
+  /** RFC-1530: a media frame is a surface — the generic surface pair holds
       here too (glass stays admitted like on `section`/`slot:*`, feather is
       the edge-alpha mask this target exists for). */
   media: ["glass", "feather"],

@@ -12,7 +12,7 @@ Unit tests for effects covering namedEffectTargetSchema; effectTargetSchema; gla
   fill-when-absent, authored-wins (incl. enabled:false opt-out), non-shadow
   kinds preserved, defaults constants pinned to the canonical cast values.</item>
   <item>RFC-1311: Compass header sweep — declares the effects suite's contract for test-file scaffold coverage.</item>
-  <item>RFC-1529: review findings for RFC-1529 feather effect
+  <item>RFC-1530: review findings for RFC-1530 feather effect
 
 - catalog-grid image-wrap gains position:relative so effect layers
   (glass::before on target: media) anchor to the frame, not the shell
@@ -20,7 +20,7 @@ Unit tests for effects covering namedEffectTargetSchema; effectTargetSchema; gla
   extent cap, strict variant) and allowedKindsForTarget(media)
 - registry test pins the asymmetric two-axis edge subset
 - site-composition.md notes the mask covers the whole frame element</item>
-  <item>RFC-1529: renumber feather RFC to RFC-1529 — parallel session took the earlier id</item>
+  <item>RFC-1530: renumber feather RFC to RFC-1530 — parallel session took the earlier id</item>
 </CHANGE_SUMMARY>
 */
 
@@ -136,7 +136,7 @@ describe("fadeEffectSchema", () => {
   });
 });
 
-describe("featherEffectSchema (RFC-1529)", () => {
+describe("featherEffectSchema (RFC-1530)", () => {
   it("accepts an authored edge subset and extent", () => {
     const result = effectSchema.safeParse({
       kind: "feather",
@@ -205,7 +205,7 @@ describe("allowedKindsForTarget", () => {
     expect(kinds).toContain("shadow");
   });
 
-  it("accepts glass and feather on media (RFC-1529)", () => {
+  it("accepts glass and feather on media (RFC-1530)", () => {
     const kinds = allowedKindsForTarget("media");
     expect(kinds).toEqual(["glass", "feather"]);
   });
