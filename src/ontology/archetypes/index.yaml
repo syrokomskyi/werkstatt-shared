@@ -4,7 +4,7 @@
 # Edit instead: the archetype.registry.build generator source (not this file).
 # Regenerate:   pnpm exec werkstatt run archetype.registry.build
 schemaVersion: 1.0.0
-totalCount: 90
+totalCount: 91
 entries:
   - id: agent-surface-overview
     displayName: Agent surface overview
@@ -86,6 +86,15 @@ entries:
     acceptedCosmicNames:
       - Thebe
     sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/breadcrumbs.yaml
+    layer: section
+  - id: catalog-grid
+    displayName: Catalog grid
+    semanticRole: product-catalog-presentation
+    version: 1.0.0
+    layoutHint: card-grid
+    acceptedCosmicNames:
+      - Abundantia
+    sourceFile: packages/werkstatt-site/src/domain/ontology/archetypes/sections/catalog-grid.yaml
     layer: section
   - id: changelog
     displayName: Changelog
@@ -852,6 +861,7 @@ sectionRoles:
   - people
   - pricing-disclosure
   - problem
+  - product-catalog-presentation
   - product-line-presentation
   - quantified-outcomes
   - scope-of-responsibility-disclosure
