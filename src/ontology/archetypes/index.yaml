@@ -927,6 +927,7 @@ planetImportPaths:
   Echo: "@warpgogol/werkstatt-site/ui/sections/before-after-gallery"
   Klotho: "@warpgogol/werkstatt-site/ui/sections/booking"
   Thebe: "@warpgogol/werkstatt-site/ui/sections/breadcrumbs"
+  Abundantia: "@warpgogol/werkstatt-site/ui/sections/catalog-grid"
   Prometheus: "@warpgogol/werkstatt-site/ui/sections/changelog"
   Amalthea: "@warpgogol/werkstatt-site/ui/sections/chat-widget"
   Janus: "@warpgogol/werkstatt-site/ui/sections/comparison-cards"
@@ -1031,6 +1032,7 @@ blockTypeToCosmicName:
   before-after-gallery: Echo
   booking: Klotho
   breadcrumbs: Thebe
+  catalog-grid: Abundantia
   changelog: Prometheus
   chat-widget: Amalthea
   comparison-cards: Janus
@@ -1141,6 +1143,7 @@ roleByCosmicName:
   Echo: gallery
   Klotho: contact
   Thebe: navigation
+  Abundantia: product-catalog-presentation
   Prometheus: changelog-history
   Amalthea: consent-gated-chat-launcher
   Janus: side-by-side-comparison
