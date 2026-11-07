@@ -11,6 +11,12 @@
   <item>RFC-0372: added video-section, donation-card, credits, passport no-op extractors; people extractor now extracts heading; all extractors return heading (possibly empty) for unified SemanticBlock.</item>
   <item>warpgogol-m000196: added commitment-table, check-questions, verifiable-case extractors for the semantic home sections.</item>
   <item>RFC-1288: Resolve price markers through one resolver for every projection</item>
+  <item>RFC-1523: register catalog-grid block extractor (RFC-1523 follow-up)
+
+The catalog-grid archetype shipped without a BLOCK_EXTRACTORS registration,
+so page.blocks.extract.validate failed on any site actually using the block.
+Extractor returns section header only — item text resolves from PBP catalog
+entities at render time.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -224,6 +230,19 @@ BLOCK_EXTRACTORS.register<Record<string, unknown>>({
       };
     });
     return { heading, lead, items };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// catalog-grid — item text is resolved from PBP catalog entities at render
+// time (RFC-1523); props carry only the section heading
+// ---------------------------------------------------------------------------
+BLOCK_EXTRACTORS.register<Record<string, unknown>>({
+  blockType: "catalog-grid",
+  extract(props) {
+    const heading = safeString(safeGet(props, "header.heading"));
+    const lead = safeString(safeGet(props, "header.subheading"));
+    return { heading, lead };
   },
 });
 
