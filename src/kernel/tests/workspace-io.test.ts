@@ -160,7 +160,7 @@ test("createRecordingIO: reads pass through to the base adapter", async () => {
 
 test("createReadOnlyIO: throws KERNEL-META-01 naming the command and path on writeFile", async () => {
   const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command");
-  const target = join(process.cwd(), "readonly-guard-should-not-write.txt");
+  const target = join(parse(tmpdir()).root, "readonly-guard-should-not-write.txt");
   try {
     await io.writeFile(target, "x");
     expect.fail("should have thrown");
@@ -174,7 +174,7 @@ test("createReadOnlyIO: throws KERNEL-META-01 naming the command and path on wri
 
 test("createReadOnlyIO: throws on mkdir, rm, and exec too", async () => {
   const io = createReadOnlyIO(createDefaultIO().io, "fixture.readonly.command");
-  const target = join(process.cwd(), "readonly-guard-nope");
+  const target = join(parse(tmpdir()).root, "readonly-guard-nope");
   await expect(() => io.mkdir(target)).rejects.toThrow(KernelMetaError);
   await expect(() => io.rm(target)).rejects.toThrow(KernelMetaError);
   await expect(() => io.exec("rm", ["-rf", target])).rejects.toThrow(KernelMetaError);
