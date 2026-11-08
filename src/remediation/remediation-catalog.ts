@@ -11,12 +11,12 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1507: scoped gates always run ratchet scans; cold e2e as own gate</item>
   <item>RFC-1508: implement RFC-1508 — system profile, system map schemas and system.map.validate</item>
   <item>RFC-1509: implement RFC-1509 — system task queue, dispatch briefs and task reports</item>
   <item>RFC-1510: implement RFC-1510 — product outbox for dependency-contract requests</item>
   <item>RFC-1511: scenarios, version sets and system.versionset.record</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1502, RFC-1503, RFC-1506, warpgogol-m000196</history>
+  <item>RFC-1533: surface pending flow branches in flow.open and the pre-user-prompt nudge</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1502, RFC-1503, RFC-1506, RFC-1507, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -885,7 +885,7 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "docs/rfcs/rfc-1487-forge-flow-per-session-worktrees-beside-the-repository-with-a-local-branch-registry.md",
   },
   {
-    ruleId: "FLOW-OPEN-02",
+    ruleId: "FLOW-OPEN-11",
     contract: "flow.open found no local develop branch to branch from.",
     action: "Adopt the fixed branch model with flow.install first.",
     docRef:
