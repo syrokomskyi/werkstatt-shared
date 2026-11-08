@@ -14,6 +14,9 @@ code as the conformance mechanism — shared code with Lagebild is forbidden
 <CHANGE_SUMMARY>
   <item>RFC-1269: PIN bump to
 verbund-integration-spec-v0.1.5 (AMD-WERKSTATT-05 accepted, ADR-0009).</item>
+  <item>RFC-1539: consume @warpgogol/verbund-integration-spec@0.1.5 as a package (T-0015)
+
+Verbund stage 3 (RFC-1539, lagebild ADR-0014): exact root pin, forge.yaml specPackages[], the contract-types codegen and the VID-013 contract test resolve the spec through @warpgogol/forge/spec, vendored v0.1.0..v0.1.5 copies deleted; the generated types are byte-identical. pnpm added the fresh package to minimumReleaseAgeExclude.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -21,6 +24,7 @@ import { test, expect } from "vitest";
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import { resolveSpecSource } from "@warpgogol/forge/spec";
 import { dirname, join } from "node:path";
 import { parse as parseYaml } from "yaml";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -30,7 +34,10 @@ import type { WebsiteIngressPayload } from "../lagebild-contracts.types.generate
 
 // VID-013: fixtures are validated byte-exact from the vendored snapshots.
 // Resolved via import.meta.url — never process.cwd() (DNA-105).
-const SPECS_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../../../../docs/specs");
+// Verbund stage 3 (ADR-0014): the spec is the installed, exactly pinned
+// @warpgogol/verbund-integration-spec package (forge.yaml specPackages[]).
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../../../..");
+const SPEC_SOURCE = resolveSpecSource(REPO_ROOT, "verbund-integration-spec");
 
 interface FixtureMeta {
   file: string;
@@ -94,12 +101,8 @@ function buildAjv(schemasDir: string): { ajv: Ajv2020; schemaIds: Map<string, st
   return { ajv, schemaIds };
 }
 
-// One validator per vendored snapshot — schema $ids may collide across
-// spec versions, so packages never share an Ajv instance.
-const specDirs = readdirSync(SPECS_ROOT, { withFileTypes: true })
-  .filter((e) => e.isDirectory() && e.name.startsWith("verbund-integration-spec-"))
-  .map((e) => e.name)
-  .sort();
+// The installed package is the single snapshot (older versions stay on npm).
+const specDirs = [SPEC_SOURCE.specId];
 
 // VID-011 pin for the derived types (PLAN-RFC-1238-01) — the newest vendored
 // snapshot; bump alongside codegen/verbund-contract-types.ts SPEC_VERSION.
@@ -116,11 +119,11 @@ const GENERATED_SCHEMA_FILES = [
 
 expect(
   specDirs.length,
-  "no vendored verbund spec snapshots found under docs/specs/ — run fo-spec-ingest",
+  "@warpgogol/verbund-integration-spec is not installed — run pnpm install",
 ).toBeGreaterThan(0);
 
 for (const specId of specDirs) {
-  const specDir = join(SPECS_ROOT, specId);
+  const specDir = SPEC_SOURCE.dir;
   const schemasDir = join(specDir, "schemas");
   const fixturesDir = join(specDir, "fixtures");
   const fixtureFiles = readdirSync(fixturesDir)
@@ -159,7 +162,7 @@ for (const specId of specDirs) {
           `vendored fixture ${specId}/fixtures/${fixture.file} failed ` +
             `${fixture.schemaPath}: ${JSON.stringify(validate.errors)}. ` +
             `If this fixture passes in Lagebild, this is a contract defect — ` +
-            `file an amendment under docs/specs/${specId}/amendments/ targeting ` +
+            `file a Forge outbox entry for Lagebild targeting ` +
             `the fixture; never patch the snapshot.`,
         ).toBe(true);
       } else {
@@ -395,7 +398,8 @@ test("lagebild-contracts.types.generated.ts is in sync with the pinned vendored 
 
   const hash = createHash("sha256");
   for (const file of GENERATED_SCHEMA_FILES) {
-    const path = join(SPECS_ROOT, PIN, "schemas", file);
+    expect(SPEC_SOURCE.specId, "installed spec package must match the codegen pin").toBe(PIN);
+    const path = join(SPEC_SOURCE.dir, "schemas", file);
     expect(existsSync(path), `pinned schema missing: ${path}`).toBe(true);
     hash.update(readFileSync(path));
   }

@@ -22,6 +22,9 @@ pin).</item>
   <item>RFC-1269: pin bump to verbund-integration-spec-v0.1.5 —
 AMD-WERKSTATT-05 accepted and shipped by Lagebild (ADR-0009).</item>
   <item>RFC-1517: make pkg-health-10 shipped-set faithful and scan the publish ref</item>
+  <item>RFC-1539: consume @warpgogol/verbund-integration-spec@0.1.5 as a package (T-0015)
+
+Verbund stage 3 (RFC-1539, lagebild ADR-0014): exact root pin, forge.yaml specPackages[], the contract-types codegen and the VID-013 contract test resolve the spec through @warpgogol/forge/spec, vendored v0.1.0..v0.1.5 copies deleted; the generated types are byte-identical. pnpm added the fresh package to minimumReleaseAgeExclude.</item>
 </CHANGE_SUMMARY>
 */
 
@@ -33,14 +36,22 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveSpecSource } from "@warpgogol/forge/spec";
 import { parse as parseYaml } from "yaml";
 
-// VID-011 pin — bump when a newer verbund-integration-spec snapshot is
-// vendored, then regenerate.
+// VID-011 pin — the exact root dependency @warpgogol/verbund-integration-spec
+// (forge.yaml specPackages[], Verbund stage 3 / ADR-0014). Bump the root
+// package.json pin, then regenerate.
 const SPEC_VERSION = "verbund-integration-spec-v0.1.5";
 
-const SPECS_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../../../../docs/specs"); // pkg-health-10: monorepo codegen input — vendored specs are never shipped
-const SCHEMAS_DIR = join(SPECS_ROOT, SPEC_VERSION, "schemas");
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../../../.."); // pkg-health-10: monorepo codegen input — the spec package is a root devDependency, never shipped
+const SPEC_SOURCE = resolveSpecSource(REPO_ROOT, "verbund-integration-spec");
+if (SPEC_SOURCE.specId !== SPEC_VERSION) {
+  throw new Error(
+    `verbund spec pin drift: installed ${SPEC_SOURCE.specId}, codegen expects ${SPEC_VERSION} — bump both together`,
+  );
+}
+const SCHEMAS_DIR = join(SPEC_SOURCE.dir, "schemas");
 const OUT_FILE = join(
   dirname(fileURLToPath(import.meta.url)),
   "../lagebild-contracts.types.generated.ts",
