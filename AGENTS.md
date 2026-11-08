@@ -1,65 +1,45 @@
 # `@warpgogol/werkstatt-shared` — Agent Guide
 
-RFC-0868: Stack-agnostic shared infrastructure extracted from `@warpgogol/werkstatt-site`. Owns checks, integration, ontology, passport, share, and surface domains consumed by both the engine and site plugin.
+Stack-agnostic shared infrastructure for the Werkstatt platform: kernel contract types, component contracts, Ed25519 signing, fingerprinting, ontology schemas, and domain utilities (`slug`, `semantic`, `i18n`, `content`, `referral`, `media`, …).
 
-**Workspace type:** Package
+**Workspace type:** Package — expose stable typed APIs; do not import from apps or services.
 
-This is a **package** workspace. Expose stable typed APIs. Do not import from `werkstatt-site` or services.
-
-> **Budget rule (RFC-1522):** utility catalog detail lives in `docs/agent-guides/werkstatt-shared-*.md` — this file keeps boundaries and layout within the injection budget.
+> This repository is the standalone published form of the package. Issues and PRs are welcome here; the upstream source of truth lives in the Warpgogol werkstatt monorepo.
 
 ## Boundary rules
 
-- This package MUST NOT import from `@warpgogol/werkstatt-site` — enforced by `werkstatt.shared.validate` (SHARED-03).
-- This package MUST NOT import from `@warpgogol/werkstatt-engine` — enforced by `werkstatt.shared.validate` (SHARED-04, RFC-1104). This package is a leaf: the engine depends on it, never the reverse.
-- This package MAY import external packages declared in its own `package.json`.
+- Leaf package: MUST NOT import from `@warpgogol/werkstatt-site` or `@warpgogol/werkstatt-engine` — the engine depends on it, never the reverse.
+- MAY import external packages declared in its own `package.json`.
+- Axiom dependencies (`@syrokomskyi/axiom-*`) are `optionalDependencies` — use type-only imports or guard runtime access.
 
-## Domain layout (RFC-1105)
+## Canonical homes — consume via subpaths, there is no root `.` export
 
-The `src/share/` namespace is dissolved. Every former `share/` subdomain is now a top-level `src/` directory with a matching subpath export:
+| Subpath | Contents |
+| --- | --- |
+| `@warpgogol/werkstatt-shared/kernel` | Command/pipeline types, `WorkspaceIO`, `writeFileAtomic`, `DesiredState`, diagnostics |
+| `@warpgogol/werkstatt-shared/component` | `ComponentId`, `CapabilityId`, `EffectClass`, `IsolationTier`, `ComponentDeclaration` |
+| `@warpgogol/werkstatt-shared/signing` | Ed25519 core (`generateKeyPair`, `signBytes`, `verifyBytes`, `canonicalBytes`) |
+| `@warpgogol/werkstatt-shared/fingerprint` | Hashing primitives, canonical JSON v1 |
+| `@warpgogol/werkstatt-shared/ontology/operations` | Platform-ops schemas (sternsystem, mission, release, leitstand, …) |
+| `@warpgogol/werkstatt-shared/slug` | `slugUrl`, `slugId`, `HeadingSlugger` — never reimplement slugify |
+| `@warpgogol/werkstatt-shared/semantic` | `splitSentences`, `projectClaims`, `formatClaims` |
+| `@warpgogol/werkstatt-shared/sections/heading-id` | `sectionHeadingId` — single resolver for heading ids |
 
-| Domain | Subpath | Notes |
-| --- | --- | --- |
-| `agent`, `content-discipline`, `i18n`, `knowledge`, `legal`, `middleware`, `pbt`, `remediation`, `routes`, `schemas`, `semantic`, `slug`, `typography`, `types` | `@warpgogol/werkstatt-shared/<name>` | Mechanical promotion |
-| `content` | `@warpgogol/werkstatt-shared/content` | `share/content/*` merged into the existing dir |
-| `onboarding` | `@warpgogol/werkstatt-shared/onboarding` | `share/onboarding-yaml` merged as `onboarding/yaml.ts` |
-| `client-scripts` | `@warpgogol/werkstatt-shared/client-scripts` | Browser-only (gsap, lenis, plyr, hls, lordicon, counter-utils) |
-| `node` | `@warpgogol/werkstatt-shared/node/*` | Node-only (`node/fs`, `node/import-scan`, `node/dev-props-validator`, `node/semantic/*`) |
-| `text`, `policy`, `page`, `redirects`, `image-provider`, `attribution`, `offers`, `checks`, `runtime`, `sections`, `stack` | `@warpgogol/werkstatt-shared/<name>` | Former loose files grouped by domain |
-| `media` | `@warpgogol/werkstatt-shared/media` | Source-document extraction core (RFC-1345); deterministic slot-placeholder renderer (RFC-1346, `media/placeholder`) |
+## Runtime seam
 
-Classification rule for new modules:
-
-- **Node-only** (`node:*` imports, `createRequire`, subprocess) → `src/node/` with domain-preserving structure (`node/<domain>/…`).
-- **Browser-only** (DOM, `window`, client script init) → `src/client-scripts/`.
-- **Everything else** → runtime-agnostic domain dir; pick the domain whose name matches the module's responsibility, or create a new top-level domain dir — never a catch-all.
-
-Rules:
-
-- `src/node/` modules MUST NOT be re-exported from runtime-agnostic domain barrels (`src/<domain>/index.ts`) — the browser/Node seam is a filesystem fact, keep it that way.
-- `utility-registry.yaml` lives at the package root (not under `src/`).
+- **Node-only** modules (`node:*` imports, `createRequire`, subprocess) live under `src/node/` and MUST NOT be re-exported from runtime-agnostic barrels — browser bundles must never see them.
+- **Browser-only** modules (DOM, `window`) live under `src/client-scripts/`.
+- Everything else → the top-level domain dir matching its responsibility; never a catch-all.
+- Persisted schemas in parse→write cycles must preserve forward-compatible fields (loose schema or explicit carry-through) — a strict `z.object` silently drops unknown keys on re-serialization.
 - Tests live in `<domain>/tests/` next to their domain.
 
-## Scripts
+## Commands
 
-| Script        | Command                                   |
-| ------------- | ----------------------------------------- |
-| `lint`        | `pnpm exec eslint "src/**/*.ts"`          |
-| `typecheck`   | `pnpm exec tsc -p tsconfig.json --noEmit` |
-| `build`       | `pnpm exec tsc -p tsconfig.json --noEmit` |
-| `build:check` | `pnpm exec tsc -p tsconfig.json --noEmit` |
-| `test`        | `vitest run`                              |
-| `test:watch`  | `vitest`                                  |
+```bash
+pnpm install
+pnpm run typecheck   # tsc --noEmit
+pnpm run lint
+pnpm run test        # vitest run
+```
 
-## NPM publishing
-
-- Package is published as `@warpgogol/werkstatt-shared` with `access: public`.
-- `prepublishOnly` runs typecheck before publish.
-- Publication is operator-triggered via repo-extract (RFC-0773). See `extract.config.yaml` and `docs/authoring/publication-runbook.md`.
-
-## Topic guides
-
-| Guide | Covers |
-| --- | --- |
-| `docs/agent-guides/werkstatt-shared-canonical-utilities.md` | Canonical utility catalog (import, do not re-implement) |
-| `docs/agent-guides/werkstatt-shared-boundaries.md` | Canonical homes, contract-change ripple, testing conventions |
+Run all three before finishing a change; state environment failures explicitly instead of claiming green.

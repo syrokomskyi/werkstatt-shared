@@ -1,0 +1,6 @@
+overrides:
+  # Standalone resolution picks plyr 3.8.5, whose types reject `new Plyr(...)`
+  # (TS2351); pin the monorepo-tested version.
+  plyr: 3.8.4
+minimumReleaseAgeExclude:
+  - "@warpgogol/werkstatt-engine@1.4.13"
