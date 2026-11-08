@@ -11,14 +11,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1509: implement RFC-1509 — system task queue, dispatch briefs and task reports</item>
   <item>RFC-1510: implement RFC-1510 — product outbox for dependency-contract requests</item>
   <item>RFC-1511: scenarios, version sets and system.versionset.record</item>
   <item>RFC-1533: surface pending flow branches in flow.open and the pre-user-prompt nudge</item>
   <item>RFC-1539: amend dna-55 and dna-115 for published spec packages
 
 Guides, fo-spec-ingest routing, command descriptions and regenerated command docs, remediation entries for SPEC-15..18 and CONF-07..09; resyncs the stale .agents fo-system-dispatch mirror (ADR-0126 source line).</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1502, RFC-1503, RFC-1506, RFC-1507, RFC-1508, warpgogol-m000196</history>
+  <item>RFC-1541: version-set@2 contracts with validator and pin-drift scenario checks</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1502, RFC-1503, RFC-1506, RFC-1507, RFC-1508, RFC-1509, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -688,6 +688,41 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "A published conformance validator is installed while this producer still uses consumer.root — switch the producer to consumer.package with an exact-pinned devDependency if that package validates this contract.",
     docRef: "docs/rfcs/rfc-1539-forge-reads-published-spec-packages-and-runs-published-consumer-validators.md",
     targetFiles: ["forge.yaml"],
+  },
+  {
+    ruleId: "SYSTEM-VS-06",
+    action:
+      "Make every declared spec/validator package of the product resolvable at its release tag — an exact root dependency recorded in the committed pnpm-lock.yaml root importer (SPEC-17, CONF-07).",
+    docRef: "docs/rfcs/rfc-1541-version-sets-record-contract-package-versions-and-scenarios-check-published-validators-and-pin-drift.md",
+    targetFiles: ["pnpm-lock.yaml", "package.json"],
+  },
+  {
+    ruleId: "SYSTEM-VS-07",
+    action:
+      "Switch the producer to consumer.package with an exact-pinned published validator, or drop the validator check from the scenario — a version set only records published validators (RFC-1539).",
+    docRef: "docs/rfcs/rfc-1541-version-sets-record-contract-package-versions-and-scenarios-check-published-validators-and-pin-drift.md",
+    targetFiles: ["forge.yaml"],
+  },
+  {
+    ruleId: "SYSTEM-VS-W01",
+    action:
+      "Propose a pin-bump task for the lagging consumer (system.outbox.scan lists it) — drift never blocks a version set.",
+    docRef: "docs/rfcs/rfc-1541-version-sets-record-contract-package-versions-and-scenarios-check-published-validators-and-pin-drift.md",
+    targetFiles: ["package.json"],
+  },
+  {
+    ruleId: "SYSTEM-VS-W02",
+    action:
+      "The npm registry was unreachable during recording — re-run system.versionset.record online to measure pin drift.",
+    docRef: "docs/rfcs/rfc-1541-version-sets-record-contract-package-versions-and-scenarios-check-published-validators-and-pin-drift.md",
+    targetFiles: [],
+  },
+  {
+    ruleId: "SYSTEM-MAP-07",
+    action:
+      "Fix the scenario check: a pin-drift authority must offer the named contract in system/products.yaml; a validator check must name a producer declared in that product's forge.yaml contractProducers[].",
+    docRef: "docs/rfcs/rfc-1541-version-sets-record-contract-package-versions-and-scenarios-check-published-validators-and-pin-drift.md",
+    targetFiles: ["system/scenarios"],
   },
   // --- Fixed branch model (RFC-1486) — flow.check rules -------------------
   {
