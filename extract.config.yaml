@@ -45,6 +45,10 @@ excludePathSegments:
   # monorepo root (docs/specs/werkstatt-onboarding/schemas/) — operator-approved
   # 2026-11-08; the path segment targets only the ontology manifest test.
   - schemas/system/tests/manifest.test.ts
+  # RFC-1345 media extraction tests shell out to poppler-utils (pdfimages,
+  # pdftoppm), which the generated export CI does not install — they run in the
+  # monorepo. Operator-approved 2026-11-08.
+  - media/extract-document.test.ts
 
 postProcess:
   - action: delete
