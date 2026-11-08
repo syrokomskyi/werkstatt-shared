@@ -1,7 +1,7 @@
 import { test, expect } from "vitest";
 import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, parse } from "node:path";
 import {
   createDefaultIO,
   createRecordingIO,
@@ -22,9 +22,6 @@ Unit tests for workspace io covering its documented public contract and regressi
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1496: step 1 — read-only git allowlist gains ls-files
-
-Rename isWorktreeTopologyQuery to isReadOnlyGitQuery and admit git -C <dir> ls-files alongside rev-parse and worktree list; a caller-supplied env stays refused. The platform file set (step 2) resolves through ls-files, so read-only commands computing the platform hash would otherwise crash KERNEL-META-01 (AC-8).</item>
   <item>RFC-1501: one argv-shaped read-only git allowlist for the recording and read-only adapters (RFC-1501)
 
 READ_ONLY_GIT_QUERIES / isReadOnlyGitQuery replace the recording adapter's
@@ -46,7 +43,10 @@ leaves dynamic elements to the runtime predicate. RFC text amended to match
 Re-review: git ls-remote accepts --exec (and its abbreviation --exe) as an alias
 of --upload-pack, so the predicate still admitted a program from the argv.</item>
   <item>RFC-1510: pin ls-tree in the read-only git allowlist for RFC-1510</item>
-  <history>RFC-1311, RFC-1495</history>
+  <item>RFC-1540: make the standalone extract test suite pass
+
+Exclude the monorepo-bound ontology manifest bcp47 parity test from the extract (operator-approved edit of the protected extract config) and point the allowExec read-only test at a path outside os.tmpdir(), since the extract runs under tmpdir where RFC-1176 passes writes through.</item>
+  <history>RFC-1311, RFC-1495, RFC-1496</history>
 </CHANGE_SUMMARY>
 */
 
@@ -204,9 +204,11 @@ test("createReadOnlyIO: allowExec binds subprocess calls through to the base ada
   const result = await io.exec("echo", ["hello"]);
   expect(result.exitCode).toBe(0);
   expect(result.stdout.trim()).toBe("hello");
-  // Filesystem mutations still throw even with allowExec.
+  // Filesystem mutations still throw even with allowExec. The target sits at
+  // the filesystem root, outside os.tmpdir(): a cwd under tmpdir (the standalone
+  // extract runs there) is scratch space that RFC-1176 passes through.
   await expect(() =>
-    io.writeFile(join(process.cwd(), "readonly-guard-no.txt"), "x"),
+    io.writeFile(join(parse(tmpdir()).root, "readonly-guard-no.txt"), "x"),
   ).rejects.toThrow(KernelMetaError);
 });
 

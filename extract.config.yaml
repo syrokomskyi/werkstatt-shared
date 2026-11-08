@@ -41,6 +41,10 @@ excludePathSegments:
   # monorepo root (docs/specs/werkstatt-onboarding/schemas/) — not shipped standalone.
   - intake-schema-parity.test.ts
   - onboarding-decision-schema-parity.test.ts
+  # RFC-1444 bcp47Tag parity reads the vendored onboarding intake schema at the
+  # monorepo root (docs/specs/werkstatt-onboarding/schemas/) — operator-approved
+  # 2026-11-08; the path segment targets only the ontology manifest test.
+  - schemas/system/tests/manifest.test.ts
 
 postProcess:
   - action: delete
