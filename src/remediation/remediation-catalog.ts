@@ -11,12 +11,14 @@
 </non-goals>
 </MODULE_CONTRACT>
 <CHANGE_SUMMARY>
-  <item>RFC-1508: implement RFC-1508 — system profile, system map schemas and system.map.validate</item>
   <item>RFC-1509: implement RFC-1509 — system task queue, dispatch briefs and task reports</item>
   <item>RFC-1510: implement RFC-1510 — product outbox for dependency-contract requests</item>
   <item>RFC-1511: scenarios, version sets and system.versionset.record</item>
   <item>RFC-1533: surface pending flow branches in flow.open and the pre-user-prompt nudge</item>
-  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1502, RFC-1503, RFC-1506, RFC-1507, warpgogol-m000196</history>
+  <item>RFC-1539: amend dna-55 and dna-115 for published spec packages
+
+Guides, fo-spec-ingest routing, command descriptions and regenerated command docs, remediation entries for SPEC-15..18 and CONF-07..09; resyncs the stale .agents fo-system-dispatch mirror (ADR-0126 source line).</item>
+  <history>ADR-0105, RFC-1027, RFC-1185, RFC-1201, RFC-1209, RFC-1210, RFC-1365, RFC-1368, RFC-1369, RFC-1420, RFC-1460, RFC-1461, RFC-1463, RFC-1466, RFC-1486, RFC-1487, RFC-1488, RFC-1490, RFC-1491, RFC-1492, RFC-1493, RFC-1494, RFC-1496, RFC-1498, RFC-1502, RFC-1503, RFC-1506, RFC-1507, RFC-1508, warpgogol-m000196</history>
 </CHANGE_SUMMARY>
 */
 
@@ -664,6 +666,27 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
       "Declare mirror.argv for the producer — the same-input mirror leg detects stricter-than-consumer drift before the consumer validator runs; omitting it leaves that drift class unarmed.",
     docRef:
       "docs/rfcs/rfc-1365-require-golden-conformance-runs-against-authoritative-consumers-for-declared-contract-producers.md",
+    targetFiles: ["forge.yaml"],
+  },
+  {
+    ruleId: "CONF-07",
+    action:
+      "Pin consumer.package to an exact version in the root package.json devDependencies (no ^, ~, ranges or tags) — the validator version is part of the conformance evidence.",
+    docRef: "docs/rfcs/rfc-1539-forge-reads-published-spec-packages-and-runs-published-consumer-validators.md",
+    targetFiles: ["package.json"],
+  },
+  {
+    ruleId: "CONF-08",
+    action:
+      "Install the consumer.package (pnpm install) and check that consumer.validator.argv[0] names one of its bins in node_modules/.bin — a package consumer never self-skips.",
+    docRef: "docs/rfcs/rfc-1539-forge-reads-published-spec-packages-and-runs-published-consumer-validators.md",
+    targetFiles: ["package.json", "forge.yaml"],
+  },
+  {
+    ruleId: "CONF-09",
+    action:
+      "A published conformance validator is installed while this producer still uses consumer.root — switch the producer to consumer.package with an exact-pinned devDependency if that package validates this contract.",
+    docRef: "docs/rfcs/rfc-1539-forge-reads-published-spec-packages-and-runs-published-consumer-validators.md",
     targetFiles: ["forge.yaml"],
   },
   // --- Fixed branch model (RFC-1486) — flow.check rules -------------------
@@ -5675,6 +5698,34 @@ const REMEDIATION_ENTRIES: RemediationPattern[] = [
     contract: "amendment … does not match forge/spec-amendment@1: (root): no frontmatter block.",
     action: "Resolve the reported violation — the enforced contract is declared in packages/forge/os/spec/spec-amendments.ts.",
     docRef: "packages/forge/os/spec/spec-amendments.ts",
+  },
+  {
+    ruleId: "SPEC-15",
+    action:
+      "Delete the vendored docs/specs/<id>-v*/ copy — the spec is declared in forge.yaml specPackages[] and read from the installed package (DNA-55, RFC-1539).",
+    docRef: "docs/rfcs/rfc-1539-forge-reads-published-spec-packages-and-runs-published-consumer-validators.md",
+    targetFiles: ["forge.yaml"],
+  },
+  {
+    ruleId: "SPEC-16",
+    action:
+      "Install the declared spec package (pnpm install) or remove its specPackages[] entry.",
+    docRef: "docs/rfcs/rfc-1539-forge-reads-published-spec-packages-and-runs-published-consumer-validators.md",
+    targetFiles: ["package.json"],
+  },
+  {
+    ruleId: "SPEC-17",
+    action:
+      "Pin the spec package to an exact version in the root package.json dependencies or devDependencies — a range lets an install move the contract version silently.",
+    docRef: "docs/rfcs/rfc-1539-forge-reads-published-spec-packages-and-runs-published-consumer-validators.md",
+    targetFiles: ["package.json"],
+  },
+  {
+    ruleId: "SPEC-18",
+    action:
+      "Remove the duplicate specPackages[] entry — each spec id is declared once.",
+    docRef: "docs/rfcs/rfc-1539-forge-reads-published-spec-packages-and-runs-published-consumer-validators.md",
+    targetFiles: ["forge.yaml"],
   },
   {
     ruleId: "STALE-01",
